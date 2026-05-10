@@ -687,3 +687,67 @@ single-bit initial state under this rule.
 
 **Metrics:** `{'final_bit_count': 1, 'glider_dq': 0, 'glider_dr': -1, 'glider_period': 1, 'is_bit_conserving': True}`
 
+
+---
+```yaml
+cached_tokens: 39768
+cost_usd: 0.06418
+hypothesis: 'dynamics-2D-swap: A center-neighbor bit-swap rule produces a stationary
+  period-2 oscillator.'
+input_tokens: 43701
+iter: 17
+metrics:
+  final_bit_count: 1
+  glider_velocity_q: -1
+  glider_velocity_r: 0
+  is_bit_conserving: true
+  oscillation_period: 50
+output_tokens: 1487
+status: experiment_failed
+```
+
+## iter_017: dynamics-2D-swap: A center-neighbor bit-swap rule produces a stationary period-2 oscillator.
+
+**Analysis:** The previous iteration (iter_016) was a success: we confirmed that a simple bit-rotation rule on the 2D hexagonal grid produces stable, propagating gliders from a single-bit initial state. However, the experimenter's view correctly noted that this rule is equivalent to a global, linear shift of the entire grid. While this confirms that our 2D simulator works and can support motion, it's a "trivial" form of motion. Two such gliders would never interact in a meaningful way; they would simply maintain their relative positions as the whole grid shifts.
+
+To progress towards the goal of Phase 3 — observing collisions and scattering — we must first establish rules that produce localized, non-trivial dynamics. A particle should be a local excitation moving *through* a static medium, not a feature of the medium itself moving.
+
+The minimal validating step is to test the simplest possible *local* rule that is not a global shift. A rule that swaps the state of the central cell with one of its neighbors is an ideal candidate. It is bit-conserving, reversible, and fundamentally local. This experiment will test if such a simple local rule can sustain a stable pattern, with the most likely outcome being a stationary oscillator (a "blinker"). This would be the first example of a non-trivial "particle" in our 2D world.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py`.
+
+1.  **Modify the Rule:** Change the rule implemented in the simulator. The new rule is "Swap Center with Neighbor 1".
+    - For any 7-bit neighborhood input `b0b1b2b3b4b5b6` (where `b0` is the center and `b1..b6` are neighbors clockwise), the output is `b1b0b2b3b4b5b6`.
+    - This rule is a simple permutation and is its own inverse, guaranteeing reversibility.
+
+2.  **Experiment Setup:**
+    - Use a 50x50 hexagonal grid with periodic boundaries.
+    - Initialize the grid with all cells '0', except for a single '1' at the center.
+
+3.  **Execution:**
+    - Run the simulation for 50 steps.
+    - The update logic remains the same: the new state of a cell is the central bit of the rule's output for its neighborhood.
+
+4.  **Analysis & Output:**
+    - Track the coordinates of the '1' bit at each step.
+    - Create `archive/iter_017/result.yaml` with the following keys:
+      - `behavior_class`: `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, `STABLE`, or `CHAOTIC`.
+      - `oscillation_period`: The number of steps for the '1' bit's position to repeat.
+      - `is_bit_conserving`: `true` if the total bit count remains 1.
+      - `final_bit_count`: The number of '1's on the grid at step 50.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The swap rule new[q,r] = old[q+1, r] (new center = East neighbor b1) is
+algebraically a uniform West-translation of the entire grid by 1 cell per step.
+With a 50-wide periodic grid the single '1' orbits back to its start position
+after exactly 50 steps, giving a spatial period of 50, not 2.
+The behavior class is GLIDER (v = -1, 0 in axial coords), not STATIONARY_OSCILLATOR.
+The hypothesis was incorrect: a neighbor-copy rule cannot produce a period-2
+oscillator on a large periodic grid — it requires a reflective or self-inverse
+local rule such that a bit at site A reads from B and B simultaneously reads
+from A, which uniform CA semantics cannot achieve with a simple copy.
+
+
+**Metrics:** `{'final_bit_count': 1, 'oscillation_period': 50, 'glider_velocity_q': -1, 'glider_velocity_r': 0, 'is_bit_conserving': True}`
+
