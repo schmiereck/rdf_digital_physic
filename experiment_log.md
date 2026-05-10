@@ -375,3 +375,66 @@ The hypothesis is confirmed: a non-trivial, reversible, bit-conserving rule exis
 
 **Metrics:** `{'state_space_size': 64, 'hamming_groups_sum': 64, 'rule_found': 1, 'W0': 1, 'W1': 6, 'W2': 15, 'W3': 20, 'W4': 15, 'W5': 6, 'W6': 1}`
 
+
+---
+```yaml
+cached_tokens: 34117
+cost_usd: 0.05861
+hypothesis: 'dynamics-2bit: The minimal 2-bit/cell rule from iter_003 produces a stable,
+  stationary period-2 oscillation.'
+input_tokens: 38065
+iter: 12
+metrics:
+  lattice_size: 100
+  max_spread_from_center: 0
+  oscillation_period: 2
+  steps_run: 50
+output_tokens: 1423
+status: ok
+```
+
+## iter_012: dynamics-2bit: The minimal 2-bit/cell rule from iter_003 produces a stable, stationary period-2 oscillation.
+
+**Analysis:** Phase 1 successfully identified rules for simple particle motion (v=c). We have now initiated Phase 2 ("Der Zappel-Detektor") by increasing the system's complexity to 2 bits per cell, which is the prerequisite for simulating mass (v < c).
+
+The previous iteration (`iter_003`) successfully confirmed the *existence* of at least one non-trivial, reversible, bit-conserving rule in this new, larger state space. The rule was specifically constructed to produce a local oscillation.
+
+The next logical step is to move from formal existence to empirical observation. We must simulate this minimal rule to verify that it produces the intended "Zappeln" (oscillation). This is the smallest experiment that can validate the core dynamic principle of Phase 2.
+
+**Task:** Create a Python script `archive/iter_004/code/simulate_2bit.py`. This script will be a 1D cellular automaton simulator for a 2-bit/cell lattice.
+
+1.  **Simulator Logic:**
+    - The lattice is a 1D array of cells, where each cell holds a 2-bit string (e.g., '00', '01', '10', '11').
+    - In each step, calculate the next state of the lattice by applying a rule to the 3-cell neighborhood of each cell.
+
+2.  **Implement the Rule:** The rule to implement is the one constructed in iter_003:
+    - `('00', '01', '00')` maps to `('00', '10', '00')`.
+    - `('00', '10', '00')` maps to `('00', '01', '00')`.
+    - All other 62 possible 3-cell neighborhood configurations map to themselves (identity mapping).
+
+3.  **Experiment Setup:**
+    - Initialize a lattice of size 100. All cells are '00'.
+    - Set the central cell (at index 50) to '01'. This is the initial condition.
+    - Run the simulation for 50 steps with periodic boundary conditions.
+
+4.  **Analysis and Output:**
+    - During the simulation, track the state of the central cell at each step.
+    - After the simulation, classify the overall behavior.
+    - Create `archive/iter_004/result.yaml` with the following keys:
+      - `behavior_class`: A string, must be one of `STATIONARY_OSCILLATION`, `STABLE`, `DECAY`, `GLIDER`, or `CHAOTIC`.
+      - `oscillation_period`: An integer. The number of steps for the pattern to repeat.
+
+5.  **Logging (Optional but helpful):** Create `archive/iter_004/results/` and save the full lattice state for steps 0, 1, 2, and 3 as text files for inspection.
+
+**Status:** ok
+
+**Experimenter view:** The rule creates a minimal 2-state excitation: cell[50]='01' triggers the
+('00','01','00') -> '10' mapping, then '10' triggers ('00','10','00') -> '01',
+and so on indefinitely. No neighboring cells ever receive a non-identity
+neighborhood, so the disturbance is perfectly contained at a single site.
+This is the simplest possible non-trivial oscillator: one active cell,
+two alternating states, period exactly 2, zero spatial footprint.
+
+
+**Metrics:** `{'lattice_size': 100, 'steps_run': 50, 'oscillation_period': 2, 'max_spread_from_center': 0}`
+
