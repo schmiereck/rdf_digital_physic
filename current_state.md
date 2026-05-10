@@ -13,14 +13,15 @@ To demonstrate that complex physical phenomena can emerge from a minimal set of 
   - A symmetric swap-based update model guarantees bit-conservation for local swaps and can create stable, stationary oscillators (iter_020).
 
 ### Refuted
-- Simple, unconditional rules (e.g., bit-rotation) on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
-- The standard CA update model cannot execute simple conditional swaps without violating bit-conservation (iter_019).
-- Simple conditional swap rules, even with complex seeds or asymmetric logic under a bit-conserving scheduler, fail to produce motion and result in stationary oscillators or fixed points (iter_021, iter_022, iter_023).
-- A single '1' bit is NOT a stationary particle under the arrowhead-glider rule; it propagates at the same velocity as the glider, preventing collisions (iter_026).
-- A simple two-bit pattern is not stable under the arrowhead-glider rule and decays, failing to provide a stationary target (iter_027).
+- Simple, unconditional rules on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
+- Standard CA updates cannot execute simple conditional swaps without violating bit-conservation (iter_019).
+- Simple conditional swap rules fail to produce motion, resulting in stationary patterns (iter_021, iter_022, iter_023).
+- A single '1' bit is not a stationary particle under the arrowhead-glider rule; it propagates at v=(1,0), preventing collisions (iter_026).
+- A simple two-bit pattern is not stable under the arrowhead-glider rule and decays (iter_027).
+- The hand-crafted arrowhead-glider rule is NOT rotationally symmetric; a rotated seed pattern decays chaotically instead of producing a rotated glider (iter_028).
 
 ### Current Best Result
-A stable, 3-bit "arrowhead" glider that propagates at v=(1,0) in a 2D hexagonal grid (iter_024).
+A stable, 3-bit "arrowhead" glider that propagates at v=(1,0) in a 2D hexagonal grid, via a non-symmetric rule (iter_024).
 
 ### In Progress
-- **iter_028:** Testing if a 60-degree rotated arrowhead seed produces a glider with a correspondingly rotated velocity, to verify the rule's symmetry.
+- **iter_029:** Generating a fully symmetric rule by applying 6-fold rotational symmetry to the arrowhead glider kernel, and testing if it still supports the original East-moving glider.

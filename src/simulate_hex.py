@@ -1,231 +1,178 @@
 #!/usr/bin/env python3
 """
-iter_023: asymmetric-rule
-Asymmetric swap rule on 2D hex grid.
-For each cell c=(q,r):
-  If East neighbor b1=(q+1,r)==1, swap c with NW neighbor b6=(q-1,r+1).
-  Otherwise, no-op.
-Sequential in-place; each swap sees the current modified state.
+iter_029: rule-synthesis
+Synchronous CA using a 6-fold-symmetric rule loaded from symmetric_rule.json.
+Tests whether the original East-pointing arrowhead glider is supported.
+
+Neighborhood encoding (7 bits, MSB = center):
+  state = center*64 + b1*32 + b2*16 + b3*8 + b4*4 + b5*2 + b6
+Directions: b1=E, b2=SE, b3=SW, b4=W, b5=NW, b6=NE
 """
 
+import json
 import sys
 import yaml
 import numpy as np
 from pathlib import Path
 
-N = 50
+N = 100
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_023" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_023" / "result.yaml"
+RULE_FILE = Path(__file__).parent / "symmetric_rule.json"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_029" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_029" / "result.yaml"
 
-# Axial-coordinate neighbor directions clockwise (b1..b6)
 HEX_DIRS = [
-    ( 1,  0),   # b1: E
-    ( 1, -1),   # b2: SE
-    ( 0, -1),   # b3: SW
-    (-1,  0),   # b4: W
-    (-1,  1),   # b5: NW
-    ( 0,  1),   # b6: NE
+    ( 1,  0),  # b1: E
+    ( 1, -1),  # b2: SE
+    ( 0, -1),  # b3: SW
+    (-1,  0),  # b4: W
+    (-1,  1),  # b5: NW
+    ( 0,  1),  # b6: NE
 ]
 
 
-def step(grid: np.ndarray) -> None:
-    """Sequential in-place asymmetric swap.
+def load_rule(path: Path) -> dict:
+    with open(path) as f:
+        raw = json.load(f)
+    return {int(k): v for k, v in raw.items()}
 
-    For each cell c=(q,r):
-      If b1=(q+1,r)==1, swap c with NW=(q-1,r+1).
-      Otherwise, no-op.
-    """
+
+def get_neighborhood(grid, q, r):
     n = grid.shape[0]
+    val = int(grid[q, r]) << 6
+    for i, (dq, dr) in enumerate(HEX_DIRS):
+        nq = (q + dq) % n
+        nr = (r + dr) % n
+        val |= int(grid[nq, nr]) << (5 - i)
+    return val
+
+
+def step_ca(grid: np.ndarray, rule: dict) -> np.ndarray:
+    n = grid.shape[0]
+    new_grid = np.zeros_like(grid)
     for q in range(n):
         for r in range(n):
-            b1_q = (q + 1) % n
-            b1_r = r
-            nw_q = (q - 1) % n  # NW direction: (-1, +1)
-            nw_r = (r + 1) % n
-            if grid[b1_q, b1_r] == 1:
-                grid[q, r], grid[nw_q, nw_r] = grid[nw_q, nw_r], grid[q, r]
+            nbr = get_neighborhood(grid, q, r)
+            # Apply rule if state is mapped; otherwise identity (keep center bit)
+            mapped = rule.get(nbr, nbr)
+            new_grid[q, r] = (mapped >> 6) & 1
+    return new_grid
 
 
-def find_ones(grid: np.ndarray) -> list:
+def find_ones(grid):
     qs, rs = np.where(grid == 1)
     return sorted(zip(qs.tolist(), rs.tolist()))
 
 
-def centroid(positions: list) -> tuple:
+def centroid(positions):
     if not positions:
         return (0.0, 0.0)
     return (sum(q for q, r in positions) / len(positions),
             sum(r for q, r in positions) / len(positions))
 
 
-def classify_control(positions_history: list, bit_counts: list) -> str:
-    """Returns 'STATIONARY' or 'MOVED'."""
-    initial_pos = positions_history[0]
-    if all(ph == initial_pos for ph in positions_history):
-        return "STATIONARY"
-    return "MOVED"
+def is_split(positions, n):
+    if len(positions) < 2:
+        return False
+    qs = [q for q, r in positions]
+    return max(qs) - min(qs) > n // 2
 
 
-def classify_test(positions_history: list, bit_counts: list) -> str:
-    """Returns 'GLIDER', 'OSCILLATOR', 'STATIONARY', or 'CHAOTIC'."""
-    initial_count = bit_counts[0]
+def main():
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    if any(c != initial_count for c in bit_counts):
-        return "CHAOTIC"
+    rule = load_rule(RULE_FILE)
+    print(f"Loaded rule from {RULE_FILE}: {len(rule)} mappings")
 
-    initial_positions = positions_history[0]
-    if all(ph == initial_positions for ph in positions_history):
-        return "STATIONARY"
+    # Initial East-pointing arrowhead: center c, c+b4 (West), c+b5 (NW)
+    cq, cr = N // 2, N // 2
+    grid = np.zeros((N, N), dtype=np.int8)
+    grid[cq, cr] = 1
+    grid[(cq - 1) % N, (cr + 0) % N] = 1  # b4 = West
+    grid[(cq - 1) % N, (cr + 1) % N] = 1  # b5 = NW
 
-    # Compute per-step centroid displacement over first 20 steps
-    step_dqs = []
-    step_drs = []
-    for t in range(1, min(len(positions_history), 21)):
-        ct = centroid(positions_history[t])
-        ct_prev = centroid(positions_history[t - 1])
-        step_dqs.append(ct[0] - ct_prev[0])
-        step_drs.append(ct[1] - ct_prev[1])
+    print(f"Initial arrowhead: {find_ones(grid)}")
 
-    if step_dqs:
-        avg_dq = sum(step_dqs) / len(step_dqs)
-        avg_dr = sum(step_drs) / len(step_drs)
-        is_moving = abs(avg_dq) > 0.1 or abs(avg_dr) > 0.1
-        velocity_consistent = (
-            all(abs(d - avg_dq) < 0.6 for d in step_dqs) and
-            all(abs(d - avg_dr) < 0.6 for d in step_drs)
-        )
-        if is_moving and velocity_consistent:
-            return "GLIDER"
-
-    return "OSCILLATOR"
-
-
-def compute_glider_velocity(positions_history: list) -> tuple:
-    """Compute average dq and dr per step over the full simulation."""
-    if len(positions_history) < 2:
-        return (0.0, 0.0)
-    dqs = []
-    drs = []
-    for t in range(1, len(positions_history)):
-        ct = centroid(positions_history[t])
-        ct_prev = centroid(positions_history[t - 1])
-        dqs.append(ct[0] - ct_prev[0])
-        drs.append(ct[1] - ct_prev[1])
-    avg_dq = sum(dqs) / len(dqs)
-    avg_dr = sum(drs) / len(drs)
-    return (round(avg_dq, 6), round(avg_dr, 6))
-
-
-def run_simulation(grid_init: np.ndarray, label: str, verbose: bool = True) -> dict:
-    grid = grid_init.copy()
-    initial_count = int(grid.sum())
-    bit_counts = [initial_count]
     positions_history = [find_ones(grid)]
-
-    if verbose:
-        print(f"\n=== {label} ===")
-        print(f"Initial count: {initial_count}, positions: {positions_history[0][:4]}")
-        print(f"{'t':>6}  {'#1s':>4}  positions")
+    bit_counts = [int(grid.sum())]
 
     for t in range(STEPS):
-        step(grid)
-        count = int(grid.sum())
-        positions = find_ones(grid)
-        bit_counts.append(count)
-        positions_history.append(positions)
+        grid = step_ca(grid, rule)
+        pos = find_ones(grid)
+        cnt = int(grid.sum())
+        positions_history.append(pos)
+        bit_counts.append(cnt)
+        if t < 6 or t % 10 == 9:
+            print(f"  t={t+1:3d}  bits={cnt}  pos={pos}")
 
-        if verbose and (t < 5 or t % 20 == 19):
-            print(f"  t={t+1:4d}  {count:4d}  {positions[:4]}")
+    initial_count = bit_counts[0]
+    is_bit_conserving = all(c == initial_count for c in bit_counts)
 
-    if verbose:
-        print(f"Final: count={bit_counts[-1]}, positions={positions_history[-1][:4]}")
+    def shape(positions):
+        if not positions:
+            return frozenset()
+        ctr = positions[0]
+        return frozenset((q - ctr[0], r - ctr[1]) for q, r in positions)
 
-    return {
-        "bit_counts": bit_counts,
-        "positions_history": positions_history,
-        "initial_count": initial_count,
-        "final_count": int(bit_counts[-1]),
-    }
-
-
-def main() -> int:
-    # Validate bit conservation
-    vgrid = np.zeros((7, 7), dtype=np.int8)
-    vgrid[3, 3] = 1
-    vgrid[4, 3] = 1
-    before = int(vgrid.sum())
-    step(vgrid)
-    assert int(vgrid.sum()) == before, "Bit conservation failed in validation!"
-    print("Validation passed: bit conservation holds after one step.")
-
-    cq, cr = N // 2, N // 2
-    dq1, dr1 = HEX_DIRS[0]  # b1 = East = (1, 0)
-
-    # Sim 1 (Control): single bit at center
-    grid_control = np.zeros((N, N), dtype=np.int8)
-    grid_control[cq, cr] = 1
-    results_control = run_simulation(grid_control, "Sim 1 – Control (single bit at center)")
-
-    # Sim 2 (Test): two bits — center + East neighbor (b1)
-    grid_test = np.zeros((N, N), dtype=np.int8)
-    grid_test[cq, cr] = 1
-    grid_test[(cq + dq1) % N, (cr + dr1) % N] = 1
-    results_test = run_simulation(grid_test, "Sim 2 – Test (two bits: center + East)")
-
-    # Classify
-    control_behavior = classify_control(
-        results_control["positions_history"], results_control["bit_counts"]
-    )
-    test_behavior = classify_test(
-        results_test["positions_history"], results_test["bit_counts"]
+    initial_shape = shape(positions_history[0])
+    unsplit_steps = [ph for ph in positions_history
+                     if len(ph) == initial_count and not is_split(ph, N)]
+    is_stable = len(unsplit_steps) > STEPS // 2 and all(
+        shape(ph) == initial_shape for ph in unsplit_steps
     )
 
-    is_bit_conserving = (
-        results_control["initial_count"] == results_control["final_count"] and
-        results_test["initial_count"] == results_test["final_count"]
+    dqs, drs = [], []
+    for t in range(1, len(positions_history)):
+        ph_cur = positions_history[t]
+        ph_prev = positions_history[t - 1]
+        if is_split(ph_cur, N) or is_split(ph_prev, N):
+            continue
+        ct = centroid(ph_cur)
+        cp = centroid(ph_prev)
+        dqs.append(ct[0] - cp[0])
+        drs.append(ct[1] - cp[1])
+
+    avg_dq = sum(dqs) / len(dqs) if dqs else 0.0
+    avg_dr = sum(drs) / len(drs) if drs else 0.0
+    velocity = (round(avg_dq, 6), round(avg_dr, 6))
+
+    is_moving = abs(avg_dq) > 0.1 or abs(avg_dr) > 0.1
+    velocity_consistent = bool(dqs) and (
+        all(abs(d - avg_dq) < 0.6 for d in dqs) and
+        all(abs(d - avg_dr) < 0.6 for d in drs)
     )
-    is_nontrivial_motion = (
-        control_behavior == "STATIONARY" and
-        test_behavior == "GLIDER"
-    )
 
-    glider_velocity = compute_glider_velocity(results_test["positions_history"])
+    if is_bit_conserving and is_moving and velocity_consistent and is_stable:
+        behavior_class = "GLIDER"
+    elif not is_bit_conserving:
+        behavior_class = "CHAOTIC"
+    elif not is_moving:
+        behavior_class = "STATIONARY"
+    else:
+        behavior_class = "OSCILLATOR"
 
-    final_bit_count_test = results_test["final_count"]
-
-    print(f"\n=== Classification ===")
-    print(f"is_bit_conserving:     {is_bit_conserving}")
-    print(f"control_behavior:      {control_behavior}")
-    print(f"test_behavior:         {test_behavior}")
-    print(f"is_nontrivial_motion:  {is_nontrivial_motion}")
-    print(f"final_bit_count_test:  {final_bit_count_test}")
-    print(f"glider_velocity_hex:   {glider_velocity}")
-
-    print("\nTest positions history (first 8 steps):")
-    for t in range(min(9, len(results_test["positions_history"]))):
-        print(f"  t={t:3d}: {results_test['positions_history'][t]}")
+    print(f"\n=== Results ===")
+    print(f"behavior_class:    {behavior_class}")
+    print(f"is_stable:         {is_stable}")
+    print(f"is_bit_conserving: {is_bit_conserving}")
+    print(f"glider_velocity:   {velocity}")
+    print(f"final_bit_count:   {bit_counts[-1]}")
 
     result = {
+        "behavior_class": behavior_class,
+        "is_stable": bool(is_stable),
         "is_bit_conserving": bool(is_bit_conserving),
-        "control_behavior": control_behavior,
-        "test_behavior": test_behavior,
-        "is_nontrivial_motion": bool(is_nontrivial_motion),
-        "final_bit_count_test": final_bit_count_test,
-        "glider_velocity_hex": list(glider_velocity),
+        "glider_velocity_hex": list(velocity),
+        "final_bit_count": int(bit_counts[-1]),
     }
-
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    RESULT_YAML.parent.mkdir(parents=True, exist_ok=True)
 
     with open(RESULT_YAML, "w") as f:
         yaml.dump(result, f, default_flow_style=False, sort_keys=True)
+    print(f"\nWritten: {RESULT_YAML}")
 
-    print(f"\nResult written to: {RESULT_YAML}")
-
-    return 0 if is_nontrivial_motion else 1
+    return 0 if behavior_class == "GLIDER" else 1
 
 
 if __name__ == "__main__":

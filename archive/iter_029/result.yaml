@@ -1,0 +1,61 @@
+artifacts:
+- src/rule_generator.py
+- src/symmetric_rule.json
+- src/simulate_hex.py
+- archive/iter_029/result.yaml
+experimenter_view: 'The hypothesis fails. Applying 6-fold rotational symmetry to the
+  arrowhead-glider
+
+  kernel produces 17 conflicts and a rule that does NOT support the original East-moving
+
+  glider. The root cause is structural: state 64 (center-only, all neighbors zero)
+  is
+
+  rotationally invariant, so all 6 rotations of pair (4,64) map different "before"
+  states
+
+  (4,2,1,32,16,8) to the same target (64), while 64 can only have one inverse. The
+
+  conflict resolution (first-write-wins) preserves rotation-0 mappings, but rotated
+
+  variants (e.g., state 2→64, state 32→64) fire immediately on the glider''s boundary
+
+  cells, turning them on spuriously. By t=1 the bit count jumps from 3 to 10, and
+  the
+
+  pattern expands CHAOTICALLY to 9898 bits by t=100. The 6-fold symmetric closure
+  of
+
+  this asymmetric kernel is fundamentally incompatible with it.
+
+  '
+log_excerpt: "Generating 6-fold symmetric rule from arrowhead-glider kernel...\nKernel\
+  \ pairs: [(4, 64), (12, 68), (70, 70), (97, 49), (88, 28)]\n  CONFLICT at state\
+  \ 64: existing=4, new=2 (rotation=60deg, pair=(4,64))\n  CONFLICT at state 64: existing=4,\
+  \ new=1 (rotation=120deg, pair=(4,64))\n  CONFLICT at state 97: existing=49, new=97\
+  \ (rotation=120deg, pair=(70,70))\n  ... (17 total conflicts)\nConflicts found:\
+  \ 17\nTotal mappings:  31\n---\nLoaded rule from symmetric_rule.json: 31 mappings\n\
+  Initial arrowhead: [(49, 50), (49, 51), (50, 50)]\n  t=  1  bits=10  pos=[...]\n\
+  \  t=  2  bits=25  ...\n  t= 10  bits=361  ...\nbehavior_class: CHAOTIC\nis_bit_conserving:\
+  \ false\nfinal_bit_count: 9898\n"
+metrics:
+  final_bit_count_at_t100: 9898
+  generator_conflicts_found: 17
+  is_bit_conserving: false
+  is_stable: false
+  total_rule_mappings: 31
+notes: '17 conflicts arise because the kernel pair (4,64) has a rotationally-invariant
+  "after"
+
+  state (64 = isolated center), and the identity pair (70,70) rotates into states
+  already
+
+  claimed by movement pairs. A conflict-free 6-fold symmetric rule would require a
+  kernel
+
+  designed from the start with that symmetry. The original East-moving glider requires
+
+  breaking rotational symmetry.
+
+  '
+status: experiment_failed
