@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-iter_016: dynamics-2D-hex
-Bit-rotation rule on a 2D hexagonal grid with 7-cell neighborhood.
-
-Rule: "Rotate Right"
-  Input neighborhood:  b0 b1 b2 b3 b4 b5 b6  (b0=center, b1-b6=CW neighbors)
-  Output:              b6 b0 b1 b2 b3 b4 b5
-  New center = new b0 = b6  (the last clockwise neighbor)
+iter_020: symmetric-update
+Symmetric in-place swap rule on 2D hex grid.
+Rule: for each cell c=(q,r) in order, if East neighbor b1=(q+1,r)==1,
+swap c with SE neighbor b2=(q+1,r-1).
+c < b2 always (q < q+1), so all cells are eligible initiators.
+Sequential in-place; each swap sees the current modified state.
 """
 
 import sys
@@ -14,15 +13,14 @@ import yaml
 import numpy as np
 from pathlib import Path
 
-N = 51  # grid size (odd so center cell is well-defined)
+N = 50
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_016" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_016" / "result.yaml"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_020" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_020" / "result.yaml"
 
-# Axial-coordinate neighbor directions in clockwise order (b1..b6)
-# Using the standard hex axial system: axes q (East) and r (NE)
+# Axial-coordinate neighbor directions clockwise (b1..b6)
 HEX_DIRS = [
     ( 1,  0),   # b1: E
     ( 1, -1),   # b2: SE
@@ -33,142 +31,169 @@ HEX_DIRS = [
 ]
 
 
-def step_vectorized(grid: np.ndarray) -> np.ndarray:
-    """Apply one step of the Rotate-Right rule to the entire grid.
+def step(grid: np.ndarray) -> None:
+    """Sequential in-place symmetric swap.
 
-    new_state[q, r] = old_state[q + dq6, r + dr6]
-    where (dq6, dr6) = HEX_DIRS[5] = (0, 1).
-    Implemented as an array roll (exact, zero-allocation beyond the output).
+    Iterates all cells c=(q,r) in q-major order.
+    If grid[(q+1)%N, r] == 1: swap grid[q,r] with grid[(q+1)%N, (r-1)%N].
+    c is always less than b2=(q+1,r-1) in lexicographic order (q < q+1).
     """
-    dq, dr = HEX_DIRS[5]  # b6 direction
-    # np.roll(arr, -k, axis) moves element at index i+k to index i,
-    # i.e. new[i] = old[i+k].  So roll by -dq and -dr.
-    new = np.roll(grid, -dq, axis=0)
-    if dr:
-        new = np.roll(new, -dr, axis=1)
-    return new
-
-
-def step_reference(grid: np.ndarray) -> np.ndarray:
-    """Reference cell-by-cell implementation (used for validation)."""
     n = grid.shape[0]
-    new = np.empty_like(grid)
     for q in range(n):
         for r in range(n):
-            dq, dr = HEX_DIRS[5]
-            new[q, r] = grid[(q + dq) % n, (r + dr) % n]
-    return new
+            b1_q = (q + 1) % n
+            b2_r = (r - 1) % n
+            if grid[b1_q, r] == 1:
+                grid[q, r], grid[b1_q, b2_r] = grid[b1_q, b2_r], grid[q, r]
 
 
-def find_ones(grid: np.ndarray) -> list[tuple[int, int]]:
+def find_ones(grid: np.ndarray) -> list:
     qs, rs = np.where(grid == 1)
-    return list(zip(qs.tolist(), rs.tolist()))
+    return sorted(zip(qs.tolist(), rs.tolist()))
 
 
-def detect_glider_period(positions_history: list) -> int | None:
-    """Return smallest T>0 such that glider pattern repeats at same relative position."""
-    if not positions_history or len(positions_history[0]) != 1:
-        return None
-    q0, r0 = positions_history[0][0]
-    if len(positions_history) < 2 or len(positions_history[1]) != 1:
-        return None
-    q1, r1 = positions_history[1][0]
-    dq = (q1 - q0) % N
-    dr = (r1 - r0) % N
-    # For a pure-translation glider the shape never changes; period = 1.
-    # Check that all positions follow t*(dq,dr) exactly.
-    for t in range(1, min(len(positions_history), 20)):
-        if len(positions_history[t]) != 1:
-            return None
-        qt, rt = positions_history[t][0]
-        if qt != (q0 + t * dq) % N or rt != (r0 + t * dr) % N:
-            return None
-    return 1  # single-bit glider with constant velocity: internal period = 1
+def centroid(positions: list) -> tuple:
+    if not positions:
+        return (0.0, 0.0)
+    return (sum(q for q, r in positions) / len(positions),
+            sum(r for q, r in positions) / len(positions))
 
 
-def main() -> int:
-    # --- Validate vectorized step against reference on small grid ---
-    test = np.zeros((5, 5), dtype=np.int8)
-    test[2, 2] = 1
-    assert np.array_equal(step_vectorized(test), step_reference(test)), \
-        "Vectorized and reference steps disagree!"
+def classify_control(positions_history: list, bit_counts: list) -> str:
+    """Returns 'STATIONARY' or 'MOVED'."""
+    initial_pos = positions_history[0]
+    if all(ph == initial_pos for ph in positions_history):
+        return "STATIONARY"
+    return "MOVED"
 
-    # --- Initialise grid ---
-    grid = np.zeros((N, N), dtype=np.int8)
-    cq, cr = N // 2, N // 2
-    grid[cq, cr] = 1
 
+def classify_test(positions_history: list, bit_counts: list) -> str:
+    """Returns 'GLIDER', 'OSCILLATOR', 'STATIONARY', or 'DECAY'."""
+    initial_count = bit_counts[0]
+
+    if any(c != initial_count for c in bit_counts):
+        return "DECAY"
+
+    initial_positions = positions_history[0]
+    if all(ph == initial_positions for ph in positions_history):
+        return "STATIONARY"
+
+    # Compute per-step centroid displacement over first 20 steps
+    step_dqs = []
+    step_drs = []
+    for t in range(1, min(len(positions_history), 21)):
+        ct = centroid(positions_history[t])
+        ct_prev = centroid(positions_history[t - 1])
+        step_dqs.append(ct[0] - ct_prev[0])
+        step_drs.append(ct[1] - ct_prev[1])
+
+    if step_dqs:
+        avg_dq = sum(step_dqs) / len(step_dqs)
+        avg_dr = sum(step_drs) / len(step_drs)
+        is_moving = abs(avg_dq) > 0.1 or abs(avg_dr) > 0.1
+        velocity_consistent = (
+            all(abs(d - avg_dq) < 0.6 for d in step_dqs) and
+            all(abs(d - avg_dr) < 0.6 for d in step_drs)
+        )
+        if is_moving and velocity_consistent:
+            return "GLIDER"
+
+    return "OSCILLATOR"
+
+
+def run_simulation(grid_init: np.ndarray, label: str, verbose: bool = True) -> dict:
+    grid = grid_init.copy()
     initial_count = int(grid.sum())
-    bit_counts: list[int] = [initial_count]
-    positions_history: list[list[tuple[int, int]]] = [find_ones(grid)]
+    bit_counts = [initial_count]
+    positions_history = [find_ones(grid)]
 
-    print(f"Grid:          {N}x{N} (axial coords, periodic)")
-    print(f"Initial cell:  ({cq}, {cr})")
-    print(f"Initial count: {initial_count}")
-    print(f"{'Step':>6}  {'#1s':>6}  positions")
+    if verbose:
+        print(f"\n=== {label} ===")
+        print(f"Initial count: {initial_count}, positions: {positions_history[0][:4]}")
+        print(f"{'t':>6}  {'#1s':>4}  positions")
 
-    # --- Run simulation ---
     for t in range(STEPS):
-        grid = step_vectorized(grid)
+        step(grid)
         count = int(grid.sum())
         positions = find_ones(grid)
         bit_counts.append(count)
         positions_history.append(positions)
 
-        if t % 10 == 9 or t < 7:
-            print(f"  t={t+1:4d}  count={count:4d}  pos={positions[:3]}")
+        if verbose and (t < 5 or t % 20 == 19):
+            print(f"  t={t+1:4d}  {count:4d}  {positions[:4]}")
 
-    # --- Analysis ---
-    final_count = bit_counts[-1]
-    is_bit_conserving = (final_count == initial_count)
+    if verbose:
+        print(f"Final: count={bit_counts[-1]}, positions={positions_history[-1][:4]}")
 
-    glider_velocity_hex = None
-    glider_period = None
+    return {
+        "bit_counts": bit_counts,
+        "positions_history": positions_history,
+        "initial_count": initial_count,
+        "final_count": int(bit_counts[-1]),
+    }
 
-    if is_bit_conserving and final_count == 1:
-        # Compute per-step displacement from first two frames
-        q0, r0 = positions_history[0][0]
-        q1, r1 = positions_history[1][0]
-        dq = int(q1 - q0)
-        dr = int(r1 - r0)
 
-        # Verify linear motion over all recorded steps
-        is_linear = all(
-            len(positions_history[t]) == 1
-            and positions_history[t][0] == ((q0 + t * dq) % N, (r0 + t * dr) % N)
-            for t in range(1, STEPS + 1)
-        )
+def main() -> int:
+    # Validate bit conservation
+    vgrid = np.zeros((7, 7), dtype=np.int8)
+    vgrid[3, 3] = 1
+    vgrid[4, 3] = 1
+    before = int(vgrid.sum())
+    step(vgrid)
+    assert int(vgrid.sum()) == before, "Bit conservation failed in validation!"
+    print("Validation passed: bit conservation holds after one step.")
 
-        if is_linear:
-            glider_velocity_hex = (dq, dr)
-            glider_period = detect_glider_period(positions_history)
+    cq, cr = N // 2, N // 2
+    dq1, dr1 = HEX_DIRS[0]  # b1 = East = (1, 0)
+
+    # Sim 1 (Control): single bit at center
+    grid_control = np.zeros((N, N), dtype=np.int8)
+    grid_control[cq, cr] = 1
+    results_control = run_simulation(grid_control, "Sim 1 – Control (single bit at center)")
+
+    # Sim 2 (Test): two bits — center + East neighbor (b1)
+    grid_test = np.zeros((N, N), dtype=np.int8)
+    grid_test[cq, cr] = 1
+    grid_test[(cq + dq1) % N, (cr + dr1) % N] = 1
+    results_test = run_simulation(grid_test, "Sim 2 – Test (two bits: center + East)")
 
     # Classify
-    if final_count == 0:
-        behavior_class = "DECAY"
-    elif glider_velocity_hex is not None and glider_velocity_hex != (0, 0):
-        behavior_class = "GLIDER"
-    elif is_bit_conserving and final_count == initial_count:
-        behavior_class = "STABLE"
-    elif max(bit_counts) > 5 * initial_count:
-        behavior_class = "CHAOTIC"
-    else:
-        behavior_class = "DECAY"
+    control_behavior = classify_control(
+        results_control["positions_history"], results_control["bit_counts"]
+    )
+    test_behavior = classify_test(
+        results_test["positions_history"], results_test["bit_counts"]
+    )
 
-    print()
-    print(f"is_bit_conserving:   {is_bit_conserving}")
-    print(f"behavior_class:      {behavior_class}")
-    print(f"final_bit_count:     {final_count}")
-    print(f"glider_velocity_hex: {glider_velocity_hex}")
-    print(f"glider_period:       {glider_period}")
+    is_bit_conserving = (
+        results_control["initial_count"] == results_control["final_count"] and
+        results_test["initial_count"] == results_test["final_count"]
+    )
+    is_nontrivial_motion = (
+        control_behavior == "STATIONARY" and
+        test_behavior in ("GLIDER", "OSCILLATOR")
+    )
 
-    # --- Write result.yaml ---
+    final_positions_test = results_test["positions_history"][-1]
+    final_pattern_test = str(final_positions_test)
+
+    print(f"\n=== Classification ===")
+    print(f"is_bit_conserving:    {is_bit_conserving}")
+    print(f"control_behavior:     {control_behavior}")
+    print(f"test_behavior:        {test_behavior}")
+    print(f"is_nontrivial_motion: {is_nontrivial_motion}")
+    print(f"final_pattern_test:   {final_pattern_test}")
+
+    print("\nTest positions history (first 8 steps):")
+    for t in range(min(9, len(results_test["positions_history"]))):
+        print(f"  t={t:3d}: {results_test['positions_history'][t]}")
+
     result = {
         "is_bit_conserving": bool(is_bit_conserving),
-        "behavior_class": behavior_class,
-        "final_bit_count": int(final_count),
-        "glider_velocity_hex": list(glider_velocity_hex) if glider_velocity_hex else None,
-        "glider_period": int(glider_period) if glider_period is not None else None,
+        "control_behavior": control_behavior,
+        "test_behavior": test_behavior,
+        "is_nontrivial_motion": bool(is_nontrivial_motion),
+        "final_pattern_test": final_pattern_test,
     }
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -179,7 +204,7 @@ def main() -> int:
 
     print(f"\nResult written to: {RESULT_YAML}")
 
-    return 0 if behavior_class == "GLIDER" else 1
+    return 0 if is_nontrivial_motion else 1
 
 
 if __name__ == "__main__":
