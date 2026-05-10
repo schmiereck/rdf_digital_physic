@@ -501,3 +501,65 @@ in every transition) and locally reversible for the isolated-particle case.
 
 **Metrics:** `{'effective_velocity': 0.5, 'final_position': 70.0, 'displacement': 50, 'steps': 100, 'is_stable': True}`
 
+
+---
+```yaml
+cached_tokens: 36382
+cost_usd: 0.06312
+hypothesis: 'composite: A rule can be constructed to make a two-cell particle (e.g.,
+  ''0110'') propagate stably with v=c/2.'
+input_tokens: 40234
+iter: 14
+metrics:
+  displacement: 50
+  effective_velocity: 0.5
+  final_position: 70.5
+  is_stable: true
+  steps: 100
+output_tokens: 1696
+status: ok
+```
+
+## iter_014: composite: A rule can be constructed to make a two-cell particle (e.g., '0110') propagate stably with v=c/2.
+
+**Analysis:** Phase 2 has been successfully initiated. We have demonstrated the core principles: existence of 2-bit/cell rules (iter_003), stable stationary oscillation (v=0, iter_004), and by-construction propagation at reduced speed (v=c/2, iter_005/iter_013). The milestone for Phase 2, creating a particle with v < c, has been met.
+
+However, analysis reveals a critical limitation of the current approach. The v=c/2 particle was based on a 2-step cycle using the only two available single-bit cell states ('01', '10'). A longer cycle (e.g., for v=c/3) would require a third distinct state with the same bit count, which is impossible for a single-cell excitation in a 2-bit/cell system.
+
+This implies that greater complexity, and a richer spectrum of velocities, must emerge from composite, multi-cell particles. Before we can study interactions (Phase 3), we must first prove that stable, composite particles can even exist and propagate under our rule constraints. This is the logical and necessary next step.
+
+**Task:** Modify the simulator in `src/simulate.py` (which should exist from previous work) to test a composite particle.
+
+1.  **Target Dynamics:** A two-cell particle, represented by the pattern `'01','10'` at adjacent positions `i` and `i+1`, should propagate at an effective velocity of v=c/2. This requires a two-step cycle:
+    a. **Step 1 (OSCILLATE):** The particle at `i, i+1` with state `'01','10'` flips its internal state to `'10','01'` while remaining at positions `i, i+1`.
+    b. **Step 2 (MOVE):** The particle at `i, i+1` with state `'10','01'` moves to `i+1, i+2` and resets its state back to `'01','10'`.
+
+2.  **Rule Construction:** Implement a local, reversible, and bit-conserving rule that produces these dynamics for an isolated particle. The rule should consist of specific mappings for the few non-zero neighborhoods required to create the dynamics, with all other neighborhood states mapping to themselves (identity).
+
+3.  **Simulation Setup:**
+    a. Initialize a lattice of size 100 with all cells set to `'00'`.
+    b. Set the initial condition by placing the particle at the start: cell 20 = '01', cell 21 = '10'.
+    c. Run the simulation for 100 steps.
+
+4.  **Analysis and Output:**
+    a. Track the "center of mass" of the '1' bits that constitute the particle.
+    b. Create `archive/iter_006/result.yaml` with the following keys:
+       - `behavior_class`: `COMPOSITE_GLIDER` if successful, otherwise `DECAY`, `CHAOTIC`, or `STATIONARY_OSCILLATOR`.
+       - `effective_velocity`: The calculated average velocity.
+       - `is_stable`: A boolean, `true` if the two-cell pattern remains contiguous and does not shed bits.
+       - `final_position`: The final center of mass of the particle.
+
+**Status:** ok
+
+**Experimenter view:** The composite two-cell particle ['01','10'] propagates stably at exactly v=c/2.
+The rule uses only 3 non-trivial neighborhood mappings across two alternating phases:
+OSCILLATE flips the internal state in-place, MOVE shifts the pair one cell right.
+The position trace is perfectly uniform (5 cells per 10 steps, no fluctuation).
+The rule is bit-conserving globally: each transition preserves total Hamming weight.
+The particle remains perfectly contiguous throughout all 101 states (0..100 inclusive).
+The final pattern at t=100 is ['01','10'] at (70,71), identical to the initial pattern
+at (20,21) just shifted 50 cells to the right — confirming the success criteria.
+
+
+**Metrics:** `{'effective_velocity': 0.5, 'final_position': 70.5, 'displacement': 50, 'steps': 100, 'is_stable': True}`
+
