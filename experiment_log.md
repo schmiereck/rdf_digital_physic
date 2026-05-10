@@ -1377,3 +1377,69 @@ and no NW bit is present to absorb the interaction.
 
 **Metrics:** `{'initial_bit_count': 2, 'final_bit_count': 1, 'net_displacement': 0.5, 'step_at_decay': 2}`
 
+
+---
+```yaml
+cached_tokens: 51687
+cost_usd: 0.07563
+hypothesis: 'symmetry: A 60-degree rotated arrowhead seed produces a stable glider
+  with a correspondingly rotated velocity vector.'
+input_tokens: 55769
+iter: 28
+metrics:
+  final_bit_count: 36
+  grid_size: 100
+  initial_bit_count: 3
+  is_bit_conserving: false
+  is_stable: false
+  steps: 100
+output_tokens: 1535
+status: experiment_failed
+```
+
+## iter_028: symmetry: A 60-degree rotated arrowhead seed produces a stable glider with a correspondingly rotated velocity vector.
+
+**Analysis:** The project is blocked on the central goal of Phase 3: staging a 2D collision. The last two iterations (iter_026, iter_027) failed to find a stationary target for our arrowhead glider. A single bit was not stationary, and a simple two-bit pattern decayed. This means blindly searching for a stationary pattern is inefficient.
+
+A more fundamental and promising approach is to test the symmetries of our existing rule. The arrowhead rule was constructed to produce Eastward motion. If the rule truly respects the hexagonal lattice symmetry, then a rotated version of the arrowhead seed pattern should produce a glider moving in a rotated direction. This would immediately give us the components for a head-on collision, directly unblocking our research.
+
+Therefore, the minimal validating step is to test the rule's response to a rotated seed. This experiment will either confirm the rule's symmetry and provide a collision component, or reveal a fundamental lack of symmetry in our hand-crafted rule, both of which are highly valuable results.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the 5-pair permutation rule from iter_024. No code changes are required. The only change is the initial condition.
+
+1. **Simulation Setup:**
+   - Grid size: 100x100 with periodic boundaries.
+   - Steps: 100.
+
+2. **Initial Condition (Rotated Arrowhead):**
+   - Initialize the grid with all cells '0'.
+   - Create a 3-bit arrowhead pattern rotated 60 degrees counter-clockwise, pointing North-East.
+   - For a central cell `c` at `(50,50)`, the three '1's should be at:
+     - `(50, 50)`
+     - `(49, 51)` (South-West neighbor)
+     - `(50, 51)` (South neighbor)
+
+3. **Analysis:**
+   - Track the total bit count and the coordinates of the '1's at each step.
+   - Calculate the average velocity vector of the pattern's center of mass.
+
+4. **Output:**
+   - Create `archive/iter_028/result.yaml` with the following keys:
+     - `is_bit_conserving`: `true` if the bit count remains 3.
+     - `is_stable`: `true` if the 3-bit pattern remains intact.
+     - `behavior_class`: `GLIDER`, `STATIONARY`, `DECAY`, or `CHAOTIC`.
+     - `glider_velocity_hex`: The final measured velocity `(dq, dr)` in axial coordinates.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The rotated arrowhead (bits at c, c+NW, c+NE) does not produce a stable glider.
+Instead the pattern immediately begins emitting new bits along the r=51 line
+(at spacing 3, moving East at ~1 cell/step). A stationary core persists at
+{(49,51),(50,50),(50,51)} throughout all 100 steps, while the emitted trail
+wraps around the periodic grid. The rule lacks rotational symmetry — its 5
+transition pairs were designed for the specific neighborhoods encountered by
+the East-pointing arrowhead and do not support any other orientation.
+
+
+**Metrics:** `{'initial_bit_count': 3, 'final_bit_count': 36, 'steps': 100, 'grid_size': 100, 'is_bit_conserving': False, 'is_stable': False}`
+
