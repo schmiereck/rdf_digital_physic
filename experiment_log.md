@@ -1728,3 +1728,67 @@ outset, or a different multi-bit seed.
 
 **Metrics:** `{'initial_bit_count': 1, 'final_bit_count': 1, 'non_identity_rule_mappings': 9, 'rule_is_bit_conserving': True, 'rule_is_involution': False, 'steps_run': 100, 'grid_size': 100}`
 
+
+---
+```yaml
+cached_tokens: 57670
+cost_usd: 0.08262
+hypothesis: 'search: There exists at least one reversible, bit-conserving state-pair
+  (A, B) whose 6-fold rotational closure is conflict-free.'
+input_tokens: 61986
+iter: 33
+metrics:
+  closure_size: 12
+  hamming_weight_searched: 2
+  kernel_A: 3
+  kernel_B: 6
+  pairs_checked: 2
+  total_pairs_possible: 210
+output_tokens: 1624
+status: ok
+```
+
+## iter_033: search: There exists at least one reversible, bit-conserving state-pair (A, B) whose 6-fold rotational closure is conflict-free.
+
+**Analysis:** The project is critically blocked on the central goal of Phase 3: staging a 2D collision. The last five iterations have definitively shown that our current methods for rule creation are flawed.
+1.  **Hand-crafted rules are brittle and non-symmetric.** The arrowhead glider rule (iter_024) works for one direction only; rotated seeds lead to chaotic, non-bit-conserving decay (iter_028).
+2.  **Naive programmatic symmetrization fails.** Applying 6-fold symmetry to the arrowhead kernel created a conflicting, chaotic rule (iter_029). Symmetrizing a simpler generator pair resulted in a rule that was inert for simple seeds (iter_032).
+3.  **The problem is not the simulator, but the rules themselves.** We have a fundamental inability to generate a rule that is both fully symmetric and dynamically interesting.
+
+The core issue lies in the "generator" or "kernel" used to create the symmetric rule. The generator from iter_032 had internal rotational symmetries, causing its rotational closure to self-intersect and produce a flawed rule. To unblock the entire project, we must first find a valid rule kernel: a state-transition pair that can be rotated 6-fold without creating any mapping conflicts. This is a search problem, not a simulation problem, and it is the absolute minimal step required before any further progress in 2D is possible.
+
+**Task:** Create a new Python script `src/find_symmetric_kernel.py`. This script will not run a simulation, but will perform a combinatorial search.
+
+1.  **Implement Hexagonal Rotation:** Create a helper function `rotate_neighborhood(state: int, steps: int)` that takes a 7-bit integer state and rotates the 6 neighbor bits clockwise.
+2.  **Define State Space:** Generate all 21 unique 7-bit states with a Hamming weight of 2 (W=2).
+3.  **Search Loop:**
+    a. Iterate through all possible unique pairs `(A, B)` of these W=2 states.
+    b. For each pair, generate its "rotational closure": a set containing the 12 states `{rotate(A, i), rotate(B, i)}` for `i` from 0 to 5.
+    c. **Check for Conflicts:** A conflict exists if the size of the generated set is less than 12. This indicates that some rotations of A and B overlap, which would create an invalid rule.
+    d. If a conflict-free pair is found (set size is 12), the search is successful.
+4.  **Output:**
+    a. Create `archive/iter_033/result.yaml`.
+    b. The YAML file must contain:
+       - `valid_kernel_found`: `true` or `false`.
+       - `hamming_weight_searched`: The integer `2`.
+       - `pairs_checked`: The total number of pairs of W=2 states that were checked.
+       - `kernel_A`: The integer representation of the first valid 'A' state found (or `null`).
+       - `kernel_B`: The integer representation of the first valid 'B' state found (or `null`).
+       - `kernel_A_binary`: The 7-bit string representation of 'A'.
+       - `kernel_B_binary`: The 7-bit string representation of 'B'.
+
+**Status:** ok
+
+**Experimenter view:** The hypothesis is confirmed: conflict-free reversible state-pairs with W=2
+exist. The very first valid pair found is (A=3, B=6). The key insight is that
+A (0000011) has center=1 and one neighbor set, while B (0000110) has center=0
+and two adjacent neighbors set. Because A's rotational orbit consists entirely
+of center=1 states and B's orbit consists of center=0 states, the 12 elements
+of their joint closure are automatically disjoint — no conflict is possible.
+This suggests a simple structural rule for constructing conflict-free kernels:
+choose one state from each "center parity class" whose orbits are each of
+full size 6.
+
+
+**Metrics:** `{'pairs_checked': 2, 'total_pairs_possible': 210, 'closure_size': 12, 'hamming_weight_searched': 2, 'kernel_A': 3, 'kernel_B': 6}`
+
