@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-iter_020: symmetric-update
-Symmetric in-place swap rule on 2D hex grid.
-Rule: for each cell c=(q,r) in order, if East neighbor b1=(q+1,r)==1,
-swap c with SE neighbor b2=(q+1,r-1).
-c < b2 always (q < q+1), so all cells are eligible initiators.
+iter_021: composite-rule
+Composite two-condition swap rule on 2D hex grid.
+For each cell c=(q,r):
+  Condition 1: if East neighbor b1=(q+1,r)==1, swap c with SE neighbor b2=(q+1,r-1).
+  Condition 2: else if SE neighbor b2=(q+1,r-1)==1, swap c with East neighbor b1=(q+1,r).
 Sequential in-place; each swap sees the current modified state.
 """
 
@@ -17,8 +17,8 @@ N = 50
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_020" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_020" / "result.yaml"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_021" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_021" / "result.yaml"
 
 # Axial-coordinate neighbor directions clockwise (b1..b6)
 HEX_DIRS = [
@@ -32,19 +32,25 @@ HEX_DIRS = [
 
 
 def step(grid: np.ndarray) -> None:
-    """Sequential in-place symmetric swap.
+    """Sequential in-place composite swap.
 
-    Iterates all cells c=(q,r) in q-major order.
-    If grid[(q+1)%N, r] == 1: swap grid[q,r] with grid[(q+1)%N, (r-1)%N].
-    c is always less than b2=(q+1,r-1) in lexicographic order (q < q+1).
+    For each cell c=(q,r):
+      Condition 1: if b1=(q+1,r)==1, swap c with b2=(q+1,r-1).
+      Condition 2: else if b2=(q+1,r-1)==1, swap c with b1=(q+1,r).
     """
     n = grid.shape[0]
     for q in range(n):
         for r in range(n):
             b1_q = (q + 1) % n
+            b1_r = r
+            b2_q = (q + 1) % n
             b2_r = (r - 1) % n
-            if grid[b1_q, r] == 1:
-                grid[q, r], grid[b1_q, b2_r] = grid[b1_q, b2_r], grid[q, r]
+            if grid[b1_q, b1_r] == 1:
+                # Condition 1: b1 is 1, swap c with b2
+                grid[q, r], grid[b2_q, b2_r] = grid[b2_q, b2_r], grid[q, r]
+            elif grid[b2_q, b2_r] == 1:
+                # Condition 2: b2 is 1, swap c with b1
+                grid[q, r], grid[b1_q, b1_r] = grid[b1_q, b1_r], grid[q, r]
 
 
 def find_ones(grid: np.ndarray) -> list:
@@ -68,11 +74,11 @@ def classify_control(positions_history: list, bit_counts: list) -> str:
 
 
 def classify_test(positions_history: list, bit_counts: list) -> str:
-    """Returns 'GLIDER', 'OSCILLATOR', 'STATIONARY', or 'DECAY'."""
+    """Returns 'GLIDER', 'OSCILLATOR', 'STATIONARY', or 'CHAOTIC'."""
     initial_count = bit_counts[0]
 
     if any(c != initial_count for c in bit_counts):
-        return "DECAY"
+        return "CHAOTIC"
 
     initial_positions = positions_history[0]
     if all(ph == initial_positions for ph in positions_history):
@@ -99,6 +105,22 @@ def classify_test(positions_history: list, bit_counts: list) -> str:
             return "GLIDER"
 
     return "OSCILLATOR"
+
+
+def compute_glider_velocity(positions_history: list) -> tuple:
+    """Compute average dq and dr per step over the full simulation."""
+    if len(positions_history) < 2:
+        return (0.0, 0.0)
+    dqs = []
+    drs = []
+    for t in range(1, len(positions_history)):
+        ct = centroid(positions_history[t])
+        ct_prev = centroid(positions_history[t - 1])
+        dqs.append(ct[0] - ct_prev[0])
+        drs.append(ct[1] - ct_prev[1])
+    avg_dq = sum(dqs) / len(dqs)
+    avg_dr = sum(drs) / len(drs)
+    return (round(avg_dq, 6), round(avg_dr, 6))
 
 
 def run_simulation(grid_init: np.ndarray, label: str, verbose: bool = True) -> dict:
@@ -171,18 +193,20 @@ def main() -> int:
     )
     is_nontrivial_motion = (
         control_behavior == "STATIONARY" and
-        test_behavior in ("GLIDER", "OSCILLATOR")
+        test_behavior == "GLIDER"
     )
 
-    final_positions_test = results_test["positions_history"][-1]
-    final_pattern_test = str(final_positions_test)
+    glider_velocity = compute_glider_velocity(results_test["positions_history"])
+
+    final_bit_count_test = results_test["final_count"]
 
     print(f"\n=== Classification ===")
-    print(f"is_bit_conserving:    {is_bit_conserving}")
-    print(f"control_behavior:     {control_behavior}")
-    print(f"test_behavior:        {test_behavior}")
-    print(f"is_nontrivial_motion: {is_nontrivial_motion}")
-    print(f"final_pattern_test:   {final_pattern_test}")
+    print(f"is_bit_conserving:     {is_bit_conserving}")
+    print(f"control_behavior:      {control_behavior}")
+    print(f"test_behavior:         {test_behavior}")
+    print(f"is_nontrivial_motion:  {is_nontrivial_motion}")
+    print(f"final_bit_count_test:  {final_bit_count_test}")
+    print(f"glider_velocity_hex:   {glider_velocity}")
 
     print("\nTest positions history (first 8 steps):")
     for t in range(min(9, len(results_test["positions_history"]))):
@@ -193,7 +217,8 @@ def main() -> int:
         "control_behavior": control_behavior,
         "test_behavior": test_behavior,
         "is_nontrivial_motion": bool(is_nontrivial_motion),
-        "final_pattern_test": final_pattern_test,
+        "final_bit_count_test": final_bit_count_test,
+        "glider_velocity_hex": list(glider_velocity),
     }
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
