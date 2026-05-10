@@ -1314,3 +1314,66 @@ use a glider with different velocity on a different axis.
 
 **Metrics:** `{'is_bit_conserving': True, 'collision_step': None, 'min_inter_cluster_distance': 49, 'system_period': 100, 'total_steps': 150, 'grid_size': 100}`
 
+
+---
+```yaml
+cached_tokens: 50620
+cost_usd: 0.0739
+hypothesis: 'probe-stationary-target: A simple two-bit pattern forms a stationary
+  fixed point or oscillator under the arrowhead-glider rule.'
+input_tokens: 54742
+iter: 27
+metrics:
+  final_bit_count: 1
+  initial_bit_count: 2
+  net_displacement: 0.5
+  step_at_decay: 2
+output_tokens: 1446
+status: experiment_failed
+```
+
+## iter_027: probe-stationary-target: A simple two-bit pattern forms a stationary fixed point or oscillator under the arrowhead-glider rule.
+
+**Analysis:** The previous attempt to stage a collision (iter_026) failed because the intended stationary target—a single bit—was not stationary under the arrowhead-glider rule. It propagated at the same velocity as the glider, preventing any interaction. This is a critical negative result, showing that the rule's dynamics are not trivial.
+
+The project is now blocked on the primary goal of Phase 3: observing a 2D collision. To unblock this, we must first find a valid target for our existing arrowhead glider. There are two paths: create a new glider with a different velocity, or find a pattern that is stationary under the current rule. The latter is the more direct and minimal validating step, as it allows us to retry the intended collision experiment with only one change: a valid target.
+
+Therefore, the immediate priority is to probe the existing rule for simple, stable, stationary patterns. The simplest possible candidate is a two-bit pattern. This experiment will determine if our rule-space contains the necessary ingredients (both moving and stationary objects) for complex physics.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the hand-crafted 5-pair permutation rule from iter_024. No code changes are required.
+
+1. **Simulation Setup:**
+   - Grid size: 100x100 with periodic boundaries.
+   - Steps: 100.
+
+2. **Initial Condition:**
+   - Initialize the grid with all cells '0'.
+   - Place a two-bit pattern near the center by setting two adjacent cells to '1': `(50,50)` and `(51,50)`.
+
+3. **Analysis:**
+   - At each step, track the total number of '1's and their coordinates.
+   - Calculate the net displacement of the pattern's center of mass over the 100 steps.
+
+4. **Output:**
+   - Create `archive/iter_027/result.yaml` with the following keys:
+     - `is_bit_conserving`: `true` if the bit count remains 2.
+     - `behavior_class`: `STATIONARY_FIXED_POINT`, `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, or `CHAOTIC`.
+     - `net_displacement`: The total distance the center of mass moved from its initial position.
+     - `final_pattern_coords`: The coordinates of the '1's at the final step.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The two-bit seed (50,50)+(51,50) — center + East neighbor — is NOT a
+stationary target. In the first step the bits spread to (50,50)+(52,50),
+then at step 2 the pattern collapses to a single bit at (53,50) and from
+that point on the lone '1' travels East at exactly 1 cell/step (a trivial
+single-bit glider). The net centroid displacement is only 0.5 because the
+final single bit wraps back near the starting x-coordinate after 100 steps
+on the 100-wide grid. This arrangement is therefore a DECAY event: the CA
+rule cannot preserve both bits when they are placed as an East-adjacent pair.
+The arrowhead-glider rule annihilates one bit when the East neighbor is '1'
+and no NW bit is present to absorb the interaction.
+
+
+**Metrics:** `{'initial_bit_count': 2, 'final_bit_count': 1, 'net_displacement': 0.5, 'step_at_decay': 2}`
+
