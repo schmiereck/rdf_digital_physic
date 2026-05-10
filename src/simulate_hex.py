@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-iter_021: composite-rule
-Composite two-condition swap rule on 2D hex grid.
+iter_023: asymmetric-rule
+Asymmetric swap rule on 2D hex grid.
 For each cell c=(q,r):
-  Condition 1: if East neighbor b1=(q+1,r)==1, swap c with SE neighbor b2=(q+1,r-1).
-  Condition 2: else if SE neighbor b2=(q+1,r-1)==1, swap c with East neighbor b1=(q+1,r).
+  If East neighbor b1=(q+1,r)==1, swap c with NW neighbor b6=(q-1,r+1).
+  Otherwise, no-op.
 Sequential in-place; each swap sees the current modified state.
 """
 
@@ -17,8 +17,8 @@ N = 50
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_021" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_021" / "result.yaml"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_023" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_023" / "result.yaml"
 
 # Axial-coordinate neighbor directions clockwise (b1..b6)
 HEX_DIRS = [
@@ -32,25 +32,21 @@ HEX_DIRS = [
 
 
 def step(grid: np.ndarray) -> None:
-    """Sequential in-place composite swap.
+    """Sequential in-place asymmetric swap.
 
     For each cell c=(q,r):
-      Condition 1: if b1=(q+1,r)==1, swap c with b2=(q+1,r-1).
-      Condition 2: else if b2=(q+1,r-1)==1, swap c with b1=(q+1,r).
+      If b1=(q+1,r)==1, swap c with NW=(q-1,r+1).
+      Otherwise, no-op.
     """
     n = grid.shape[0]
     for q in range(n):
         for r in range(n):
             b1_q = (q + 1) % n
             b1_r = r
-            b2_q = (q + 1) % n
-            b2_r = (r - 1) % n
+            nw_q = (q - 1) % n  # NW direction: (-1, +1)
+            nw_r = (r + 1) % n
             if grid[b1_q, b1_r] == 1:
-                # Condition 1: b1 is 1, swap c with b2
-                grid[q, r], grid[b2_q, b2_r] = grid[b2_q, b2_r], grid[q, r]
-            elif grid[b2_q, b2_r] == 1:
-                # Condition 2: b2 is 1, swap c with b1
-                grid[q, r], grid[b1_q, b1_r] = grid[b1_q, b1_r], grid[q, r]
+                grid[q, r], grid[nw_q, nw_r] = grid[nw_q, nw_r], grid[q, r]
 
 
 def find_ones(grid: np.ndarray) -> list:
