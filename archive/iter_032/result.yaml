@@ -1,0 +1,80 @@
+artifacts:
+- src/simulate_symmetric_hex.py
+- archive/iter_032/result.yaml
+- archive/iter_032/results/grid_t0000.json
+- archive/iter_032/results/grid_t0100.json
+experimenter_view: 'The experiment exposes a fundamental contradiction in the hypothesis:
+  a
+
+  truly bit-conserving rule cannot produce final_bit_count > 1 starting from
+
+  a 1-bit seed, since conservation is a global invariant.
+
+
+  The rotation conflict is the first issue: A=''0100100'' has period 3 under
+
+  the CW neighbor rotation, so iterations rot=3,4,5 silently overwrite the
+
+  rot=0,1,2 mappings for A. The result is 9 non-identity mappings (not 12),
+
+  and the rule is NOT an involution (rule[rule[B]] ≠ B for the original B
+
+  rotations from rot=0,1,2).
+
+
+  The seed cell at (50,50) with no neighbors sits in state 64, which maps to
+
+  itself (identity). All 6 neighbors of the seed see single-neighbor states
+
+  (1,2,4,8,16,32), all of which are also identity. No activation ever occurs.
+
+
+  Supplementary tests reveal: a 2-bit E-W gap seed (q=20,q=22 same row)
+
+  triggers gap-filling (2→3→1) but collapses to a 1-bit fixed point. The
+
+  canonical 3-bit arrowhead is a still life under this rule (all 3 cells land
+
+  in identity states 97,88,70). The rule does exhibit non-trivial dynamics
+
+  for multi-bit seeds, but those seeds cannot be reached from 1 bit.
+
+
+  To disprove the hypothesis clearly: with any bit-conserving rule, a 1-bit
+
+  initial state is either a fixed point or a trivial 1-bit trajectory. The
+
+  success criteria (final_bit_count > 1) require non-conservation from the
+
+  outset, or a different multi-bit seed.
+
+  '
+log_excerpt: "Generator rotations:\n  rot=0: 0100100(36) <-> 1000010(66)\n  rot=1:\
+  \ 0010010(18) <-> 1000001(65)\n  rot=2: 0001001(9) <-> 1100000(96)\n  rot=3: 0100100(36)\
+  \ <-> 1010000(80)   ← overwrites rot=0 mapping for A\n  rot=4: 0010010(18) <-> 1001000(72)\
+  \   ← overwrites rot=1 mapping for A\n  rot=5: 0001001(9) <-> 1000100(68)    ← overwrites\
+  \ rot=2 mapping for A\nNon-identity mappings: 9\nRule is involution: False\nRule\
+  \ is bit-conserving: True\nSeed neighborhood state: 64 -> rule output: 64\n  t=\
+  \  1  bits=1  positions=[(50, 50)]\n  t= 25  bits=1  positions=[(50, 50)]\n  t=100\
+  \  bits=1  positions=[(50, 50)]\nBehavior class: TRIVIAL_SHIFT\nFinal summary: 1-bit\
+  \ trivial fixed point\n"
+metrics:
+  final_bit_count: 1
+  grid_size: 100
+  initial_bit_count: 1
+  non_identity_rule_mappings: 9
+  rule_is_bit_conserving: true
+  rule_is_involution: false
+  steps_run: 100
+notes: 'The last-write-wins rotation loop causes A (period-3 under this rotation)
+
+  to have its mappings overwritten at rot=3,4,5, breaking involution.
+
+  The rule remains locally bit-conserving (all mappings preserve popcount),
+
+  which guarantees the global bit count is invariant throughout the simulation.
+
+  A seed with ≥2 bits would be needed to trigger any non-trivial dynamics.
+
+  '
+status: experiment_failed
