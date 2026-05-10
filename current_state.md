@@ -5,20 +5,20 @@ To demonstrate that complex physical phenomena can emerge from a minimal set of 
 
 ### Confirmed
 - **1D System:**
-  - Non-trivial, reversible, bit-conserving rules exist for 1D systems (iter_009, iter_011).
+  - Non-trivial, reversible, bit-conserving rules exist (iter_009, iter_011).
   - Stable gliders with v=c and v<c (mass) can be constructed (iter_010, iter_013, iter_014).
   - 1D glider rules can be classified by their interaction properties (ELASTIC, FUSION, CHAOTIC) (iter_018).
 - **2D Hex System:**
-  - A symmetric swap-based update model guarantees bit-conservation for local swaps (iter_020).
-  - This model, with a conditional rule, can create a stable, localized, period-2 stationary oscillator (iter_020).
+  - A hand-crafted, reversible, bit-conserving rule using the standard CA model can support a stable, non-trivial 3-bit glider moving through a static background (iter_024). This unblocks the study of 2D interactions.
+  - A symmetric swap-based update model guarantees bit-conservation for local swaps and can create stable, stationary oscillators (iter_020).
 
 ### Refuted
-- Simple, unconditional rules on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
-- The standard CA update model is unable to execute a simple bit-conserving conditional swap, leading to bit loss (iter_019).
-- Simple conditional swap rules, even with complex seeds or asymmetric logic, fail to produce motion and result in stationary oscillators or fixed points (iter_021, iter_022, iter_023).
+- Simple, unconditional rules (e.g., bit-rotation) on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
+- The standard CA update model cannot execute simple conditional swaps without violating bit-conservation (iter_019).
+- Simple conditional swap rules, even with complex seeds or asymmetric logic under a bit-conserving scheduler, fail to produce motion and result in stationary oscillators or fixed points (iter_021, iter_022, iter_023).
 
 ### Current Best Result
-A stable, stationary two-bit oscillator in 2D (iter_020).
+A stable, 3-bit "arrowhead" glider that propagates at v=(1,0) in a 2D hexagonal grid (iter_024).
 
 ### In Progress
-- **iter_024:** Attempting to construct a stable, moving 3-bit glider by returning to the standard CA model with a carefully hand-crafted, reversible permutation rule. This is a direct attempt to overcome the limitations of the simpler rules and particles that have failed to produce motion.
+- **iter_025:** Colliding the 3-bit arrowhead glider with a single stationary bit to observe the interaction dynamics.

@@ -1250,3 +1250,67 @@ The shape {(0,0),(0,1),(1,0)} is preserved at every unsplit step.
 
 **Metrics:** `{'final_bit_count': 3, 'glider_velocity_dq': 1.0, 'glider_velocity_dr': 0.0, 'steps_run': 50, 'grid_size': 50}`
 
+
+---
+```yaml
+cached_tokens: 49518
+cost_usd: 0.07307
+hypothesis: 'interaction: The arrowhead glider collides with a stationary bit, resulting
+  in non-trivial, bit-conserving scattering.'
+input_tokens: 53624
+iter: 26
+metrics:
+  collision_step: null
+  grid_size: 100
+  is_bit_conserving: true
+  min_inter_cluster_distance: 49
+  system_period: 100
+  total_steps: 150
+output_tokens: 1464
+status: experiment_failed
+```
+
+## iter_026: interaction: The arrowhead glider collides with a stationary bit, resulting in non-trivial, bit-conserving scattering.
+
+**Analysis:** The previous iteration (iter_024) was a major breakthrough, finally unblocking Phase 3. By returning to the standard CA model and using a more complex, hand-crafted rule, we successfully created a stable, non-trivial 3-bit "arrowhead" glider in the 2D hexagonal grid. This is the first time we have a localized particle moving through a static background, which was the primary obstacle.
+
+With a working glider, the research can now shift from *particle creation* to *particle interaction*, which is the central goal of Phase 3. The logical and highest-priority next step is to stage the simplest possible collision and observe the outcome. This will test whether the carefully constructed rule has any emergent, "physics-like" properties when faced with an unexpected input. The minimal validating step for this is to collide the glider with a single, stationary bit.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the hand-crafted 5-pair permutation rule from iter_024.
+
+1.  **Simulation Setup:**
+    - Use a larger grid, e.g., 100x100, with periodic boundary conditions to provide space for scattering.
+    - Run the simulation for 150 steps.
+
+2.  **Initial Condition:**
+    - Place the 3-bit arrowhead glider with its tip at `(q=20, r=50)`, pointing East (positive q direction). The three '1's should be at `(20,50)`, `(19,50)`, and `(19,51)`.
+    - Place a single stationary '1' bit at `(q=70, r=50)`, directly in the glider's path.
+
+3.  **Analysis and Data Collection:**
+    - At each step, record the total number of '1's on the grid.
+    - At each step, record the coordinates of all '1's. This data can be saved to `archive/iter_025/results/path_trace.json`.
+    - Characterize the final state of the system after 150 steps.
+
+4.  **Output:**
+    - Create `archive/iter_025/result.yaml` with the following keys:
+      - `collision_step`: The simulation step at which the glider first interacts with the stationary bit.
+      - `is_bit_conserving`: `true` if the total bit count remained 4 throughout.
+      - `outcome_class`: A string classification: `DEFLECTION`, `ABSORPTION`, `DESTRUCTION`, `PASS_THROUGH`, `CHAOTIC_GROWTH`.
+      - `final_state_summary`: A brief description of the final particle(s), their final positions, and their velocities.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The experimental premise failed: an isolated single '1' bit is not stationary under
+the iter_024 CA rule. State 64 (center=1, all neighbors=0) maps to state 4 (center=0,
+b4=1), while the East neighbor's state 4 maps to 64 (center=1). This makes any lone
+bit propagate East at 1 cell/step — the same velocity as the 3-bit arrowhead glider.
+As a result, both structures travel at identical velocity on the periodic 100x100 grid,
+maintaining a fixed ~49-cell separation with no interaction. The system is exactly
+periodic with T=100 steps (grid width / velocity). Bit count stayed 4 throughout.
+To test actual collisions, a future iteration must use a truly stationary target (a
+bit pattern whose neighborhood dynamics produce a fixed point under this rule), or
+use a glider with different velocity on a different axis.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'collision_step': None, 'min_inter_cluster_distance': 49, 'system_period': 100, 'total_steps': 150, 'grid_size': 100}`
+
