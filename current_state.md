@@ -1,22 +1,21 @@
-Phase: Phase 3: Die 2D-Hex-Kollision (Streuung)
+Phase: Phase 2 – Focused Exploration
 
-## 1. Goal
-Demonstrate that complex physical phenomena can emerge from minimal, local, reversible rules on a discrete, symmetric lattice.
+### Goal
+To demonstrate that complex physical phenomena can emerge from a minimal set of local, reversible rules on a discrete lattice.
 
-## 2. Confirmed Findings
-- **Milestone Reached (Phase 1):** A 1D lattice supports bit-conserving rules that allow for stable particle propagation at v=c (iter_009, iter_010).
-- **Milestone Reached (Phase 2):** Increasing bit-depth to 2 bits/cell allows for internal oscillations (v=0) and the emergence of "massive" particles with effective velocities v < c (iter_011, iter_012, iter_013, iter_014).
-- **Rule Existence (2D-Hex):** Non-trivial, reversible, bit-conserving rules exist for a 2D hexagonal, 7-cell neighborhood (iter_015).
-- **Trivial Glider (2D-Hex):** A simple neighborhood bit-rotation rule produces stable v=c gliders, but this dynamic is equivalent to a trivial global grid shift (iter_016).
+### Confirmed
+- Non-trivial, reversible, bit-conserving rules exist for 1D, 1-bit/cell systems (iter_001).
+- 22 of 33 1-bit/cell rules produce stable v=c gliders from a single-bit seed (iter_002).
+- Non-trivial rules exist for 1D, 2-bit/cell systems, allowing for internal states (iter_003).
+- A 2-bit/cell rule can produce a stable, stationary oscillator (v=0) (iter_004).
+- A 2-bit/cell rule can produce a stable, single-cell glider with v < c (v=c/2) (iter_005).
+- A 2-bit/cell rule can support a stable, composite (two-cell) glider with v < c (v=c/2) (iter_006).
 
-## 3. Current Best Result
-- **2D Hex Glider:** v=(dq=0, dr=-1), but is a non-local global shift (iter_016).
+### Refuted
+- (None)
 
-## 4. In Progress
-- **iter_017:** Testing if a local center-neighbor bit-swap rule produces a stable, stationary oscillator.
+### Current Best Result
+A stable, two-cell composite particle propagating at v=c/2, demonstrating that particles with internal structure and reduced velocity are possible (iter_006).
 
-## 5. Open Questions
-- Can a local bit-swap rule create a stable, stationary oscillator?
-- How can we construct a rule for a non-trivial (localized) glider in 2D?
-- How do localized 2D patterns interact?
-- What initial patterns lead to complex behavior under simple local rules?
+### In Progress
+- **iter_007:** Characterizing the simplest interaction dynamics of the 22 known v=c glider rules by testing their response to a two-bit initial condition.
