@@ -314,3 +314,64 @@ single-bit initial condition under these rules.
 
 **Metrics:** `{'rules_tested': 33, 'gliders_found': 22, 'stable_found': 11, 'periodic_found': 0, 'decay_found': 0, 'chaotic_found': 0}`
 
+
+---
+```yaml
+cached_tokens: 33207
+cost_usd: 0.05849
+hypothesis: 'existence-2bit: A non-trivial, reversible, bit-conserving rule exists
+  for a 1D, 3-neighborhood, 2-bit/cell lattice.'
+input_tokens: 36700
+iter: 11
+metrics:
+  W0: 1
+  W1: 6
+  W2: 15
+  W3: 20
+  W4: 15
+  W5: 6
+  W6: 1
+  hamming_groups_sum: 64
+  rule_found: 1
+  state_space_size: 64
+output_tokens: 1639
+status: ok
+```
+
+## iter_011: existence-2bit: A non-trivial, reversible, bit-conserving rule exists for a 1D, 3-neighborhood, 2-bit/cell lattice.
+
+**Analysis:** Phase 1 has been successfully completed. We have confirmed the existence of 33 non-trivial, reversible, bit-conserving rules for a 1D, 3-bit system (iter_001). We then demonstrated that 22 of these rules support simple propagation (gliders with v=c) from a minimal initial condition (iter_002).
+
+According to the master plan, we now transition to **Phase 2: Der "Zappel"-Detektor**. The goal is to introduce internal states to a particle, which could allow for emergent mass (i.e., effective velocities v < c). The minimal way to introduce an internal state is to increase the bit-depth per cell from 1 to 2. This dramatically expands the state space from 2^3=8 to 4^3=64 neighborhood configurations.
+
+Before we can search for complex dynamics like "Zappeln", we must first repeat the foundational check from Phase 1 in this new, larger state space: do any non-trivial, reversible, bit-conserving rules even exist for a 2-bit-per-cell system? This is the minimal validating step to enter Phase 2. We don't need to find all rules; we only need to prove the existence of at least one.
+
+**Task:** Create a Python script `archive/iter_003/code/generate_rules_2bit.py`.
+
+1.  **Define State Space**: A cell can be in one of 4 states: '00', '01', '10', '11'. A neighborhood is a tuple of three cell states, so there are 4^3 = 64 neighborhood states.
+2.  **Calculate Hamming Weights**: The Hamming weight of a cell state is the number of '1's (e.g., hw('10') = 1, hw('11') = 2). The total weight of a neighborhood is the sum of the weights of its three cells.
+3.  **Group States**: Group all 64 neighborhood states by their total Hamming weight (which can range from 0 to 6).
+4.  **Construct a Test Rule**: Create a specific rule with the following logic:
+    a. Define a mapping for a stationary particle oscillation: `('00', '01', '00')` maps to `('00', '10', '00')`.
+    b. To ensure reversibility, its inverse must also exist: `('00', '10', '00')` maps to `('00', '01', '00')`.
+    c. Note that both these neighborhoods have a total Hamming weight of 1, so this is a valid bit-conserving permutation within that group.
+    d. For all other 62 neighborhood states, the rule should be the identity mapping (`state -> state`).
+5.  **Validation**: Verify that this constructed rule is non-trivial (i.e., it is not the global identity rule).
+6.  **Output**: Write a summary to `archive/iter_003/result.yaml` with the following keys:
+    - `rule_found`: boolean (True if the constructed rule is valid and non-trivial).
+    - `state_space_size`: 64
+    - `hamming_group_sizes`: A dictionary mapping each weight (e.g., "W0", "W1") to the number of states in that group.
+
+**Status:** ok
+
+**Experimenter view:** The 2-bit/cell 1D lattice has 4^3 = 64 neighborhood states. Grouping by total
+Hamming weight yields a binomial distribution (W0=1, W1=6, W2=15, W3=20, W4=15,
+W5=6, W6=1). A minimal non-trivial rule was constructed by swapping two W1
+neighborhoods: ('00','01','00') <-> ('00','10','00'). Both inputs and outputs
+share the same total weight (1), satisfying bit conservation. The rule is a
+bijection (reversible). All 62 remaining neighborhoods map to themselves.
+The hypothesis is confirmed: a non-trivial, reversible, bit-conserving rule exists.
+
+
+**Metrics:** `{'state_space_size': 64, 'hamming_groups_sum': 64, 'rule_found': 1, 'W0': 1, 'W1': 6, 'W2': 15, 'W3': 20, 'W4': 15, 'W5': 6, 'W6': 1}`
+
