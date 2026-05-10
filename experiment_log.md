@@ -1049,3 +1049,70 @@ The control single-bit remains completely stationary as expected.
 
 **Metrics:** `{'is_bit_conserving': True, 'is_nontrivial_motion': False, 'final_bit_count_test': 2, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0, 'oscillator_period': 2}`
 
+
+---
+```yaml
+cached_tokens: 45840
+cost_usd: 0.07044
+hypothesis: 'asymmetric-seed: A three-bit ''L-shaped'' seed breaks the symmetry of
+  the composite swap rule and produces a stable 2D glider.'
+input_tokens: 49947
+iter: 22
+metrics:
+  final_bit_count_test: 3
+  glider_velocity_dq: 0.0
+  glider_velocity_dr: 0.0
+  is_bit_conserving: true
+output_tokens: 1520
+status: experiment_failed
+```
+
+## iter_022: asymmetric-seed: A three-bit 'L-shaped' seed breaks the symmetry of the composite swap rule and produces a stable 2D glider.
+
+**Analysis:** The previous iteration (iter_021) was a crucial negative result. It refuted the hypothesis that a more complex, symmetric rule would produce motion from a symmetric two-bit seed. The outcome was another stationary oscillator. This, combined with the failures in iter_017 and iter_019, strongly suggests that the core problem is a lack of asymmetry. We have a working mechanism (symmetric swaps, iter_020) but we are feeding it rules and initial conditions that are too symmetric to produce directed motion.
+
+The research is currently blocked on the primary goal of Phase 3: creating a non-trivial 2D glider. We have tried modifying the update model (success) and the rule (failure). The most logical and minimal next step is to modify the initial condition. By starting with an asymmetric seed pattern, we can test whether the existing rule can produce motion when its initial symmetry is broken. This moves from constructing a perfect "particle" to seeing if a "perturbation" can propagate.
+
+**Task:** Use the existing script `src/simulate_hex.py` with the symmetric swap update model and the composite conditional rule from iter_021. No changes to the simulation logic are needed.
+
+The ONLY change is the initial condition for the "test" simulation.
+
+1.  **Test Simulation Initial Condition:**
+    - On a 50x50 grid, initialize three adjacent cells with '1's in an "L" formation. For a reference center cell `c = (q, r)`, set the following cells to '1':
+      - `(q, r)`
+      - `(q+1, r)` (its East neighbor, b1)
+      - `(q+1, r-1)` (its South-East neighbor, b2)
+    - All other cells should be '0'.
+
+2.  **Control Simulation:**
+    - Run the same control as before: a single '1' at the grid center.
+
+3.  **Execution:**
+    - Run both simulations for 100 steps.
+
+4.  **Outputs:**
+    - Create `archive/iter_022/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if bit counts are maintained.
+      - `control_behavior`: `STATIONARY` or `MOVED`.
+      - `test_behavior`: `GLIDER`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+      - `is_nontrivial_motion`: `true` if control is `STATIONARY` and test is `GLIDER`.
+      - `final_bit_count_test`: The final number of '1's in the test simulation.
+      - `glider_velocity_hex`: A tuple `(avg_dq_per_step, avg_dr_per_step)` for the test simulation's center of mass.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The L-shaped 3-bit seed {c=(25,25), b1=(26,25), b2=(26,24)} is an exact
+fixed point of the composite swap rule. When the rule processes cell c, it
+sees b1=1 and fires Condition 1 (swap c with b2). But both c=1 and b2=1,
+so the swap is a no-op. Cells b1 and b2 each see their own b1/b2 neighbors
+as 0, so they are also unchanged. The structure is perfectly self-locking:
+the very cells that trigger the rule are the same ones the rule tries to
+swap, and since all three are 1, no state change ever occurs.
+Bit conservation holds (3 bits throughout). Control is STATIONARY as
+expected. The hypothesis that asymmetric seeding would break symmetry and
+produce a glider is falsified — this specific L-arrangement is instead a
+stable fixed point.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'final_bit_count_test': 3, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0}`
+
