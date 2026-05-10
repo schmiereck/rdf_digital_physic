@@ -563,3 +563,60 @@ at (20,21) just shifted 50 cells to the right — confirming the success criteri
 
 **Metrics:** `{'effective_velocity': 0.5, 'final_position': 70.5, 'displacement': 50, 'steps': 100, 'is_stable': True}`
 
+
+---
+```yaml
+cached_tokens: 37640
+cost_usd: 0.06373
+hypothesis: 'existence-2D-hex: A non-trivial, reversible, bit-conserving rule exists
+  for a 2D hexagonal, 7-cell neighborhood.'
+input_tokens: 41451
+iter: 15
+metrics:
+  W0: 1
+  W1: 7
+  W2: 21
+  W3: 35
+  W4: 35
+  W5: 21
+  W6: 7
+  W7: 1
+  hamming_group_sizes_sum: 128
+  state_space_size: 128
+output_tokens: 1663
+status: ok
+```
+
+## iter_015: existence-2D-hex: A non-trivial, reversible, bit-conserving rule exists for a 2D hexagonal, 7-cell neighborhood.
+
+**Analysis:** The previous iteration (iter_014) successfully confirmed that a stable, composite (two-cell) particle can propagate at v=c/2. This result, combined with the earlier creation of a v=c/2 single-cell particle (iter_013), fully achieves the goal of Phase 2: "Erzeugung von Teilchen mit effektiven Geschwindigkeiten v < c". We have successfully demonstrated that internal complexity (via 2 bits/cell and multi-cell structures) can lead to emergent mass, fulfilling the milestone.
+
+With the principles of particle construction validated in 1D, the master plan dictates a move to Phase 3: "Die 2D-Hex-Kollision". The primary goal here is to study interactions and scattering, which are trivial in 1D but rich in 2D. Before we can simulate any dynamics like collisions, we must first establish the formal groundwork for the new topology. The minimal validating step is to verify that our core principles—reversibility and bit-conservation—can be applied to a 2D hexagonal lattice. We need to confirm that non-trivial rules can exist in this new, larger state space.
+
+**Task:** Create a Python script `src/generate_rules_hex.py` to analyze the rule space of a 2D hexagonal lattice with 1 bit per cell.
+
+1.  **Define State Space**: A neighborhood consists of a central cell and its 6 neighbors, for a total of 7 cells. The state space contains 2^7 = 128 unique neighborhood configurations (represented as 7-bit strings).
+2.  **Group by Hamming Weight**: Iterate through all 128 states and group them by their Hamming weight (number of '1's).
+3.  **Construct a Test Rule**: To prove existence without enumerating all possibilities, construct a single, simple, non-trivial rule:
+    a. Choose two distinct neighborhood states from the same Hamming weight group (e.g., from the W=1 group, which contains 7 states like '1000000', '0100000', etc.).
+    b. Define a rule that swaps these two states.
+    c. For all other 126 states, the rule is the identity mapping (the state maps to itself).
+4.  **Validate Rule**: Confirm that this constructed rule is non-trivial (i.e., it is not the identity rule where all 128 states map to themselves).
+5.  **Write Output**: Create `archive/iter_015/result.yaml` with the following information:
+    - `state_space_size`: The total number of neighborhood states (128).
+    - `rule_found`: A boolean indicating if a non-trivial, reversible, bit-conserving rule was successfully constructed.
+    - `hamming_group_sizes`: A dictionary mapping each weight ("W0" through "W7") to the number of states in that group. The sizes should follow the binomial coefficients C(7, k).
+
+**Status:** ok
+
+**Experimenter view:** The 7-cell hexagonal neighborhood yields 2^7 = 128 distinct configurations.
+Grouping by Hamming weight produces the expected binomial distribution C(7,k):
+1, 7, 21, 35, 35, 21, 7, 1. A non-trivial, reversible, bit-conserving rule
+was trivially constructed by swapping two W=1 states (0b0000001 <-> 0b0000010)
+while leaving all other 126 states as identity mappings. This is sufficient to
+prove existence: such rules are plentiful in this space, since any permutation
+within a Hamming weight group produces a valid rule.
+
+
+**Metrics:** `{'state_space_size': 128, 'hamming_group_sizes_sum': 128, 'W0': 1, 'W1': 7, 'W2': 21, 'W3': 35, 'W4': 35, 'W5': 21, 'W6': 7, 'W7': 1}`
+
