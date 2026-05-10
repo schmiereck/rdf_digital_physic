@@ -13,13 +13,12 @@ To demonstrate that complex physical phenomena can emerge from a minimal set of 
   - This model, with a conditional rule, can create a stable, localized, period-2 stationary oscillator (iter_020).
 
 ### Refuted
-- Simple, unconditional neighbor-swap rules on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
-- The standard Cellular Automaton (node-centric) update model is unable to execute a symmetric, bit-conserving conditional swap, leading to bit loss (iter_019).
-- A composite conditional swap rule with a symmetric two-bit seed does NOT produce a glider, but another stationary oscillator (iter_021).
-- An asymmetric 'L-shaped' three-bit seed with the composite rule does NOT produce a glider, but a stable fixed point (iter_022).
+- Simple, unconditional rules on a 2D hex grid result in trivial global shifts, not local particles (iter_017).
+- The standard CA update model is unable to execute a simple bit-conserving conditional swap, leading to bit loss (iter_019).
+- Simple conditional swap rules, even with complex seeds or asymmetric logic, fail to produce motion and result in stationary oscillators or fixed points (iter_021, iter_022, iter_023).
 
 ### Current Best Result
 A stable, stationary two-bit oscillator in 2D (iter_020).
 
 ### In Progress
-- **iter_023:** Testing if a fundamentally asymmetric swap rule can finally produce a non-trivial 2D glider.
+- **iter_024:** Attempting to construct a stable, moving 3-bit glider by returning to the standard CA model with a carefully hand-crafted, reversible permutation rule. This is a direct attempt to overcome the limitations of the simpler rules and particles that have failed to produce motion.

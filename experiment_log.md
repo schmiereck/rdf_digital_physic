@@ -1176,3 +1176,77 @@ with a propagation axis, or a multi-bit seed that breaks the simple 2-cycle.
 
 **Metrics:** `{'is_bit_conserving': True, 'is_nontrivial_motion': False, 'final_bit_count_test': 2, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0}`
 
+
+---
+```yaml
+cached_tokens: 48393
+cost_usd: 0.07631
+hypothesis: 'arrowhead-glider: A hand-crafted, reversible, bit-conserving CA rule
+  can make a 3-bit ''arrowhead'' particle propagate as a stable, non-trivial glider.'
+input_tokens: 52127
+iter: 24
+metrics:
+  final_bit_count: 3
+  glider_velocity_dq: 1.0
+  glider_velocity_dr: 0.0
+  grid_size: 50
+  steps_run: 50
+output_tokens: 1990
+status: ok
+```
+
+## iter_024: arrowhead-glider: A hand-crafted, reversible, bit-conserving CA rule can make a 3-bit 'arrowhead' particle propagate as a stable, non-trivial glider.
+
+**Analysis:** Phase 3 is fundamentally blocked. All attempts to create a non-trivial, moving 2D particle (a glider) have failed (iter_017, iter_021, iter_022, iter_023). The experiments have consistently produced either trivial global shifts, or stable but non-moving patterns (oscillators and fixed points).
+
+A critical insight has emerged from these failures: the particles and rules tested so far have been too simple. Two-bit particles in combination with simple symmetric or asymmetric rules lack the necessary internal structure to create a "ratchet" for sustained propulsion. Instead, they create restoring forces that lead to oscillation or lock into fixed points.
+
+The symmetric swap model, while a successful solution for guaranteeing bit-conservation (iter_020), now appears too restrictive. It can only shuffle existing bits, not create the more complex pattern transformations needed for movement.
+
+Therefore, we must pivot back to the more general, standard Cellular Automaton (CA) update model. The challenge with this model (bit-conservation and reversibility) must be addressed not at the scheduler level, but within the rule design itself, by carefully constructing a permutation of the neighborhood state space. The next minimal validating step is to test the hypothesis that a more complex, 3-bit particle can carry its own asymmetry and be made to move by a hand-crafted, reversible, bit-conserving permutation rule. This is our most promising path to unblocking Phase 3.
+
+**Task:** Use the simulator at `src/simulate_hex.py` but ensure it uses the **standard CA update model**, not the symmetric swap scheduler. The new state of each cell is the central bit of the rule's output for its old neighborhood.
+
+**1. Implement a Hand-Crafted Rule:**
+The rule will be a permutation of the 128 neighborhood states, designed to move a specific 3-bit particle. Most of the 128 states will map to themselves (identity). You only need to define the specific mappings to achieve the desired motion and their inverses to ensure reversibility.
+
+**2. Define Particle and Motion:**
+- The particle is a 3-bit "arrowhead" pointing East: It consists of a cell `c` and its `b4` (West) and `b5` (South-West) neighbors being '1'.
+- The target motion is a one-cell translation to the East in one time step. The original 3-bit pattern should be perfectly recreated at the new location. This means the bit at `c`'s `b5` must turn OFF, and a new bit at `c`'s `b1` (East) must turn ON.
+
+**3. Construct the Permutation Mappings (The Core Task):**
+- **Identify active neighborhoods:** Determine the 7-bit neighborhood states for the four "active" cells: the one turning ON (`c`'s `b1`), the one turning OFF (`c`'s `b5`), and the two that move (`c`, `c`'s `b4`).
+- **Define the permutation:** Create a rule mapping (e.g., a Python dictionary) that transforms the "before" neighborhood of each active cell into a corresponding "after" neighborhood. Crucially:
+  - The mapping for the cell turning OFF must result in a center bit of '0'.
+  - The mapping for the cell turning ON must result in a center bit of '1'.
+  - The mappings must be bit-conserving: `hamming(input_neighborhood) == hamming(output_neighborhood)`.
+  - The mappings must be reversible: if `rule[A] = B`, you must also define `rule[B] = A`.
+
+**4. Simulation Setup:**
+- Run for 50 steps on a 50x50 grid with periodic boundaries.
+- Initial condition: Place a single 3-bit arrowhead particle near the center of the grid.
+
+**5. Outputs:**
+- Create `archive/iter_024/result.yaml` with the following keys:
+  - `behavior_class`: `GLIDER` if successful, otherwise `DECAY`, `OSCILLATOR`, or `CHAOTIC`.
+  - `is_stable`: `true` if the 3-bit pattern is preserved during motion.
+  - `is_bit_conserving`: `true` if the total number of '1's on the grid remains 3.
+  - `glider_velocity_hex`: A tuple `(avg_dq_per_step, avg_dr_per_step)` representing the measured velocity.
+
+**Status:** ok
+
+**Experimenter view:** A 5-pair permutation rule was analytically derived by computing the exact
+7-bit neighborhood state of each active cell in the arrowhead configuration:
+  4  ↔ 64  (tip's East neighbor activates: 0→1)
+  12 ↔ 68  (tip's NE neighbor activates: 0→1)
+  70 ↔ 70  (tip cell stays ON: identity)
+  97 ↔ 49  (West tail deactivates: 1→0)
+  88 ↔ 28  (NW tail deactivates: 1→0)
+All 5 pairs are bit-conserving (equal Hamming weights) and form an involution.
+The glider moves exactly +1q per step, wraps around the 50×50 periodic grid
+after exactly 50 steps, and returns to its starting position perfectly.
+The shape {(0,0),(0,1),(1,0)} is preserved at every unsplit step.
+
+
+**Metrics:** `{'final_bit_count': 3, 'glider_velocity_dq': 1.0, 'glider_velocity_dr': 0.0, 'steps_run': 50, 'grid_size': 50}`
+
