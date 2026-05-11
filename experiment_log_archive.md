@@ -2912,3 +2912,69 @@ The most direct and logical path forward is to escalate the search. We will test
 
 **Metrics:** `{}`
 
+
+---
+```yaml
+cached_tokens: 61477
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09003
+hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67254
+iter: 54
+metrics:
+  glider_found: false
+  glider_period: 0
+  patterns_checked: 10
+  stable_oscillators_found: 0
+  stable_still_lifes_found: 2
+output_tokens: 1526
+status: experiment_failed
+```
+
+## iter_054: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The research is fundamentally blocked. The last valid experiment (iter_052) was a critical negative result: an exhaustive search proved that our current W=3 rule does not support any 3-bit gliders. It only supports stable, stationary "still life" patterns. This means we have a valid target for a collision but no projectile.
+
+The follow-up attempt to search for a more complex, 4-bit glider (iter_053) failed due to a `code_error`, leaving the hypothesis untested. The strategy itself remains sound. After exhausting the 3-bit search space, escalating to 4-bit objects is the most direct and logical path forward. The immediate priority is to correctly execute the experiment that failed in the previous iteration. This is a necessary step to determine if our W=3 rule is capable of producing motion at all.
+
+**Task:** Create a new script, `src/find_w3_glider_4bit.py`, to robustly retry the experiment from iter_053.
+
+1.  **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+
+2.  **Generate Seeds:** Programmatically generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 such patterns, often referred to as "straight," "T," "Y," "square," "skew," "L," and "bar." Your generation logic should produce these unique shapes, accounting for rotations and reflections.
+
+3.  **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 200 steps to robustly detect cycles.
+    c. At each step, verify that the bit count remains exactly 4. If it ever deviates, the pattern is unstable; log this and continue to the next seed.
+    d. If the bit count is stable, track the history of the pattern's configuration (as a tuple of sorted coordinates) to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period. A non-zero displacement means a glider has been found.
+
+4.  **Report Results:** The script should run through all unique patterns and report on all stable objects found, stopping if a glider is identified.
+
+5.  **Output:** Create `archive/iter_054/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Exhaustive search over all 10 one-sided tetrahex seeds (rotation-canonical, no reflection
+collapse) found no 4-bit glider. A critical discovery: the W=3 rule (A=7, B=14) does NOT
+have full dihedral (D6) symmetry — it has only 6-fold rotational (C6) symmetry. This means
+the original 7-free-tetrahex approach was insufficient; we correctly tested all 10 one-sided
+tetrahexes. Of these, only 2 are stable (period-1 still lifes): the straight 4-in-a-line and
+a compact Y/diamond shape. All 8 remaining seeds are immediately unstable (bit count changes
+in the first step). The 4-bit glider hypothesis is falsified by this complete search.
+The rule seems to support only very specific symmetric still-life configurations at 4 bits.
+Future search could explore: (a) 5-bit seeds, (b) seeds that are non-contiguous composites
+of two still lifes that interact, or (c) random search over longer initial transients.
+
+
+**Metrics:** `{'patterns_checked': 10, 'stable_still_lifes_found': 2, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
+
