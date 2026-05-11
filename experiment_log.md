@@ -3,59 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61110
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.09145
-hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
-  4-bit glider.
-input_tokens: 67393
-iter: 53
-metrics: {}
-output_tokens: 1523
-status: code_error
-```
-
-## iter_053: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 4-bit glider.
-
-**Analysis:** The previous iteration (iter_052) was a critical negative result that now fully defines the research landscape. By exhaustively searching all 11 contiguous 3-bit patterns, we have proven that our current W=3 rule (from kernel A=7, B=14) does not support any 3-bit gliders. It only supports three stable, stationary "still life" patterns.
-
-This means Phase 3 is fundamentally blocked. We have a valid target (the 3-bit still life from iter_051), but no projectile to stage a collision. The W=3 rule itself is the most principled and robust we have constructed, so abandoning it would be premature. The failure of 3-bit patterns to move suggests they may be too simple to possess the necessary internal structure for self-propulsion under this rule.
-
-The most direct and logical path forward is to escalate the search. We will test the hypothesis that the rule supports motion, but only for particles of a higher complexity. The minimal next step is to extend our exhaustive search from 3-bit patterns to 4-bit patterns.
-
-**Task:** Create a new script, `src/find_w3_glider_4bit.py`, to systematically search for moving 4-bit objects.
-
-1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
-
-2. **Generate Seeds:** Generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 unique free tetrahexes. Ensure your generation method finds them all.
-
-3. **Test Each Seed:** For each of the unique 4-bit seeds:
-    a. Initialize a grid (e.g., 50x50) with the pattern.
-    b. Simulate for at least 200 steps to robustly detect cycles.
-    c. At each step, verify that the bit count remains exactly 4. If it deviates, the seed is unstable; discard it and continue.
-    d. If bit count is stable, track the history of the pattern's coordinates to detect a cycle.
-    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
-
-4. **Report Results:** The script should run through all unique patterns and report on all stable objects found.
-
-5. **Output:** Create `archive/iter_053/result.yaml` with the following keys:
-    - `glider_found`: `true` if a glider was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
-    - `stable_still_lifes_found`: The count of stable period-1 objects.
-    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
-    - `glider_period`: The integer period of the first glider found (or 0).
-    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
-    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
-
-**Status:** code_error
-
-**Experimenter view:** No yaml block in output – check stdout.txt
-
-**Metrics:** `{}`
-
-
----
-```yaml
 cached_tokens: 61477
 campaign: Phase 3 - W=3 Rule Dynamics
 cost_usd: 0.09003
@@ -2001,4 +1948,79 @@ heterogeneous dynamics.
 
 
 **Metrics:** `{'min_fitness': 0.0, 'max_fitness': 604000.87, 'variance_of_scores': 24260686584.48, 'num_rules': 20, 'static_class_count': 6, 'low_dynamic_class_count': 11, 'high_dynamic_class_count': 3, 'distinct_classes': 3}`
+
+
+---
+```yaml
+cached_tokens: 63711
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10379
+hypothesis: 'evolution-select: Selecting the top 10% of a 100-rule population based
+  on the dynamic fitness metric yields a set of ''elite'' rules whose average fitness
+  is at least 10x the population average.'
+input_tokens: 72649
+iter: 83
+metrics:
+  elite_count: 10
+  elite_fitness_mean: 1491843.93
+  population_fitness_mean: 226850.54
+  population_size: 100
+  selection_pressure_ratio: 6.58
+  top_elite_fitness: 5575321.86
+  zero_fitness_rules: 27
+output_tokens: 1596
+status: experiment_failed
+```
+
+## iter_083: evolution-select: Selecting the top 10% of a 100-rule population based on the dynamic fitness metric yields a set of 'elite' rules whose average fitness is at least 10x the population average.
+
+**Analysis:** The project is unblocked after a major strategic pivot in iter_082. All previous "top-down" formal search methods, which sought rules with specific structural properties (symmetry, conservation, etc.), have conclusively failed to produce motion (gliders). Iterations 049 through 081 represent a comprehensive but unsuccessful exploration of that design space.
+
+Iteration 082 successfully validated a new "bottom-up" paradigm: evolutionary search. A dynamic fitness metric was developed and proven to be highly effective at discriminating between trivial (dead/frozen) and complex CA dynamics. This metric gives us, for the first time, a tool to search for desired *behavior* rather than pre-supposed structure.
+
+The logical and only path forward is to apply this new tool. We will now implement the first full cycle of an evolutionary algorithm: generate a population, evaluate fitness, and select the "elite" rules for the next generation. This moves us from validating the method to actively using it to find complex rules.
+
+**Task:** Create a new script, `src/evolve_rules.py`, that implements the first generation (generation, evaluation, selection) of an evolutionary algorithm.
+
+1.  **Generation:**
+    - Generate a population of 100 random, reversible, C6-symmetric, non-conserving rules.
+    - Use the same random generation method as in iter_082 (2-4 kernel pairs, `A` and `B` from 1-127).
+    - Save each of the 100 rule files to `archive/iter_083/population/rule_NNN.json`.
+
+2.  **Evaluation:**
+    - For each of the 100 rules, calculate its fitness score.
+    - Use the exact same procedure from iter_082:
+        - Initialize a 100x100 grid with 50% random noise.
+        - Simulate for 500 steps.
+        - Fitness metric: `mean(bit_count_last_100_steps) * stddev(bit_count_all_steps)`. If stddev is 0, fitness is 0.
+    - Save all 100 scores to `archive/iter_083/results/fitness_scores.csv` with columns: `rule_id`, `fitness_score`, `final_bit_count`, `mean_bit_count`, `stddev_bit_count`.
+
+3.  **Selection:**
+    - Identify the top 10 rules with the highest fitness scores. These are the "elites".
+    - Copy the 10 elite rule files into a new directory: `archive/iter_083/elites/`.
+
+4.  **YAML Output:**
+    - Create `archive/iter_083/result.yaml` summarizing the results. It must contain:
+        - `population_size`: 100
+        - `elite_count`: 10
+        - `population_fitness_mean`: The mean fitness of all 100 rules.
+        - `elite_fitness_mean`: The mean fitness of the top 10 elite rules.
+        - `top_elite_fitness`: The single highest fitness score found.
+        - `selection_pressure_ratio`: `elite_fitness_mean / population_fitness_mean`.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The generation/evaluation/selection pipeline worked correctly. 27 of 100
+rules were static (fitness=0), but the remaining 73 included a broad
+continuum of moderately complex rules (40k–300k fitness), keeping the
+population mean high at ~227k. The top-two outliers (rule_085 at 5.6M and
+rule_078 at 3.5M) show that exceptionally dynamic rules do appear, but the
+dense middle tier prevents a 10x ratio. The hypothesis requires a more
+bimodal distribution — more truly inert rules and fewer medium-fitness ones
+— to achieve ratio >= 10. The fitness metric itself discriminates well
+(4-order-of-magnitude range), so the metric design is sound; the population
+statistics just didn't satisfy the threshold with this seed.
+
+
+**Metrics:** `{'population_size': 100, 'elite_count': 10, 'population_fitness_mean': 226850.54, 'elite_fitness_mean': 1491843.93, 'top_elite_fitness': 5575321.86, 'selection_pressure_ratio': 6.58, 'zero_fitness_rules': 27}`
 

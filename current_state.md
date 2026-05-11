@@ -4,14 +4,16 @@ Phase: 3 - Evolutionary Search
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-**MAJOR PIVOT.** All previous rule-finding paradigms, based on a top-down formal search for kernels with specific properties (conservation, symmetry, contiguity), have failed. Exhaustive searches across multiple rule classes, update models, and initial condition types (contiguous and non-contiguous) have yielded no moving particles ("gliders").
+**MAJOR PIVOT.** All prior research based on top-down, formal rule design has failed to produce motion (iter_049-081). This includes exhaustive searches of multiple rule classes (conserving/non-conserving), update models (sync/async), and initial conditions (contiguous/non-contiguous).
 
-The project is now pivoting to a bottom-up, **evolutionary approach**. The new strategy is to evolve rules towards a desired *behavior* (e.g., complexity, motion) as measured by a fitness function, rather than designing them based on static structural properties.
+The project has successfully pivoted to a bottom-up, **evolutionary approach**. A dynamic fitness metric capable of quantitatively distinguishing between trivial (frozen/dead) and complex (dynamic, bounded) rules was validated in iter_082. This provides the core tool for a new search paradigm.
 
-### Confirmed Failures of Prior Paradigms
-- **Formal Search (iter_049-081):** A systematic, top-down search for rules based on pre-defined constraints (conservation, symmetry, contiguity, 2-cycles, 3-cycles) has proven insufficient for finding rules that produce motion.
-- **Update Models (iter_070-071):** Asynchronous update models act as strong damping mechanisms and are less likely to produce motion than synchronous updates for the tested rules.
-- **Initial Conditions (iter_052-081):** Exhaustive searches using contiguous elemental seeds, composite contiguous objects, and non-contiguous elemental seeds (up to 4 bits) have all failed to produce gliders. The theoretical analysis in iter_081 proved the futility of the non-contiguous approach for the C6 non-conserving rule.
+### Confirmed
+- **Fitness Metric Validated (iter_082):** A metric based on the mean and standard deviation of grid population over time is effective at identifying rules that support sustained, complex dynamics from a random initial state.
+
+### Refuted
+- **Formal Search Paradigms (iter_049-081):** A comprehensive series of experiments has proven that top-down design based on simple structural properties like symmetry and conservation is insufficient for finding rules that produce motion.
+- **Simple Initial Conditions (iter_052-081):** Exhaustive searches have shown that for the rules tested, no elemental or simple composite gliders emerge from small (<= 4 bits) initial patterns.
 
 ### In Progress
-- **iter_082:** The first step of the evolutionary approach: designing and validating a dynamic "fitness metric" capable of distinguishing between trivial (dead/frozen) and complex (potentially interesting) CA rules.
+- **iter_083:** Implementing the first full generation of an evolutionary algorithm. This involves generating a large population of random rules, evaluating them with the validated fitness metric, and selecting the top-performing "elites" for the next generation.

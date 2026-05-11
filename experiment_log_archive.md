@@ -2859,3 +2859,56 @@ consider composite objects formed by interactions of still lifes.
 
 **Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 3, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
 
+
+---
+```yaml
+cached_tokens: 61110
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09145
+hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67393
+iter: 53
+metrics: {}
+output_tokens: 1523
+status: code_error
+```
+
+## iter_053: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The previous iteration (iter_052) was a critical negative result that now fully defines the research landscape. By exhaustively searching all 11 contiguous 3-bit patterns, we have proven that our current W=3 rule (from kernel A=7, B=14) does not support any 3-bit gliders. It only supports three stable, stationary "still life" patterns.
+
+This means Phase 3 is fundamentally blocked. We have a valid target (the 3-bit still life from iter_051), but no projectile to stage a collision. The W=3 rule itself is the most principled and robust we have constructed, so abandoning it would be premature. The failure of 3-bit patterns to move suggests they may be too simple to possess the necessary internal structure for self-propulsion under this rule.
+
+The most direct and logical path forward is to escalate the search. We will test the hypothesis that the rule supports motion, but only for particles of a higher complexity. The minimal next step is to extend our exhaustive search from 3-bit patterns to 4-bit patterns.
+
+**Task:** Create a new script, `src/find_w3_glider_4bit.py`, to systematically search for moving 4-bit objects.
+
+1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+
+2. **Generate Seeds:** Generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 unique free tetrahexes. Ensure your generation method finds them all.
+
+3. **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 200 steps to robustly detect cycles.
+    c. At each step, verify that the bit count remains exactly 4. If it deviates, the seed is unstable; discard it and continue.
+    d. If bit count is stable, track the history of the pattern's coordinates to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
+
+4. **Report Results:** The script should run through all unique patterns and report on all stable objects found.
+
+5. **Output:** Create `archive/iter_053/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** code_error
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Metrics:** `{}`
+
