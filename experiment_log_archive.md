@@ -2367,3 +2367,69 @@ The oscillator conserves its 3-bit count indefinitely.
 
 **Metrics:** `{'kernel_A': 3, 'kernel_B': 6, 'oscillation_period': 2, 'final_bit_count': 3, 'net_displacement': 0.942809}`
 
+
+---
+```yaml
+cached_tokens: 63772
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.09552
+hypothesis: 'interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044,
+  interact in a non-trivial, bit-conserving manner.'
+input_tokens: 71128
+iter: 45
+metrics:
+  bit_count_max: 6
+  bit_count_min: 6
+  final_bit_count: 6
+  final_clusters: 2
+  initial_bit_count: 6
+  interaction_step: -1
+  is_bit_conserving: true
+  oscillation_period: 2
+output_tokens: 1331
+status: experiment_failed
+```
+
+## iter_045: interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044, interact in a non-trivial, bit-conserving manner.
+
+**Analysis:** The previous iteration (iter_044) was a major breakthrough. By adding a geometric "contiguity" constraint to our formal kernel search, we successfully generated a symmetric, reversible, bit-conserving rule that produces a stable, non-trivial, dynamic pattern: a 3-bit, period-2 stationary oscillator. This is the first time we have created an "interesting" object in the symmetric 2D world, which unblocks the primary goal of Phase 3.
+
+The goal of this phase is to study interactions. With a stable, dynamic object now identified, the most direct and logical next step is to stage the simplest possible interaction experiment: a collision between two of these oscillators. This will be the first test of the emergent "physics" of our synthesized rule system when confronted with a multi-body problem.
+
+**Task:** Use the existing `src/generate_and_simulate.py` script and the symmetric rule generated from the contiguous kernel `(A=3, B=6)` as established in iter_044.
+
+1.  **Simulation Setup:**
+    - Grid Size: 100x100 with periodic boundaries.
+    - Steps: 200.
+
+2.  **Initial Condition:**
+    - Place two 3-bit oscillator seeds on the grid, positioned close enough for their oscillating patterns to interact.
+    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
+    - **Oscillator 2 Seed:** Place '1's at `(25,49)`, `(25,50)`, and `(26,50)`.
+    - The total initial bit count must be 6.
+
+3.  **Analysis and Output:**
+    - At each step, record the total number of '1's on the grid.
+    - Track the coordinates of all '1's throughout the simulation.
+    - Create `archive/iter_045/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if the bit count remains 6.
+      - `interaction_step`: The first step where a bit from one oscillator is in the neighborhood of a bit from the other.
+      - `outcome_class`: A classification of the result: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
+      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Both 3-bit seeds are stationary oscillators with period 2, alternating between
+two configurations in place. Oscillator 1 alternates between
+{(21,49),(21,50),(22,50)} and {(20,50),(21,50),(21,51)}, while Oscillator 2
+alternates between {(25,49),(25,50),(26,50)} and {(24,50),(25,50),(25,51)}.
+The closest the two oscillators ever get is q-distance 2 between cells (22,50)
+and (24,50), which is outside the 1-step hexagonal neighborhood. Since these
+oscillators have no translational velocity, they will never come close enough
+to interact. interaction_step = -1 throughout all 200 steps.
+Success criterion #2 is violated: the final state is exactly two independent,
+unchanged oscillators identical to the single-oscillator case.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'initial_bit_count': 6, 'final_bit_count': 6, 'bit_count_min': 6, 'bit_count_max': 6, 'interaction_step': -1, 'oscillation_period': 2, 'final_clusters': 2}`
+

@@ -3,72 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 63772
-campaign: Phase 3 - 2D Symmetric Interactions
-cost_usd: 0.09552
-hypothesis: 'interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044,
-  interact in a non-trivial, bit-conserving manner.'
-input_tokens: 71128
-iter: 45
-metrics:
-  bit_count_max: 6
-  bit_count_min: 6
-  final_bit_count: 6
-  final_clusters: 2
-  initial_bit_count: 6
-  interaction_step: -1
-  is_bit_conserving: true
-  oscillation_period: 2
-output_tokens: 1331
-status: experiment_failed
-```
-
-## iter_045: interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044, interact in a non-trivial, bit-conserving manner.
-
-**Analysis:** The previous iteration (iter_044) was a major breakthrough. By adding a geometric "contiguity" constraint to our formal kernel search, we successfully generated a symmetric, reversible, bit-conserving rule that produces a stable, non-trivial, dynamic pattern: a 3-bit, period-2 stationary oscillator. This is the first time we have created an "interesting" object in the symmetric 2D world, which unblocks the primary goal of Phase 3.
-
-The goal of this phase is to study interactions. With a stable, dynamic object now identified, the most direct and logical next step is to stage the simplest possible interaction experiment: a collision between two of these oscillators. This will be the first test of the emergent "physics" of our synthesized rule system when confronted with a multi-body problem.
-
-**Task:** Use the existing `src/generate_and_simulate.py` script and the symmetric rule generated from the contiguous kernel `(A=3, B=6)` as established in iter_044.
-
-1.  **Simulation Setup:**
-    - Grid Size: 100x100 with periodic boundaries.
-    - Steps: 200.
-
-2.  **Initial Condition:**
-    - Place two 3-bit oscillator seeds on the grid, positioned close enough for their oscillating patterns to interact.
-    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
-    - **Oscillator 2 Seed:** Place '1's at `(25,49)`, `(25,50)`, and `(26,50)`.
-    - The total initial bit count must be 6.
-
-3.  **Analysis and Output:**
-    - At each step, record the total number of '1's on the grid.
-    - Track the coordinates of all '1's throughout the simulation.
-    - Create `archive/iter_045/result.yaml` with the following keys:
-      - `is_bit_conserving`: `true` if the bit count remains 6.
-      - `interaction_step`: The first step where a bit from one oscillator is in the neighborhood of a bit from the other.
-      - `outcome_class`: A classification of the result: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
-      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
-
-**Status:** experiment_failed
-
-**Experimenter view:** Both 3-bit seeds are stationary oscillators with period 2, alternating between
-two configurations in place. Oscillator 1 alternates between
-{(21,49),(21,50),(22,50)} and {(20,50),(21,50),(21,51)}, while Oscillator 2
-alternates between {(25,49),(25,50),(26,50)} and {(24,50),(25,50),(25,51)}.
-The closest the two oscillators ever get is q-distance 2 between cells (22,50)
-and (24,50), which is outside the 1-step hexagonal neighborhood. Since these
-oscillators have no translational velocity, they will never come close enough
-to interact. interaction_step = -1 throughout all 200 steps.
-Success criterion #2 is violated: the final state is exactly two independent,
-unchanged oscillators identical to the single-oscillator case.
-
-
-**Metrics:** `{'is_bit_conserving': True, 'initial_bit_count': 6, 'final_bit_count': 6, 'bit_count_min': 6, 'bit_count_max': 6, 'interaction_step': -1, 'oscillation_period': 2, 'final_clusters': 2}`
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
@@ -1917,4 +1851,66 @@ tetrahex seeds under synchronous update for this rule.
 
 
 **Metrics:** `{'glider_found': 0, 'patterns_checked': 10, 'stable_object_count': 8, 'decayed_seed_count': 2, 'glider_period': 0, 'glider_seed_index': -1, 'steps_simulated': 1000}`
+
+
+---
+```yaml
+cached_tokens: 62524
+campaign: Phase 3 - Emergent Dynamics
+cost_usd: 0.09708
+hypothesis: 'composite-nonconserving: Two 3-bit still lifes under rule (A=3,B=14),
+  placed at a critical distance, form a stable, moving 6-bit composite object.'
+input_tokens: 69566
+iter: 75
+metrics:
+  cycle_start_step: 0
+  final_bit_count: 6
+  glider_found: 0
+  initial_bit_count: 6
+  net_displacement_dq: 0
+  net_displacement_dr: 0
+  object_period: 1
+output_tokens: 1688
+status: experiment_failed
+```
+
+## iter_075: composite-nonconserving: Two 3-bit still lifes under rule (A=3,B=14), placed at a critical distance, form a stable, moving 6-bit composite object.
+
+**Analysis:** The research is fundamentally blocked. A critical contradiction in the experimental record was resolved in iter_074, confirming the original negative result from iter_069: the C6-symmetric, non-conserving rule (A=3↔B=14) does NOT produce any moving particles ("gliders") from simple, contiguous 4-bit seeds.
+
+This result culminates a long series of failures. We have now exhaustively tested multiple classes of symmetric, reversible rules (conserving 2-cycles, conserving 3-cycles, and non-conserving 2-cycles) under various update models (synchronous, 2-phase, 3-phase). None have produced elemental gliders from small (3- or 4-bit) contiguous seeds. This strongly suggests that motion in these universes is not a property of elemental particles.
+
+The most promising path forward is to test the hypothesis that motion is an *emergent* property of interacting components. We have confirmed that the non-conserving rule (A=3↔B=14) supports a variety of stable, multi-bit *stationary* objects (iter_068). The next logical step is to stage an interaction between two of these known stable objects to see if a dynamic "molecule" can be formed from static "atoms".
+
+**Task:** Use the C6 non-conserving rule and the standard synchronous simulator to stage an interaction between two known stable objects.
+
+1.  **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+2.  **Identify Still Life:** From the results of iter_068, use one of the two 3-bit seeds that produced a stable 3-bit still life (e.g., a "bent" or "L-shape" trihex). Let's use the seed with coordinates `(0,0), (1,0), (0,1)`.
+3.  **Initial Condition:** On a 150x150 grid, place two of these still lifes in a symmetric arrangement with a one-cell gap between them.
+    - **Still Life 1:** Place '1's at `(50,50)`, `(51,50)`, and `(50,51)`.
+    - **Still Life 2:** Place '1's at `(53,50)`, `(54,50)`, and `(53,51)`.
+    - This creates a 6-bit composite object.
+4.  **Simulation:** Run for 500 steps.
+5.  **Analysis & Output:** Create `archive/iter_075/results/result.yaml` with the following keys:
+    - `glider_found`: boolean
+    - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+    - `is_bit_count_stable`: boolean (is the bit count constant after an initial transient?)
+    - `initial_bit_count`: 6
+    - `final_bit_count`: integer
+    - `object_period`: integer
+    - `net_displacement_hex`: A tuple `(dq, dr)` for the net displacement over one period.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The two L-shaped trihexes placed at (50-51,50)-(50,51) and (53-54,50)-(53,51)
+with a 1-cell gap lock into a stable 6-bit still life on the VERY FIRST STEP
+(cycle_start=0, period=1). The composite object is a fixed point of the rule —
+it neither oscillates nor translates. The 1-cell gap (gap between x=51 and x=53)
+produces mutual stabilization rather than glider dynamics. To find a glider, one
+would need to try different inter-object distances (e.g., 2-cell or 3-cell gaps),
+different relative orientations of the two trihexes, or non-identical component
+objects.
+
+
+**Metrics:** `{'glider_found': 0, 'initial_bit_count': 6, 'final_bit_count': 6, 'object_period': 1, 'net_displacement_dq': 0, 'net_displacement_dr': 0, 'cycle_start_step': 0}`
 
