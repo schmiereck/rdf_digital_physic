@@ -3,70 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 57670
-cost_usd: 0.08262
-hypothesis: 'search: There exists at least one reversible, bit-conserving state-pair
-  (A, B) whose 6-fold rotational closure is conflict-free.'
-input_tokens: 61986
-iter: 33
-metrics:
-  closure_size: 12
-  hamming_weight_searched: 2
-  kernel_A: 3
-  kernel_B: 6
-  pairs_checked: 2
-  total_pairs_possible: 210
-output_tokens: 1624
-status: ok
-```
-
-## iter_033: search: There exists at least one reversible, bit-conserving state-pair (A, B) whose 6-fold rotational closure is conflict-free.
-
-**Analysis:** The project is critically blocked on the central goal of Phase 3: staging a 2D collision. The last five iterations have definitively shown that our current methods for rule creation are flawed.
-1.  **Hand-crafted rules are brittle and non-symmetric.** The arrowhead glider rule (iter_024) works for one direction only; rotated seeds lead to chaotic, non-bit-conserving decay (iter_028).
-2.  **Naive programmatic symmetrization fails.** Applying 6-fold symmetry to the arrowhead kernel created a conflicting, chaotic rule (iter_029). Symmetrizing a simpler generator pair resulted in a rule that was inert for simple seeds (iter_032).
-3.  **The problem is not the simulator, but the rules themselves.** We have a fundamental inability to generate a rule that is both fully symmetric and dynamically interesting.
-
-The core issue lies in the "generator" or "kernel" used to create the symmetric rule. The generator from iter_032 had internal rotational symmetries, causing its rotational closure to self-intersect and produce a flawed rule. To unblock the entire project, we must first find a valid rule kernel: a state-transition pair that can be rotated 6-fold without creating any mapping conflicts. This is a search problem, not a simulation problem, and it is the absolute minimal step required before any further progress in 2D is possible.
-
-**Task:** Create a new Python script `src/find_symmetric_kernel.py`. This script will not run a simulation, but will perform a combinatorial search.
-
-1.  **Implement Hexagonal Rotation:** Create a helper function `rotate_neighborhood(state: int, steps: int)` that takes a 7-bit integer state and rotates the 6 neighbor bits clockwise.
-2.  **Define State Space:** Generate all 21 unique 7-bit states with a Hamming weight of 2 (W=2).
-3.  **Search Loop:**
-    a. Iterate through all possible unique pairs `(A, B)` of these W=2 states.
-    b. For each pair, generate its "rotational closure": a set containing the 12 states `{rotate(A, i), rotate(B, i)}` for `i` from 0 to 5.
-    c. **Check for Conflicts:** A conflict exists if the size of the generated set is less than 12. This indicates that some rotations of A and B overlap, which would create an invalid rule.
-    d. If a conflict-free pair is found (set size is 12), the search is successful.
-4.  **Output:**
-    a. Create `archive/iter_033/result.yaml`.
-    b. The YAML file must contain:
-       - `valid_kernel_found`: `true` or `false`.
-       - `hamming_weight_searched`: The integer `2`.
-       - `pairs_checked`: The total number of pairs of W=2 states that were checked.
-       - `kernel_A`: The integer representation of the first valid 'A' state found (or `null`).
-       - `kernel_B`: The integer representation of the first valid 'B' state found (or `null`).
-       - `kernel_A_binary`: The 7-bit string representation of 'A'.
-       - `kernel_B_binary`: The 7-bit string representation of 'B'.
-
-**Status:** ok
-
-**Experimenter view:** The hypothesis is confirmed: conflict-free reversible state-pairs with W=2
-exist. The very first valid pair found is (A=3, B=6). The key insight is that
-A (0000011) has center=1 and one neighbor set, while B (0000110) has center=0
-and two adjacent neighbors set. Because A's rotational orbit consists entirely
-of center=1 states and B's orbit consists of center=0 states, the 12 elements
-of their joint closure are automatically disjoint — no conflict is possible.
-This suggests a simple structural rule for constructing conflict-free kernels:
-choose one state from each "center parity class" whose orbits are each of
-full size 6.
-
-
-**Metrics:** `{'pairs_checked': 2, 'total_pairs_possible': 210, 'closure_size': 12, 'hamming_weight_searched': 2, 'kernel_A': 3, 'kernel_B': 6}`
-
-
----
-```yaml
 cached_tokens: 58675
 cost_usd: 0.0854
 hypothesis: 'dynamics-symmetric: The symmetric rule from kernel (A=3, B=6) produces
@@ -1858,4 +1794,79 @@ gliders at 4 bits but not 3.
 
 
 **Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 5, 'stable_oscillators_found': 6, 'glider_found': 0, 'glider_period': 0}`
+
+
+---
+```yaml
+cached_tokens: 61036
+campaign: Phase 3 - W=3 Cyclic Rules
+cost_usd: 0.09185
+hypothesis: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67715
+iter: 64
+metrics:
+  glider_found: 0
+  glider_period: 0
+  patterns_checked: 16715
+  stable_oscillators_found: 88
+  stable_still_lifes_found: 3144
+  unstable_contiguous_seeds: 5
+output_tokens: 1435
+status: experiment_failed
+```
+
+## iter_064: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The previous iteration (iter_063) was a conclusive negative result. An exhaustive search proved that our new, more complex 3-cycle rule does not support any 3-bit gliders. All 11 contiguous 3-bit patterns evolved into stable, but stationary, objects (still lifes or oscillators).
+
+This mirrors the failures of our previous 2-cycle rules (iter_052, iter_059), which also lacked motion at the 3-bit level. The research is therefore fundamentally blocked on finding a projectile to stage a collision.
+
+Before abandoning this new rule class, we must follow the established logical progression. The minimal next step is to test if motion emerges at a higher level of particle complexity. We will escalate the exhaustive search from 3-bit to 4-bit objects. This will either finally uncover a glider or provide strong evidence that this entire class of rule is a dead end for producing motion.
+
+**Task:** Create a new script, `src/find_gliders_3cycle_4bit.py`, to perform an exhaustive search for moving 4-bit objects.
+
+1. **Load Rule:** Load the symmetric 3-cycle W=3 rule from `src/symmetric_rule_w3_3cycle.json`.
+
+2. **Generate Seeds:** Generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 free tetrahexes, but the rule's C6 symmetry (not D6) means you must test all 10 unique one-sided orientations.
+
+3. **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 300 steps to robustly detect cycles and movement.
+    c. At each step, verify that the bit count remains exactly 4. If it deviates, the seed is unstable; log this and continue.
+    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
+
+4. **Report Results:** The script should test all unique patterns and create `archive/iter_064/result.yaml` with a summary of the findings.
+
+5. **YAML Output:** The `result.yaml` must contain these keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+
+**Status:** experiment_failed
+
+**Experimenter view:** The 3-cycle rule (A=7,B=11,C=14) does not appear to support 4-bit gliders.
+An exhaustive search of 16,715 unique 4-bit seed patterns (all contiguous
+tetrahexes, all radius-3 non-contiguous, all new radius-4 patterns) with
+up to 600 steps per seed found zero translating objects.
+
+Key observations:
+- 5 of the 10 contiguous tetrahex seeds are bit-non-conserving (unstable).
+- The remaining stable patterns all settle to period-1 or period-2 cycles.
+- No period-3 objects were detected, despite the rule's fundamental period-3 kernel.
+- The 3-cycle non-trivial dynamics (7→70→69→7, etc.) require very specific
+  neighbor configurations that appear too tightly constrained at 4-bit scale
+  to produce net spatial translation.
+- The rule's conservation is so strong that 88 period-2 oscillators form,
+  but none translate — oscillation and translation appear decoupled.
+
+The 4-bit glider hypothesis is rejected. Larger patterns (5+ bits) may be
+needed for gliders in this rule.
+
+
+**Metrics:** `{'glider_found': 0, 'patterns_checked': 16715, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'glider_period': 0, 'unstable_contiguous_seeds': 5}`
 
