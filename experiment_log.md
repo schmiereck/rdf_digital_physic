@@ -1994,3 +1994,66 @@ mappings on center=1 cells.
 
 **Metrics:** `{'is_bit_conserving': True, 'net_displacement': 0.0, 'final_bit_count': 2, 'behavior_class': 'FIXED_POINT'}`
 
+
+---
+```yaml
+cached_tokens: 62714
+cost_usd: 0.08622
+hypothesis: 'search-center-flipping: There exists a state-pair (A, B) that is conflict-free,
+  has disjoint orbits, and has different center-bit parities.'
+input_tokens: 66784
+iter: 38
+metrics:
+  closure_size: 12
+  hamming_weight_searched: 2
+  kernel_A: 3
+  kernel_B: 6
+  pairs_checked: 2
+output_tokens: 1629
+status: ok
+```
+
+## iter_038: search-center-flipping: There exists a state-pair (A, B) that is conflict-free, has disjoint orbits, and has different center-bit parities.
+
+**Analysis:** The research is critically blocked. While we have developed a sophisticated, principled method for generating symmetric rules from a "kernel" (iter_033, iter_036), the resulting rules have consistently failed to produce any motion (iter_035, iter_037).
+
+The failure in iter_037 was the most informative: our fully validated kernel (A=3, B=6) produced a rule that only permuted neighborhood states where the center bit was '0'. Consequently, it could never create a new '1' bit, nor could it make an existing '1' bit (which by definition has a center bit of '1') move. This is a fundamental flaw.
+
+To unblock this, we must add a new, critical constraint to our search for a valid kernel: the rule must be able to "flip" the center bit. The minimal way to ensure this is to find a kernel pair (A, B) where one state has a '0' center bit and the other has a '1'. This is a prerequisite for any non-trivial particle dynamics. The next step is therefore another formal, combinatorial search, not a simulation.
+
+**Task:** Create a new Python script `src/find_center_flipping_kernel.py`. This script will perform a combinatorial search, not a simulation.
+
+1.  **Implement Utilities:** Create helper functions for hexagonal rotation of 7-bit integer states and for checking the center bit of a state.
+2.  **Define State Space:** Generate all 7-bit states for a given Hamming weight (start with W=2, then W=3 if no results are found).
+3.  **Search Loop:**
+    a. Iterate through all unique pairs of states `(A, B)` for the current Hamming weight.
+    b. For each pair, check three conditions in order of increasing cost:
+       i.   **Center-Bit Flip (New):** The center bit of A must be different from the center bit of B.
+       ii.  **Disjoint Orbits:** State B must not be in the 6-fold rotational orbit of state A.
+       iii. **Conflict-Free Closure:** The joint 12-state rotational closure of {A, B} must contain exactly 12 unique states.
+    c. If a pair `(A, B)` satisfies all three conditions, the search is successful. Stop and report this pair.
+4.  **Output:**
+    Create `archive/iter_038/result.yaml`. The YAML file must contain:
+    - `valid_kernel_found`: `true` or `false`.
+    - `hamming_weight_searched`: The integer Hamming weight at which a kernel was found (e.g., 2).
+    - `pairs_checked`: The total number of pairs checked before finding a valid one.
+    - `kernel_A`: The integer representation of the first valid 'A' state found.
+    - `kernel_B`: The integer representation of the first valid 'B' state found.
+    - `kernel_A_binary`: The 7-bit string representation of 'A'.
+    - `kernel_B_binary`: The 7-bit string representation of 'B'.
+
+**Status:** ok
+
+**Experimenter view:** The search succeeded almost immediately (pair #2 out of 210 possible W=2 pairs).
+The key geometric insight: rotation only moves neighbor bits and never touches the
+center bit (bit 0). Therefore any state with center=1 and any state with center=0
+will automatically have disjoint orbits. The only remaining constraint is that
+neither orbit has a period < 6 (which would reduce the closure below 12 elements).
+For A=3 (center + one neighbor) and B=6 (two adjacent neighbors), both have full
+6-element orbits, giving a conflict-free 12-element closure. The center-flip
+condition is thus easy to satisfy and actually guarantees disjoint orbits for free,
+making the search trivially fast.
+
+
+**Metrics:** `{'pairs_checked': 2, 'hamming_weight_searched': 2, 'kernel_A': 3, 'kernel_B': 6, 'closure_size': 12}`
+
