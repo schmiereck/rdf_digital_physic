@@ -3,381 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 2
-metrics:
-  mock_value: 3.0
-output_tokens: 500
-status: ok
-```
-
-## iter_002: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 3. All systems nominal.
-
-**Task:** Create archive/iter_003/code/run.py that prints 'hello from iter 3' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 2 completed. No real computation.
-
-**Metrics:** `{'mock_value': 3.0}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] warmup-500: adding 500-step warmup reduces val_loss by ≥2%'
-input_tokens: 1000
-iter: 1
-metrics:
-  mock_value: 1.5
-output_tokens: 500
-status: ok
-```
-
-## iter_001: [mock] warmup-500: adding 500-step warmup reduces val_loss by ≥2%
-
-**Analysis:** [Mock] Iteration 2. All systems nominal.
-
-**Task:** Create archive/iter_002/code/run.py that prints 'hello from iter 2' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 1 completed. No real computation.
-
-**Metrics:** `{'mock_value': 1.5}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 2
-metrics:
-  mock_value: 3.0
-output_tokens: 500
-status: ok
-```
-
-## iter_002: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 3. All systems nominal.
-
-**Task:** Create archive/iter_003/code/run.py that prints 'hello from iter 3' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 2 completed. No real computation.
-
-**Metrics:** `{'mock_value': 3.0}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 3
-metrics:
-  mock_value: 4.5
-output_tokens: 500
-status: ok
-```
-
-## iter_003: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 4. All systems nominal.
-
-**Task:** Create archive/iter_004/code/run.py that prints 'hello from iter 4' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 3 completed. No real computation.
-
-**Metrics:** `{'mock_value': 4.5}`
-
-
----
-```yaml
-cached_tokens: 31883
-cost_usd: 0.04384
-hypothesis: 'baseline: The formal filter identifies at least one non-trivial, reversible,
-  bit-conserving rule for a 1D, 3-bit neighborhood.'
-input_tokens: 32587
-iter: 6
-metrics: {}
-output_tokens: 1284
-status: code_error
-```
-
-## iter_006: baseline: The formal filter identifies at least one non-trivial, reversible, bit-conserving rule for a 1D, 3-bit neighborhood.
-
-**Analysis:** We are in the Orientation phase, starting from iteration 1. The provided logs and state are mocks from a different project and will be ignored.
-
-The research goal is to discover emergent physics from simple, local, reversible rules on a discrete lattice. The strategic plan correctly identifies the first step: validating the core constraints in a 1D environment (Phase 1). Before we can test for gliders, oscillations, or any complex behaviour, we must first prove that our constraints (reversibility and bit-conservation) permit the existence of any non-trivial dynamics at all.
-
-Therefore, the minimal validating step is to build and run the "Formaler Filter" for the simplest case: a 1D, 3-bit neighborhood (a cell and its left/right neighbors). This experiment will either produce the first candidate "Naturkonstanten" or refute our initial assumptions about the rule constraints.
-
-**Task:** Create a Python script `archive/iter_001/code/generate_rules.py`.
-
-This script must:
-1. Define the state space for a 1D, 3-bit neighborhood (8 states from '000' to '111').
-2. A "rule" is a permutation of these 8 states. The script must iterate through permutations that satisfy the bit-conservation constraint: the Hamming weight of an input state must equal the Hamming weight of its corresponding output state. (e.g., all states with weight 1 can only be permuted among themselves).
-3. Filter out and count "trivial" rules:
-    - The identity rule (every state maps to itself).
-    - The global-shift rule (equivalent to shifting the entire lattice left or right, e.g., '101' -> '010').
-4. Write all valid, non-trivial rules found to `archive/iter_001/results/valid_rules.json`. Each rule should be represented as a map from input state (string) to output state (string).
-5. Write a summary of the findings to `archive/iter_001/result.yaml`, including these keys:
-    - `total_bit_conserving_permutations`
-    - `trivial_rules_found`
-    - `nontrivial_rules_found`
-
-**Status:** code_error
-
-**Experimenter view:** No YAML block found in output.
-
-**Metrics:** `{}`
-
-
----
-```yaml
-cached_tokens: 32099
-cost_usd: 0.04859
-hypothesis: 'baseline: The formal filter identifies at least one non-trivial, reversible,
-  bit-conserving rule for a 1D, 3-bit neighborhood.'
-input_tokens: 33489
-iter: 8
-metrics: {}
-output_tokens: 1489
-status: code_error
-```
-
-## iter_008: baseline: The formal filter identifies at least one non-trivial, reversible, bit-conserving rule for a 1D, 3-bit neighborhood.
-
-**Analysis:** We are at the beginning of Phase 1 (Orientation). The previous experiment logs appear to be mock data from a different project and can be disregarded. The first real attempt (logged as iter_006) was to establish a baseline by finding all valid rules for the simplest 1D, 3-bit case. This attempt failed with a `code_error`, meaning we have not yet produced any data to confirm or refute our most fundamental hypothesis: that non-trivial, reversible, bit-conserving rules actually exist.
-
-The immediate and only priority is to successfully execute this first experiment. We cannot build upon a foundation that has not been laid. The scientific question remains the same, but the task is now to debug and robustly implement the "Formaler Filter" to get our first piece of evidence. This is a classic "Observation Before Hypothesis" step; we need to see what the rule space looks like before theorizing about it. I will re-number this attempt as `iter_001` to establish a clean, canonical history for this research project.
-
-**Task:** Create a Python script `archive/iter_001/code/generate_rules.py`. This script must be robust and handle the case where no rules are found without crashing.
-
-1.  **Define State Space**: The state space for a 1D, 3-bit neighborhood consists of 8 states: '000', '001', '010', ..., '111'.
-2.  **Group by Hamming Weight**: Group these states by their Hamming weight (number of '1's).
-    - Weight 0: {'000'}
-    - Weight 1: {'001', '010', '100'}
-    - Weight 2: {'011', '101', '110'}
-    - Weight 3: {'111'}
-3.  **Generate Permutations**: A rule is a permutation of the 8 states. To ensure bit-conservation, we only need to find permutations *within* each Hamming weight group. Generate all permutations for each group (e.g., all 3! = 6 permutations for the weight-1 group).
-4.  **Construct Full Rules**: Iterate through all combinations of these intra-group permutations to construct the full rule tables.
-5.  **Filter Trivial Rules**: Identify and count rules that are:
-    - **Identity**: Every state maps to itself.
-    - **Global Shift Left**: The rule is equivalent to `output = roll(input, -1)`. For example, '101' -> '011'.
-    - **Global Shift Right**: The rule is equivalent to `output = roll(input, 1)`. For example, '101' -> '110'.
-6.  **Write Outputs**:
-    - Create `archive/iter_001/results/`.
-    - Save all valid, non-trivial rules to `archive/iter_001/results/valid_rules.json`. This should be a list of dictionaries, where each dictionary represents a rule (e.g., `[{'000':'000', '001':'010', ...}, ...]`).
-    - **Crucially**, create `archive/iter_001/result.yaml` with a summary, even if no rules are found. The file must contain:
-
-**Status:** code_error
-
-**Experimenter view:** No YAML block found in output.
-
-**Metrics:** `{}`
-
-
----
-```yaml
-cached_tokens: 32322
-cost_usd: 0.05016
-hypothesis: 'baseline: The formal filter identifies at least one non-trivial, reversible,
-  bit-conserving rule for a 1D, 3-bit neighborhood.'
-input_tokens: 34399
-iter: 9
-metrics:
-  nontrivial_rules_found: 33
-  total_bit_conserving_permutations: 36
-  trivial_rules_found: 3
-output_tokens: 1391
-status: ok
-```
-
-## iter_009: baseline: The formal filter identifies at least one non-trivial, reversible, bit-conserving rule for a 1D, 3-bit neighborhood.
-
-**Analysis:** We are at the very beginning of the project (Phase 1, Orientation). The provided logs contain mock data and two failed attempts (`iter_006`, `iter_008`) to execute the first critical experiment. Both attempts resulted in `code_error`, meaning we have not yet gathered any data.
-
-The project's entire foundation rests on the assumption that non-trivial rules satisfying our constraints (reversibility, bit-conservation, locality) actually exist. The immediate and only priority is to validate this assumption. We must successfully execute the "Formaler Filter" for the simplest possible case: a 1D, 3-bit neighborhood. This is the minimal validating step.
-
-I am re-initiating this first experiment as `iter_001` to establish a clean, canonical history for this research. The hypothesis remains unchanged from the failed attempts, as it has not yet been tested.
-
-**Task:** Create a Python script `archive/iter_001/code/generate_rules.py`. The script must be robust and not fail if no rules are found.
-
-1.  **Define State Space**: The 8 states of a 3-bit neighborhood ('000' to '111').
-2.  **Group by Hamming Weight**: Group states by the number of '1's.
-    - W0: {'000'}
-    - W1: {'001', '010', '100'}
-    - W2: {'011', '101', '110'}
-    - W3: {'111'}
-3.  **Generate Rule Permutations**: A rule is a combination of permutations *within* each weight group. Iterate through all combinations of these intra-group permutations.
-    - Example: `(Permutation of W0) x (Permutation of W1) x (Permutation of W2) x (Permutation of W3)`
-4.  **Filter Trivial Rules**: A rule is trivial if it is one of the following:
-    - **Identity**: `rule[state] == state` for all 8 states.
-    - **Shift Left**: The rule's effect is identical to a circular left bit shift for all 8 states. E.g., for state 'abc', the output is 'bca'. ('101' -> '011').
-    - **Shift Right**: The rule's effect is identical to a circular right bit shift for all 8 states. E.g., for state 'abc', the output is 'cab'. ('101' -> '110').
-5.  **Write Outputs**:
-    - Create the directory `archive/iter_001/results/`.
-    - Save all valid, non-trivial rules found as a JSON list to `archive/iter_001/results/valid_rules.json`. Each item in the list is a dictionary mapping input states to output states.
-    - Write a summary to `archive/iter_001/result.yaml` with these exact keys, even if the counts are zero:
-
-**Status:** ok
-
-**Experimenter view:** The hypothesis is confirmed. 36 total bit-conserving permutations exist across the
-four Hamming-weight groups (W0: 1!, W1: 3!=6, W2: 3!=6, W3: 1!; product = 36).
-After removing the 3 trivial rules (identity, shift-left, shift-right), 33
-non-trivial reversible bit-conserving rules remain. Results saved to valid_rules.json.
-
-
-**Metrics:** `{'total_bit_conserving_permutations': 36, 'trivial_rules_found': 3, 'nontrivial_rules_found': 33}`
-
-
----
-```yaml
-cached_tokens: 32545
-cost_usd: 0.05442
-hypothesis: 'dynamics: At least one of the 33 candidate rules produces a stable, propagating
-  pattern (glider) from a single-bit initial condition.'
-input_tokens: 35470
-iter: 10
-metrics:
-  chaotic_found: 0
-  decay_found: 0
-  gliders_found: 22
-  periodic_found: 0
-  rules_tested: 33
-  stable_found: 11
-output_tokens: 1496
-status: ok
-```
-
-## iter_010: dynamics: At least one of the 33 candidate rules produces a stable, propagating pattern (glider) from a single-bit initial condition.
-
-**Analysis:** The foundational hypothesis was confirmed in the previous iteration (logged as iter_009): 33 non-trivial, reversible, bit-conserving rules exist for the simplest 1D, 3-bit case. This is a major milestone and the successful completion of the first step of Phase 1.
-
-The research has now moved from a purely formal, mathematical question ("Do such rules exist?") to an empirical one ("What do these rules do?"). According to the master plan, the goal of Phase 1 is to find rules that "allow simple movement". Therefore, the immediate next step is to simulate these 33 rules and observe their behavior. We need to build a basic 1D cellular automaton simulator to test if any of these rules can support stable, propagating patterns (gliders or solitons). This is the minimal validating step to determine if our rule set has the potential for complex dynamics.
-
-**Task:** Create a Python script `archive/iter_002/code/simulate_rules.py`. This script will function as a 1D cellular automaton simulator.
-
-1.  **Input:** The script should load the `valid_rules.json` file from `archive/iter_001/results/`.
-2.  **Simulation Setup:** For each of the 33 rules in the file:
-    a. Initialize a 1D lattice of size 100 with all cells set to '0', except for a single '1' at the center (index 50). This is the initial condition.
-    b. Run the simulation for 200 steps with periodic boundary conditions.
-    c. In each step, for every cell, determine its new state by looking up the 3-bit neighborhood (left, self, right) in the current rule's mapping.
-3.  **Analysis & Classification:** After each simulation run, classify the rule's behavior based on the final state and history. A simple classification logic:
-    - `DECAY`: The lattice becomes all '0's.
-    - `STABLE`: The lattice stops changing before the final step.
-    - `PERIODIC`: The lattice enters a short, repeating cycle of states.
-    - `GLIDER`: A contiguous pattern of bits moves consistently in one direction. You can detect this by tracking the "center of mass" of the '1' bits. If the center of mass moves at a near-constant velocity and the pattern's width is stable, classify it as a glider.
-    - `CHAOTIC`: Anything else (e.g., expanding, complex, non-repeating patterns).
-4.  **Output:**
-    a. Create a directory `archive/iter_002/results/`.
-    b. For each rule identified as `GLIDER`, save the final lattice state to `archive/iter_002/results/glider_rule_[RULE_INDEX].txt`.
-    c. Write a summary file `archive/iter_002/result.yaml` with the following keys:
-       - `rules_tested`: 33
-       - `gliders_found`: (count of rules classified as GLIDER)
-       - `stable_found`: (count)
-       - `periodic_found`: (count)
-       - `decay_found`: (count)
-       - `chaotic_found`: (count)
-       - `glider_rule_indices`: (a list of indices for the rules that produced gliders)
-
-**Status:** ok
-
-**Experimenter view:** Hypothesis confirmed strongly: 22 of 33 rules (67%) produce gliders from a single-bit
-initial condition. The gliders fall into two symmetric groups — rules 5–16 produce
-right-moving gliders (velocity +1/step) and rules 17–26 produce left-moving gliders
-(velocity -1/step). The remaining 11 rules (0–4 and 27–32) are STABLE, meaning the
-single '1' stays fixed.
-
-This outcome is analytically predicted by the bit-conserving structure: the three
-single-bit neighborhoods {001, 010, 100} are always permuted among themselves by each
-rule. Exactly ONE of them maps to "010" (whose center bit is 1). If rule["100"]="010",
-the bit shifts right (glider); if rule["001"]="010", it shifts left; if rule["010"]="010",
-it stays (stable). No DECAY, PERIODIC, or CHAOTIC behavior is possible with a
-single-bit initial condition under these rules.
-
-
-**Metrics:** `{'rules_tested': 33, 'gliders_found': 22, 'stable_found': 11, 'periodic_found': 0, 'decay_found': 0, 'chaotic_found': 0}`
-
-
----
-```yaml
-cached_tokens: 33207
-cost_usd: 0.05849
-hypothesis: 'existence-2bit: A non-trivial, reversible, bit-conserving rule exists
-  for a 1D, 3-neighborhood, 2-bit/cell lattice.'
-input_tokens: 36700
-iter: 11
-metrics:
-  W0: 1
-  W1: 6
-  W2: 15
-  W3: 20
-  W4: 15
-  W5: 6
-  W6: 1
-  hamming_groups_sum: 64
-  rule_found: 1
-  state_space_size: 64
-output_tokens: 1639
-status: ok
-```
-
-## iter_011: existence-2bit: A non-trivial, reversible, bit-conserving rule exists for a 1D, 3-neighborhood, 2-bit/cell lattice.
-
-**Analysis:** Phase 1 has been successfully completed. We have confirmed the existence of 33 non-trivial, reversible, bit-conserving rules for a 1D, 3-bit system (iter_001). We then demonstrated that 22 of these rules support simple propagation (gliders with v=c) from a minimal initial condition (iter_002).
-
-According to the master plan, we now transition to **Phase 2: Der "Zappel"-Detektor**. The goal is to introduce internal states to a particle, which could allow for emergent mass (i.e., effective velocities v < c). The minimal way to introduce an internal state is to increase the bit-depth per cell from 1 to 2. This dramatically expands the state space from 2^3=8 to 4^3=64 neighborhood configurations.
-
-Before we can search for complex dynamics like "Zappeln", we must first repeat the foundational check from Phase 1 in this new, larger state space: do any non-trivial, reversible, bit-conserving rules even exist for a 2-bit-per-cell system? This is the minimal validating step to enter Phase 2. We don't need to find all rules; we only need to prove the existence of at least one.
-
-**Task:** Create a Python script `archive/iter_003/code/generate_rules_2bit.py`.
-
-1.  **Define State Space**: A cell can be in one of 4 states: '00', '01', '10', '11'. A neighborhood is a tuple of three cell states, so there are 4^3 = 64 neighborhood states.
-2.  **Calculate Hamming Weights**: The Hamming weight of a cell state is the number of '1's (e.g., hw('10') = 1, hw('11') = 2). The total weight of a neighborhood is the sum of the weights of its three cells.
-3.  **Group States**: Group all 64 neighborhood states by their total Hamming weight (which can range from 0 to 6).
-4.  **Construct a Test Rule**: Create a specific rule with the following logic:
-    a. Define a mapping for a stationary particle oscillation: `('00', '01', '00')` maps to `('00', '10', '00')`.
-    b. To ensure reversibility, its inverse must also exist: `('00', '10', '00')` maps to `('00', '01', '00')`.
-    c. Note that both these neighborhoods have a total Hamming weight of 1, so this is a valid bit-conserving permutation within that group.
-    d. For all other 62 neighborhood states, the rule should be the identity mapping (`state -> state`).
-5.  **Validation**: Verify that this constructed rule is non-trivial (i.e., it is not the global identity rule).
-6.  **Output**: Write a summary to `archive/iter_003/result.yaml` with the following keys:
-    - `rule_found`: boolean (True if the constructed rule is valid and non-trivial).
-    - `state_space_size`: 64
-    - `hamming_group_sizes`: A dictionary mapping each weight (e.g., "W0", "W1") to the number of states in that group.
-
-**Status:** ok
-
-**Experimenter view:** The 2-bit/cell 1D lattice has 4^3 = 64 neighborhood states. Grouping by total
-Hamming weight yields a binomial distribution (W0=1, W1=6, W2=15, W3=20, W4=15,
-W5=6, W6=1). A minimal non-trivial rule was constructed by swapping two W1
-neighborhoods: ('00','01','00') <-> ('00','10','00'). Both inputs and outputs
-share the same total weight (1), satisfying bit conservation. The rule is a
-bijection (reversible). All 62 remaining neighborhoods map to themselves.
-The hypothesis is confirmed: a non-trivial, reversible, bit-conserving rule exists.
-
-
-**Metrics:** `{'state_space_size': 64, 'hamming_groups_sum': 64, 'rule_found': 1, 'W0': 1, 'W1': 6, 'W2': 15, 'W3': 20, 'W4': 15, 'W5': 6, 'W6': 1}`
-
-
----
-```yaml
 cached_tokens: 34117
 cost_usd: 0.05861
 hypothesis: 'dynamics-2bit: The minimal 2-bit/cell rule from iter_003 produces a stable,
@@ -2237,4 +1862,75 @@ status: code_error
 **Experimenter view:** 
 
 **Metrics:** `{}`
+
+
+---
+```yaml
+cached_tokens: 68782
+cost_usd: 0.10109
+hypothesis: 'dynamics-next-kernel: The symmetric rule from the second valid kernel
+  produces a stable, multi-step oscillator or glider.'
+input_tokens: 75955
+iter: 43
+metrics:
+  final_bit_count: 4
+  kernel_A_lsb: 3
+  kernel_A_msb: 96
+  kernel_B_lsb: 10
+  kernel_B_msb: 40
+  net_displacement: 0.0
+  oscillation_period: 1
+  settled_bit_count: 4
+output_tokens: 1505
+status: experiment_failed
+```
+
+## iter_043: dynamics-next-kernel: The symmetric rule from the second valid kernel produces a stable, multi-step oscillator or glider.
+
+**Analysis:** The research is critically blocked. Our principled method for generating symmetric, reversible, bit-conserving rules is sound (iter_036, iter_038), but the first rule generated by this method (from kernel A=65, B=6) failed to produce any motion, resulting in a stable fixed point (iter_040). The subsequent attempt to find and test the *next* valid kernel (iter_041) failed due to a `code_error`, leaving the core question unanswered.
+
+The strategy remains sound: we have a large space of mathematically valid rules to explore, and we have only tested the first one. The immediate priority is to successfully execute the experiment that failed in iter_041. We must find the second valid kernel in our search space, generate a rule from it, and test its dynamics. This is the minimal validating step to determine if our current research direction has the potential to produce the complex dynamics needed to unblock Phase 3.
+
+**Task:** This is a two-part task to robustly retry the failed iter_041.
+
+**Part 1: Find the Second Valid Kernel**
+1. Create a script `src/find_next_kernel.py`.
+2. This script must search for state-pairs `(A, B)` with Hamming Weight 2 that satisfy all three conditions from iter_038:
+    a. Center-bit of A is different from center-bit of B.
+    b. The rotational orbits of A and B are disjoint.
+    c. The joint 12-state rotational closure is conflict-free.
+3. The script must find and **ignore** the first valid kernel (`A=65, B=6` or equivalent) and then find and output the **second** valid kernel.
+4. The script should print the integers and binary strings for the second kernel pair to stdout for verification. Let's call them `A2` and `B2`.
+
+**Part 2: Generate Rule and Simulate**
+1. Create a script `src/generate_and_simulate.py`.
+2. This script must programmatically take the `A2` and `B2` values and generate the full 6-fold symmetric rule.
+3. The simulator part of the script must use this new rule with the standard CA update model.
+4. Run the simulation for 100 steps on a 100x100 grid.
+5. The initial condition must be a 2-bit pattern that creates the neighborhood `B2` for a central '0' cell. For example, if `B2` is `'0000110'`, place two '1's at the appropriate neighbor positions of a central cell.
+6. The script's final action must be to create `archive/iter_043/result.yaml` with the following keys:
+    - `kernel_A`: The integer `A2` used.
+    - `kernel_B`: The integer `B2` used.
+    - `is_bit_conserving`: `true` if the bit count remains stable as expected.
+    - `behavior_class`: `GLIDER`, `STATIONARY_OSCILLATOR`, `DECAY`, `CHAOTIC`, or `FIXED_POINT`.
+    - `net_displacement`: The final distance the pattern's center of mass moved.
+    - `oscillation_period`: The period of the oscillation, if any.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Part 1 succeeded: the second valid kernel is A2=3 (LSB), B2=10 (LSB), equivalent to
+A2_MSB=96, B2_MSB=40. Both orbit conditions and the center-bit-flip condition are satisfied;
+closure size is 12.
+
+Part 2 failed to meet the success criterion. The 2-bit B2 seed (1s at E and SW of center)
+creates neighborhood 40 at the center cell (correct), but simultaneously creates neighborhood
+state 5 at the SE cell (which lies between the two placed bits, seeing them as its W and NE
+neighbors). The rule maps 5→68, activating the SE cell. At t=1 the pattern is a 4-cell
+rhombus {(50,49),(50,50),(51,49),(51,50)} — a still-life. No cell in this cluster ever sees a
+non-identity neighborhood, so it never evolves. This is a geometric consequence of B2's
+non-adjacent pair (E+SW): any such placement always traps a third cell between the two bits.
+The A65/B6 kernel uses adjacent pairs (E+SE), which do not create the same trap.
+
+
+**Metrics:** `{'kernel_A_lsb': 3, 'kernel_B_lsb': 10, 'kernel_A_msb': 96, 'kernel_B_msb': 40, 'final_bit_count': 4, 'net_displacement': 0.0, 'oscillation_period': 1, 'settled_bit_count': 4}`
 
