@@ -3318,3 +3318,71 @@ for this rule, analogous to what was found for rule 1 in iter_054.
 
 **Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 5, 'stable_oscillators_found': 6, 'glider_found': 0, 'glider_period': 0}`
 
+
+---
+```yaml
+cached_tokens: 61539
+campaign: Phase 3 - Second W=3 Rule
+cost_usd: 0.09241
+hypothesis: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67778
+iter: 60
+metrics:
+  contiguous_seeds: 10
+  extra_noncontiguous_seeds: 3227
+  glider_found: 0
+  glider_period: 0
+  patterns_checked: 3237
+  stable_oscillators_found: 88
+  stable_still_lifes_found: 3144
+output_tokens: 1593
+status: experiment_failed
+```
+
+## iter_060: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The previous iteration (iter_059) was a conclusive negative result. An exhaustive search proved that our second W=3 rule (from kernel A=11, B=14) does not support any 3-bit gliders. All 11 contiguous 3-bit patterns are stable, but they are all stationary (either still lifes or oscillators).
+
+This result mirrors the dead end we reached with the first W=3 rule (iter_052), which also failed to produce 3-bit gliders. For that first rule, we logically escalated the search to 4-bit patterns (iter_054), which also failed. To determine if this second rule is similarly flawed, we must follow the same logical progression. Before abandoning the rule, we must perform an exhaustive search for 4-bit gliders. This is the minimal and necessary next step to fully characterize this rule's potential for producing motion.
+
+**Task:** Create a new script, `src/find_gliders_w3_rule2_4bit.py`, to perform an exhaustive search for moving 4-bit objects under the second W=3 rule.
+
+1.  **Load Rule:** Load the symmetric W=3 rule generated in iter_058 from `src/symmetric_rule_w3_next.json` (derived from kernel A=11, B=14).
+
+2.  **Generate Seeds:** Programmatically generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 unique free tetrahexes, but be mindful of the rule's C6 symmetry (not D6), which may require testing more than 7 orientations. Test all unique shapes.
+
+3.  **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 300 steps to robustly detect cycles and movement.
+    c. At each step, verify that the bit count remains exactly 4. If it deviates, the pattern is unstable; log this and continue to the next seed.
+    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period. A non-zero displacement means a glider has been found.
+
+4.  **Report Results:** The script should test all unique patterns and create `archive/iter_060/result.yaml` with a summary of the findings.
+
+5.  **YAML Output:** The `result.yaml` must contain these keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The exhaustive search found no 4-bit glider under the second W=3 rule (A=11, B=14).
+Phase 1 tested all 10 one-sided tetrahex (contiguous) seeds; Phase 2 extended to all
+3,237 unique 4-cell configurations within hex-radius 3, including non-contiguous seeds.
+The dominant outcome is still lifes (3,144), with 88 period-2 oscillators (zero-
+displacement) and 5 unstable patterns. No pattern with non-zero displacement was found.
+Key insight: cells separated by distance > 1 cannot directly interact in this rule
+(it only reads the 6 immediate neighbors), so 4-bit seeds split across distance > 1
+evolve as independent sub-groups — a fundamental barrier to composite-style gliders at
+this bit count. The hypothesis is not supported: the second W=3 rule (A=11, B=14) does
+not appear to support stable, bit-conserving 4-bit gliders.
+
+
+**Metrics:** `{'glider_found': 0, 'glider_period': 0, 'patterns_checked': 3237, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'contiguous_seeds': 10, 'extra_noncontiguous_seeds': 3227}`
+
