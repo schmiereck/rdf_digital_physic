@@ -3,66 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61185
-campaign: Phase 3 - Non-conserving Rules
-cost_usd: 0.09457
-hypothesis: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit
-  object (final_bit_count > 1) from a 3-bit seed.
-input_tokens: 68283
-iter: 68
-metrics:
-  decayed_seed_count: 6
-  glider_found: 0
-  max_final_bit_count: 3
-  multi_bit_object_found: 1
-  patterns_checked: 11
-  stable_object_count: 5
-output_tokens: 1542
-status: ok
-```
-
-## iter_068: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit object (final_bit_count > 1) from a 3-bit seed.
-
-**Analysis:** The research has successfully pivoted to a new paradigm of reversible, but non-bit-conserving rules, unblocking the project after all strictly-conserving rules failed to produce motion. The first rule in this new class (from kernel A=3↔B=14) was generated in iter_066.
-
-The first characterization attempt in iter_067 was informative but incomplete. It confirmed the rule supports stable objects, but the search stopped after finding that the first 3-bit seed tested decayed into a trivial 1-bit still life. All 2-bit seeds decayed to zero.
-
-This is insufficient evidence to either validate or discard this new rule. The most critical open question is whether this rule supports any more complex, multi-bit stable objects. The logical and minimal next step is to complete the exhaustive search over all contiguous 3-bit seeds to fully characterize the "particle zoo" at this complexity level.
-
-**Task:** Create a new script, `src/search_all_3bit_nonconserving.py`, to perform an exhaustive search of all 3-bit seeds under the non-conserving rule.
-
-1.  **Load Rule:** Load the symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
-
-2.  **Exhaustive Search:** The script must generate and test **all 11** unique, contiguous 3-bit seeds (trihexes). It should not stop after the first finding.
-
-3.  **Test Procedure for Each Seed:**
-    a. Initialize a grid (e.g., 50x50) with the seed pattern.
-    b. Simulate for up to 300 steps.
-    c. A seed is considered to have produced a **stable object** if its evolution enters a finite cycle. Decay to 0 bits is an unstable outcome, not a stable object.
-
-4.  **Analysis & Output:** After testing all 11 seeds, the script must analyze the results and create `archive/iter_068/result.yaml` with the following keys:
-    - `multi_bit_object_found`: `true` if any stable object with `final_bit_count > 1` was found.
-    - `glider_found`: `true` if any stable object had a non-zero net displacement.
-    - `patterns_checked`: The total number of seeds tested (should be 11).
-    - `stable_object_count`: The total number of seeds that resulted in a stable object (final_bit_count > 0).
-    - `decayed_seed_count`: The total number of seeds that decayed to 0 bits.
-    - `outcomes`: A list of summary objects, one for each of the 11 seeds, detailing the outcome. Each object should have keys like `seed_shape`, `outcome_class` (`STILL_LIFE`, `OSCILLATOR`, `DECAY`), `final_bit_count`, and `period`.
-
-**Status:** ok
-
-**Experimenter view:** The exhaustive search over all 11 unique 3-bit trihexes confirms the hypothesis:
-two seeds (seeds #2 and #7) produce stable STILL_LIFE objects retaining all 3
-bits (final_bit_count=3). Three more seeds produce 1-bit still lifes. Six seeds
-decay to zero. No gliders or oscillators were found among 3-bit seeds. The two
-3-bit still lives correspond to "bent" trihex shapes (L-shapes); the linear and
-zigzag shapes either decay or collapse to a single bit.
-
-
-**Metrics:** `{'patterns_checked': 11, 'stable_object_count': 5, 'decayed_seed_count': 6, 'multi_bit_object_found': 1, 'glider_found': 0, 'max_final_bit_count': 3}`
-
-
----
-```yaml
 cached_tokens: 61273
 campaign: Phase 3 - Non-conserving Rules
 cost_usd: 0.0938
@@ -2081,4 +2021,81 @@ still-lifes/oscillators from small seeds.
 
 
 **Metrics:** `{'total_rules_evaluated': 1000, 'dead_rules_count': 0, 'chaotic_rules_count': 1000, 'interesting_rules_count': 0, 'initial_soup_cells': 5665, 'grid_size': 150, 'steps': 1000, 'soup_density': 0.25}`
+
+
+---
+```yaml
+cached_tokens: 65894
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10352
+hypothesis: 'soup-stability: A rule known to produce only still-lifes from small seeds
+  will resolve a chaotic soup into a low-density state of persistent objects.'
+input_tokens: 74098
+iter: 98
+metrics:
+  candidates_found: 79
+  chaotic_rules_count: 79
+  dead_rules_count: 0
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  soup_density: 0.25
+  soup_steps: 1000
+output_tokens: 1633
+status: experiment_failed
+```
+
+## iter_098: soup-stability: A rule known to produce only still-lifes from small seeds will resolve a chaotic soup into a low-density state of persistent objects.
+
+**Analysis:** The research is catastrophically blocked. All attempts to seed an evolutionary search for gliders have failed. Random populations of rules with C6, C2, and "dense" C2 symmetries have all proven to be barren of motion when evaluated with a comprehensive suite of small, contiguous seeds (iter_094, 095, 096). The evolutionary algorithm cannot start as the initial populations have zero fitness variance.
+
+The most recent attempt (iter_097) pivoted the evaluation strategy, using a "primordial soup" of random noise instead of small seeds. This also failed, as the "dense" C2 rules tested were too chaotic and maintained a high-density, unstructured state.
+
+The `experimenter_view` from iter_097 suggested that a different class of rules might be needed to organize the soup. The dense rules were too active. This leads to the final remaining hypothesis: that rules known to be *stabilizing* (but not totally static) with small seeds might be the ones capable of "cooling" a chaotic soup into a low-density state of persistent, emergent objects. This experiment will test that hypothesis by taking the non-chaotic rules from the sparse C2 population (iter_095) and running them in the soup environment.
+
+**Task:** Create a new script, `src/test_stable_rules_in_soup.py`.
+
+1. **Identify Candidate Rules:**
+   - Load the full multi-seed evaluation results for the 100 C2-symmetric rules from `archive/iter_095/results/c2_random_multiseed_scores.csv`.
+   - From this data, identify the subset of rules that, across all 21 tested seeds, produced *only* still-lifes or decayed patterns. Exclude any rule that produced an oscillator or an explosion. These are the "stably boring" candidates.
+
+2. **Evaluate Candidates in Soup:**
+   - For each of the identified candidate rules:
+     a. Initialize a 150x150 grid with 25% random noise (a "soup"). Use the same fixed random seed for the noise pattern as in iter_097 to ensure comparability.
+     b. Simulate for 1000 steps.
+     c. At step 1000, record the final number of live cells (`final_bit_count`).
+
+3. **Classify and Report:**
+   - After evaluating all candidates, classify each rule's outcome based on its `final_bit_count`:
+     - `DEAD`: `final_bit_count` < 20
+     - `CHAOTIC`: `final_bit_count` > 1000
+     - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+   - Create `archive/iter_098/result.yaml` with the following keys:
+     - `candidates_found`: The number of "stably boring" rules identified from the iter_095 population.
+     - `dead_rules_count`: The number of candidates classified as DEAD.
+     - `chaotic_rules_count`: The number of candidates classified as CHAOTIC.
+     - `interesting_rules_count`: The number of candidates classified as INTERESTING.
+   - Create a text file `archive/iter_098/results/interesting_rules.txt` and list the filenames of all rules classified as INTERESTING, one per line.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The soup-stability hypothesis is cleanly falsified. 79 of 100 iter_095
+C2 rules qualify as "stably boring" — every small seed either decays or
+settles to a still-life. Yet ALL 79 candidates remain chaotic on a
+150×150 25%-density soup after 1000 steps (final counts 4070–6573;
+initial was 5665). Several rules leave the soup exactly unchanged
+(final=5665), confirming they are near-identity maps: almost all
+128 neighborhood states map to themselves, so high-density states —
+which the non-identity rules were never designed to handle — are left
+untouched. The structural reason is clear: C2 rules generated here
+have only 8–16 non-identity mappings out of 128 states; dense-soup
+neighborhoods overwhelmingly fall into the identity region. Stability
+on sparse small seeds does not imply any dissolving pressure on dense
+soups. Next directions: explicitly select or evolve rules with non-
+identity mappings targeting high-density neighborhoods, or search for
+rules with both small-seed stability and soup-resolution by scanning
+a larger or different rule space.
+
+
+**Metrics:** `{'candidates_found': 79, 'dead_rules_count': 0, 'chaotic_rules_count': 79, 'interesting_rules_count': 0, 'grid_size': 150, 'soup_density': 0.25, 'soup_steps': 1000, 'initial_soup_cells': 5665}`
 

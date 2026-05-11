@@ -3867,3 +3867,63 @@ simplest discovered is minimal (1 surviving bit).
 
 **Metrics:** `{'object_found': 1, 'seed_bit_count': 3, 'patterns_checked': 4, 'object_period': 1, 'final_bit_count': 1, 'net_displacement_q': 0, 'net_displacement_r': 0}`
 
+
+---
+```yaml
+cached_tokens: 61185
+campaign: Phase 3 - Non-conserving Rules
+cost_usd: 0.09457
+hypothesis: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit
+  object (final_bit_count > 1) from a 3-bit seed.
+input_tokens: 68283
+iter: 68
+metrics:
+  decayed_seed_count: 6
+  glider_found: 0
+  max_final_bit_count: 3
+  multi_bit_object_found: 1
+  patterns_checked: 11
+  stable_object_count: 5
+output_tokens: 1542
+status: ok
+```
+
+## iter_068: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit object (final_bit_count > 1) from a 3-bit seed.
+
+**Analysis:** The research has successfully pivoted to a new paradigm of reversible, but non-bit-conserving rules, unblocking the project after all strictly-conserving rules failed to produce motion. The first rule in this new class (from kernel A=3↔B=14) was generated in iter_066.
+
+The first characterization attempt in iter_067 was informative but incomplete. It confirmed the rule supports stable objects, but the search stopped after finding that the first 3-bit seed tested decayed into a trivial 1-bit still life. All 2-bit seeds decayed to zero.
+
+This is insufficient evidence to either validate or discard this new rule. The most critical open question is whether this rule supports any more complex, multi-bit stable objects. The logical and minimal next step is to complete the exhaustive search over all contiguous 3-bit seeds to fully characterize the "particle zoo" at this complexity level.
+
+**Task:** Create a new script, `src/search_all_3bit_nonconserving.py`, to perform an exhaustive search of all 3-bit seeds under the non-conserving rule.
+
+1.  **Load Rule:** Load the symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2.  **Exhaustive Search:** The script must generate and test **all 11** unique, contiguous 3-bit seeds (trihexes). It should not stop after the first finding.
+
+3.  **Test Procedure for Each Seed:**
+    a. Initialize a grid (e.g., 50x50) with the seed pattern.
+    b. Simulate for up to 300 steps.
+    c. A seed is considered to have produced a **stable object** if its evolution enters a finite cycle. Decay to 0 bits is an unstable outcome, not a stable object.
+
+4.  **Analysis & Output:** After testing all 11 seeds, the script must analyze the results and create `archive/iter_068/result.yaml` with the following keys:
+    - `multi_bit_object_found`: `true` if any stable object with `final_bit_count > 1` was found.
+    - `glider_found`: `true` if any stable object had a non-zero net displacement.
+    - `patterns_checked`: The total number of seeds tested (should be 11).
+    - `stable_object_count`: The total number of seeds that resulted in a stable object (final_bit_count > 0).
+    - `decayed_seed_count`: The total number of seeds that decayed to 0 bits.
+    - `outcomes`: A list of summary objects, one for each of the 11 seeds, detailing the outcome. Each object should have keys like `seed_shape`, `outcome_class` (`STILL_LIFE`, `OSCILLATOR`, `DECAY`), `final_bit_count`, and `period`.
+
+**Status:** ok
+
+**Experimenter view:** The exhaustive search over all 11 unique 3-bit trihexes confirms the hypothesis:
+two seeds (seeds #2 and #7) produce stable STILL_LIFE objects retaining all 3
+bits (final_bit_count=3). Three more seeds produce 1-bit still lifes. Six seeds
+decay to zero. No gliders or oscillators were found among 3-bit seeds. The two
+3-bit still lives correspond to "bent" trihex shapes (L-shapes); the linear and
+zigzag shapes either decay or collapse to a single bit.
+
+
+**Metrics:** `{'patterns_checked': 11, 'stable_object_count': 5, 'decayed_seed_count': 6, 'multi_bit_object_found': 1, 'glider_found': 0, 'max_final_bit_count': 3}`
+
