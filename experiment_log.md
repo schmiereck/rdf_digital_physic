@@ -3,75 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 62964
-campaign: Phase 3 - 2D Symmetric Interactions
-cost_usd: 0.08586
-hypothesis: 'interaction-critical-distance: Two 3-bit oscillators, placed at a non-adjacent
-  critical distance, interact in a non-trivial and bit-conserving manner.'
-input_tokens: 67451
-iter: 48
-metrics:
-  bit_loss_at_step: 1
-  final_bit_count: 5
-  final_clusters: 3
-  initial_bit_count: 6
-  interaction_step: 1
-  is_bit_conserving: false
-  oscillation_period: 2
-output_tokens: 1434
-status: experiment_failed
-```
-
-## iter_048: interaction-critical-distance: Two 3-bit oscillators, placed at a non-adjacent critical distance, interact in a non-trivial and bit-conserving manner.
-
-**Analysis:** The project is on the cusp of achieving the primary goal of Phase 3: observing a 2D interaction. We have a symmetric, reversible, bit-conserving rule and a stable, dynamic object (a 3-bit oscillator) produced by it (iter_044).
-
-However, the last two attempts to stage a collision have failed due to experimental design flaws, not a flaw in the rule itself.
-- Iter_045 failed because the oscillators were placed too far apart, and their fields of influence never touched.
-- Iter_047 failed because the oscillators were placed immediately adjacent, causing their core structures to merge into a single, connected cluster which then grew chaotically, violating bit conservation.
-
-These two failures provide critical boundaries for a successful experiment. We have a classic "Goldilocks" problem: there must be a placement that is not too far and not too close. The most logical and minimal step is to place the oscillators at a critical distance where their oscillating fields will touch, but their initial seed patterns are not adjacent. This directly corrects the flaws of the previous experiments and provides the best chance to observe a clean, emergent interaction.
-
-**Task:** Use the existing `src/generate_and_simulate.py` script with the symmetric rule from the contiguous kernel `(A=3, B=6)` established in iter_044. The only change is the initial condition.
-
-1.  **Simulation Setup:**
-    - Grid Size: 100x100 with periodic boundaries.
-    - Steps: 200.
-
-2.  **Initial Condition:**
-    - Place two 3-bit oscillator seeds on the grid, separated by one empty column of cells.
-    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
-    - **Oscillator 2 Seed:** Place '1's at `(24,49)`, `(24,50)`, and `(25,50)`.
-    - This setup ensures the initial patterns are not adjacent, but their oscillating fields will interact at `t=1`.
-
-3.  **Analysis and Output:**
-    - At each step, record the total number of '1's.
-    - Track the coordinates of all '1's.
-    - Create `archive/iter_048/result.yaml` with the following keys:
-      - `is_bit_conserving`: `true` if the bit count remains 6.
-      - `interaction_step`: The first step where the patterns are no longer two independent oscillators. Should be step 1 or 2.
-      - `outcome_class`: A classification: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
-      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The "critical distance" of one empty row between the two 3-bit oscillators causes
-immediate and permanent bit loss at step 1. Unlike the adjacent case (iter_047)
-or the far case (iter_045), this distance creates a boundary condition where the
-overlapping hexagonal neighborhoods of both oscillators produce a neighborhood state
-that maps the center cell from 1→0 without a compensating gain elsewhere.
-After the destructive first step, the system instantly settles into a remarkably
-stable 3-cluster, 5-bit, period-2 compound oscillator — highly structured, not chaotic.
-The hypothesis of bit-conserving interaction is falsified: the critical distance
-produces a qualitatively different (non-conserving, still periodic) interaction regime
-compared to both adjacent and non-adjacent placements.
-
-
-**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 5, 'bit_loss_at_step': 1, 'interaction_step': 1, 'oscillation_period': 2, 'final_clusters': 3, 'is_bit_conserving': False}`
-
-
----
-```yaml
 cached_tokens: 62937
 campaign: Phase 3 - 2D Symmetric Interactions
 cost_usd: 0.08445
@@ -1945,4 +1876,73 @@ a non-moving clump. No glider was produced; the success criterion was not met.
 
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 8, 'object_period': 1, 'glider_found': False, 'cycle_start_step': 1}`
+
+
+---
+```yaml
+cached_tokens: 63686
+campaign: Phase 3 - Emergent Dynamics
+cost_usd: 0.09701
+hypothesis: 'composite-other-sl: Two instances of the second stable 3-bit still life,
+  placed symmetrically with a 1-cell gap, form a stable, moving composite object under
+  the non-conserving rule.'
+input_tokens: 70852
+iter: 78
+metrics:
+  all_arrangements_still_life: true
+  arrangements_searched_gap1: 9
+  arrangements_searched_gap1_to_8_total: 108
+  cycle_start_step: 0
+  final_bit_count: 6
+  glider_found: false
+  initial_bit_count: 6
+  net_displacement_dq: 0
+  net_displacement_dr: 0
+  object_period: 1
+output_tokens: 1543
+status: experiment_failed
+```
+
+## iter_078: composite-other-sl: Two instances of the second stable 3-bit still life, placed symmetrically with a 1-cell gap, form a stable, moving composite object under the non-conserving rule.
+
+**Analysis:** The research is fundamentally blocked. All paradigms tested so far—multiple rule classes (conserving, non-conserving, 2-cycle, 3-cycle), different symmetries (C6, C2), and various update models (synchronous, asynchronous)—have failed to produce a moving particle ("glider") from elemental seeds.
+
+The current campaign, "Emergent Dynamics," tests the hypothesis that motion can arise from the interaction of known-stable, stationary particles. This has also failed. Iterations 075, 076, and 077 exhaustively tested symmetric and asymmetric arrangements of the stable "L-shaped" 3-bit still life. All configurations resulted in either static fusion or no interaction, producing no motion.
+
+A critical variable remains untested: the shape of the interacting particles. The results of iter_068 showed that the non-conserving rule (A=3↔B=14) supports *two* distinct stable 3-bit still lifes. All interaction experiments so far have exclusively used the "L-shape". To determine if the failure is due to the specific geometry of that particle, the minimal and most logical next experiment is to repeat the most promising interaction setup (the 1-cell gap from iter_075) using the *other* stable 3-bit still life.
+
+**Task:** Use the C6 non-conserving rule and the standard synchronous simulator to stage an interaction between the *other* known stable 3-bit still life.
+
+1.  **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2.  **Identify Still Life:** The results of iter_068 showed that two distinct 3-bit seeds produced stable 3-bit still lifes. The experiments in iter_075-077 used one of them (the "L-shape"). Your task is to identify and use the *other* stable 3-bit still life for this experiment.
+
+3.  **Initial Condition:** On a 150x150 grid, place two instances of this second still life in a symmetric arrangement with a one-cell gap between them, analogous to the setup in iter_075.
+    - Center the 6-bit composite object on the grid.
+    - The total initial bit count must be 6.
+
+4.  **Simulation:** Run for 500 steps.
+
+5.  **Analysis & Output:** Create `archive/iter_078/result.yaml` with the following keys:
+    - `glider_found`: boolean
+    - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+    - `is_bit_count_stable`: boolean (is the bit count constant after any initial transient?)
+    - `initial_bit_count`: 6
+    - `final_bit_count`: integer
+    - `object_period`: integer
+    - `net_displacement_hex`: A tuple `(dq, dr)` for the net displacement over one period.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Seed #7 = {(0,0),(1,-1),(1,0)} is the compact triangle (all 3 cells mutually
+adjacent, hex distance 1). Its high symmetry makes it extremely stable. The
+canonical 1-cell-gap arrangement produces an immediate period-1 still life.
+Exhaustive search over 108+ distinct arrangements (gap 1-8) found zero gliders.
+Both Seed #2 and Seed #7 are compact triangles in two hex orientations, and
+no pairing of them at any gap under this rule produces a glider. The hypothesis
+is falsified; the non-conserving rule's glider-producing potential requires
+non-compact seed configurations.
+
+
+**Metrics:** `{'glider_found': False, 'initial_bit_count': 6, 'final_bit_count': 6, 'object_period': 1, 'net_displacement_dq': 0, 'net_displacement_dr': 0, 'cycle_start_step': 0, 'arrangements_searched_gap1': 9, 'arrangements_searched_gap1_to_8_total': 108, 'all_arrangements_still_life': True}`
 
