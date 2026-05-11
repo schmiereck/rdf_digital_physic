@@ -3,70 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 49518
-cost_usd: 0.07307
-hypothesis: 'interaction: The arrowhead glider collides with a stationary bit, resulting
-  in non-trivial, bit-conserving scattering.'
-input_tokens: 53624
-iter: 26
-metrics:
-  collision_step: null
-  grid_size: 100
-  is_bit_conserving: true
-  min_inter_cluster_distance: 49
-  system_period: 100
-  total_steps: 150
-output_tokens: 1464
-status: experiment_failed
-```
-
-## iter_026: interaction: The arrowhead glider collides with a stationary bit, resulting in non-trivial, bit-conserving scattering.
-
-**Analysis:** The previous iteration (iter_024) was a major breakthrough, finally unblocking Phase 3. By returning to the standard CA model and using a more complex, hand-crafted rule, we successfully created a stable, non-trivial 3-bit "arrowhead" glider in the 2D hexagonal grid. This is the first time we have a localized particle moving through a static background, which was the primary obstacle.
-
-With a working glider, the research can now shift from *particle creation* to *particle interaction*, which is the central goal of Phase 3. The logical and highest-priority next step is to stage the simplest possible collision and observe the outcome. This will test whether the carefully constructed rule has any emergent, "physics-like" properties when faced with an unexpected input. The minimal validating step for this is to collide the glider with a single, stationary bit.
-
-**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the hand-crafted 5-pair permutation rule from iter_024.
-
-1.  **Simulation Setup:**
-    - Use a larger grid, e.g., 100x100, with periodic boundary conditions to provide space for scattering.
-    - Run the simulation for 150 steps.
-
-2.  **Initial Condition:**
-    - Place the 3-bit arrowhead glider with its tip at `(q=20, r=50)`, pointing East (positive q direction). The three '1's should be at `(20,50)`, `(19,50)`, and `(19,51)`.
-    - Place a single stationary '1' bit at `(q=70, r=50)`, directly in the glider's path.
-
-3.  **Analysis and Data Collection:**
-    - At each step, record the total number of '1's on the grid.
-    - At each step, record the coordinates of all '1's. This data can be saved to `archive/iter_025/results/path_trace.json`.
-    - Characterize the final state of the system after 150 steps.
-
-4.  **Output:**
-    - Create `archive/iter_025/result.yaml` with the following keys:
-      - `collision_step`: The simulation step at which the glider first interacts with the stationary bit.
-      - `is_bit_conserving`: `true` if the total bit count remained 4 throughout.
-      - `outcome_class`: A string classification: `DEFLECTION`, `ABSORPTION`, `DESTRUCTION`, `PASS_THROUGH`, `CHAOTIC_GROWTH`.
-      - `final_state_summary`: A brief description of the final particle(s), their final positions, and their velocities.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The experimental premise failed: an isolated single '1' bit is not stationary under
-the iter_024 CA rule. State 64 (center=1, all neighbors=0) maps to state 4 (center=0,
-b4=1), while the East neighbor's state 4 maps to 64 (center=1). This makes any lone
-bit propagate East at 1 cell/step — the same velocity as the 3-bit arrowhead glider.
-As a result, both structures travel at identical velocity on the periodic 100x100 grid,
-maintaining a fixed ~49-cell separation with no interaction. The system is exactly
-periodic with T=100 steps (grid width / velocity). Bit count stayed 4 throughout.
-To test actual collisions, a future iteration must use a truly stationary target (a
-bit pattern whose neighborhood dynamics produce a fixed point under this rule), or
-use a glider with different velocity on a different axis.
-
-
-**Metrics:** `{'is_bit_conserving': True, 'collision_step': None, 'min_inter_cluster_distance': 49, 'system_period': 100, 'total_steps': 150, 'grid_size': 100}`
-
-
----
-```yaml
 cached_tokens: 50620
 cost_usd: 0.0739
 hypothesis: 'probe-stationary-target: A simple two-bit pattern forms a stationary
@@ -1866,4 +1802,76 @@ dynamics into a still life, while a critical gap enables glider formation.
 
 
 **Metrics:** `{'is_bit_conserving': True, 'final_bit_count': 6, 'object_period': 1, 'net_displacement': 0.0, 'bit_count_min': 6, 'bit_count_max': 6}`
+
+
+---
+```yaml
+cached_tokens: 61106
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09007
+hypothesis: 'asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes
+  forms a stable, bit-conserving glider.'
+input_tokens: 67244
+iter: 57
+metrics:
+  bit_count_max: 10
+  bit_count_min: 2
+  final_bit_count: 2
+  initial_bit_count: 6
+  is_bit_conserving: false
+  net_displacement: 0.0
+  object_period: 1
+output_tokens: 1440
+status: experiment_failed
+```
+
+## iter_057: asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes forms a stable, bit-conserving glider.
+
+**Analysis:** The research is fundamentally blocked. Our principled search for rules has yielded a robust, symmetric W=3 rule, but exhaustive searches have proven it supports no monolithic gliders at 3 or 4 bits (iter_052, iter_054). This strongly suggests simple, isolated particles do not move in this universe.
+
+Our subsequent hypothesis was that motion could be an emergent property of composite objects. However, all attempts to create a moving "molecule" by placing two stable 3-bit still lifes together have also failed. Both non-adjacent (iter_055) and adjacent, collinear (iter_056) placements resulted in larger, stable still lifes, producing no motion.
+
+The common thread in these failures is symmetry. The rule is symmetric, the component objects are symmetric, and the interaction setups have been symmetric. This may be creating perfectly balanced forces that prevent any net displacement. The most promising and scientifically interesting path forward is to break this symmetry, not by changing the rule, but by changing the initial conditions. We will stage an asymmetric interaction between two known-stable objects.
+
+**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an asymmetric interaction between two known stable 3-bit objects.
+
+1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
+
+2. **Simulation Setup:**
+   - Grid: 100x100 with periodic boundaries.
+   - Steps: 300.
+
+3. **Initial Condition:**
+   - Place two 3-bit straight-line still lifes in an adjacent but non-collinear "stepped" configuration.
+   - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, `(22,50)`.
+   - **Still Life 2:** Place '1's at `(22,51)`, `(23,51)`, `(24,51)`.
+   - The total initial bit count must be 6.
+
+4. **Analysis & Output:**
+   - Determine if the resulting 6-bit composite object is a stable glider.
+   - Track the total bit count at each step.
+   - Track the pattern's coordinates to detect cycles and calculate net displacement.
+   - Create `archive/iter_057/result.yaml` with the following keys:
+       - `is_bit_conserving`: boolean
+       - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+       - `final_bit_count`: integer
+       - `net_displacement`: float, distance moved by the center of mass over one period.
+       - `object_period`: integer, the period of the final stable object.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The asymmetric "stepped" composite (Still Life 1 at rows 20-22, col 50;
+Still Life 2 at rows 22-24, col 51) is not stable. The two 3-bit objects
+share position (22,50)/(22,51) which is adjacent via the NE hex direction,
+creating a non-trivial interaction. The combined 6-bit object immediately
+starts changing: it briefly expands to 10 bits at t=2, then collapses
+through 8, 6, 4 bits, settling at exactly 2 bits from t=6 onward.
+The center of mass stays fixed at (22.00, 50.50) throughout, confirming
+no displacement. The residual 2-bit object is a period-1 still-life.
+The hypothesized asymmetric glider does not emerge from this initial
+configuration; instead, the interaction is destructive rather than
+cooperative.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 2, 'is_bit_conserving': False, 'net_displacement': 0.0, 'object_period': 1, 'bit_count_max': 10, 'bit_count_min': 2}`
 
