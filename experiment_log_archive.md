@@ -4151,3 +4151,70 @@ in lexicographic order among contiguous W=2/W=3 states.
 
 **Metrics:** `{'pairs_checked': 4, 'kernel_A': 3, 'kernel_B': 14, 'c2_closure_size': 4}`
 
+
+---
+```yaml
+cached_tokens: 63042
+campaign: Phase 3 - C2-Symmetric Rules
+cost_usd: 0.09307
+hypothesis: 'dynamics-c2: The C2-symmetric rule from kernel (A=3, B=14) supports at
+  least one stable, 4-bit glider.'
+input_tokens: 69382
+iter: 73
+metrics:
+  decayed_seed_count: 0
+  glider_found: 0
+  glider_period: 0
+  non_identity_mappings: 4
+  patterns_checked: 10
+  stable_object_count: 10
+output_tokens: 1497
+status: experiment_failed
+```
+
+## iter_073: dynamics-c2: The C2-symmetric rule from kernel (A=3, B=14) supports at least one stable, 4-bit glider.
+
+**Analysis:** The research is critically blocked. All previous approaches exploring highly symmetric (C6) rules have failed to produce moving particles ("gliders"). This includes both bit-conserving and non-conserving rules under synchronous updates, as well as attempts to use asynchronous (2-phase and 3-phase) update models. The consistent failure across all these variations strongly suggests that the high C6 spatial symmetry itself is the problem, creating an overly "crystalline" universe where forces are too balanced to permit net motion.
+
+The last iteration (iter_072) successfully unblocked this by pivoting to a new paradigm: reduced symmetry. It performed a formal search and proved the existence of a valid, reversible, non-conserving rule kernel with only C2 (180-degree) symmetry. This is a major breakthrough, opening a new and promising research direction.
+
+The immediate and only logical next step is to generate the full rule from this C2-symmetric kernel and test its dynamics empirically. This will be the first test of our hypothesis that reduced symmetry is the key to enabling propagation.
+
+**Task:** This is a two-part task: first generate the C2-symmetric rule, then search for 4-bit gliders.
+
+**Part 1: Generate the C2-Symmetric Rule**
+1. Create a script `src/generate_c2_rule.py`.
+2. The script should define the kernel pair from iter_072: `A = 3` (popcount=2) and `B = 14` (popcount=3).
+3. Generate the full C2-symmetric rule. This rule will have exactly four non-identity mappings (and their inverses):
+   - `A` -> `B`
+   - `rotate(A, 3)` -> `rotate(B, 3)`
+   - `B` -> `A`
+   - `rotate(B, 3)` -> `rotate(A, 3)`
+4. Save the final rule dictionary to `src/symmetric_rule_c2_A3_B14.json`.
+
+**Part 2: Search for 4-Bit Gliders**
+1. Create a script `src/search_c2_gliders_4bit.py`.
+2. Load the rule from `src/symmetric_rule_c2_A3_B14.json`.
+3. Perform an exhaustive search using all 10 unique, one-sided contiguous 4-bit patterns (tetrahexes) as seeds.
+4. For each seed, simulate for at least 400 steps on a 100x100 grid.
+5. Check for stable objects (patterns that enter a finite cycle with bit_count > 0).
+6. For any stable object found, calculate its net displacement per period. A non-zero displacement indicates a glider.
+7. After testing all 10 seeds, create `archive/iter_073/result.yaml` with a summary of the findings, including the standard glider-search keys (`glider_found`, `patterns_checked`, `stable_object_count`, `decayed_seed_count`, `glider_period`, `glider_velocity_hex`).
+
+**Status:** experiment_failed
+
+**Experimenter view:** The C2-symmetric rule (only 4 non-identity mappings: A↔B and rot(A,3)↔rot(B,3) in MSB
+encoding, i.e., states 96↔56 and 68↔7) produces a highly stabilizing dynamic. All 10
+one-sided tetrahex seeds immediately converge to period-1 still lifes within the 400-step
+simulation window. No seed decayed or grew unboundedly. The rule's limited action — only
+swapping two state pairs and leaving all other neighborhoods unchanged — appears to create
+a landscape dominated by fixed points. Notably, several seeds grew in bit count (e.g.,
+T-shape: 4→5 bits, S-shape: 4→5 bits, zigzag: 4→6 bits), suggesting the rule can recruit
+nearby cells into stable configurations. The absence of gliders likely reflects the rule's
+C2 (not C6) symmetry: with only two orbit pairs instead of six, the rule cannot sustain
+the traveling asymmetry a glider requires. Contrast with the full nonconserving C6 rule
+(12 non-identity mappings) from iter_069, which did produce a stable 4-bit glider.
+
+
+**Metrics:** `{'patterns_checked': 10, 'stable_object_count': 10, 'decayed_seed_count': 0, 'glider_found': 0, 'glider_period': 0, 'non_identity_mappings': 4}`
+
