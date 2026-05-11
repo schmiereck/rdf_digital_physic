@@ -1642,3 +1642,88 @@ bit-conserving interaction is refuted; the outcome is classified as ABSORPTION.
 
 **Metrics:** `{'initial_bit_count': 103, 'final_bit_count': 102, 'bits_annihilated': 1, 'collision_step': 49, 'non_stripe_bits_at_t100': 2, 'non_stripe_bits_at_t150': 2, 'stripe_bits_final': 100, 'is_bit_conserving': False}`
 
+
+---
+```yaml
+cached_tokens: 56248
+cost_usd: 0.079
+hypothesis: 'symmetrized-rule: A fully symmetrized, reversible, bit-conserving rule
+  produces a stable, non-trivial pattern (glider or oscillator) from a single-bit
+  seed.'
+input_tokens: 60401
+iter: 32
+metrics:
+  final_bit_count: 1
+  grid_size: 100
+  initial_bit_count: 1
+  non_identity_rule_mappings: 9
+  rule_is_bit_conserving: true
+  rule_is_involution: false
+  steps_run: 100
+output_tokens: 1452
+status: experiment_failed
+```
+
+## iter_032: symmetrized-rule: A fully symmetrized, reversible, bit-conserving rule produces a stable, non-trivial pattern (glider or oscillator) from a single-bit seed.
+
+**Analysis:** The research is critically blocked on the central goal of Phase 3: staging a 2D collision. The last three iterations (iter_026, iter_027, iter_028) have failed because our only working 2D glider (the "arrowhead" from iter_024) is based on a hand-crafted rule that lacks rotational symmetry. This flaw makes it impossible to create rotated gliders for collisions and makes finding a stationary target an unprincipled search. The failures are not in the simulation environment but in the rule's fundamental design.
+
+To unblock this, we must abandon the ad-hoc rule design and move to a principled, symmetric approach. The immediate priority is to construct a new rule that is, by design, invariant under the 60-degree rotations of the hexagonal lattice. We will do this by defining a single, non-trivial "generator" mapping and then programmatically applying all six rotations to generate a complete, symmetric rule set. Testing this new rule with a simple initial condition is the minimal validating step to see if this method can produce the physics-like behavior that has been absent so far.
+
+**Task:** Create a new Python script `src/simulate_symmetric_hex.py` that uses the standard CA update model.
+
+1.  **Implement Hexagonal Rotation:** Create a helper function `rotate_neighborhood(state: str, steps: int)` that takes a 7-bit neighborhood string 'b0b1b2b3b4b5b6' and rotates the neighbor bits (`b1` to `b6`) by the given number of steps.
+
+2.  **Generate a Symmetric Rule:**
+    a. Define a "generator" mapping. Use a non-trivial, bit-conserving, reversible pair. For example:
+       `A = '0100100'` (W=2)
+       `B = '1000010'` (W=2)
+    b. Initialize a rule dictionary where every state maps to itself (identity).
+    c. Loop 6 times (for 0 to 5 rotations):
+       i.   Calculate `A_rot = rotate_neighborhood(A, i)` and `B_rot = rotate_neighborhood(B, i)`.
+       ii.  Add the mappings to the rule: `rule[A_rot] = B_rot` and `rule[B_rot] = A_rot`.
+    d. This will create a rule table with 12 non-identity mappings that is symmetric by construction.
+
+3.  **Simulation:**
+    a. Use a 100x100 hexagonal grid with periodic boundaries.
+    b. Run for 100 steps.
+    c. Initial Condition: A single '1' bit at the grid center `(50,50)`.
+
+4.  **Analysis and Output:**
+    a. Track bit count and coordinates at each step.
+    b. Create `archive/iter_029/result.yaml` with these keys:
+       - `is_bit_conserving`: `true` if the bit count changes from its initial value of 1.
+       - `behavior_class`: `STABLE_GLIDER`, `STATIONARY_OSCILLATOR`, `DECAY`, `CHAOTIC_GROWTH`, or `TRIVIAL_SHIFT`.
+       - `final_bit_count`: The number of '1's at the final step.
+       - `final_pattern_summary`: A brief description of the final state (e.g., "3-bit oscillator", "6-bit glider").
+
+**Status:** experiment_failed
+
+**Experimenter view:** The experiment exposes a fundamental contradiction in the hypothesis: a
+truly bit-conserving rule cannot produce final_bit_count > 1 starting from
+a 1-bit seed, since conservation is a global invariant.
+
+The rotation conflict is the first issue: A='0100100' has period 3 under
+the CW neighbor rotation, so iterations rot=3,4,5 silently overwrite the
+rot=0,1,2 mappings for A. The result is 9 non-identity mappings (not 12),
+and the rule is NOT an involution (rule[rule[B]] ≠ B for the original B
+rotations from rot=0,1,2).
+
+The seed cell at (50,50) with no neighbors sits in state 64, which maps to
+itself (identity). All 6 neighbors of the seed see single-neighbor states
+(1,2,4,8,16,32), all of which are also identity. No activation ever occurs.
+
+Supplementary tests reveal: a 2-bit E-W gap seed (q=20,q=22 same row)
+triggers gap-filling (2→3→1) but collapses to a 1-bit fixed point. The
+canonical 3-bit arrowhead is a still life under this rule (all 3 cells land
+in identity states 97,88,70). The rule does exhibit non-trivial dynamics
+for multi-bit seeds, but those seeds cannot be reached from 1 bit.
+
+To disprove the hypothesis clearly: with any bit-conserving rule, a 1-bit
+initial state is either a fixed point or a trivial 1-bit trajectory. The
+success criteria (final_bit_count > 1) require non-conservation from the
+outset, or a different multi-bit seed.
+
+
+**Metrics:** `{'initial_bit_count': 1, 'final_bit_count': 1, 'non_identity_rule_mappings': 9, 'rule_is_bit_conserving': True, 'rule_is_involution': False, 'steps_run': 100, 'grid_size': 100}`
+
