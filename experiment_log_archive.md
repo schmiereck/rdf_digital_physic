@@ -1574,3 +1574,71 @@ finite localized patterns in the infinite plane.
 
 **Metrics:** `{'patterns_checked': 7596, 'still_life_found': True, 'smallest_still_life_size': 50, 'small_localized_found': 0, 'stripe_found': 1}`
 
+
+---
+```yaml
+cached_tokens: 55264
+cost_usd: 0.07729
+hypothesis: 'interaction-stripe: The arrowhead glider''s collision with a stationary
+  stripe results in a non-trivial, bit-conserving interaction.'
+input_tokens: 58935
+iter: 31
+metrics:
+  bits_annihilated: 1
+  collision_step: 49
+  final_bit_count: 102
+  initial_bit_count: 103
+  is_bit_conserving: false
+  non_stripe_bits_at_t100: 2
+  non_stripe_bits_at_t150: 2
+  stripe_bits_final: 100
+output_tokens: 1532
+status: ok
+```
+
+## iter_031: interaction-stripe: The arrowhead glider's collision with a stationary stripe results in a non-trivial, bit-conserving interaction.
+
+**Analysis:** The project is blocked on the primary goal of Phase 3: staging a 2D collision. Recent iterations have revealed a fundamental flaw in our current approach: the hand-crafted rule that supports our only known particle, the "arrowhead" glider (iter_024), is brittle and lacks rotational symmetry (refuted in iter_028, iter_029). Attempts to find a simple collision target under this rule have also failed; small patterns are unstable (iter_027), and single bits move in lockstep with the glider (iter_026).
+
+However, iter_030 provided a crucial piece of the puzzle: while no *small, localized* stationary patterns exist, an infinite (or grid-wrapping) horizontal stripe *is* a stable "still life". This provides us with a valid, albeit unconventional, target.
+
+Instead of abandoning the rule or embarking on a complex new search, the most direct and scientifically sound next step is to use the assets we have successfully validated. We have a working glider and a working stationary target. Therefore, the immediate priority is to collide them and observe the interaction. This is the minimal validating step to finally probe the interaction dynamics of our system, which is the core objective of Phase 3.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the 5-pair permutation rule from iter_024.
+
+1.  **Simulation Setup:**
+    - Grid size: 100x100 with periodic boundaries.
+    - Total steps: 150.
+
+2.  **Initial Condition:**
+    - Create a vertical stripe "wall": set all cells with coordinate `q=70` to '1'.
+    - Place the 3-bit arrowhead glider at `q=20, r=50`. The glider points East (positive q direction), so its three '1' bits should be at `(20,50)`, `(19,50)`, and `(19,51)`. This ensures it is on a direct collision course with the stripe.
+
+3.  **Analysis and Data Collection:**
+    - At each step, record the total number of '1's on the grid.
+    - For visualization, save the full grid state at steps `t=0`, `t=49` (pre-collision), `t=50` (impact), `t=51`, and `t=100` to `archive/iter_031/results/`.
+
+4.  **Output:**
+    - Create `archive/iter_031/result.yaml` with the following keys:
+      - `collision_step`: The simulation step at which the glider first interacts with the stripe (should be `t=50`).
+      - `is_bit_conserving`: `true` if the total bit count remains constant (initially 103 bits).
+      - `outcome_class`: A string classification: `REFLECTION`, `ABSORPTION`, `DESTRUCTION`, `PASS_THROUGH`, or `CHAOTIC`.
+      - `final_state_summary`: A brief text description of the final state of the glider and the stripe wall.
+
+**Status:** ok
+
+**Experimenter view:** The glider-stripe collision is non-trivial but also non-conserving. The 3-bit glider
+(tip at q=20, r=50) travels East at 1 cell/step. At step 49, when the would-be new
+tip position (q=69, r=50) becomes adjacent to the stripe at (q=70, r=50), the stripe
+changes the tip cell's neighborhood state from 4 to 54. State 54 is not in the rule
+(no swap), so the center bit stays 0 — the glider cannot advance. Meanwhile, the two
+tail cells (q=67, r=50) and (q=67, r=51) still trigger their turn-off rules (97→49,
+88→28). The net effect: 1 bit annihilated, 2 bits freeze as a permanent 2-bit still
+life at (68,50) and (68,51). The stripe is entirely unaffected from t=49 onward.
+The collision step is 49, not 50 as geometrically predicted, because the stripe
+exerts influence one cell west via b1:E neighborhood adjacency. The hypothesis of
+bit-conserving interaction is refuted; the outcome is classified as ABSORPTION.
+
+
+**Metrics:** `{'initial_bit_count': 103, 'final_bit_count': 102, 'bits_annihilated': 1, 'collision_step': 49, 'non_stripe_bits_at_t100': 2, 'non_stripe_bits_at_t150': 2, 'stripe_bits_final': 100, 'is_bit_conserving': False}`
+

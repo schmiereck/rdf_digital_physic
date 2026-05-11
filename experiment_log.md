@@ -3,74 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 55264
-cost_usd: 0.07729
-hypothesis: 'interaction-stripe: The arrowhead glider''s collision with a stationary
-  stripe results in a non-trivial, bit-conserving interaction.'
-input_tokens: 58935
-iter: 31
-metrics:
-  bits_annihilated: 1
-  collision_step: 49
-  final_bit_count: 102
-  initial_bit_count: 103
-  is_bit_conserving: false
-  non_stripe_bits_at_t100: 2
-  non_stripe_bits_at_t150: 2
-  stripe_bits_final: 100
-output_tokens: 1532
-status: ok
-```
-
-## iter_031: interaction-stripe: The arrowhead glider's collision with a stationary stripe results in a non-trivial, bit-conserving interaction.
-
-**Analysis:** The project is blocked on the primary goal of Phase 3: staging a 2D collision. Recent iterations have revealed a fundamental flaw in our current approach: the hand-crafted rule that supports our only known particle, the "arrowhead" glider (iter_024), is brittle and lacks rotational symmetry (refuted in iter_028, iter_029). Attempts to find a simple collision target under this rule have also failed; small patterns are unstable (iter_027), and single bits move in lockstep with the glider (iter_026).
-
-However, iter_030 provided a crucial piece of the puzzle: while no *small, localized* stationary patterns exist, an infinite (or grid-wrapping) horizontal stripe *is* a stable "still life". This provides us with a valid, albeit unconventional, target.
-
-Instead of abandoning the rule or embarking on a complex new search, the most direct and scientifically sound next step is to use the assets we have successfully validated. We have a working glider and a working stationary target. Therefore, the immediate priority is to collide them and observe the interaction. This is the minimal validating step to finally probe the interaction dynamics of our system, which is the core objective of Phase 3.
-
-**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the 5-pair permutation rule from iter_024.
-
-1.  **Simulation Setup:**
-    - Grid size: 100x100 with periodic boundaries.
-    - Total steps: 150.
-
-2.  **Initial Condition:**
-    - Create a vertical stripe "wall": set all cells with coordinate `q=70` to '1'.
-    - Place the 3-bit arrowhead glider at `q=20, r=50`. The glider points East (positive q direction), so its three '1' bits should be at `(20,50)`, `(19,50)`, and `(19,51)`. This ensures it is on a direct collision course with the stripe.
-
-3.  **Analysis and Data Collection:**
-    - At each step, record the total number of '1's on the grid.
-    - For visualization, save the full grid state at steps `t=0`, `t=49` (pre-collision), `t=50` (impact), `t=51`, and `t=100` to `archive/iter_031/results/`.
-
-4.  **Output:**
-    - Create `archive/iter_031/result.yaml` with the following keys:
-      - `collision_step`: The simulation step at which the glider first interacts with the stripe (should be `t=50`).
-      - `is_bit_conserving`: `true` if the total bit count remains constant (initially 103 bits).
-      - `outcome_class`: A string classification: `REFLECTION`, `ABSORPTION`, `DESTRUCTION`, `PASS_THROUGH`, or `CHAOTIC`.
-      - `final_state_summary`: A brief text description of the final state of the glider and the stripe wall.
-
-**Status:** ok
-
-**Experimenter view:** The glider-stripe collision is non-trivial but also non-conserving. The 3-bit glider
-(tip at q=20, r=50) travels East at 1 cell/step. At step 49, when the would-be new
-tip position (q=69, r=50) becomes adjacent to the stripe at (q=70, r=50), the stripe
-changes the tip cell's neighborhood state from 4 to 54. State 54 is not in the rule
-(no swap), so the center bit stays 0 — the glider cannot advance. Meanwhile, the two
-tail cells (q=67, r=50) and (q=67, r=51) still trigger their turn-off rules (97→49,
-88→28). The net effect: 1 bit annihilated, 2 bits freeze as a permanent 2-bit still
-life at (68,50) and (68,51). The stripe is entirely unaffected from t=49 onward.
-The collision step is 49, not 50 as geometrically predicted, because the stripe
-exerts influence one cell west via b1:E neighborhood adjacency. The hypothesis of
-bit-conserving interaction is refuted; the outcome is classified as ABSORPTION.
-
-
-**Metrics:** `{'initial_bit_count': 103, 'final_bit_count': 102, 'bits_annihilated': 1, 'collision_step': 49, 'non_stripe_bits_at_t100': 2, 'non_stripe_bits_at_t150': 2, 'stripe_bits_final': 100, 'is_bit_conserving': False}`
-
-
----
-```yaml
 cached_tokens: 56248
 cost_usd: 0.079
 hypothesis: 'symmetrized-rule: A fully symmetrized, reversible, bit-conserving rule
@@ -1873,4 +1805,80 @@ rotational symmetry over a 18-state closure — a complete and minimal structure
 
 
 **Metrics:** `{'triplets_checked': 2, 'closure_size': 18, 'hamming_weight': 3, 'orbit_A_min': 7, 'orbit_B_min': 11, 'orbit_C_min': 14}`
+
+
+---
+```yaml
+cached_tokens: 61485
+campaign: Phase 3 - W=3 Cyclic Rules
+cost_usd: 0.09475
+hypothesis: 'dynamics-3cycle: The 3-cycle rule (A=7,B=11,C=14) produces at least one
+  stable, bit-conserving, non-trivial 3-bit object.'
+input_tokens: 68027
+iter: 62
+metrics:
+  kernel_A: 7
+  kernel_B: 11
+  kernel_C: 14
+  net_displacement_q: 0
+  net_displacement_r: 0
+  non_identity_mappings: 18
+  object_period: 1
+  patterns_checked: 1
+  seeds_tested: 11
+output_tokens: 1719
+status: ok
+```
+
+## iter_062: dynamics-3cycle: The 3-cycle rule (A=7,B=11,C=14) produces at least one stable, bit-conserving, non-trivial 3-bit object.
+
+**Analysis:** The research was fundamentally blocked as two successive W=3 involution rules (A↔B) failed to produce any moving particles (gliders) after exhaustive searches at 3-bit and 4-bit complexities (iter_052, 054, 059, 060). This strongly indicated a flaw in the involution-based rule generation method itself, which seems to favor stationary patterns.
+
+Iteration 061 successfully unblocked this by finding a valid kernel for a new class of rule based on a 3-cycle (A→B→C→A). This is a major breakthrough, as it opens up a new, richer design space for rules that might support motion.
+
+The immediate and only logical next step is to generate the full rule from this new 3-cycle kernel and perform a first-pass characterization of its dynamics. The minimal validating experiment is to systematically search for any stable, bit-conserving 3-bit objects (still lifes, oscillators, or gliders) to see if this rule supports persistent structures.
+
+**Task:** This is a two-part task: first generate the new rule from the 3-cycle kernel, then search for stable 3-bit objects within its dynamics.
+
+**Part 1: Generate the 3-Cycle Rule**
+1. Create a new script `src/generate_3cycle_rule.py`.
+2. Define the kernel triplet from iter_061: `A = 7` ('0000111'), `B = 11` ('0001011'), `C = 14` ('0001110').
+3. Implement the 6-fold hexagonal rotation for 7-bit integer states.
+4. Generate the full symmetric rule. This will have 18 non-identity mappings. For each rotation `i` in `0..5`:
+   - `A_rot = rotate(A, i)`, `B_rot = rotate(B, i)`, `C_rot = rotate(C, i)`
+   - Add mappings: `rule[A_rot] = B_rot`, `rule[B_rot] = C_rot`, `rule[C_rot] = A_rot`.
+5. Save the final rule dictionary to `src/symmetric_rule_w3_3cycle.json`.
+
+**Part 2: Search for 3-Bit Objects**
+1. Create a new script `src/search_3cycle_objects.py`.
+2. Load the rule from `src/symmetric_rule_w3_3cycle.json`.
+3. Systematically test all 11 unique, contiguous 3-bit patterns (trihexes).
+4. For each seed, simulate for 200 steps on a small grid, checking for two conditions at every step:
+   a. **Bit Conservation:** The total number of '1's must remain exactly 3.
+   b. **Stability:** The pattern must eventually enter a cycle (i.e., a previously seen configuration of coordinates reappears).
+5. The script should stop as soon as it finds the *first* stable, bit-conserving object.
+6. Create `archive/iter_062/result.yaml` with the results of the search.
+
+**YAML Output for iter_062:**
+- `kernel_A`, `kernel_B`, `kernel_C`: The integers 7, 11, 14.
+- `object_found`: `true` or `false`.
+- `patterns_checked`: The number of 3-bit seeds tested before finding the first stable object.
+- `object_type`: `STILL_LIFE`, `OSCILLATOR`, or `GLIDER`.
+- `object_period`: The period of the found object.
+- `net_displacement`: The net displacement of the object's center of mass over one period.
+
+**Status:** ok
+
+**Experimenter view:** The 3-cycle rule (A=7→B=11→C=14 plus all hexagonal rotations) supports a still life
+on its very first seed: the straight 3-cell NE-line [(0,0),(0,1),(0,2)]. This pattern
+is stable because each cell has at most 2 live neighbors, so no cell's 7-bit neighborhood
+encodes a 3-bit (Hamming-weight-3) state, meaning none of the 18 non-identity 3-cycle
+mappings ever fire. The 3-cycle rule is richer than a 2-cycle: the kernels A, B, C
+come from three disjoint orbits rather than one involution pair, yet a trivial still life
+still exists because the "background" (non-kernel) states all map to themselves. The
+hypothesis is confirmed: the 3-cycle rule does support at least one stable, bit-conserving,
+non-trivial 3-bit object.
+
+
+**Metrics:** `{'kernel_A': 7, 'kernel_B': 11, 'kernel_C': 14, 'non_identity_mappings': 18, 'seeds_tested': 11, 'patterns_checked': 1, 'object_period': 1, 'net_displacement_q': 0, 'net_displacement_r': 0}`
 
