@@ -1,19 +1,18 @@
-Phase: 3 - Asynchronous Updates
+Phase: 3 - C2-Symmetric Rules
 
 ### Goal
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-EXPLORATION. The first attempt to use an asynchronous update model (3-phase) failed to produce motion (iter_070). This iteration tests a different, less-biased asynchronous model (2-phase checkerboard) to isolate the cause of the failure.
+PIVOT. All previous approaches exploring highly symmetric (C6) rules under both synchronous and asynchronous update models have failed to produce moving particles ("gliders"). This entire research direction is now considered a dead end. The project is now challenging the fundamental assumption of high spatial symmetry by pivoting to a search for rules with only C2 (180-degree) symmetry.
 
 ### Confirmed Findings
-- A principled method exists for finding mathematically valid, symmetric, reversible rule kernels for various rule classes (iter_033, 061, 065).
-- **Under a synchronous update model**, none of the three major rule classes tested (conserving 2-cycle, conserving 3-cycle, non-conserving 2-cycle) support gliders for monolithic 3-bit or 4-bit seeds. They only produce stationary objects. (Evidence: iter_060, 064, 069).
-- The non-conserving rule (A=3↔B=14) supports stable multi-bit still lifes under a synchronous update model (iter_068).
+- A principled method exists for finding mathematically valid, symmetric, reversible rule kernels for C6-symmetric rules (iter_033, 061, 065).
+- Under synchronous updates, no C6-symmetric rules tested (conserving or non-conserving) support gliders for monolithic 3-bit or 4-bit seeds (iter_060, 064, 069).
 
 ### Refuted Hypotheses
-- Gliders exist for the tested rules **under a synchronous update model** (Falsified by iter_060, 064, 069).
-- A 3-phase update schedule enables glider propagation for the non-conserving rule (Falsified by iter_070).
+- Simple gliders exist for the tested C6-symmetric rules under a synchronous update model. (Falsified by iter_060, 064, 069).
+- Asynchronous update models (2-phase and 3-phase) enable glider propagation for the non-conserving C6 rule. (Falsified by iter_070, 071).
 
 ### In Progress
-- **iter_071:** Re-running the 4-bit glider search for the non-conserving rule using a 2-phase (checkerboard) update schedule.
+- **iter_072:** A formal search for the existence of a valid, reversible, non-conserving rule kernel with only C2 (180-degree) symmetry.

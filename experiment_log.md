@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 42
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_042: strategy_error
-
-**Analysis:** 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'CachedContent can not be used with GenerateContent request setting system_instruction, tools or tool_config.\n\nProposed fix: move those values to CachedContent from GenerateContent request.', 'status': 'INVALID_ARGUMENT'}}
-
-**Task:** 
-
-**Status:** code_error
-
-**Experimenter view:** 
-
-**Metrics:** `{}`
-
-
----
-```yaml
 cached_tokens: 68782
 cost_usd: 0.10109
 hypothesis: 'dynamics-next-kernel: The symmetric rule from the second valid kernel
@@ -1882,4 +1857,60 @@ for this particular non-conserving rule (A=3, B=14).
 
 
 **Metrics:** `{'patterns_checked': 10, 'stable_object_count': 10, 'decayed_seed_count': 0, 'glider_found': False, 'glider_period': 0, 'still_life_count': 10}`
+
+
+---
+```yaml
+cached_tokens: 62141
+campaign: Phase 3 - C2-Symmetric Rules
+cost_usd: 0.09165
+hypothesis: 'search-c2-kernel: A valid, reversible, non-conserving C2-symmetric rule
+  kernel (A(2)↔B(3)) exists.'
+input_tokens: 68501
+iter: 72
+metrics:
+  c2_closure_size: 4
+  kernel_A: 3
+  kernel_B: 14
+  pairs_checked: 4
+output_tokens: 1430
+status: ok
+```
+
+## iter_072: search-c2-kernel: A valid, reversible, non-conserving C2-symmetric rule kernel (A(2)↔B(3)) exists.
+
+**Analysis:** The research is fundamentally blocked. Exhaustive searches have demonstrated that three different classes of highly symmetric (C6), reversible rules (conserving 2-cycle, conserving 3-cycle, and non-conserving 2-cycle) fail to produce any moving particles ("gliders") under a synchronous update model. All discovered stable objects are stationary.
+
+Furthermore, attempts to break the deadlock by changing the update model to asynchronous (3-phase in iter_070, 2-phase in iter_071) also failed. These models acted as even stronger damping mechanisms, collapsing all patterns into still lifes.
+
+The consistent failure across both rule types and update models points to a flaw in a more fundamental assumption: high spatial symmetry. The 6-fold rotational symmetry of the rules themselves may be creating an overly "crystalline" universe where forces are perfectly balanced, preventing any net propagation. The next logical step is to challenge this assumption by reducing the required symmetry of the rule.
+
+**Task:** Create a new script, `src/find_c2_kernel.py`, to perform a combinatorial search for a valid rule kernel with only C2 symmetry.
+
+1. **Search Space:** The script should search through pairs of states `(A, B)` where `A` has Hamming Weight 2 and `B` has Hamming Weight 3.
+
+2. **Constraints:** A pair `(A, B)` is considered a valid C2 kernel if it satisfies all of the following:
+    a. **Contiguity:** Both state `A` and state `B` must represent contiguous patterns.
+    b. **Center-Bit Flip:** The center bit of `A` must be different from the center bit of `B`.
+    c. **Conflict-Free C2 Closure:** The state `A` must not be a 180-degree rotation of `B` (`A != rotate(B, 3)`), and neither state can be its own 180-degree rotation (`A != rotate(A, 3)`). This ensures the four states `{A, B, rotate(A, 3), rotate(B, 3)}` are all distinct and can form a conflict-free C2-symmetric rule.
+
+3. **Execution:** The script should iterate through combinations of contiguous W=2 and W=3 states and test them against the constraints, stopping as soon as the *first* valid pair is found.
+
+4. **Output:** The script must create `archive/iter_072/result.yaml` with the following keys:
+    - `kernel_found`: `true` or `false`.
+    - `pairs_checked`: The total number of pairs checked before finding a valid kernel.
+    - `kernel_A`, `kernel_B`: The integer representations of the found states.
+    - `kernel_A_binary`, `kernel_B_binary`: The 7-bit string representations.
+
+**Status:** ok
+
+**Experimenter view:** The first valid C2-symmetric kernel found is (A=3, B=14), the same pair
+identified as the non-conserving rule in earlier iterations. The C2 closure
+{A=3, rotate(A,3)=17, B=14, rotate(B,3)=112} contains exactly 4 distinct
+states, confirming the kernel is conflict-free under 180-degree rotation.
+Only 4 pairs needed to be examined, indicating this is the minimal valid pair
+in lexicographic order among contiguous W=2/W=3 states.
+
+
+**Metrics:** `{'pairs_checked': 4, 'kernel_A': 3, 'kernel_B': 14, 'c2_closure_size': 4}`
 

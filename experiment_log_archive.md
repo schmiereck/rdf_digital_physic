@@ -2212,3 +2212,28 @@ The failure reveals that not all mathematically valid kernels will produce motio
 
 **Metrics:** `{}`
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 42
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_042: strategy_error
+
+**Analysis:** 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'CachedContent can not be used with GenerateContent request setting system_instruction, tools or tool_config.\n\nProposed fix: move those values to CachedContent from GenerateContent request.', 'status': 'INVALID_ARGUMENT'}}
+
+**Task:** 
+
+**Status:** code_error
+
+**Experimenter view:** 
+
+**Metrics:** `{}`
+
