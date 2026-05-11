@@ -3,77 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61130
-campaign: Phase 3 - Non-conserving Rules
-cost_usd: 0.09344
-hypothesis: 'search-stable-nonconserving: The non-conserving rule (A=3↔B=14) supports
-  at least one stable, non-trivial object (still life or oscillator) from a 2-bit
-  or 3-bit seed.'
-input_tokens: 68175
-iter: 67
-metrics:
-  final_bit_count: 1
-  net_displacement_q: 0
-  net_displacement_r: 0
-  object_found: 1
-  object_period: 1
-  patterns_checked: 4
-  seed_bit_count: 3
-output_tokens: 1457
-status: ok
-```
-
-## iter_067: search-stable-nonconserving: The non-conserving rule (A=3↔B=14) supports at least one stable, non-trivial object (still life or oscillator) from a 2-bit or 3-bit seed.
-
-**Analysis:** The research is critically blocked. All previous attempts to find moving particles ("gliders") within symmetric, reversible, and strictly bit-conserving rule systems have failed. These rules consistently produce "crystalline" universes with only stationary objects.
-
-A major paradigm shift occurred in iter_065, where we successfully identified a new class of rule that is reversible but *not* strictly bit-conserving, allowing a 2-bit state to map to a 3-bit state. This was a critical breakthrough.
-
-However, the first test of this rule in iter_066 failed. The chosen 3-bit seed pattern immediately decayed to zero. The experimenter's analysis correctly noted that this was a failure of the specific initial condition, not necessarily the rule itself. The seed was not "self-protecting" and triggered its own destruction.
-
-The most crucial open question is whether this new, non-conserving rule supports *any* stable structures at all. Abandoning this promising new paradigm after testing a single, arbitrary seed would be a major scientific error. The logical and minimal next step is to move from testing one seed to a systematic, combinatorial search for stable objects.
-
-**Task:** Create a new script, `src/search_stable_nonconserving_objects.py`, to systematically search for stable objects under the rule from iter_066.
-
-1. **Load Rule:** Load the symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
-
-2. **Systematic Search:** The script should perform the search in two stages, stopping as soon as the first stable object is found.
-   - **Stage 1 (2-bit seeds):** Generate and test all unique contiguous 2-bit seeds (dihexes).
-   - **Stage 2 (3-bit seeds):** If no stable object is found in Stage 1, proceed to generate and test all 11 unique contiguous 3-bit seeds (trihexes).
-
-3. **Test Procedure for Each Seed:**
-   a. Initialize a grid (e.g., 50x50) with the seed pattern.
-   b. Simulate for up to 300 steps.
-   c. At each step, record the total bit count and the pattern's configuration (a sorted tuple of coordinates).
-   d. A seed is considered to have produced a **stable object** if its evolution enters a finite cycle (a previously seen configuration and bit count repeats). Decay to 0 bits is not a stable object.
-
-4. **Output:** Create `archive/iter_067/result.yaml` with the following keys:
-    - `object_found`: `true` if a stable object was found, `false` otherwise.
-    - `seed_bit_count`: The bit count of the seed that produced the first stable object (2 or 3).
-    - `patterns_checked`: The total number of unique seeds tested before finding the object.
-    - `behavior_class`: `STILL_LIFE` (period 1) or `OSCILLATOR` (period > 1).
-    - `object_period`: The integer period of the found object.
-    - `final_bit_count`: The bit count of the stable object itself.
-    - `net_displacement`: The net displacement of the object's center of mass over one period.
-
-**Status:** ok
-
-**Experimenter view:** All 3 unique 2-bit seeds (dihexes) decayed to zero — the non-conserving rule
-annihilates all two-cell contiguous patterns. The very first 3-bit seed tested
-(3 cells in a straight NE line: (0,0)→(0,1)→(0,2)) evolved into a single
-surviving cell — a valid period-1 still life. This is a consequence of the
-non-conserving rule: neighborhood 64 (isolated live cell, all neighbors dead)
-maps to itself, so any isolated cell is a fixed point. The 3-cell straight seed
-decays from 3 bits down to 1 bit, then stabilizes. The hypothesis is confirmed:
-the A=3↔B=14 rule does support stable objects from small seeds, though the
-simplest discovered is minimal (1 surviving bit).
-
-
-**Metrics:** `{'object_found': 1, 'seed_bit_count': 3, 'patterns_checked': 4, 'object_period': 1, 'final_bit_count': 1, 'net_displacement_q': 0, 'net_displacement_r': 0}`
-
-
----
-```yaml
 cached_tokens: 61185
 campaign: Phase 3 - Non-conserving Rules
 cost_usd: 0.09457
@@ -2086,4 +2015,70 @@ Therefore, the next logical step is not to change the symmetry class again or ab
 **Experimenter view:** No yaml block in output – check stdout.txt
 
 **Metrics:** `{}`
+
+
+---
+```yaml
+cached_tokens: 65958
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.27842
+hypothesis: 'from-chaos: At least one ''dense'' C2 rule from iter_096, when seeded
+  with random noise, will resolve into a low-density state of persistent, non-chaotic
+  objects.'
+input_tokens: 124410
+iter: 97
+metrics:
+  chaotic_rules_count: 1000
+  dead_rules_count: 0
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  soup_density: 0.25
+  steps: 1000
+  total_rules_evaluated: 1000
+output_tokens: 1536
+status: experiment_failed
+```
+
+## iter_097: from-chaos: At least one 'dense' C2 rule from iter_096, when seeded with random noise, will resolve into a low-density state of persistent, non-chaotic objects.
+
+**Analysis:** The research is catastrophically blocked. A comprehensive series of experiments (iter_091-096) has proven that random populations of rules, regardless of C6 or C2 symmetry, and regardless of rule table density ("sparse" vs. "dense"), are completely barren of moving particles ("gliders") when tested with small, contiguous initial seeds. The evolutionary algorithm cannot start because the initial populations have zero fitness variance; every single rule scores zero with the motion-based metric.
+
+This persistent failure across all rule generation strategies points to a fundamental flaw in the evaluation methodology itself. The core assumption has been that "interesting" rules should produce simple gliders from simple initial conditions. The evidence suggests this is false. The only remaining hypothesis is that motion in these universes is an emergent phenomenon that arises from a complex, chaotic "primordial soup" rather than being an elemental property of small seeds.
+
+The logical next step is to completely change the fitness evaluation environment. Instead of seeding with a single, small, artificial pattern, we must seed with random noise and search for rules that can "cool" this chaos into a state of persistent, localized, non-explosive structures. This is a "filtering" step to identify candidate rules for further analysis.
+
+**Task:** Create a new script, `src/filter_soup_rules.py`, to identify promising rules from the "dense" C2 population generated in the previous (failed) iteration.
+
+1. **Load Rules:** Load all 100 "dense" C2-symmetric rules from the `archive/iter_096/population/` directory.
+
+2. **Evaluate Each Rule:** For each of the 100 rules:
+   a. Initialize a 150x150 grid with 25% random noise (a "soup"). Use a fixed random seed for reproducibility.
+   b. Simulate for 1000 steps.
+   c. At step 1000, record the final number of live cells (`final_bit_count`).
+
+3. **Classify and Report:** After evaluating all rules, analyze the distribution of `final_bit_count`.
+   a. Classify each rule based on its `final_bit_count`:
+      - `DEAD`: `final_bit_count` < 20
+      - `CHAOTIC`: `final_bit_count` > 1000
+      - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+   b. Create `archive/iter_097/result.yaml` with the following keys:
+      - `dead_rules_count`: The number of rules classified as DEAD.
+      - `chaotic_rules_count`: The number of rules classified as CHAOTIC.
+      - `interesting_rules_count`: The number of rules classified as INTERESTING.
+   c. Create a text file `archive/iter_097/results/interesting_rules.txt` and list the filenames of all rules classified as INTERESTING, one per line. If none are found, this file should be empty.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Every single dense C2 rule maintained a final cell count well above the
+CHAOTIC threshold of 1000 (range roughly 3600–14000 cells; initial soup was
+5665 cells). No rule caused the soup to settle into a low-density structured
+state. Dense rules (32 non-identity mappings out of 128 states) are clearly
+too aggressive — they sustain or amplify high-density chaos rather than
+resolving it. A different strategy is needed: either sparser rules, longer
+simulation runs, or deliberately selecting rules that are known to produce
+still-lifes/oscillators from small seeds.
+
+
+**Metrics:** `{'total_rules_evaluated': 1000, 'dead_rules_count': 0, 'chaotic_rules_count': 1000, 'interesting_rules_count': 0, 'initial_soup_cells': 5665, 'grid_size': 150, 'steps': 1000, 'soup_density': 0.25}`
 
