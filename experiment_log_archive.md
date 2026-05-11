@@ -1925,3 +1925,71 @@ structurally obvious in retrospect.
 
 **Metrics:** `{'pairs_checked': 2, 'hamming_weight': 2, 'closure_size': 12, 'kernel_A': 3, 'kernel_B': 6}`
 
+
+---
+```yaml
+cached_tokens: 61534
+cost_usd: 0.08564
+hypothesis: 'dynamics-valid-kernel: The symmetric rule from kernel (A=3, B=6) produces
+  a stable, non-trivial oscillator or glider from a 2-bit seed.'
+input_tokens: 65556
+iter: 37
+metrics:
+  behavior_class: FIXED_POINT
+  final_bit_count: 2
+  is_bit_conserving: true
+  net_displacement: 0.0
+output_tokens: 1688
+status: experiment_failed
+```
+
+## iter_037: dynamics-valid-kernel: The symmetric rule from kernel (A=3, B=6) produces a stable, non-trivial oscillator or glider from a 2-bit seed.
+
+**Analysis:** The research has been critically blocked on generating a symmetric 2D rule capable of supporting non-trivial dynamics. All previous attempts with hand-crafted or naively symmetrized rules failed.
+
+The last iteration (iter_036) was a major formal breakthrough. It confirmed the existence of a "valid kernel" – a state pair (A=3, B=6) that satisfies all known mathematical requirements: bit-conservation, reversibility, conflict-free rotational closure, and belonging to disjoint rotational orbits. This is the first time we have a mathematically sound foundation for a symmetric rule.
+
+The immediate and only logical next step is to move from formal existence back to empirical testing. We must construct the full rule from this validated kernel and simulate its dynamics. This is the minimal experiment to determine if our principled, bottom-up approach to rule design can finally unblock Phase 3 and produce interesting physics. We will seed the simulation with a minimal pattern designed to trigger the rule's core A->B transformation.
+
+**Task:** The task is to generate a new symmetric rule from the kernel found in iter_036 and then simulate it.
+
+**Part 1: Rule Generation**
+1. Create a new script `src/generate_valid_rule.py`.
+2. Define the kernel pair from iter_036: `A=3` ('0000011') and `B=6` ('0000110').
+3. Implement a hexagonal rotation function for 7-bit integer states.
+4. Generate the full symmetric rule:
+   - Initialize a rule dictionary where all 128 states map to themselves (identity).
+   - For `i` in `range(6)`:
+     - `A_rot = rotate(A, i)`, `B_rot = rotate(B, i)`
+     - Add mappings: `rule[A_rot] = B_rot` and `rule[B_rot] = A_rot`.
+5. Save the final rule dictionary to a new file: `src/symmetric_rule_A3B6.json`.
+
+**Part 2: Simulation**
+1. Use the existing simulator at `src/simulate_hex.py` with the standard CA update model.
+2. Modify the simulator to load the rule from `src/symmetric_rule_A3B6.json`.
+3. Use a 100x100 grid with periodic boundaries for 100 steps.
+4. **Initial Condition:** Place a 2-bit pattern that creates neighborhood `A` ('0000011') for the cell at `(50,50)`. This means placing '1's at its SW neighbor `(49,51)` and NW neighbor `(50,51)`. The cell at `(50,50)` itself must be '0'.
+
+**Part 3: Output**
+1. Create `archive/iter_037/result.yaml` with the following keys:
+   - `is_bit_conserving`: `true` if the bit count remains 2 throughout.
+   - `behavior_class`: `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, `CHAOTIC`, or `FIXED_POINT`.
+   - `net_displacement`: The distance the pattern's center of mass moved from its initial position.
+   - `final_pattern_coords`: A list of the coordinates of the '1's at the final step.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The 2-bit seed (NW=1, NE=1 neighbors of center) forms a perfectly stable
+still-life. Root cause: all 6 non-identity rule mappings have center=0
+in both domain and range states (all < 64). Existing '1' cells have
+center=1 neighborhood states (96 and 68), which are identity — they never
+move. The center cell (50,50) maps state 3→33 but the center bit of 33 is
+still 0, so no new '1' cells are ever created. The result is an immovable,
+unchanging 2-bit configuration: a still-life, not an oscillator or glider.
+To find a glider, a kernel pair where at least one mapped state has center=1
+would be needed, or a different initial seed that activates the non-identity
+mappings on center=1 cells.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'net_displacement': 0.0, 'final_bit_count': 2, 'behavior_class': 'FIXED_POINT'}`
+
