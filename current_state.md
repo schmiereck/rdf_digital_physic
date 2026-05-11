@@ -13,4 +13,4 @@ The project is catastrophically blocked. All attempts to seed an evolutionary se
 - **Formal Search Exhausted (iter_049-081):** All top-down, principled rule design strategies have failed to produce motion.
 
 ### In Progress
-- **iter_100:** Testing a "cooling" rule generation strategy. Rules are generated with mappings explicitly designed to reduce local density (mapping medium-density states to low-density states) to see if they can organize a chaotic soup into a structured state.
+- **iter_101:** Re-running the "cooling" rule generation experiment from iter_100, which failed due to a code error. This strategy creates rules that map medium-density states to low-density states, a direct attempt to resolve the "density paradox". This is the last unexplored rule generation strategy.

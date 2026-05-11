@@ -3,60 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61756
-campaign: Phase 3 - Asynchronous Updates
-cost_usd: 0.09118
-hypothesis: 'update-model-2phase: A 2-phase (checkerboard) update schedule enables
-  glider propagation for the non-conserving rule (A=3, B=14) with a 4-bit seed.'
-input_tokens: 68144
-iter: 71
-metrics:
-  decayed_seed_count: 0
-  glider_found: false
-  glider_period: 0
-  patterns_checked: 10
-  stable_object_count: 10
-  still_life_count: 10
-output_tokens: 1408
-status: experiment_failed
-```
-
-## iter_071: update-model-2phase: A 2-phase (checkerboard) update schedule enables glider propagation for the non-conserving rule (A=3, B=14) with a 4-bit seed.
-
-**Analysis:** The research is fundamentally blocked. All rule systems tested under the default synchronous update model have failed to produce motion. The first attempt to break this deadlock by switching to an asynchronous update model (a 3-phase schedule in iter_070) also failed, and in fact, seemed to suppress dynamics even more strongly, collapsing all seeds into stationary objects.
-
-The experimenter's insight from iter_070 suggests the specific 3-coloring introduced a directional bias that broke the translational symmetry required for gliders. This is a critical insight. It implies that not all asynchronous models are equal. The immediate question is whether the failure was due to the specific 3-phase model, or if asynchrony in general is hostile to this rule system.
-
-The most logical and minimal next step is to test a different, standard, and less-biased asynchronous model: a 2-phase (checkerboard) update. This directly tests the hypothesis that the 3-phase model's bias was the problem and will determine if the asynchronous update paradigm is a viable path forward.
-
-**Task:** 1. Create a new script `src/simulate_2phase.py`.
-2. Load the non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json`.
-3. Implement a 2-phase update schedule based on a checkerboard coloring of the hex grid. A cell at `(q, r)` has color `(q + r) % 2`.
-4. The simulation loop should consist of 2 phases per "full step":
-   - Phase 0: Compute and apply updates for all color=0 cells.
-   - Phase 1: Compute and apply updates for all color=1 cells based on the grid state after Phase 0.
-5. Perform an exhaustive search for gliders using all 10 unique, one-sided contiguous 4-bit tetrahex seeds.
-6. For each seed, simulate for 400 full steps (i.e., 800 phases).
-7. Track stability (object enters a cycle with bit_count > 0) and net displacement.
-8. Create `archive/iter_071/result.yaml` with the standard glider-search keys: `glider_found`, `patterns_checked`, `stable_object_count`, `decayed_seed_count`, `glider_period`, and `glider_velocity_hex`.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The 2-phase checkerboard schedule (color = (q+r)%2) freezes all 10 tetrahex
-seeds into period-1 still lives — no oscillators, no gliders, no decay.
-This contrasts sharply with the 3-phase schedule (iter_070) which produced
-gliders. The checkerboard bipartition appears to over-stabilize the rule: by
-alternating between two mutually exclusive sublattices, the update sequence
-locks patterns into fixed points rather than allowing propagating dynamics.
-The 3-phase or synchronous schedules are needed to sustain traveling objects
-for this particular non-conserving rule (A=3, B=14).
-
-
-**Metrics:** `{'patterns_checked': 10, 'stable_object_count': 10, 'decayed_seed_count': 0, 'glider_found': False, 'glider_period': 0, 'still_life_count': 10}`
-
-
----
-```yaml
 cached_tokens: 62141
 campaign: Phase 3 - C2-Symmetric Rules
 cost_usd: 0.09165
@@ -2120,6 +2066,62 @@ The only remaining, well-motivated hypothesis comes from the failure of iter_099
   - `INTERESTING`: 20 <= `final_bit_count` <= 1000
 - Create `archive/iter_100/result.yaml` with the counts for each class (`dead_rules_count`, `chaotic_rules_count`, `interesting_rules_count`).
 - Create `archive/iter_100/results/interesting_rules.txt`, listing the filenames of all rules classified as `INTERESTING`.
+
+**Status:** code_error
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Metrics:** `{}`
+
+
+---
+```yaml
+cached_tokens: 66200
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10542
+hypothesis: 'cooling-rules-fix: A population of C2-rules, biased to map medium-density
+  states to lower-density states, contains at least one rule that resolves a random
+  soup into a low-density state.'
+input_tokens: 74816
+iter: 101
+metrics: {}
+output_tokens: 1651
+status: code_error
+```
+
+## iter_101: cooling-rules-fix: A population of C2-rules, biased to map medium-density states to lower-density states, contains at least one rule that resolves a random soup into a low-density state.
+
+**Analysis:** The research is catastrophically blocked. All attempts to find a rule that supports moving particles ("gliders") have failed. The "Evolutionary Search" paradigm, which was the last resort after exhaustive formal searches failed, has stalled at its first step. The core problem is that initial random populations of rules, regardless of their symmetry (C6, C2) or density ("sparse", "dense"), are completely barren of the desired behavior. The evolutionary algorithm has no initial "spark" of motion to select and optimize.
+
+A pivot to a "primordial soup" evaluation (iter_097-099) also failed due to a "density paradox": rules were either too chaotic (dense rules) or too inactive (sparse rules) to organize the soup into a structured, low-density state.
+
+The last attempt, iter_100, proposed the most promising strategy yet: generating "cooling" rules that explicitly map medium-density states (common in the soup) to low-density states. This is a direct, engineered solution to the density paradox. However, this experiment failed due to a code error, leaving this critical hypothesis untested. The only logical path forward is to fix the implementation and re-run this experiment.
+
+**Task:** This task is a re-run of iter_100. Please debug and fix the `code_error` from the previous attempt.
+
+Create a script `src/run_cooling_soup_search.py`.
+
+**1. Implement 'Cooling' Rule Generation:**
+- Create a function to generate a single C2-symmetric rule with exactly 8 kernel pairs (16 non-identity mappings).
+- To generate the kernels, randomly select pairs `(A, B)` such that:
+  - The Hamming Weight of state `A` is in `{2, 3}` (medium density).
+  - The Hamming Weight of state `B` is in `{0, 1}` (low density).
+- The pools of medium- and low-density states must be sampled without replacement to ensure all 8 generated kernel pairs are unique and result in a conflict-free C2-symmetric rule.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 "cooling" rules and save them to `archive/iter_101/population/`.
+- Evaluate each rule using the established soup methodology:
+  - Initialize a 150x150 grid with 25% random noise (use the same fixed random seed as prior soup experiments, e.g., seed=42).
+  - Simulate for 1000 steps.
+  - Record the `final_bit_count`.
+
+**3. Classify and Report:**
+- Classify each rule's outcome based on its `final_bit_count`:
+  - `DEAD`: `final_bit_count` < 20
+  - `CHAOTIC`: `final_bit_count` > 1000
+  - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+- Create `archive/iter_101/result.yaml` with the counts for each class (`dead_rules_count`, `chaotic_rules_count`, `interesting_rules_count`).
+- Create `archive/iter_101/results/interesting_rules.txt`, listing the filenames of all rules classified as `INTERESTING`.
 
 **Status:** code_error
 

@@ -4041,3 +4041,57 @@ translational symmetry that makes gliders possible in the synchronous case.
 
 **Metrics:** `{'patterns_checked': 10, 'stable_object_count': 10, 'decayed_seed_count': 0, 'glider_found': False, 'glider_period': 0}`
 
+
+---
+```yaml
+cached_tokens: 61756
+campaign: Phase 3 - Asynchronous Updates
+cost_usd: 0.09118
+hypothesis: 'update-model-2phase: A 2-phase (checkerboard) update schedule enables
+  glider propagation for the non-conserving rule (A=3, B=14) with a 4-bit seed.'
+input_tokens: 68144
+iter: 71
+metrics:
+  decayed_seed_count: 0
+  glider_found: false
+  glider_period: 0
+  patterns_checked: 10
+  stable_object_count: 10
+  still_life_count: 10
+output_tokens: 1408
+status: experiment_failed
+```
+
+## iter_071: update-model-2phase: A 2-phase (checkerboard) update schedule enables glider propagation for the non-conserving rule (A=3, B=14) with a 4-bit seed.
+
+**Analysis:** The research is fundamentally blocked. All rule systems tested under the default synchronous update model have failed to produce motion. The first attempt to break this deadlock by switching to an asynchronous update model (a 3-phase schedule in iter_070) also failed, and in fact, seemed to suppress dynamics even more strongly, collapsing all seeds into stationary objects.
+
+The experimenter's insight from iter_070 suggests the specific 3-coloring introduced a directional bias that broke the translational symmetry required for gliders. This is a critical insight. It implies that not all asynchronous models are equal. The immediate question is whether the failure was due to the specific 3-phase model, or if asynchrony in general is hostile to this rule system.
+
+The most logical and minimal next step is to test a different, standard, and less-biased asynchronous model: a 2-phase (checkerboard) update. This directly tests the hypothesis that the 3-phase model's bias was the problem and will determine if the asynchronous update paradigm is a viable path forward.
+
+**Task:** 1. Create a new script `src/simulate_2phase.py`.
+2. Load the non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json`.
+3. Implement a 2-phase update schedule based on a checkerboard coloring of the hex grid. A cell at `(q, r)` has color `(q + r) % 2`.
+4. The simulation loop should consist of 2 phases per "full step":
+   - Phase 0: Compute and apply updates for all color=0 cells.
+   - Phase 1: Compute and apply updates for all color=1 cells based on the grid state after Phase 0.
+5. Perform an exhaustive search for gliders using all 10 unique, one-sided contiguous 4-bit tetrahex seeds.
+6. For each seed, simulate for 400 full steps (i.e., 800 phases).
+7. Track stability (object enters a cycle with bit_count > 0) and net displacement.
+8. Create `archive/iter_071/result.yaml` with the standard glider-search keys: `glider_found`, `patterns_checked`, `stable_object_count`, `decayed_seed_count`, `glider_period`, and `glider_velocity_hex`.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The 2-phase checkerboard schedule (color = (q+r)%2) freezes all 10 tetrahex
+seeds into period-1 still lives — no oscillators, no gliders, no decay.
+This contrasts sharply with the 3-phase schedule (iter_070) which produced
+gliders. The checkerboard bipartition appears to over-stabilize the rule: by
+alternating between two mutually exclusive sublattices, the update sequence
+locks patterns into fixed points rather than allowing propagating dynamics.
+The 3-phase or synchronous schedules are needed to sustain traveling objects
+for this particular non-conserving rule (A=3, B=14).
+
+
+**Metrics:** `{'patterns_checked': 10, 'stable_object_count': 10, 'decayed_seed_count': 0, 'glider_found': False, 'glider_period': 0, 'still_life_count': 10}`
+
