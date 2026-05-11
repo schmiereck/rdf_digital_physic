@@ -3,69 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 50620
-cost_usd: 0.0739
-hypothesis: 'probe-stationary-target: A simple two-bit pattern forms a stationary
-  fixed point or oscillator under the arrowhead-glider rule.'
-input_tokens: 54742
-iter: 27
-metrics:
-  final_bit_count: 1
-  initial_bit_count: 2
-  net_displacement: 0.5
-  step_at_decay: 2
-output_tokens: 1446
-status: experiment_failed
-```
-
-## iter_027: probe-stationary-target: A simple two-bit pattern forms a stationary fixed point or oscillator under the arrowhead-glider rule.
-
-**Analysis:** The previous attempt to stage a collision (iter_026) failed because the intended stationary target—a single bit—was not stationary under the arrowhead-glider rule. It propagated at the same velocity as the glider, preventing any interaction. This is a critical negative result, showing that the rule's dynamics are not trivial.
-
-The project is now blocked on the primary goal of Phase 3: observing a 2D collision. To unblock this, we must first find a valid target for our existing arrowhead glider. There are two paths: create a new glider with a different velocity, or find a pattern that is stationary under the current rule. The latter is the more direct and minimal validating step, as it allows us to retry the intended collision experiment with only one change: a valid target.
-
-Therefore, the immediate priority is to probe the existing rule for simple, stable, stationary patterns. The simplest possible candidate is a two-bit pattern. This experiment will determine if our rule-space contains the necessary ingredients (both moving and stationary objects) for complex physics.
-
-**Task:** Use the existing simulator at `src/simulate_hex.py` with the standard CA update model and the hand-crafted 5-pair permutation rule from iter_024. No code changes are required.
-
-1. **Simulation Setup:**
-   - Grid size: 100x100 with periodic boundaries.
-   - Steps: 100.
-
-2. **Initial Condition:**
-   - Initialize the grid with all cells '0'.
-   - Place a two-bit pattern near the center by setting two adjacent cells to '1': `(50,50)` and `(51,50)`.
-
-3. **Analysis:**
-   - At each step, track the total number of '1's and their coordinates.
-   - Calculate the net displacement of the pattern's center of mass over the 100 steps.
-
-4. **Output:**
-   - Create `archive/iter_027/result.yaml` with the following keys:
-     - `is_bit_conserving`: `true` if the bit count remains 2.
-     - `behavior_class`: `STATIONARY_FIXED_POINT`, `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, or `CHAOTIC`.
-     - `net_displacement`: The total distance the center of mass moved from its initial position.
-     - `final_pattern_coords`: The coordinates of the '1's at the final step.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The two-bit seed (50,50)+(51,50) — center + East neighbor — is NOT a
-stationary target. In the first step the bits spread to (50,50)+(52,50),
-then at step 2 the pattern collapses to a single bit at (53,50) and from
-that point on the lone '1' travels East at exactly 1 cell/step (a trivial
-single-bit glider). The net centroid displacement is only 0.5 because the
-final single bit wraps back near the starting x-coordinate after 100 steps
-on the 100-wide grid. This arrangement is therefore a DECAY event: the CA
-rule cannot preserve both bits when they are placed as an East-adjacent pair.
-The arrowhead-glider rule annihilates one bit when the East neighbor is '1'
-and no NW bit is present to absorb the interaction.
-
-
-**Metrics:** `{'initial_bit_count': 2, 'final_bit_count': 1, 'net_displacement': 0.5, 'step_at_decay': 2}`
-
-
----
-```yaml
 cached_tokens: 51687
 cost_usd: 0.07563
 hypothesis: 'symmetry: A 60-degree rotated arrowhead seed produces a stable glider
@@ -1874,4 +1811,72 @@ cooperative.
 
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 2, 'is_bit_conserving': False, 'net_displacement': 0.0, 'object_period': 1, 'bit_count_max': 10, 'bit_count_min': 2}`
+
+
+---
+```yaml
+cached_tokens: 61247
+campaign: Phase 3 - Second W=3 Rule
+cost_usd: 0.09179
+hypothesis: 'search-next-w3-rule: The second valid W=3 kernel produces a rule that
+  supports at least one stable, bit-conserving, non-trivial 3-bit object.'
+input_tokens: 67366
+iter: 58
+metrics:
+  kernel_A: 11
+  kernel_B: 14
+  net_displacement: 0.0
+  object_period: 1
+  patterns_checked: 1
+output_tokens: 1598
+status: ok
+```
+
+## iter_058: search-next-w3-rule: The second valid W=3 kernel produces a rule that supports at least one stable, bit-conserving, non-trivial 3-bit object.
+
+**Analysis:** The research is fundamentally blocked. The campaign to find or build a moving particle ("glider") under the current W=3 rule (from kernel A=7, B=14) has failed conclusively.
+- Iter_052 & iter_054: Exhaustive searches proved no monolithic 3-bit or 4-bit gliders exist. The rule only produces stationary "still lifes".
+- Iter_055, 056, 057: Attempts to build a composite "molecular" glider by arranging stable 3-bit still lifes in symmetric and asymmetric configurations all failed, resulting in either larger still lifes or destructive, non-bit-conserving decay.
+
+The evidence strongly suggests the current rule is a dead end for producing motion. The most logical and scientifically sound path forward is to abandon this rule and test the *next* valid rule candidate from our established formal search method. This involves finding the second valid W=3 kernel and probing its dynamics.
+
+**Task:** This is a two-part task: first find the next valid kernel, then test it.
+
+**Part 1: Find the Second W=3 Kernel**
+1. Create a script `src/find_next_w3_kernel.py`.
+2. This script must search for state-pairs `(A, B)` at Hamming Weight 3 that satisfy all four established conditions: Center-Bit Flip, Disjoint Orbits, Conflict-Free Closure, and Contiguity.
+3. The script must find and **ignore** the first valid kernel (`A=7, B=14`) and then find and report the **second** valid kernel.
+4. The script should print the integers and binary strings for this second kernel pair to stdout for verification.
+
+**Part 2: Generate Rule and Search for Objects**
+1. Create a script `src/generate_and_search_w3.py`.
+2. This script must programmatically take the new kernel pair `(A2, B2)` from Part 1 as input.
+3. It must generate the full 6-fold symmetric rule and save it to `src/symmetric_rule_w3_next.json`.
+4. It must then systematically test all 11 unique, contiguous 3-bit seeds for stability under this new rule.
+5. For each seed, simulate for up to 200 steps, checking for bit-conservation and cyclic behavior.
+6. The script should stop as soon as it finds the *first* stable object (still life, oscillator, or glider).
+7. The script's final action must be to create `archive/iter_058/result.yaml` with the results of the search.
+
+**YAML Output for iter_058:**
+- `kernel_A`: The integer `A2` used.
+- `kernel_B`: The integer `B2` used.
+- `object_found`: `true` if a stable 3-bit object was found, `false` otherwise.
+- `patterns_checked`: The number of 3-bit seeds tested before finding an object.
+- `object_type`: `STILL_LIFE`, `OSCILLATOR`, or `GLIDER`.
+- `object_period`: The period of the found object.
+- `net_displacement`: The net displacement of the object's center of mass over one period.
+
+**Status:** ok
+
+**Experimenter view:** The second valid W=3 kernel is (A=11, B=14) in LSB encoding.
+A=11 ('0001011') encodes {center, E, SW} — a non-contiguous-arc pattern where two
+neighbors span the center. B=14 ('0001110') encodes {E, SE, SW} — the same B-orbit
+as the first kernel (A=7, B=14). The two kernels share the B-orbit but differ in A.
+The rule is a bit-conserving involution with 12 non-identity state mappings.
+The very first 3-bit seed tested — a straight NE-line [(0,0),(0,1),(0,2)] — is
+immediately a STILL_LIFE (period=1, no displacement). This confirms the hypothesis:
+the second W=3 kernel supports a stable, bit-conserving, non-trivial 3-bit still life.
+
+
+**Metrics:** `{'kernel_A': 11, 'kernel_B': 14, 'patterns_checked': 1, 'object_period': 1, 'net_displacement': 0.0}`
 
