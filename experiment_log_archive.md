@@ -2592,3 +2592,66 @@ compared to both adjacent and non-adjacent placements.
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 5, 'bit_loss_at_step': 1, 'interaction_step': 1, 'oscillation_period': 2, 'final_clusters': 3, 'is_bit_conserving': False}`
 
+
+---
+```yaml
+cached_tokens: 62937
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.08445
+hypothesis: 'search-w3-kernel: A valid rule kernel exists at Hamming Weight 3 that
+  satisfies all known constraints (contiguity, center-flip, disjoint orbits, conflict-free
+  closure).'
+input_tokens: 67488
+iter: 49
+metrics:
+  closure_size: 12
+  kernel_A: 7
+  kernel_B: 14
+  pairs_checked: 3
+output_tokens: 1281
+status: ok
+```
+
+## iter_049: search-w3-kernel: A valid rule kernel exists at Hamming Weight 3 that satisfies all known constraints (contiguity, center-flip, disjoint orbits, conflict-free closure).
+
+**Analysis:** The research is critically blocked. The last three iterations (iter_045, 047, 048) have conclusively demonstrated a fatal flaw in the current rule generated from the W=2 kernel (A=3, B=6). While the rule is mathematically sound and produces a stable 3-bit oscillator, it is not bit-conserving during multi-particle interactions.
+
+- Placing oscillators too far apart results in no interaction (iter_045).
+- Placing them adjacently causes a chaotic, non-conserving merger (iter_047).
+- Placing them at a "critical" distance causes immediate, non-chaotic bit loss (iter_048).
+
+This proves that the rule, while elegant, does not support the kind of robust, physics-like interactions required by the project goals. Further simulation with this rule is pointless. The problem lies in the simplicity of the rule itself. The next logical step is to find a more complex, and hopefully more robust, rule by escalating the search for a valid kernel to a higher Hamming Weight.
+
+**Task:** The task is to perform a formal, combinatorial search, not a simulation.
+
+1.  Modify the script `src/find_contiguous_kernel.py`.
+2.  Change the search space from Hamming Weight 2 to **Hamming Weight 3**.
+3.  The script must search for the **first** state-pair `(A, B)` at W=3 that satisfies all four established conditions:
+    a. **Center-Bit Flip:** `center_bit(A) != center_bit(B)`.
+    b. **Disjoint Orbits:** The rotational orbits of A and B must be disjoint.
+    c. **Conflict-Free Closure:** The joint 12-state rotational closure must have exactly 12 unique states.
+    d. **Contiguity:** For both A and B, all '1' bits must form a single connected cluster.
+4.  The script should create `archive/iter_049/result.yaml` with the following keys:
+    - `valid_kernel_found`: boolean
+    - `hamming_weight_searched`: 3
+    - `pairs_checked`: The total number of W=3 pairs checked.
+    - `kernel_A`: The integer representation of the first valid A state found.
+    - `kernel_B`: The integer representation of the first valid B state found.
+    - `kernel_A_binary`: The 7-bit string for A.
+    - `kernel_B_binary`: The 7-bit string for B.
+
+**Status:** ok
+
+**Experimenter view:** A valid W=3 kernel was found almost immediately (3rd pair checked).
+A=7 (0000111): bits {0,1,2} = center + E + SE — a cluster anchored at center.
+B=14 (0001110): bits {1,2,3} = E + SE + SW — three consecutive ring neighbors with no center.
+The center-bit flip condition (1 vs 0) is satisfied. The six rotations of A and B
+produce 12 disjoint states with no overlaps, confirming conflict-free closure.
+The contiguity check (BFS on the 7-node adjacency graph) correctly distinguishes
+connected clusters from fragmented ones. W=3 admits valid kernels, and the first
+valid pair is the structurally simplest possible: a center-anchored triad paired
+with its immediate ring shift.
+
+
+**Metrics:** `{'pairs_checked': 3, 'kernel_A': 7, 'kernel_B': 14, 'closure_size': 12}`
+
