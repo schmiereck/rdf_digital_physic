@@ -3,74 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 58675
-cost_usd: 0.0854
-hypothesis: 'dynamics-symmetric: The symmetric rule from kernel (A=3, B=6) produces
-  a stable, non-trivial oscillator or glider from a 2-bit seed.'
-input_tokens: 63172
-iter: 35
-metrics:
-  bit_count_final: 2
-  bit_count_initial: 2
-  net_displacement: 0.0
-  non_identity_rule_entries: 6
-  steps: 100
-output_tokens: 1745
-status: experiment_failed
-```
-
-## iter_035: dynamics-symmetric: The symmetric rule from kernel (A=3, B=6) produces a stable, non-trivial oscillator or glider from a 2-bit seed.
-
-**Analysis:** The project is critically blocked on creating a symmetric 2D rule capable of supporting complex dynamics. All previous attempts with hand-crafted or naively symmetrized rules failed (iter_028, iter_029, iter_032).
-
-The previous iteration (iter_033) was a major breakthrough, moving from simulation to a formal search. It successfully proved the existence of a "conflict-free kernel": a pair of states (A=3, B=6) that can be rotated 6-fold to generate a valid, symmetric, reversible, bit-conserving rule without any self-conflicts. This is the first time we have had a mathematically sound foundation for a symmetric rule.
-
-The immediate and only logical next step is to construct the full rule from this validated kernel and test its dynamics. This is the minimal experiment to determine if this principled approach can finally unblock Phase 3. We will seed the simulation with a pattern that directly triggers the rule's core transformation to see if it produces any non-trivial behavior.
-
-**Task:** The task is to generate a new symmetric rule and then simulate it.
-
-**Part 1: Rule Generation (in `src/rule_generator.py`)**
-1. Define the kernel pair from iter_033: `A=3` ('0000011') and `B=6` ('0000110').
-2. Create a function `rotate_neighborhood(state: int)` that performs a 60-degree clockwise rotation on the 6 neighbor bits.
-3. Generate the full symmetric rule:
-   - Initialize a rule dictionary where all 128 states map to themselves.
-   - For `i` in `range(6)`:
-     - `A_rot = rotate(A, i)`, `B_rot = rotate(B, i)`
-     - Add mappings: `rule[A_rot] = B_rot` and `rule[B_rot] = A_rot`.
-4. Save the final rule dictionary to a new file: `src/symmetric_rule_A3_B6.json`.
-
-**Part 2: Simulation (in `src/simulate_hex.py`)**
-1. Modify the simulator to load the rule from `src/symmetric_rule_A3_B6.json`.
-2. Use the standard CA update model (not the symmetric swap scheduler).
-3. Use a 100x100 grid with periodic boundaries for 100 steps.
-4. **Initial Condition:** Place a 2-bit pattern near the center that creates neighborhood `A` ('0000011') for the cell at `(50,50)`. This means placing '1's at its SW `(49,51)` and NW `(50,51)` neighbors. The cell at `(50,50)` itself is '0'.
-
-**Part 3: Output**
-1. Create `archive/iter_034/result.yaml` with the following keys:
-   - `is_bit_conserving`: `true` if the bit count remains 2 throughout.
-   - `behavior_class`: `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, `CHAOTIC`, or `FIXED_POINT`.
-   - `net_displacement`: The distance the pattern's center of mass moved from its initial position.
-   - `final_pattern_coords`: The coordinates of the '1's at the final step.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The hypothesis is falsified. The rule from kernel (A=3, B=6) produces a
-FIXED_POINT: the 2-bit pattern at (49,51),(50,51) never moves or changes.
-Root cause: A=3 and B=6 are in the same 6-fold rotation orbit
-{3,33,48,24,12,6}. The last-write-wins sequential application of 6 rotation
-mappings creates a directed cycle among center=0 states only. Since all
-explicit transitions map to center=0 outputs, no '0' cell can turn '1'.
-The two '1' cells (states 96, 68) fall under identity rules and stay '1'.
-The bit-conservation criterion is satisfied (2 bits throughout), but the
-non-trivial-motion criterion is not. Candidate pairs in the same rotation
-orbit cannot produce dynamics with this rule-generation method.
-
-
-**Metrics:** `{'bit_count_initial': 2, 'bit_count_final': 2, 'net_displacement': 0.0, 'steps': 100, 'non_identity_rule_entries': 6}`
-
-
----
-```yaml
 cached_tokens: 60017
 cost_usd: 0.08529
 hypothesis: 'search-disjoint-orbits: There exists at least one reversible, bit-conserving
@@ -1869,4 +1801,68 @@ needed for gliders in this rule.
 
 
 **Metrics:** `{'glider_found': 0, 'patterns_checked': 16715, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'glider_period': 0, 'unstable_contiguous_seeds': 5}`
+
+
+---
+```yaml
+cached_tokens: 61009
+campaign: Phase 3 - Non-conserving Rules
+campaign_status: completed
+campaign_summary: Exhaustive searches proved that the 3-cycle rule (A=7,B=11,C=14)
+  supports a rich variety of stable, stationary 3-bit and 4-bit objects, but no moving
+  'gliders'. This confirms that even rules with non-reciprocal 3-cycle dynamics can
+  be too stable to produce motion, concluding this line of inquiry.
+cost_usd: 0.09299
+hypothesis: 'search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3,
+  and the pair satisfies all known structural constraints (contiguity, center-flip,
+  disjoint orbits, conflict-free closure).'
+input_tokens: 67872
+iter: 65
+metrics:
+  closure_size: 12
+  kernel_A: 3
+  kernel_B: 14
+  orbit_A_size: 6
+  orbit_B_size: 6
+  pairs_checked: 4
+output_tokens: 1484
+status: ok
+```
+
+## iter_065: search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3, and the pair satisfies all known structural constraints (contiguity, center-flip, disjoint orbits, conflict-free closure).
+
+**Analysis:** The research is fundamentally blocked. All previous campaigns, exploring symmetric, reversible, and strictly bit-conserving rules (both 2-cycle involutions and 3-cycles), have failed to produce any moving particles ("gliders"). Exhaustive searches across multiple rules and particle complexities (3-bit and 4-bit) have consistently yielded only stationary "still lifes" and "oscillators" (iter_052, 054, 059, 060, 063, 064).
+
+This pattern of failure strongly suggests a flaw in the core paradigm: the constraint of strict, local bit-conservation may be too strong, creating "crystalline" universes that are too rigid to support motion. The rules are so stable that they suppress the very dynamics we seek.
+
+To unblock this, we must pivot to a new paradigm. The most principled change is to relax the bit-conservation constraint while retaining reversibility. A rule where a state with `k` bits can reversibly map to a state with `j` bits (`k != j`) would allow for local fluctuations in bit density, which might be the necessary ingredient for propagation. The minimal next step is a formal search for the existence of such a rule kernel.
+
+**Task:** Create a new script, `src/find_nonconserving_kernel.py`, to perform a combinatorial search.
+
+1.  **Search Space:** The script should search through pairs of states `(A, B)` where `A` has Hamming Weight 2 and `B` has Hamming Weight 3.
+2.  **Constraints:** A pair `(A, B)` is valid if it satisfies all four of the following conditions:
+    a. **Contiguity:** Both state `A` and state `B` must represent contiguous patterns.
+    b. **Center-Bit Flip:** The center bit of `A` must be different from the center bit of `B`.
+    c. **Disjoint Orbits:** The 6-fold rotational orbits of `A` and `B` must be mutually disjoint.
+    d. **Conflict-Free Closure:** The joint rotational closure, formed by the 12 states `{rotate(A,i), rotate(B,i)}` for `i` in `0..5`, must contain exactly 12 unique states.
+3.  **Execution:** Iterate through combinations and stop at the *first* valid pair found.
+4.  **Output:** Create `archive/iter_065/result.yaml` with the following keys:
+    - `kernel_found`: `true` or `false`.
+    - `popcount_A`: 2
+    - `popcount_B`: 3
+    - `pairs_checked`: The total number of pairs checked.
+    - `kernel_A`, `kernel_B`: The integer representations of the found states.
+    - `kernel_A_binary`, `kernel_B_binary`: The 7-bit string representations.
+
+**Status:** ok
+
+**Experimenter view:** A valid non-conserving kernel pair (A,B) with popcount(A)=2, popcount(B)=3 exists and was
+found immediately (4th pair checked). The key insight is that because rotations preserve
+Hamming weight, orbits of W=2 and W=3 states are automatically disjoint; the binding
+constraint is that both states must have orbit size exactly 6 (no rotational symmetry) to
+achieve a 12-element joint closure. The found pair A=3 (center+E) and B=14 (E+SE+SW) are
+the simplest contiguous representatives of their respective orbit classes.
+
+
+**Metrics:** `{'pairs_checked': 4, 'kernel_A': 3, 'kernel_B': 14, 'closure_size': 12, 'orbit_A_size': 6, 'orbit_B_size': 6}`
 

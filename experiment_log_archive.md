@@ -1791,3 +1791,71 @@ full size 6.
 
 **Metrics:** `{'pairs_checked': 2, 'total_pairs_possible': 210, 'closure_size': 12, 'hamming_weight_searched': 2, 'kernel_A': 3, 'kernel_B': 6}`
 
+
+---
+```yaml
+cached_tokens: 58675
+cost_usd: 0.0854
+hypothesis: 'dynamics-symmetric: The symmetric rule from kernel (A=3, B=6) produces
+  a stable, non-trivial oscillator or glider from a 2-bit seed.'
+input_tokens: 63172
+iter: 35
+metrics:
+  bit_count_final: 2
+  bit_count_initial: 2
+  net_displacement: 0.0
+  non_identity_rule_entries: 6
+  steps: 100
+output_tokens: 1745
+status: experiment_failed
+```
+
+## iter_035: dynamics-symmetric: The symmetric rule from kernel (A=3, B=6) produces a stable, non-trivial oscillator or glider from a 2-bit seed.
+
+**Analysis:** The project is critically blocked on creating a symmetric 2D rule capable of supporting complex dynamics. All previous attempts with hand-crafted or naively symmetrized rules failed (iter_028, iter_029, iter_032).
+
+The previous iteration (iter_033) was a major breakthrough, moving from simulation to a formal search. It successfully proved the existence of a "conflict-free kernel": a pair of states (A=3, B=6) that can be rotated 6-fold to generate a valid, symmetric, reversible, bit-conserving rule without any self-conflicts. This is the first time we have had a mathematically sound foundation for a symmetric rule.
+
+The immediate and only logical next step is to construct the full rule from this validated kernel and test its dynamics. This is the minimal experiment to determine if this principled approach can finally unblock Phase 3. We will seed the simulation with a pattern that directly triggers the rule's core transformation to see if it produces any non-trivial behavior.
+
+**Task:** The task is to generate a new symmetric rule and then simulate it.
+
+**Part 1: Rule Generation (in `src/rule_generator.py`)**
+1. Define the kernel pair from iter_033: `A=3` ('0000011') and `B=6` ('0000110').
+2. Create a function `rotate_neighborhood(state: int)` that performs a 60-degree clockwise rotation on the 6 neighbor bits.
+3. Generate the full symmetric rule:
+   - Initialize a rule dictionary where all 128 states map to themselves.
+   - For `i` in `range(6)`:
+     - `A_rot = rotate(A, i)`, `B_rot = rotate(B, i)`
+     - Add mappings: `rule[A_rot] = B_rot` and `rule[B_rot] = A_rot`.
+4. Save the final rule dictionary to a new file: `src/symmetric_rule_A3_B6.json`.
+
+**Part 2: Simulation (in `src/simulate_hex.py`)**
+1. Modify the simulator to load the rule from `src/symmetric_rule_A3_B6.json`.
+2. Use the standard CA update model (not the symmetric swap scheduler).
+3. Use a 100x100 grid with periodic boundaries for 100 steps.
+4. **Initial Condition:** Place a 2-bit pattern near the center that creates neighborhood `A` ('0000011') for the cell at `(50,50)`. This means placing '1's at its SW `(49,51)` and NW `(50,51)` neighbors. The cell at `(50,50)` itself is '0'.
+
+**Part 3: Output**
+1. Create `archive/iter_034/result.yaml` with the following keys:
+   - `is_bit_conserving`: `true` if the bit count remains 2 throughout.
+   - `behavior_class`: `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, `CHAOTIC`, or `FIXED_POINT`.
+   - `net_displacement`: The distance the pattern's center of mass moved from its initial position.
+   - `final_pattern_coords`: The coordinates of the '1's at the final step.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The hypothesis is falsified. The rule from kernel (A=3, B=6) produces a
+FIXED_POINT: the 2-bit pattern at (49,51),(50,51) never moves or changes.
+Root cause: A=3 and B=6 are in the same 6-fold rotation orbit
+{3,33,48,24,12,6}. The last-write-wins sequential application of 6 rotation
+mappings creates a directed cycle among center=0 states only. Since all
+explicit transitions map to center=0 outputs, no '0' cell can turn '1'.
+The two '1' cells (states 96, 68) fall under identity rules and stay '1'.
+The bit-conservation criterion is satisfied (2 bits throughout), but the
+non-trivial-motion criterion is not. Candidate pairs in the same rotation
+orbit cannot produce dynamics with this rule-generation method.
+
+
+**Metrics:** `{'bit_count_initial': 2, 'bit_count_final': 2, 'net_displacement': 0.0, 'steps': 100, 'non_identity_rule_entries': 6}`
+
