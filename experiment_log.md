@@ -3,77 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61183
-campaign: Phase 3 - Non-conserving Rules
-cost_usd: 0.09421
-hypothesis: 'dynamics-nonconserving: The rule from kernel (A=3, B=14) produces a stable,
-  non-trivial object from a 3-bit seed.'
-input_tokens: 67965
-iter: 66
-metrics:
-  cycle_found: false
-  final_bit_count: 0
-  initial_bit_count: 3
-  kernel_A: 3
-  kernel_B: 14
-  max_bit_count: 3
-  steps_survived: 2
-output_tokens: 1613
-status: ok
-```
-
-## iter_066: dynamics-nonconserving: The rule from kernel (A=3, B=14) produces a stable, non-trivial object from a 3-bit seed.
-
-**Analysis:** The research is fundamentally blocked. All previous campaigns exploring symmetric, reversible, and strictly bit-conserving rules have failed to produce any moving particles ("gliders"). Exhaustive searches across multiple rules (both 2-cycle and 3-cycle) and particle complexities (3-bit and 4-bit) have conclusively shown that this paradigm only produces stationary objects.
-
-The last iteration (iter_065) was a major breakthrough that unblocked the research. We successfully pivoted to a new paradigm by proving the existence of a valid, reversible, but **non-bit-conserving** rule kernel. Specifically, we found a kernel `(A=3, B=14)` that allows a 2-bit state to reversibly map to a 3-bit state. This opens up a completely new and promising design space where local fluctuations in bit density might enable the propagation that has eluded us so far.
-
-The immediate and only logical next step is to move from this formal existence proof back to empirical testing. We must generate the full rule from this new kernel and test its dynamics to see if it produces any stable, non-trivial objects.
-
-**Task:** This is a two-part task: first, generate the new non-conserving rule, and second, simulate it.
-
-**Part 1: Generate the Rule**
-1. Create a script, `src/generate_nonconserving_rule.py`.
-2. Define the kernel pair from iter_065: `A = 3` ('0000011', popcount=2) and `B = 14` ('0001110', popcount=3).
-3. Implement the 6-fold hexagonal rotation for 7-bit integer states.
-4. Generate the full symmetric rule: Initialize a rule dictionary with identity mappings, then add the 12 mappings for the 6 rotations of the `(A, B)` pair and their inverses (A_rot -> B_rot and B_rot -> A_rot).
-5. Save the final rule dictionary to `src/symmetric_rule_nonconserving_A3_B14.json`.
-
-**Part 2: Simulate the Rule**
-1. Create a script, `src/simulate_nonconserving.py`, that loads the rule from `src/symmetric_rule_nonconserving_A3_B14.json`.
-2. Use the standard CA update model.
-3. Run the simulation for 300 steps on a 100x100 grid with periodic boundaries.
-4. **Initial Condition:** A 3-bit seed that creates neighborhood `B=14` for a central '0' cell at `(50,50)`. This is achieved by placing '1's at its E, SE, and S neighbors: `(51,50)`, `(51,49)`, and `(50,49)`.
-5. The script must create `archive/iter_066/result.yaml` with the following keys:
-    - `kernel_A`, `kernel_B`: The integers 3, 14.
-    - `object_found`: `true` if a stable object was found, `false` otherwise.
-    - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC_GROWTH`.
-    - `final_bit_count`: The bit count of the stable object, or the final count after 300 steps.
-    - `is_globally_bit_conserving`: `true` if the total bit count remains 3 throughout.
-    - `object_period`: The period of the found object.
-    - `net_displacement`: The net displacement of the object's center of mass over one period.
-
-**Status:** ok
-
-**Experimenter view:** The hypothesis is falsified for this initial condition. The 3-bit seed (E, SE, SW
-neighbors of a central 0-cell) decays to zero in exactly 2 steps. The root cause
-is that the seed inadvertently embeds multiple A-orbit neighborhoods simultaneously:
-cell (50,49) has neighborhood A_rot0=96 and cell (51,50) has neighborhood A_rot2=72.
-Both fire at step 0→1, mapping to their B-rotations (center bit=0), which switch
-those cells OFF while cell (50,50) (which has B_rot0=56) turns ON. Net step 1:
-{(50,50),(51,49)}, 2 bits. In step 2, both remaining cells match A_rot1=80 and
-A_rot4=66 respectively, both mapping to B-rotations with center=0 — complete decay.
-The non-conserving rule is extremely destructive for this seed geometry: the pattern
-lacks the self-protecting neighborhood structure needed for stability. A symmetric
-initial condition (placing the seed as an A-pattern directly) or a different seed
-avoiding embedded A-rotations would be needed to find stable objects.
-
-
-**Metrics:** `{'steps_survived': 2, 'initial_bit_count': 3, 'final_bit_count': 0, 'max_bit_count': 3, 'cycle_found': False, 'kernel_A': 3, 'kernel_B': 14}`
-
-
----
-```yaml
 cached_tokens: 61130
 campaign: Phase 3 - Non-conserving Rules
 cost_usd: 0.09344
@@ -2102,4 +2031,59 @@ symmetry classes.
 
 
 **Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21, 'total_evaluations': 2100}`
+
+
+---
+```yaml
+cached_tokens: 66180
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10551
+hypothesis: 'dense-c2-motion-search: A population of ''dense'' C2-symmetric rules
+  contains at least one rule with non-zero motion fitness.'
+input_tokens: 74594
+iter: 96
+metrics: {}
+output_tokens: 1729
+status: code_error
+```
+
+## iter_096: dense-c2-motion-search: A population of 'dense' C2-symmetric rules contains at least one rule with non-zero motion fitness.
+
+**Analysis:** The research is fundamentally blocked. The evolutionary search paradigm, which was adopted after all "top-down" formal methods failed, has stalled at the very first step. The core issue is that random populations of rules, whether constrained by high C6 symmetry (iter_094) or lower C2 symmetry (iter_095), are completely barren of the desired "glider" behavior. Even with a robust, multi-seed evaluation using a validated motion-centric fitness metric, the entire initial population consistently has a fitness of zero. The evolutionary algorithm cannot begin its optimization process because there is no variation to select from.
+
+The experimenter's view from iter_095 provided the most critical insight: the random rule generation method creates extremely "sparse" rule tables, where most cellular neighborhoods map to themselves (identity mapping). This inactivity bias makes the spontaneous emergence of complex, propagating structures highly improbable.
+
+Therefore, the next logical step is not to change the symmetry class again or abandon evolution, but to attack this core problem of rule sparsity. We must test if generating a population of "denser" rules, with more non-identity mappings, can create the initial spark of motion needed to seed the evolutionary process.
+
+**Task:** Create a new script, `src/run_c2_dense_motion_evolution.py`, to generate and evaluate a population of C2-symmetric rules with a higher density of non-identity mappings.
+
+**1. Implement Dense C2 Rule Generation:**
+- Implement a new function to generate a single random, reversible, dense C2-symmetric rule.
+- The function should aim for a target number of non-identity mappings (e.g., 32, which is 25% of the 128 states).
+- **Generation Logic:**
+  a. Start with a list of all 128 states [0-127] marked as "unmapped".
+  b. While the number of non-identity mappings is less than the target (32):
+     i. Pick a random state `A` from the "unmapped" list.
+     ii. Pick another random state `B` from the "unmapped" list, ensuring `A != B`.
+     iii. Check if the C2-closure `{A, B, rotate(A, 3), rotate(B, 3)}` is valid (i.e., all members are currently unmapped and distinct from each other).
+     iv. If valid, add the mappings `A <-> B` and `rotate(A, 3) <-> rotate(B, 3)` to the rule. Mark all four states as "mapped".
+     v. If not valid, try picking a different `B`.
+- This process creates a rule with a controlled number of active transitions.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 random, **dense** C2-symmetric rules using the new function. Save them to `archive/iter_096/population/`.
+- For each rule, calculate its motion fitness using the robust multi-seed evaluation protocol:
+  - The final fitness for a rule is the maximum fitness achieved across all 21 standard contiguous seeds (11 trihexes, 10 tetrahexes).
+  - Fitness for a single seed is `displacement / (1 + final_bit_count)`.
+  - Simulate each seed for 500 steps.
+
+**3. Report Results:**
+- Save the final score for each rule to `archive/iter_096/results/c2_dense_scores.csv`.
+- Create `archive/iter_096/result.yaml` summarizing the findings, with the standard keys: `rules_with_motion`, `top_fitness_score`, `top_rule_id`, etc.
+
+**Status:** code_error
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Metrics:** `{}`
 
