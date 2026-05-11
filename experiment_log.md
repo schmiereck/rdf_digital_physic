@@ -3,109 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 40902
-cost_usd: 0.06767
-hypothesis: 'glider-rules-interact: At least one of the 22 known v=c glider rules
-  produces a non-trivial, non-chaotic interaction from a two-bit (''11'') initial
-  condition.'
-input_tokens: 44740
-iter: 18
-metrics:
-  annihilations: 0
-  chaotic_outcomes: 8
-  chaotic_rule_indices:
-  - 5
-  - 10
-  - 11
-  - 16
-  - 17
-  - 21
-  - 22
-  - 26
-  elastic_collisions: 8
-  elastic_rule_indices:
-  - 6
-  - 9
-  - 13
-  - 14
-  - 19
-  - 20
-  - 23
-  - 25
-  fusion_rule_indices:
-  - 7
-  - 8
-  - 12
-  - 15
-  - 18
-  - 24
-  fusions: 6
-  rules_tested: 22
-output_tokens: 1757
-status: ok
-```
-
-## iter_018: glider-rules-interact: At least one of the 22 known v=c glider rules produces a non-trivial, non-chaotic interaction from a two-bit ('11') initial condition.
-
-**Analysis:** Phase 2, "Der Zappel-Detektor," has been successfully established. We have constructed rules demonstrating stable stationary oscillation (v=0, iter_004), motion at a reduced speed (v=c/2) for a single-cell particle (iter_005), and, most importantly, stable propagation of a composite, multi-cell particle (v=c/2, iter_006). The milestone for Phase 2—creating a particle with v < c—is officially met.
-
-A critical observation is that all successful rules so far have been explicitly *constructed* to produce a desired outcome. To move towards the project's goal of *emergent* physics, we must now shift from construction to characterization and discovery. We need to understand the inherent interaction properties of the rule sets we have already validated.
-
-The logical next step is to probe the simplest possible interaction. While a collision of two separate gliders is the ultimate goal, the minimal validating step is to observe how the existing glider rules from Phase 1 handle an initial condition that is more complex than a single bit. This directly tests the rule's behavior on higher-weight neighborhoods, which is the foundation of any interaction.
-
-**Task:** Create a new Python script `src/characterize_rules.py` based on the 1D simulator logic.
-
-1.  **Load Rules:** Load the 33 valid rules from `archive/iter_001/results/valid_rules.json`. Identify the 22 rules that produced gliders in iter_002.
-2.  **Simulation Setup:** For each of the 22 glider-producing rules:
-    a. Initialize a 1D lattice of size 100 with all cells set to '0'.
-    b. Set the initial condition to be two adjacent '1's at the center: cell 49 = '1', cell 50 = '1'.
-    c. Run the simulation for 100 steps with periodic boundary conditions.
-3.  **Analysis & Classification:** After each simulation, classify the rule's outcome into one of the following categories based on the final state:
-    - `ELASTIC`: The final state consists of two single '1' bits moving away from each other.
-    - `FUSION`: The final state is a new stable pattern (stationary or moving) that is not two separate '1's.
-    - `ANNIHILATION`: The lattice returns to all '0's.
-    - `CHAOTIC`: The number of '1's grows, or the pattern is complex and non-repeating.
-4.  **Output:** Write a summary to `archive/iter_007/result.yaml` with the following keys:
-    - `rules_tested`: 22
-    - `elastic_collisions`: (count)
-    - `fusions`: (count)
-    - `annihilations`: (count)
-    - `chaotic_outcomes`: (count)
-    - `elastic_rule_indices`: A list of indices for rules that produced elastic collisions.
-
-**Status:** ok
-
-**Experimenter view:** The hypothesis is strongly confirmed. All 22 glider rules produce structured,
-non-trivial behavior from the '11' initial condition:
-
-ELASTIC (8 rules): Two independent v=c gliders emerge and fly apart. The
-collision is transparent — the two single-bit particles scatter with their
-identities preserved, consistent with the reversibility of the rules.
-
-FUSION (6 rules): The '11' pair does NOT scatter into two isolated bits.
-Instead, it forms a stable bound-state glider that propagates at v=c as a
-unit (moving right for rules 7, 8, 24; left for rules 12, 15, 18). This is
-a qualitatively different particle — a 2-bit composite — arising from a
-purely local, reversible rule. No ANNIHILATION occurred, consistent with
-global bit-conservation.
-
-CHAOTIC (8 rules): The two initial bits trigger a "big bang" — the lattice
-fills to ~99 ones within 100 steps. These rules amplify rather than scatter,
-suggesting the '11' initial condition activates an unstable growth mode.
-
-Key physical insight: the distinction between ELASTIC and FUSION exactly
-mirrors the classification in inter_014 (composite particles). Rules that
-support a stable '11' composite particle naturally show FUSION; others show
-glider pass-through (ELASTIC). This provides a combinatorial fingerprint for
-composite-particle-supporting rules without needing to construct the composite
-rule explicitly.
-
-
-**Metrics:** `{'rules_tested': 22, 'elastic_collisions': 8, 'fusions': 6, 'annihilations': 0, 'chaotic_outcomes': 8, 'elastic_rule_indices': [6, 9, 13, 14, 19, 20, 23, 25], 'fusion_rule_indices': [7, 8, 12, 15, 18, 24], 'chaotic_rule_indices': [5, 10, 11, 16, 17, 21, 22, 26]}`
-
-
----
-```yaml
 cached_tokens: 42047
 cost_usd: 0.06907
 hypothesis: 'conditional-swap: A rule swapping a cell with its neighbor, conditioned
@@ -1904,4 +1801,76 @@ with its immediate ring shift.
 
 
 **Metrics:** `{'pairs_checked': 3, 'kernel_A': 7, 'kernel_B': 14, 'closure_size': 12}`
+
+
+---
+```yaml
+cached_tokens: 61936
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09458
+hypothesis: 'dynamics-w3: The symmetric rule from the W=3 kernel (A=7, B=14) produces
+  a stable, bit-conserving, non-trivial object from a 3-bit seed.'
+input_tokens: 68946
+iter: 50
+metrics:
+  bit_count_t1: 4
+  bit_count_t2: 2
+  final_bit_count: 2
+  initial_bit_count: 3
+  kernel_A: 7
+  kernel_B: 14
+  net_displacement: 0.0
+  oscillation_period: 1
+output_tokens: 1510
+status: experiment_failed
+```
+
+## iter_050: dynamics-w3: The symmetric rule from the W=3 kernel (A=7, B=14) produces a stable, bit-conserving, non-trivial object from a 3-bit seed.
+
+**Analysis:** The research is critically blocked. The previous campaign, "Phase 3 - 2D Symmetric Interactions," concluded with the definitive refutation of our W=2 rule (from kernel A=3, B=6). While the rule successfully produced a stable 3-bit oscillator (iter_044), subsequent experiments (iter_047, iter_048) proved it is not bit-conserving during multi-particle interactions, which is a fatal flaw for our physics model. This entire line of inquiry is now closed.
+
+The most recent iteration (iter_049) successfully unblocked the research by finding a new, more complex, and mathematically valid rule kernel at Hamming Weight 3 (A=7, B=14). This kernel satisfies all of our established constraints (contiguity, center-bit flipping, disjoint orbits, conflict-free closure) and represents the next logical step in our search for a robust "physical law".
+
+The immediate and only priority is to move from formal search back to empirical testing. We must generate the full rule from this new W=3 kernel and test its dynamics. This is the minimal validating step to determine if increasing the complexity of the rule's kernel can produce the kind of robust, non-trivial dynamics that the W=2 rule failed to deliver.
+
+**Task:** This is a two-part task: generate the new rule, then simulate it.
+
+**Part 1: Generate the W=3 Rule**
+1. Create a script, `src/generate_w3_rule.py`, that performs the following:
+2. Define the kernel pair from iter_049: `A = 7` ('0000111') and `B = 14` ('0001110').
+3. Implement the 6-fold hexagonal rotation for 7-bit integer states.
+4. Generate the full symmetric rule: Initialize a rule dictionary with identity mappings, then add the 12 mappings for the 6 rotations of the `(A, B)` pair and their inverses.
+5. Save the final rule dictionary to `src/symmetric_rule_w3_a7_b14.json`.
+
+**Part 2: Simulate the New Rule**
+1. Modify `src/generate_and_simulate.py` (or a similar script) to load the rule from `src/symmetric_rule_w3_a7_b14.json`.
+2. Use the standard CA update model.
+3. Run the simulation for 200 steps on a 100x100 grid with periodic boundaries.
+4. **Initial Condition:** A 3-bit seed that creates neighborhood `B=14` ('0001110') for a central '0' cell at `(50,50)`. This is achieved by placing '1's at its E, SE, and S neighbors: `(51,50)`, `(51,49)`, and `(50,49)`.
+5. The script must create `archive/iter_050/result.yaml` with the standard keys: `kernel_A`, `kernel_B`, `is_bit_conserving`, `behavior_class`, `net_displacement`, `oscillation_period`, and `final_bit_count`.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The rule generation is correct: A=7 (LSB) → A_msb=112, B=14 (LSB) → B_msb=56,
+yielding 12 non-identity mappings, verified as a bit-conserving involution.
+The seed places 1's at E=(51,50), SE=(51,49), SW=(50,49) so that center (50,50)
+sees exactly B_msb=56 — confirmed.
+
+However, the 3 seed cells themselves occupy neighborhood states 96, 69, and 72,
+which are all identity-mapped (not among the 12 active pairs). So at t=1 all 3
+seed cells retain their '1', while the center also fires to '1' → 4 bits total.
+At t=2, two of those 4 cells see orbit states (97→49 and 76→14) and flip to '0',
+leaving a 2-cell fixed point that persists for all remaining steps.
+
+Root cause: the seed does not form a closed orbit under the rule. For a 3-bit
+object to be bit-conserving, the seed cells must be arranged so that each cell
+gaining a '1' is offset by exactly one cell losing its '1' per step. The B=14
+neighborhood triggers the center to become '1', but none of the seed cells are
+triggered to become '0' in the same step.
+
+To find a working 3-bit oscillator, a systematic search over all 3-cell seeds
+would be needed, testing each for bit conservation and non-trivial dynamics.
+
+
+**Metrics:** `{'kernel_A': 7, 'kernel_B': 14, 'initial_bit_count': 3, 'bit_count_t1': 4, 'bit_count_t2': 2, 'final_bit_count': 2, 'oscillation_period': 1, 'net_displacement': 0.0}`
 

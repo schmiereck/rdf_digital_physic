@@ -1,0 +1,62 @@
+artifacts:
+- src/generate_w3_rule.py
+- src/simulate_iter050.py
+- src/symmetric_rule_w3_a7_b14.json
+- archive/iter_050/result.yaml
+experimenter_view: 'The rule generation is correct: A=7 (LSB) → A_msb=112, B=14 (LSB)
+  → B_msb=56,
+
+  yielding 12 non-identity mappings, verified as a bit-conserving involution.
+
+  The seed places 1''s at E=(51,50), SE=(51,49), SW=(50,49) so that center (50,50)
+
+  sees exactly B_msb=56 — confirmed.
+
+
+  However, the 3 seed cells themselves occupy neighborhood states 96, 69, and 72,
+
+  which are all identity-mapped (not among the 12 active pairs). So at t=1 all 3
+
+  seed cells retain their ''1'', while the center also fires to ''1'' → 4 bits total.
+
+  At t=2, two of those 4 cells see orbit states (97→49 and 76→14) and flip to ''0'',
+
+  leaving a 2-cell fixed point that persists for all remaining steps.
+
+
+  Root cause: the seed does not form a closed orbit under the rule. For a 3-bit
+
+  object to be bit-conserving, the seed cells must be arranged so that each cell
+
+  gaining a ''1'' is offset by exactly one cell losing its ''1'' per step. The B=14
+
+  neighborhood triggers the center to become ''1'', but none of the seed cells are
+
+  triggered to become ''0'' in the same step.
+
+
+  To find a working 3-bit oscillator, a systematic search over all 3-cell seeds
+
+  would be needed, testing each for bit conservation and non-trivial dynamics.
+
+  '
+log_excerpt: "Loaded rule from ...symmetric_rule_w3_a7_b14.json (128 entries)\nSeed\
+  \ cells: [(50, 49), (51, 49), (51, 50)]\nCenter (50,50) neighborhood: 56 ('0111000')\n\
+  Expected B_MSB=56 ('0111000')\n  t=  1  bits=4  pos=[(50, 49), (50, 50), (51, 49),\
+  \ (51, 50)]\n  t=  2  bits=2  pos=[(50, 50), (51, 49)]\n  t=  3  bits=2  pos=[(50,\
+  \ 50), (51, 49)]\n  ...\n  t=200  bits=2  pos=[(50, 50), (51, 49)]\nbehavior_class:\
+  \      DECAY\nis_bit_conserving:   False\nnet_displacement:    0.0\noscillation_period:\
+  \  1\nall_same (fixed pt): True\nfinal_bit_count:     2\nbit_counts min/max:  2/4\n"
+metrics:
+  bit_count_t1: 4
+  bit_count_t2: 2
+  final_bit_count: 2
+  initial_bit_count: 3
+  kernel_A: 7
+  kernel_B: 14
+  net_displacement: 0.0
+  oscillation_period: 1
+notes: Rule generation and simulation are both correct. Hypothesis fails at the dynamics
+  level — the specified 3-bit seed is not a valid initial condition for a bit-conserving
+  trajectory under this rule.
+status: experiment_failed
