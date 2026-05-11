@@ -3,125 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 36382
-cost_usd: 0.06312
-hypothesis: 'composite: A rule can be constructed to make a two-cell particle (e.g.,
-  ''0110'') propagate stably with v=c/2.'
-input_tokens: 40234
-iter: 14
-metrics:
-  displacement: 50
-  effective_velocity: 0.5
-  final_position: 70.5
-  is_stable: true
-  steps: 100
-output_tokens: 1696
-status: ok
-```
-
-## iter_014: composite: A rule can be constructed to make a two-cell particle (e.g., '0110') propagate stably with v=c/2.
-
-**Analysis:** Phase 2 has been successfully initiated. We have demonstrated the core principles: existence of 2-bit/cell rules (iter_003), stable stationary oscillation (v=0, iter_004), and by-construction propagation at reduced speed (v=c/2, iter_005/iter_013). The milestone for Phase 2, creating a particle with v < c, has been met.
-
-However, analysis reveals a critical limitation of the current approach. The v=c/2 particle was based on a 2-step cycle using the only two available single-bit cell states ('01', '10'). A longer cycle (e.g., for v=c/3) would require a third distinct state with the same bit count, which is impossible for a single-cell excitation in a 2-bit/cell system.
-
-This implies that greater complexity, and a richer spectrum of velocities, must emerge from composite, multi-cell particles. Before we can study interactions (Phase 3), we must first prove that stable, composite particles can even exist and propagate under our rule constraints. This is the logical and necessary next step.
-
-**Task:** Modify the simulator in `src/simulate.py` (which should exist from previous work) to test a composite particle.
-
-1.  **Target Dynamics:** A two-cell particle, represented by the pattern `'01','10'` at adjacent positions `i` and `i+1`, should propagate at an effective velocity of v=c/2. This requires a two-step cycle:
-    a. **Step 1 (OSCILLATE):** The particle at `i, i+1` with state `'01','10'` flips its internal state to `'10','01'` while remaining at positions `i, i+1`.
-    b. **Step 2 (MOVE):** The particle at `i, i+1` with state `'10','01'` moves to `i+1, i+2` and resets its state back to `'01','10'`.
-
-2.  **Rule Construction:** Implement a local, reversible, and bit-conserving rule that produces these dynamics for an isolated particle. The rule should consist of specific mappings for the few non-zero neighborhoods required to create the dynamics, with all other neighborhood states mapping to themselves (identity).
-
-3.  **Simulation Setup:**
-    a. Initialize a lattice of size 100 with all cells set to `'00'`.
-    b. Set the initial condition by placing the particle at the start: cell 20 = '01', cell 21 = '10'.
-    c. Run the simulation for 100 steps.
-
-4.  **Analysis and Output:**
-    a. Track the "center of mass" of the '1' bits that constitute the particle.
-    b. Create `archive/iter_006/result.yaml` with the following keys:
-       - `behavior_class`: `COMPOSITE_GLIDER` if successful, otherwise `DECAY`, `CHAOTIC`, or `STATIONARY_OSCILLATOR`.
-       - `effective_velocity`: The calculated average velocity.
-       - `is_stable`: A boolean, `true` if the two-cell pattern remains contiguous and does not shed bits.
-       - `final_position`: The final center of mass of the particle.
-
-**Status:** ok
-
-**Experimenter view:** The composite two-cell particle ['01','10'] propagates stably at exactly v=c/2.
-The rule uses only 3 non-trivial neighborhood mappings across two alternating phases:
-OSCILLATE flips the internal state in-place, MOVE shifts the pair one cell right.
-The position trace is perfectly uniform (5 cells per 10 steps, no fluctuation).
-The rule is bit-conserving globally: each transition preserves total Hamming weight.
-The particle remains perfectly contiguous throughout all 101 states (0..100 inclusive).
-The final pattern at t=100 is ['01','10'] at (70,71), identical to the initial pattern
-at (20,21) just shifted 50 cells to the right — confirming the success criteria.
-
-
-**Metrics:** `{'effective_velocity': 0.5, 'final_position': 70.5, 'displacement': 50, 'steps': 100, 'is_stable': True}`
-
-
----
-```yaml
-cached_tokens: 37640
-cost_usd: 0.06373
-hypothesis: 'existence-2D-hex: A non-trivial, reversible, bit-conserving rule exists
-  for a 2D hexagonal, 7-cell neighborhood.'
-input_tokens: 41451
-iter: 15
-metrics:
-  W0: 1
-  W1: 7
-  W2: 21
-  W3: 35
-  W4: 35
-  W5: 21
-  W6: 7
-  W7: 1
-  hamming_group_sizes_sum: 128
-  state_space_size: 128
-output_tokens: 1663
-status: ok
-```
-
-## iter_015: existence-2D-hex: A non-trivial, reversible, bit-conserving rule exists for a 2D hexagonal, 7-cell neighborhood.
-
-**Analysis:** The previous iteration (iter_014) successfully confirmed that a stable, composite (two-cell) particle can propagate at v=c/2. This result, combined with the earlier creation of a v=c/2 single-cell particle (iter_013), fully achieves the goal of Phase 2: "Erzeugung von Teilchen mit effektiven Geschwindigkeiten v < c". We have successfully demonstrated that internal complexity (via 2 bits/cell and multi-cell structures) can lead to emergent mass, fulfilling the milestone.
-
-With the principles of particle construction validated in 1D, the master plan dictates a move to Phase 3: "Die 2D-Hex-Kollision". The primary goal here is to study interactions and scattering, which are trivial in 1D but rich in 2D. Before we can simulate any dynamics like collisions, we must first establish the formal groundwork for the new topology. The minimal validating step is to verify that our core principles—reversibility and bit-conservation—can be applied to a 2D hexagonal lattice. We need to confirm that non-trivial rules can exist in this new, larger state space.
-
-**Task:** Create a Python script `src/generate_rules_hex.py` to analyze the rule space of a 2D hexagonal lattice with 1 bit per cell.
-
-1.  **Define State Space**: A neighborhood consists of a central cell and its 6 neighbors, for a total of 7 cells. The state space contains 2^7 = 128 unique neighborhood configurations (represented as 7-bit strings).
-2.  **Group by Hamming Weight**: Iterate through all 128 states and group them by their Hamming weight (number of '1's).
-3.  **Construct a Test Rule**: To prove existence without enumerating all possibilities, construct a single, simple, non-trivial rule:
-    a. Choose two distinct neighborhood states from the same Hamming weight group (e.g., from the W=1 group, which contains 7 states like '1000000', '0100000', etc.).
-    b. Define a rule that swaps these two states.
-    c. For all other 126 states, the rule is the identity mapping (the state maps to itself).
-4.  **Validate Rule**: Confirm that this constructed rule is non-trivial (i.e., it is not the identity rule where all 128 states map to themselves).
-5.  **Write Output**: Create `archive/iter_015/result.yaml` with the following information:
-    - `state_space_size`: The total number of neighborhood states (128).
-    - `rule_found`: A boolean indicating if a non-trivial, reversible, bit-conserving rule was successfully constructed.
-    - `hamming_group_sizes`: A dictionary mapping each weight ("W0" through "W7") to the number of states in that group. The sizes should follow the binomial coefficients C(7, k).
-
-**Status:** ok
-
-**Experimenter view:** The 7-cell hexagonal neighborhood yields 2^7 = 128 distinct configurations.
-Grouping by Hamming weight produces the expected binomial distribution C(7,k):
-1, 7, 21, 35, 35, 21, 7, 1. A non-trivial, reversible, bit-conserving rule
-was trivially constructed by swapping two W=1 states (0b0000001 <-> 0b0000010)
-while leaving all other 126 states as identity mappings. This is sufficient to
-prove existence: such rules are plentiful in this space, since any permutation
-within a Hamming weight group produces a valid rule.
-
-
-**Metrics:** `{'state_space_size': 128, 'hamming_group_sizes_sum': 128, 'W0': 1, 'W1': 7, 'W2': 21, 'W3': 35, 'W4': 35, 'W5': 21, 'W6': 7, 'W7': 1}`
-
-
----
-```yaml
 cached_tokens: 38646
 cost_usd: 0.06469
 hypothesis: 'dynamics-2D-hex: A bit-rotation rule on the 7-cell neighborhood produces
@@ -1957,4 +1838,69 @@ status: code_error
 **Experimenter view:** 
 
 **Metrics:** `{}`
+
+
+---
+```yaml
+cached_tokens: 64186
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.0853
+hypothesis: 'interaction-close: Two adjacent 3-bit oscillators interact in a non-trivial,
+  bit-conserving manner.'
+input_tokens: 68597
+iter: 47
+metrics:
+  final_bit_count: 6687
+  grid_fill_fraction: 0.6687
+  initial_bit_count: 6
+  interaction_step: 1
+  is_bit_conserving: false
+  stabilization_step: 161
+output_tokens: 1305
+status: experiment_failed
+```
+
+## iter_047: interaction-close: Two adjacent 3-bit oscillators interact in a non-trivial, bit-conserving manner.
+
+**Analysis:** The previous iteration (iter_045) was a major step forward, building on the breakthrough of iter_044 which gave us our first stable, non-trivial, symmetric 2D object: a 3-bit oscillator. However, the experiment to test the interaction of two such oscillators failed. The hypothesis was not refuted; rather, the experimental setup was flawed. The two stationary oscillators were placed too far apart to ever influence each other.
+
+The scientific question—how do these objects interact?—remains unanswered and is the highest priority for unblocking Phase 3. The most direct and logical next step is to repeat the experiment with a corrected initial condition that guarantees the two oscillators are placed in adjacent, overlapping regions. This is the minimal change required to properly test the original hypothesis and probe the emergent physics of our rule system.
+
+**Task:** Use the existing `src/generate_and_simulate.py` script and the symmetric rule generated from the contiguous kernel `(A=3, B=6)` as established in iter_044. The only change is the initial condition.
+
+1.  **Simulation Setup:**
+    - Grid Size: 100x100 with periodic boundaries.
+    - Steps: 200.
+
+2.  **Initial Condition:**
+    - Place two 3-bit oscillator seeds on the grid, positioned to immediately interact.
+    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
+    - **Oscillator 2 Seed:** Place '1's at `(23,49)`, `(23,50)`, and `(24,50)`.
+    - The total initial bit count must be 6. This configuration ensures the active zones of the two oscillators overlap.
+
+3.  **Analysis and Output:**
+    - At each step, record the total number of '1's on the grid.
+    - Track the coordinates of all '1's throughout the simulation.
+    - Create `archive/iter_047/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if the bit count remains 6.
+      - `interaction_step`: The first step at which the patterns are no longer two independent oscillators. Should be step 1.
+      - `outcome_class`: A classification of the result: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
+      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The adjacent placement (osc2 starting 1 row below osc1) causes the two 3-bit seeds
+to form a single connected cluster at t=0, with direct hex-adjacency at the boundary
+cells (22,50)-(23,49) and (22,50)-(23,50). The CA rule, while locally popcount-
+preserving on 7-bit neighborhood states, does not guarantee global bit conservation
+when two such patterns are merged. From step 1, the merged boundary produces 2
+net new bits (6→8), and the pattern expands continuously until it fills ~67% of the
+100x100 grid by step 161, then locks into a stable 6687-bit dense configuration.
+The hypothesis is falsified: adjacent placement destroys the oscillator structure
+entirely rather than producing a conserved, interacting compound. This contrasts with
+iter_045 (osc2 placed 3 rows below, not directly adjacent), where the oscillators
+maintain separation long enough for a structured interaction to occur.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 6687, 'interaction_step': 1, 'stabilization_step': 161, 'grid_fill_fraction': 0.6687, 'is_bit_conserving': False}`
 
