@@ -2458,3 +2458,68 @@ status: code_error
 
 **Metrics:** `{}`
 
+
+---
+```yaml
+cached_tokens: 64186
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.0853
+hypothesis: 'interaction-close: Two adjacent 3-bit oscillators interact in a non-trivial,
+  bit-conserving manner.'
+input_tokens: 68597
+iter: 47
+metrics:
+  final_bit_count: 6687
+  grid_fill_fraction: 0.6687
+  initial_bit_count: 6
+  interaction_step: 1
+  is_bit_conserving: false
+  stabilization_step: 161
+output_tokens: 1305
+status: experiment_failed
+```
+
+## iter_047: interaction-close: Two adjacent 3-bit oscillators interact in a non-trivial, bit-conserving manner.
+
+**Analysis:** The previous iteration (iter_045) was a major step forward, building on the breakthrough of iter_044 which gave us our first stable, non-trivial, symmetric 2D object: a 3-bit oscillator. However, the experiment to test the interaction of two such oscillators failed. The hypothesis was not refuted; rather, the experimental setup was flawed. The two stationary oscillators were placed too far apart to ever influence each other.
+
+The scientific question—how do these objects interact?—remains unanswered and is the highest priority for unblocking Phase 3. The most direct and logical next step is to repeat the experiment with a corrected initial condition that guarantees the two oscillators are placed in adjacent, overlapping regions. This is the minimal change required to properly test the original hypothesis and probe the emergent physics of our rule system.
+
+**Task:** Use the existing `src/generate_and_simulate.py` script and the symmetric rule generated from the contiguous kernel `(A=3, B=6)` as established in iter_044. The only change is the initial condition.
+
+1.  **Simulation Setup:**
+    - Grid Size: 100x100 with periodic boundaries.
+    - Steps: 200.
+
+2.  **Initial Condition:**
+    - Place two 3-bit oscillator seeds on the grid, positioned to immediately interact.
+    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
+    - **Oscillator 2 Seed:** Place '1's at `(23,49)`, `(23,50)`, and `(24,50)`.
+    - The total initial bit count must be 6. This configuration ensures the active zones of the two oscillators overlap.
+
+3.  **Analysis and Output:**
+    - At each step, record the total number of '1's on the grid.
+    - Track the coordinates of all '1's throughout the simulation.
+    - Create `archive/iter_047/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if the bit count remains 6.
+      - `interaction_step`: The first step at which the patterns are no longer two independent oscillators. Should be step 1.
+      - `outcome_class`: A classification of the result: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
+      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The adjacent placement (osc2 starting 1 row below osc1) causes the two 3-bit seeds
+to form a single connected cluster at t=0, with direct hex-adjacency at the boundary
+cells (22,50)-(23,49) and (22,50)-(23,50). The CA rule, while locally popcount-
+preserving on 7-bit neighborhood states, does not guarantee global bit conservation
+when two such patterns are merged. From step 1, the merged boundary produces 2
+net new bits (6→8), and the pattern expands continuously until it fills ~67% of the
+100x100 grid by step 161, then locks into a stable 6687-bit dense configuration.
+The hypothesis is falsified: adjacent placement destroys the oscillator structure
+entirely rather than producing a conserved, interacting compound. This contrasts with
+iter_045 (osc2 placed 3 rows below, not directly adjacent), where the oscillators
+maintain separation long enough for a structured interaction to occur.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 6687, 'interaction_step': 1, 'stabilization_step': 161, 'grid_fill_fraction': 0.6687, 'is_bit_conserving': False}`
+
