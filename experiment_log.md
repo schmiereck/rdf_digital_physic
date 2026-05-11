@@ -3,73 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 45840
-cost_usd: 0.07044
-hypothesis: 'asymmetric-seed: A three-bit ''L-shaped'' seed breaks the symmetry of
-  the composite swap rule and produces a stable 2D glider.'
-input_tokens: 49947
-iter: 22
-metrics:
-  final_bit_count_test: 3
-  glider_velocity_dq: 0.0
-  glider_velocity_dr: 0.0
-  is_bit_conserving: true
-output_tokens: 1520
-status: experiment_failed
-```
-
-## iter_022: asymmetric-seed: A three-bit 'L-shaped' seed breaks the symmetry of the composite swap rule and produces a stable 2D glider.
-
-**Analysis:** The previous iteration (iter_021) was a crucial negative result. It refuted the hypothesis that a more complex, symmetric rule would produce motion from a symmetric two-bit seed. The outcome was another stationary oscillator. This, combined with the failures in iter_017 and iter_019, strongly suggests that the core problem is a lack of asymmetry. We have a working mechanism (symmetric swaps, iter_020) but we are feeding it rules and initial conditions that are too symmetric to produce directed motion.
-
-The research is currently blocked on the primary goal of Phase 3: creating a non-trivial 2D glider. We have tried modifying the update model (success) and the rule (failure). The most logical and minimal next step is to modify the initial condition. By starting with an asymmetric seed pattern, we can test whether the existing rule can produce motion when its initial symmetry is broken. This moves from constructing a perfect "particle" to seeing if a "perturbation" can propagate.
-
-**Task:** Use the existing script `src/simulate_hex.py` with the symmetric swap update model and the composite conditional rule from iter_021. No changes to the simulation logic are needed.
-
-The ONLY change is the initial condition for the "test" simulation.
-
-1.  **Test Simulation Initial Condition:**
-    - On a 50x50 grid, initialize three adjacent cells with '1's in an "L" formation. For a reference center cell `c = (q, r)`, set the following cells to '1':
-      - `(q, r)`
-      - `(q+1, r)` (its East neighbor, b1)
-      - `(q+1, r-1)` (its South-East neighbor, b2)
-    - All other cells should be '0'.
-
-2.  **Control Simulation:**
-    - Run the same control as before: a single '1' at the grid center.
-
-3.  **Execution:**
-    - Run both simulations for 100 steps.
-
-4.  **Outputs:**
-    - Create `archive/iter_022/result.yaml` with the following keys:
-      - `is_bit_conserving`: `true` if bit counts are maintained.
-      - `control_behavior`: `STATIONARY` or `MOVED`.
-      - `test_behavior`: `GLIDER`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
-      - `is_nontrivial_motion`: `true` if control is `STATIONARY` and test is `GLIDER`.
-      - `final_bit_count_test`: The final number of '1's in the test simulation.
-      - `glider_velocity_hex`: A tuple `(avg_dq_per_step, avg_dr_per_step)` for the test simulation's center of mass.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The L-shaped 3-bit seed {c=(25,25), b1=(26,25), b2=(26,24)} is an exact
-fixed point of the composite swap rule. When the rule processes cell c, it
-sees b1=1 and fires Condition 1 (swap c with b2). But both c=1 and b2=1,
-so the swap is a no-op. Cells b1 and b2 each see their own b1/b2 neighbors
-as 0, so they are also unchanged. The structure is perfectly self-locking:
-the very cells that trigger the rule are the same ones the rule tries to
-swap, and since all three are 1, no state change ever occurs.
-Bit conservation holds (3 bits throughout). Control is STATIONARY as
-expected. The hypothesis that asymmetric seeding would break symmetry and
-produce a glider is falsified — this specific L-arrangement is instead a
-stable fixed point.
-
-
-**Metrics:** `{'is_bit_conserving': True, 'final_bit_count_test': 3, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0}`
-
-
----
-```yaml
 cached_tokens: 47115
 cost_usd: 0.07062
 hypothesis: 'asymmetric-rule: An asymmetric swap rule (if East=1, swap Center<->NW)
@@ -1863,4 +1796,70 @@ The most direct and logical path forward is to escalate the search. We will test
 **Experimenter view:** No yaml block in output – check stdout.txt
 
 **Metrics:** `{}`
+
+
+---
+```yaml
+cached_tokens: 61477
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09003
+hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67254
+iter: 54
+metrics:
+  glider_found: false
+  glider_period: 0
+  patterns_checked: 10
+  stable_oscillators_found: 0
+  stable_still_lifes_found: 2
+output_tokens: 1526
+status: experiment_failed
+```
+
+## iter_054: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The research is fundamentally blocked. The last valid experiment (iter_052) was a critical negative result: an exhaustive search proved that our current W=3 rule does not support any 3-bit gliders. It only supports stable, stationary "still life" patterns. This means we have a valid target for a collision but no projectile.
+
+The follow-up attempt to search for a more complex, 4-bit glider (iter_053) failed due to a `code_error`, leaving the hypothesis untested. The strategy itself remains sound. After exhausting the 3-bit search space, escalating to 4-bit objects is the most direct and logical path forward. The immediate priority is to correctly execute the experiment that failed in the previous iteration. This is a necessary step to determine if our W=3 rule is capable of producing motion at all.
+
+**Task:** Create a new script, `src/find_w3_glider_4bit.py`, to robustly retry the experiment from iter_053.
+
+1.  **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+
+2.  **Generate Seeds:** Programmatically generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 such patterns, often referred to as "straight," "T," "Y," "square," "skew," "L," and "bar." Your generation logic should produce these unique shapes, accounting for rotations and reflections.
+
+3.  **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 200 steps to robustly detect cycles.
+    c. At each step, verify that the bit count remains exactly 4. If it ever deviates, the pattern is unstable; log this and continue to the next seed.
+    d. If the bit count is stable, track the history of the pattern's configuration (as a tuple of sorted coordinates) to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period. A non-zero displacement means a glider has been found.
+
+4.  **Report Results:** The script should run through all unique patterns and report on all stable objects found, stopping if a glider is identified.
+
+5.  **Output:** Create `archive/iter_054/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Exhaustive search over all 10 one-sided tetrahex seeds (rotation-canonical, no reflection
+collapse) found no 4-bit glider. A critical discovery: the W=3 rule (A=7, B=14) does NOT
+have full dihedral (D6) symmetry — it has only 6-fold rotational (C6) symmetry. This means
+the original 7-free-tetrahex approach was insufficient; we correctly tested all 10 one-sided
+tetrahexes. Of these, only 2 are stable (period-1 still lifes): the straight 4-in-a-line and
+a compact Y/diamond shape. All 8 remaining seeds are immediately unstable (bit count changes
+in the first step). The 4-bit glider hypothesis is falsified by this complete search.
+The rule seems to support only very specific symmetric still-life configurations at 4 bits.
+Future search could explore: (a) 5-bit seeds, (b) seeds that are non-contiguous composites
+of two still lifes that interact, or (c) random search over longer initial transients.
+
+
+**Metrics:** `{'patterns_checked': 10, 'stable_still_lifes_found': 2, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
 

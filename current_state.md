@@ -4,7 +4,7 @@ Phase: 3 - W=3 Rule Dynamics
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-BLOCKED. We have a mathematically valid W=3 rule (from kernel A=7, B=14) and have identified stable, stationary 3-bit "still life" patterns to use as targets (iter_051). However, we lack a projectile. The search for a moving particle is the current critical path.
+BLOCKED. We have a mathematically valid W=3 rule and stable 3-bit stationary targets, but we lack a moving particle (projectile) to stage a collision. The search for a projectile is the critical path.
 
 ### Confirmed Findings
 - A valid, contiguous, center-flipping, conflict-free rule kernel exists at Hamming Weight 3 (A=7, B=14) (iter_049).
@@ -15,4 +15,4 @@ BLOCKED. We have a mathematically valid W=3 rule (from kernel A=7, B=14) and hav
 - The W=2 rule (`A=3, B=6`) is not bit-conserving during multi-particle interactions and has been abandoned (iter_048).
 
 ### In Progress
-- **iter_053:** Systematically searching for a stable, bit-conserving, 4-bit glider under the W=3 rule.
+- **iter_054:** Systematically searching for a stable, bit-conserving, 4-bit glider under the W=3 rule.

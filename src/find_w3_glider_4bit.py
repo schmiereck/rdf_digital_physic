@@ -2,8 +2,9 @@
 """
 find_w3_glider_4bit.py: Search for 4-bit gliders under the W=3 symmetric rule (A=7, B=14).
 
-Generates all 7 unique free tetrahexes (4-cell connected hex patterns modulo rotation
-and reflection), simulates each for 200 steps, and classifies each stable object.
+The rule has 6-fold rotational symmetry but NOT reflection symmetry, so chiral seed pairs
+must be tested separately. Generates all 10 one-sided tetrahexes (rotation-canonical only),
+simulates each for 200 steps, and classifies each stable object.
 """
 
 import json
@@ -14,8 +15,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
 RULE_PATH = Path(__file__).parent / "symmetric_rule_w3_a7_b14.json"
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_053" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_053" / "result.yaml"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_054" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_054" / "result.yaml"
 
 STEPS = 200
 MAX_PERIOD_SEARCH = 100
@@ -55,8 +56,19 @@ def _normalize(cells):
     return frozenset((q - q0, r - r0) for q, r in sorted_cells)
 
 
+def canonical_form_rotational(cells) -> frozenset:
+    """Canonical form under the 6 rotations only (rule lacks reflection symmetry)."""
+    best = None
+    for t in range(6):
+        transformed = [_apply_transform(q, r, t) for q, r in cells]
+        normalized = _normalize(transformed)
+        if best is None or sorted(normalized) < sorted(best):
+            best = normalized
+    return best
+
+
 def canonical_form_full(cells) -> frozenset:
-    """Canonical form under all 12 rotations and reflections of the hex grid."""
+    """Canonical form under all 12 rotations and reflections (kept for reference)."""
     best = None
     for t in range(12):
         transformed = [_apply_transform(q, r, t) for q, r in cells]
@@ -93,7 +105,7 @@ def is_connected(cells) -> bool:
 
 
 def get_all_contiguous_4bit_seeds():
-    """Return list of all 7 free tetrahex patterns (canonical under rotation+reflection)."""
+    """Return all 10 one-sided tetrahex patterns (rotation-canonical; rule has no reflection symmetry)."""
     coord_range = range(-4, 5)
     all_cells = [(q, r) for q in coord_range for r in coord_range]
 
@@ -102,7 +114,7 @@ def get_all_contiguous_4bit_seeds():
     for combo in combinations(all_cells, 4):
         if not is_connected(combo):
             continue
-        cf = canonical_form_full(combo)
+        cf = canonical_form_rotational(combo)
         if cf in seen:
             continue
         seen.add(cf)
@@ -200,7 +212,7 @@ def main():
     print(f"Loaded rule: {len(rule)} entries")
 
     seeds = get_all_contiguous_4bit_seeds()
-    print(f"Generated {len(seeds)} unique free tetrahex seed patterns")
+    print(f"Generated {len(seeds)} one-sided tetrahex seed patterns (rotation-canonical, no reflection collapse)")
 
     glider_found = False
     glider_period = 0
