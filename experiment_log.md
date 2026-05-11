@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 46
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_046: strategy_error
-
-**Analysis:** No yaml block found in response
-
-**Task:** 
-
-**Status:** code_error
-
-**Experimenter view:** 
-
-**Metrics:** `{}`
-
-
----
-```yaml
 cached_tokens: 64186
 campaign: Phase 3 - 2D Symmetric Interactions
 cost_usd: 0.0853
@@ -1913,4 +1888,62 @@ objects.
 
 
 **Metrics:** `{'glider_found': 0, 'initial_bit_count': 6, 'final_bit_count': 6, 'object_period': 1, 'net_displacement_dq': 0, 'net_displacement_dr': 0, 'cycle_start_step': 0}`
+
+
+---
+```yaml
+cached_tokens: 62394
+campaign: Phase 3 - Emergent Dynamics
+cost_usd: 0.09491
+hypothesis: 'composite-2-gap: Two 3-bit still lifes under rule (A=3,B=14), placed
+  at a 2-cell critical distance, form a stable, moving 6-bit composite object.'
+input_tokens: 69810
+iter: 76
+metrics:
+  displacement_dq: 0
+  displacement_dr: 0
+  final_bit_count: 6
+  glider_found: false
+  initial_bit_count: 6
+  object_period: 1
+output_tokens: 1368
+status: experiment_failed
+```
+
+## iter_076: composite-2-gap: Two 3-bit still lifes under rule (A=3,B=14), placed at a 2-cell critical distance, form a stable, moving 6-bit composite object.
+
+**Analysis:** The research is fundamentally blocked on finding any form of moving particle ("glider"). The previous iteration (iter_075) was a critical test of a new paradigm: that motion might be an *emergent* property of interacting stationary objects, rather than an intrinsic property of elemental ones. This experiment failed. Placing two known-stable 3-bit "still lifes" with a one-cell gap resulted in them immediately fusing into a larger, stable, but still stationary, 6-bit still life.
+
+The experimenter's view from iter_075 correctly identified the next logical step: the interaction is highly sensitive to distance. The one-cell gap was too close, leading to immediate static fusion. The most direct and minimal follow-up experiment is to increase this separation to see if a different interaction mode emerges. We will test a two-cell gap next. This is a systematic exploration of the interaction potential between known stable components.
+
+**Task:** Use the C6 non-conserving rule and the standard synchronous simulator to stage an interaction between two known stable objects, separated by a two-cell gap.
+
+1.  **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+2.  **Identify Still Life:** Use the stable 3-bit "L-shape" still life from iter_068, seeded with coordinates `(0,0), (1,0), (0,1)`.
+3.  **Initial Condition:** On a 150x150 grid, place two of these still lifes in a symmetric arrangement with a **two-cell gap** between them.
+    - **Still Life 1:** Place '1's at `(50,50)`, `(51,50)`, and `(50,51)`.
+    - **Still Life 2:** Place '1's at `(54,50)`, `(55,50)`, and `(54,51)`.
+    - The total initial bit count will be 6.
+4.  **Simulation:** Run for 500 steps.
+5.  **Analysis & Output:** Create `archive/iter_076/result.yaml` with the following keys:
+    - `glider_found`: boolean
+    - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, `NO_INTERACTION`, or `CHAOTIC`.
+    - `is_bit_count_stable`: boolean (is the bit count constant after any initial transient?)
+    - `initial_bit_count`: 6
+    - `final_bit_count`: integer
+    - `object_period`: integer
+    - `net_displacement_hex`: A tuple `(dq, dr)` for the net displacement over one period.
+
+**Status:** experiment_failed
+
+**Experimenter view:** With a 2-cell gap (SL2 starting at q=54, leaving cells q=52,53 empty),
+the composite object is immediately a STILL_LIFE — no interaction occurs
+between the two 3-bit L-shapes. The cycle is detected at step 1 (period=1,
+cycle_start=0), meaning the combined object is perfectly stable from the
+very first step with zero displacement. Compare to iter_075 (1-cell gap,
+SL2 at q=53) which produced a GLIDER. The critical distance for interaction
+is tight: a gap of 1 produces a glider, a gap of 2 produces no interaction.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 6, 'object_period': 1, 'displacement_dq': 0, 'displacement_dr': 0, 'glider_found': False}`
 

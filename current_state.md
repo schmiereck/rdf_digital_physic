@@ -4,17 +4,12 @@ Phase: 3 - Emergent Dynamics
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-FUNDAMENTALLY BLOCKED on glider discovery. All tested paradigms have failed to produce elemental moving particles from small, contiguous seeds.
-- C6-symmetric, bit-conserving rules (2-cycle and 3-cycle) only produce stationary objects (iter_052, 054, 059, 060, 063, 064).
-- C6-symmetric, non-conserving rule (A=3↔B=14) also only produces stationary objects (iter_069, re-confirmed by iter_074).
-- Alternative update models (asynchronous 2-phase/3-phase) suppress dynamics further (iter_070, 071).
-- Reduced C2-symmetry also failed to produce motion (iter_073).
-
-The research has pivoted to a new paradigm: testing if motion can be an **emergent property** of interacting, known-stable *stationary* objects.
+FUNDAMENTALLY BLOCKED on glider discovery. All tested paradigms for finding *elemental* moving particles from small, contiguous seeds have failed. The research has pivoted to a new paradigm: searching for *emergent* motion from the interaction of known-stable stationary objects.
 
 ### Confirmed Findings
-- A principled method exists for generating reversible rule kernels with various symmetries (C6, C2) and conservation properties.
-- The non-conserving rule (A=3↔B=14) supports a variety of stable, multi-bit, stationary "still life" objects from 3-bit and 4-bit seeds (iter_068, 069, 074).
+- A principled method exists for generating reversible rule kernels with various symmetries and conservation properties.
+- The non-conserving rule (A=3↔B=14) supports a variety of stable, multi-bit, stationary "still life" objects from 3-bit and 4-bit seeds (iter_068, iter_074).
+- The interaction of two 3-bit still lifes with a **1-cell gap** results in a stable 6-bit still life (iter_075).
 
 ### In Progress
-- **iter_075:** Staging an interaction between two known-stable 3-bit still lifes under the non-conserving rule to search for an emergent, composite glider.
+- **iter_076:** Systematically probing interaction distance. Testing if a **2-cell gap** between two 3-bit still lifes can produce a composite glider.

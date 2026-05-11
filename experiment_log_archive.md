@@ -2433,3 +2433,28 @@ unchanged oscillators identical to the single-oscillator case.
 
 **Metrics:** `{'is_bit_conserving': True, 'initial_bit_count': 6, 'final_bit_count': 6, 'bit_count_min': 6, 'bit_count_max': 6, 'interaction_step': -1, 'oscillation_period': 2, 'final_clusters': 2}`
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 46
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_046: strategy_error
+
+**Analysis:** No yaml block found in response
+
+**Task:** 
+
+**Status:** code_error
+
+**Experimenter view:** 
+
+**Metrics:** `{}`
+
