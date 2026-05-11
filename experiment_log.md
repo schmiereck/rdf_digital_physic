@@ -3,71 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61518
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.09473
-hypothesis: 'search-w3-objects: The W=3 rule (A=7, B=14) supports at least one stable,
-  bit-conserving, non-trivial 3-bit object.'
-input_tokens: 68897
-iter: 51
-metrics:
-  object_found: true
-  object_period: 1
-  patterns_checked: 1
-  total_unique_seeds_available: 11
-output_tokens: 1436
-status: ok
-```
-
-## iter_051: search-w3-objects: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, non-trivial 3-bit object.
-
-**Analysis:** The previous iteration (iter_050) marked the first test of our new, more complex rule derived from a Hamming Weight 3 kernel (A=7, B=14). The experiment failed, but in an informative way. The specific 3-bit seed we chose was not a "closed orbit" under the rule's dynamics; it immediately gained a bit, then lost two, collapsing into a 2-bit fixed point. This proves that not every pattern is a stable particle, which is an expected feature of a complex system.
-
-The failure was not in the rule itself, which is mathematically sound (symmetric, reversible, bit-conserving at the neighborhood level), but in our choice of initial conditions. Abandoning the rule after testing a single, arbitrarily chosen seed would be premature. The crucial open question is whether this rule supports *any* stable, bit-conserving objects at all.
-
-Therefore, the most logical and minimal next step is to pivot from testing a single guessed pattern to a systematic, combinatorial search for stable 3-bit objects within the universe defined by this rule. This moves us from "poking" the system to characterizing it properly.
-
-**Task:** Create a new script `src/find_w3_objects.py`. This script will perform a combinatorial search, not a long-running simulation.
-
-1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
-2. **Generate Seeds:** Systematically generate all unique, contiguous 3-bit patterns. A pattern is contiguous if its '1's form a single connected component on the hex grid. Consider all patterns that can fit within a small bounding box (e.g., a 3x3 hex area) to keep the search space manageable.
-3. **Test Each Seed:** For each generated 3-bit seed pattern:
-    a. Initialize a small grid with the pattern.
-    b. Run the CA simulation for a fixed number of steps (e.g., 20).
-    c. At each step, check the total bit count. If it ever deviates from 3, the seed is unstable; discard it and move to the next.
-    d. If the bit count remains 3 for all 20 steps, check if the pattern has repeated. Store the sequence of patterns. If a pattern state repeats, a stable object has been found.
-4. **Stop and Report:** The script should stop as soon as the *first* stable object (still life or oscillator) is found.
-5. **Output:** Create `archive/iter_051/result.yaml` with the following keys:
-    - `object_found`: `true` if a stable object was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested.
-    - `object_type`: A string, `STILL_LIFE` (period 1) or `OSCILLATOR` (period > 1).
-    - `object_period`: The integer period of the found object.
-    - `initial_seed_coords`: A list of the `(q, r)` coordinates for the seed that produced the first stable object.
-
-**Status:** ok
-
-**Experimenter view:** The W=3 rule (A=7, B=14) does support a stable, bit-conserving, non-trivial
-3-bit object: a straight-line trihex (3 cells in a row, NE direction).
-
-The object is a STILL_LIFE (period 1). Analytical explanation:
-- A-rotations (which would flip a live cell to 0) require center=1 plus 2
-  *consecutive* hex neighbors both being 1. In a straight line, the middle
-  cell's two live neighbors are in opposite positions (not consecutive), and
-  end cells have only 1 live neighbor — so no live cell fires.
-- B-rotations (which would create a new live cell) require center=0 plus 3
-  *consecutive* hex neighbors all being 1. With only 3 total live cells in
-  a line, no empty cell can ever see 3 consecutive live neighbors — so no
-  new cell is born.
-This makes the straight-line a structurally guaranteed still life.
-The search also confirms that out of 11 unique trihex topologies, at least
-1 (and likely more) are stable objects.
-
-
-**Metrics:** `{'object_found': True, 'patterns_checked': 1, 'object_period': 1, 'total_unique_seeds_available': 11}`
-
-
----
-```yaml
 cached_tokens: 61383
 campaign: Phase 3 - W=3 Rule Dynamics
 cost_usd: 0.10202
@@ -1948,4 +1883,100 @@ component interactions generate birth via an indirect multi-step cascade.
 
 
 **Metrics:** `{'glider_found': 0, 'patterns_checked': 250, 'total_unique_seeds': 250, 'stable_object_count': 250, 'bits1_still_life': 52, 'bits3_still_life': 198, 'contiguous_combos_filtered': 267, 'total_combos_generated': 7770}`
+
+
+---
+```yaml
+cached_tokens: 63596
+campaign: Phase 3 - Non-Contiguous Seeds
+cost_usd: 0.10011
+hypothesis: 'noncontiguous-4bit: A 4-bit non-contiguous seed forms a stable, moving
+  object under the non-conserving rule (A=3,B=14).'
+input_tokens: 71326
+iter: 81
+metrics:
+  contiguous_combos_filtered: 860
+  decay_or_other_count: 88
+  glider_found: 0
+  grid_cells: 37
+  grid_radius: 3
+  patterns_checked: 3227
+  stable_object_count: 3139
+  total_4cell_combos_in_grid: 66045
+  total_unique_seeds: 3227
+output_tokens: 1658
+status: experiment_failed
+```
+
+## iter_081: noncontiguous-4bit: A 4-bit non-contiguous seed forms a stable, moving object under the non-conserving rule (A=3,B=14).
+
+**Analysis:** The research is fundamentally blocked. The previous iteration (iter_080) completed the test of 3-bit non-contiguous seeds, which was the minimal step to address the failure of 2-bit non-contiguous seeds in iter_079. This experiment also failed, but for a highly informative reason: the `experimenter_view` noted that a 3-bit seed, even if non-contiguous, is too sparse to create the local neighborhood density (3 consecutive live neighbors) required to trigger the rule's non-trivial "birth" dynamics. All 250 unique seeds tested collapsed into stationary still lifes.
+
+This provides a clear path forward. The failure was not in the non-contiguous seed paradigm itself, but in using an insufficient number of bits. To test the paradigm properly, we must use a seed complex enough to actually engage the rule's interesting dynamics. The minimal and only logical next step is to escalate the search from 3-bit to 4-bit non-contiguous seeds. Four bits is the smallest number that can form a non-contiguous pattern while also being dense enough to create the "3-consecutive-neighbor" condition that was absent in all previous non-contiguous tests.
+
+**Task:** Create a new script, `src/search_noncontiguous_4bit.py`, to perform a systematic search for gliders from 4-bit non-contiguous seeds.
+
+1. **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2. **Generate Seeds:**
+   a. Systematically generate all unique 4-bit seeds that fit within a hex-radius of 2 (a 37-cell diamond shape).
+   b. Filter out all 10 known contiguous tetrahexes.
+   c. Reduce the remaining set to its rotationally unique members to create the final list of seeds to test.
+
+3. **Test Each Seed:** For each unique seed:
+   a. Initialize a grid (e.g., 150x150) with the pattern.
+   b. Simulate for at least 500 steps.
+   c. Track the pattern's configuration and bit count at each step to detect cycles. An object is considered stable if it enters a cycle with `bit_count > 0`.
+   d. For any stable object, calculate the net displacement of its center of mass over one full period.
+
+4. **Output:** Create `archive/iter_081/result.yaml`. The script should stop and report immediately if a glider is found. If no glider is found after checking all seeds, it should report a summary.
+   - `glider_found`: `true` if any seed produced a glider.
+   - `patterns_checked`: The number of unique non-contiguous seeds tested.
+   - `stable_object_count`: The number of seeds that produced a stable object.
+   - `glider_seed_coords`: The coordinates of the seed that produced the first glider, if found.
+   - `glider_period`: The period of the first glider found.
+   - `glider_velocity_hex`: The (dq, dr) velocity of the first glider found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** All 3,227 unique canonical non-contiguous 4-bit seeds within hex-radius 3 (37
+cells) were tested for up to 500 steps. No gliders were found. The 3,139 stable
+objects were all period-1 still lives; the remaining 88 seeds decayed to 0 bits.
+
+A complete theoretical analysis explains why 4-bit non-contiguous gliders cannot
+exist under rule (A=3, B=14):
+
+The five possible connected-component topologies of a 4-bit non-contiguous seed
+are: (1) four isolated bits, (2) one 2-bit cluster + two isolated bits, (3) two
+separate 2-bit clusters, (4) one 3-bit triangle + one isolated bit, (5) one 3-bit
+chain + one isolated bit.
+
+Under the rule: isolated cells survive (neighborhood 64 = identity); cells with
+exactly 1 live neighbor die (neighborhoods 65, 66, 68, 72, 80, 96); dead cells
+with 3 consecutive live neighbors are born (patterns 7, 14, 28, 35, 49, 56).
+
+- Types (1) and (4): Isolated bits and hex triangles are inert still lives. The
+  triangle cannot generate birth at any adjacent dead cell (no dead cell can be
+  adjacent to all 3 triangle vertices in 3 consecutive directions), and isolated
+  bits contribute no dynamics. Result: permanent still life.
+- Type (3): Both 2-cell clusters decay simultaneously (each cell has 1 live
+  neighbor → dies). No birth occurs because non-adjacent clusters cannot place
+  3 consecutive live neighbors at any dead cell without being connected. Result:
+  full decay to 0 bits.
+- Type (2): The 2-cell cluster decays, leaving 2 isolated bits → 2-bit still life.
+- Type (5): The chain A-B-C creates birth at dead cell D (adjacent to A,B,C in
+  3-consecutive directions). End cells A,C die (1 neighbor each); middle B
+  survives; D is born. After step 1: {D,B,X}. In step 2, D and B each see the
+  other as their sole live neighbor → both die. Only X remains. The X cell cannot
+  prevent this because any X placement that would create a step-2 birth event
+  requires X to be adjacent to A, B, or C (making the original seed contiguous).
+  Result: decay to 1 isolated bit → still life.
+
+This exhaustive case analysis proves that 4-bit non-contiguous seeds cannot
+sustain oscillatory dynamics and thus cannot produce gliders under rule A=3,B=14.
+The hypothesis is refuted. In agreement with iter_079 (2-bit) and iter_080 (3-bit),
+sparse non-contiguous seeds of any size ≤4 fail to produce gliders under this rule.
+
+
+**Metrics:** `{'glider_found': 0, 'patterns_checked': 3227, 'total_unique_seeds': 3227, 'stable_object_count': 3139, 'decay_or_other_count': 88, 'contiguous_combos_filtered': 860, 'total_4cell_combos_in_grid': 66045, 'grid_radius': 3, 'grid_cells': 37}`
 
