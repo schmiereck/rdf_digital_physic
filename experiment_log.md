@@ -3,70 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61009
-campaign: Phase 3 - Non-conserving Rules
-campaign_status: completed
-campaign_summary: Exhaustive searches proved that the 3-cycle rule (A=7,B=11,C=14)
-  supports a rich variety of stable, stationary 3-bit and 4-bit objects, but no moving
-  'gliders'. This confirms that even rules with non-reciprocal 3-cycle dynamics can
-  be too stable to produce motion, concluding this line of inquiry.
-cost_usd: 0.09299
-hypothesis: 'search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3,
-  and the pair satisfies all known structural constraints (contiguity, center-flip,
-  disjoint orbits, conflict-free closure).'
-input_tokens: 67872
-iter: 65
-metrics:
-  closure_size: 12
-  kernel_A: 3
-  kernel_B: 14
-  orbit_A_size: 6
-  orbit_B_size: 6
-  pairs_checked: 4
-output_tokens: 1484
-status: ok
-```
-
-## iter_065: search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3, and the pair satisfies all known structural constraints (contiguity, center-flip, disjoint orbits, conflict-free closure).
-
-**Analysis:** The research is fundamentally blocked. All previous campaigns, exploring symmetric, reversible, and strictly bit-conserving rules (both 2-cycle involutions and 3-cycles), have failed to produce any moving particles ("gliders"). Exhaustive searches across multiple rules and particle complexities (3-bit and 4-bit) have consistently yielded only stationary "still lifes" and "oscillators" (iter_052, 054, 059, 060, 063, 064).
-
-This pattern of failure strongly suggests a flaw in the core paradigm: the constraint of strict, local bit-conservation may be too strong, creating "crystalline" universes that are too rigid to support motion. The rules are so stable that they suppress the very dynamics we seek.
-
-To unblock this, we must pivot to a new paradigm. The most principled change is to relax the bit-conservation constraint while retaining reversibility. A rule where a state with `k` bits can reversibly map to a state with `j` bits (`k != j`) would allow for local fluctuations in bit density, which might be the necessary ingredient for propagation. The minimal next step is a formal search for the existence of such a rule kernel.
-
-**Task:** Create a new script, `src/find_nonconserving_kernel.py`, to perform a combinatorial search.
-
-1.  **Search Space:** The script should search through pairs of states `(A, B)` where `A` has Hamming Weight 2 and `B` has Hamming Weight 3.
-2.  **Constraints:** A pair `(A, B)` is valid if it satisfies all four of the following conditions:
-    a. **Contiguity:** Both state `A` and state `B` must represent contiguous patterns.
-    b. **Center-Bit Flip:** The center bit of `A` must be different from the center bit of `B`.
-    c. **Disjoint Orbits:** The 6-fold rotational orbits of `A` and `B` must be mutually disjoint.
-    d. **Conflict-Free Closure:** The joint rotational closure, formed by the 12 states `{rotate(A,i), rotate(B,i)}` for `i` in `0..5`, must contain exactly 12 unique states.
-3.  **Execution:** Iterate through combinations and stop at the *first* valid pair found.
-4.  **Output:** Create `archive/iter_065/result.yaml` with the following keys:
-    - `kernel_found`: `true` or `false`.
-    - `popcount_A`: 2
-    - `popcount_B`: 3
-    - `pairs_checked`: The total number of pairs checked.
-    - `kernel_A`, `kernel_B`: The integer representations of the found states.
-    - `kernel_A_binary`, `kernel_B_binary`: The 7-bit string representations.
-
-**Status:** ok
-
-**Experimenter view:** A valid non-conserving kernel pair (A,B) with popcount(A)=2, popcount(B)=3 exists and was
-found immediately (4th pair checked). The key insight is that because rotations preserve
-Hamming weight, orbits of W=2 and W=3 states are automatically disjoint; the binding
-constraint is that both states must have orbit size exactly 6 (no rotational symmetry) to
-achieve a 12-element joint closure. The found pair A=3 (center+E) and B=14 (E+SE+SW) are
-the simplest contiguous representatives of their respective orbit classes.
-
-
-**Metrics:** `{'pairs_checked': 4, 'kernel_A': 3, 'kernel_B': 14, 'closure_size': 12, 'orbit_A_size': 6, 'orbit_B_size': 6}`
-
-
----
-```yaml
 cached_tokens: 61183
 campaign: Phase 3 - Non-conserving Rules
 cost_usd: 0.09421
@@ -2090,4 +2026,80 @@ criterion (rules_with_motion >= 1) was not met, so the hypothesis is falsified.
 
 
 **Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21}`
+
+
+---
+```yaml
+cached_tokens: 66230
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10305
+hypothesis: 'c2-motion-search: A random population of C2-symmetric rules contains
+  at least one rule with non-zero motion fitness.'
+input_tokens: 74520
+iter: 95
+metrics:
+  population_size: 100
+  rules_with_motion: 0
+  seeds_evaluated: 21
+  top_fitness_score: 0.0
+  total_evaluations: 2100
+output_tokens: 1532
+status: experiment_failed
+```
+
+## iter_095: c2-motion-search: A random population of C2-symmetric rules contains at least one rule with non-zero motion fitness.
+
+**Analysis:** The research is fundamentally blocked. All prior paradigms have failed to produce motion ("gliders"). The most recent "Evolutionary Search" campaign culminated in iter_094, which conclusively demonstrated that a random population of 100 C6-symmetric rules contains zero gliders, even when robustly tested with 21 different seeds per rule. This confirms that gliders are vanishingly rare in the C6-symmetric rule space.
+
+The consistent failure across all C6-symmetric rules, whether formally constructed or randomly generated, strongly suggests that the high symmetry itself is the problem. As hypothesized in iter_072, the 6-fold rotational symmetry may be creating an overly "crystalline" universe where forces are too perfectly balanced to permit net propagation.
+
+The only logical path forward is to abandon the C6 symmetry constraint and explore a lower-symmetry rule space. The minimal and most principled next step is to test whether the space of C2-symmetric (180-degree rotational symmetry) rules is more likely to contain the "spark" of motion needed to kickstart our evolutionary algorithm.
+
+**Task:** Create a new script, `src/run_c2_motion_evolution_gen1.py`. This script will generate and evaluate a population of C2-symmetric rules.
+
+**1. Implement C2 Rule Generation:**
+- Create a function to generate a single random, reversible, C2-symmetric, non-conserving rule.
+- This function should randomly choose `k` (between 2-4) kernel pairs `(A, B)`.
+- For each pair, it adds only the C2-symmetric mappings to the rule dictionary: `A -> B`, `rotate(A, 3) -> rotate(B, 3)`, and their inverses. Ensure no mapping conflicts arise.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 random C2-symmetric rules and save them to `archive/iter_095/population/`.
+- For each rule, calculate its motion fitness using the robust multi-seed evaluation protocol from iter_093/094:
+  - The final fitness for a rule is the maximum fitness achieved across all 21 standard contiguous seeds (11 trihexes, 10 tetrahexes).
+  - Fitness for a single seed is `displacement / (1 + final_bit_count)`.
+  - Simulation per seed should run for 500 steps.
+
+**3. Report Results:**
+- Save the final score for each rule to `archive/iter_095/results/c2_random_multiseed_scores.csv`.
+- Create `archive/iter_095/result.yaml` summarizing the findings, with the standard keys:
+  - `rules_with_motion`: Count of rules with a final fitness score > 0.
+  - `top_fitness_score`: The highest score found.
+  - `top_rule_id`: The filename of the best rule, or "" if none found.
+  - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The C2-symmetric random population (100 rules, seed=95) produced zero gliders
+across all 21 standard contiguous seeds (11 trihexes + 10 tetrahexes), each
+simulated for 500 steps. Manual inspection confirms the rules are genuinely
+C2-symmetric (180° rotation symmetry verified) and that the CA dynamics
+are well-behaved — seeds produce still-lifes (most common), occasional
+explosions, and fast decay, but no translating patterns.
+
+This continues the pattern from iter_093 (Gen-3 C6, 0/100) and iter_094
+(random C6, 0/100). Restricting symmetry from C6 to C2 did not help: the
+reduced symmetry constraint allows a broader rule space, but the additional
+degrees of freedom do not spontaneously produce motion.
+
+Key structural observation: C2 rules generated here have only 8–16
+non-identity mappings (2–4 pairs × 4 mappings/pair) out of 128 total
+neighborhood states. Most neighborhoods are mapped to themselves (identity),
+making truly novel dynamics very rare by chance.
+
+Next direction: evolutionary pressure (selection for motion) is likely
+required — random sampling alone is insufficient across C6 and C2
+symmetry classes.
+
+
+**Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21, 'total_evaluations': 2100}`
 

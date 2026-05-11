@@ -3661,3 +3661,67 @@ needed for gliders in this rule.
 
 **Metrics:** `{'glider_found': 0, 'patterns_checked': 16715, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'glider_period': 0, 'unstable_contiguous_seeds': 5}`
 
+
+---
+```yaml
+cached_tokens: 61009
+campaign: Phase 3 - Non-conserving Rules
+campaign_status: completed
+campaign_summary: Exhaustive searches proved that the 3-cycle rule (A=7,B=11,C=14)
+  supports a rich variety of stable, stationary 3-bit and 4-bit objects, but no moving
+  'gliders'. This confirms that even rules with non-reciprocal 3-cycle dynamics can
+  be too stable to produce motion, concluding this line of inquiry.
+cost_usd: 0.09299
+hypothesis: 'search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3,
+  and the pair satisfies all known structural constraints (contiguity, center-flip,
+  disjoint orbits, conflict-free closure).'
+input_tokens: 67872
+iter: 65
+metrics:
+  closure_size: 12
+  kernel_A: 3
+  kernel_B: 14
+  orbit_A_size: 6
+  orbit_B_size: 6
+  pairs_checked: 4
+output_tokens: 1484
+status: ok
+```
+
+## iter_065: search-2-3-cycle: A valid kernel (A,B) exists where popcount(A)=2, popcount(B)=3, and the pair satisfies all known structural constraints (contiguity, center-flip, disjoint orbits, conflict-free closure).
+
+**Analysis:** The research is fundamentally blocked. All previous campaigns, exploring symmetric, reversible, and strictly bit-conserving rules (both 2-cycle involutions and 3-cycles), have failed to produce any moving particles ("gliders"). Exhaustive searches across multiple rules and particle complexities (3-bit and 4-bit) have consistently yielded only stationary "still lifes" and "oscillators" (iter_052, 054, 059, 060, 063, 064).
+
+This pattern of failure strongly suggests a flaw in the core paradigm: the constraint of strict, local bit-conservation may be too strong, creating "crystalline" universes that are too rigid to support motion. The rules are so stable that they suppress the very dynamics we seek.
+
+To unblock this, we must pivot to a new paradigm. The most principled change is to relax the bit-conservation constraint while retaining reversibility. A rule where a state with `k` bits can reversibly map to a state with `j` bits (`k != j`) would allow for local fluctuations in bit density, which might be the necessary ingredient for propagation. The minimal next step is a formal search for the existence of such a rule kernel.
+
+**Task:** Create a new script, `src/find_nonconserving_kernel.py`, to perform a combinatorial search.
+
+1.  **Search Space:** The script should search through pairs of states `(A, B)` where `A` has Hamming Weight 2 and `B` has Hamming Weight 3.
+2.  **Constraints:** A pair `(A, B)` is valid if it satisfies all four of the following conditions:
+    a. **Contiguity:** Both state `A` and state `B` must represent contiguous patterns.
+    b. **Center-Bit Flip:** The center bit of `A` must be different from the center bit of `B`.
+    c. **Disjoint Orbits:** The 6-fold rotational orbits of `A` and `B` must be mutually disjoint.
+    d. **Conflict-Free Closure:** The joint rotational closure, formed by the 12 states `{rotate(A,i), rotate(B,i)}` for `i` in `0..5`, must contain exactly 12 unique states.
+3.  **Execution:** Iterate through combinations and stop at the *first* valid pair found.
+4.  **Output:** Create `archive/iter_065/result.yaml` with the following keys:
+    - `kernel_found`: `true` or `false`.
+    - `popcount_A`: 2
+    - `popcount_B`: 3
+    - `pairs_checked`: The total number of pairs checked.
+    - `kernel_A`, `kernel_B`: The integer representations of the found states.
+    - `kernel_A_binary`, `kernel_B_binary`: The 7-bit string representations.
+
+**Status:** ok
+
+**Experimenter view:** A valid non-conserving kernel pair (A,B) with popcount(A)=2, popcount(B)=3 exists and was
+found immediately (4th pair checked). The key insight is that because rotations preserve
+Hamming weight, orbits of W=2 and W=3 states are automatically disjoint; the binding
+constraint is that both states must have orbit size exactly 6 (no rotational symmetry) to
+achieve a 12-element joint closure. The found pair A=3 (center+E) and B=14 (E+SE+SW) are
+the simplest contiguous representatives of their respective orbit classes.
+
+
+**Metrics:** `{'pairs_checked': 4, 'kernel_A': 3, 'kernel_B': 14, 'closure_size': 12, 'orbit_A_size': 6, 'orbit_B_size': 6}`
+
