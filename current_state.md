@@ -4,15 +4,15 @@ Phase: 3 - Non-conserving Rules
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-EXPLORATION. The long-held paradigm of requiring strict local bit-conservation has been abandoned after exhaustive searches failed to find any moving particles ("gliders"). A new paradigm is being tested, based on rules that are reversible but locally non-bit-conserving.
+EXPLORATION. The long-held paradigm of requiring strict local bit-conservation has been abandoned. A new paradigm is being tested, based on rules that are reversible but locally non-bit-conserving. The first such rule (kernel A=3↔B=14) is being characterized.
 
 ### Confirmed Findings
-- A principled method exists for finding mathematically valid, symmetric, reversible rule kernels (iter_033, 061).
-- A valid, reversible, non-bit-conserving rule kernel (popcount 2↔3) exists, satisfying all structural constraints (iter_065).
+- A principled method exists for finding mathematically valid, symmetric, reversible rule kernels for both conserving and non-conserving rules (iter_033, 061, 065).
+- The non-conserving rule (A=3↔B=14) supports a stable 1-bit still life, which is a decay product of a specific 3-bit seed (iter_067).
 
 ### Refuted Hypotheses
-- Monolithic or composite gliders exist for any of the tested symmetric, **strictly bit-conserving** rules (Falsified by iter_052, 054, 059, 060, 063, 064). The strict conservation constraint appears to prevent motion.
-- The 3-bit seed `{(51,50), (51,49), (50,49)}` is stable under the non-conserving rule (Falsified by iter_066; it decays immediately).
+- Monolithic or composite gliders exist for any of the tested symmetric, **strictly bit-conserving** rules (Falsified by iter_052, 054, 059, 060, 063, 064).
+- All 2-bit contiguous seeds are stable under the non-conserving rule (Falsified by iter_067; they all decay to zero).
 
 ### In Progress
-- **iter_067:** Systematically searching for any stable 2-bit or 3-bit objects under the first non-conserving rule to characterize its fundamental dynamics.
+- **iter_068:** Exhaustively searching all 11 contiguous 3-bit seeds under the non-conserving rule to find any stable, multi-bit objects and fully characterize the rule's dynamics at this complexity.

@@ -3,69 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 62714
-cost_usd: 0.08622
-hypothesis: 'search-center-flipping: There exists a state-pair (A, B) that is conflict-free,
-  has disjoint orbits, and has different center-bit parities.'
-input_tokens: 66784
-iter: 38
-metrics:
-  closure_size: 12
-  hamming_weight_searched: 2
-  kernel_A: 3
-  kernel_B: 6
-  pairs_checked: 2
-output_tokens: 1629
-status: ok
-```
-
-## iter_038: search-center-flipping: There exists a state-pair (A, B) that is conflict-free, has disjoint orbits, and has different center-bit parities.
-
-**Analysis:** The research is critically blocked. While we have developed a sophisticated, principled method for generating symmetric rules from a "kernel" (iter_033, iter_036), the resulting rules have consistently failed to produce any motion (iter_035, iter_037).
-
-The failure in iter_037 was the most informative: our fully validated kernel (A=3, B=6) produced a rule that only permuted neighborhood states where the center bit was '0'. Consequently, it could never create a new '1' bit, nor could it make an existing '1' bit (which by definition has a center bit of '1') move. This is a fundamental flaw.
-
-To unblock this, we must add a new, critical constraint to our search for a valid kernel: the rule must be able to "flip" the center bit. The minimal way to ensure this is to find a kernel pair (A, B) where one state has a '0' center bit and the other has a '1'. This is a prerequisite for any non-trivial particle dynamics. The next step is therefore another formal, combinatorial search, not a simulation.
-
-**Task:** Create a new Python script `src/find_center_flipping_kernel.py`. This script will perform a combinatorial search, not a simulation.
-
-1.  **Implement Utilities:** Create helper functions for hexagonal rotation of 7-bit integer states and for checking the center bit of a state.
-2.  **Define State Space:** Generate all 7-bit states for a given Hamming weight (start with W=2, then W=3 if no results are found).
-3.  **Search Loop:**
-    a. Iterate through all unique pairs of states `(A, B)` for the current Hamming weight.
-    b. For each pair, check three conditions in order of increasing cost:
-       i.   **Center-Bit Flip (New):** The center bit of A must be different from the center bit of B.
-       ii.  **Disjoint Orbits:** State B must not be in the 6-fold rotational orbit of state A.
-       iii. **Conflict-Free Closure:** The joint 12-state rotational closure of {A, B} must contain exactly 12 unique states.
-    c. If a pair `(A, B)` satisfies all three conditions, the search is successful. Stop and report this pair.
-4.  **Output:**
-    Create `archive/iter_038/result.yaml`. The YAML file must contain:
-    - `valid_kernel_found`: `true` or `false`.
-    - `hamming_weight_searched`: The integer Hamming weight at which a kernel was found (e.g., 2).
-    - `pairs_checked`: The total number of pairs checked before finding a valid one.
-    - `kernel_A`: The integer representation of the first valid 'A' state found.
-    - `kernel_B`: The integer representation of the first valid 'B' state found.
-    - `kernel_A_binary`: The 7-bit string representation of 'A'.
-    - `kernel_B_binary`: The 7-bit string representation of 'B'.
-
-**Status:** ok
-
-**Experimenter view:** The search succeeded almost immediately (pair #2 out of 210 possible W=2 pairs).
-The key geometric insight: rotation only moves neighbor bits and never touches the
-center bit (bit 0). Therefore any state with center=1 and any state with center=0
-will automatically have disjoint orbits. The only remaining constraint is that
-neither orbit has a period < 6 (which would reduce the closure below 12 elements).
-For A=3 (center + one neighbor) and B=6 (two adjacent neighbors), both have full
-6-element orbits, giving a conflict-free 12-element closure. The center-flip
-condition is thus easy to satisfy and actually guarantees disjoint orbits for free,
-making the search trivially fast.
-
-
-**Metrics:** `{'pairs_checked': 2, 'hamming_weight_searched': 2, 'kernel_A': 3, 'kernel_B': 6, 'closure_size': 12}`
-
-
----
-```yaml
 cached_tokens: 63966
 cost_usd: 0.0882
 hypothesis: 'search-disjoint-orbits: There exists a W=2 state-pair (A,B) whose rotational
@@ -1873,4 +1810,64 @@ simplest discovered is minimal (1 surviving bit).
 
 
 **Metrics:** `{'object_found': 1, 'seed_bit_count': 3, 'patterns_checked': 4, 'object_period': 1, 'final_bit_count': 1, 'net_displacement_q': 0, 'net_displacement_r': 0}`
+
+
+---
+```yaml
+cached_tokens: 61185
+campaign: Phase 3 - Non-conserving Rules
+cost_usd: 0.09457
+hypothesis: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit
+  object (final_bit_count > 1) from a 3-bit seed.
+input_tokens: 68283
+iter: 68
+metrics:
+  decayed_seed_count: 6
+  glider_found: 0
+  max_final_bit_count: 3
+  multi_bit_object_found: 1
+  patterns_checked: 11
+  stable_object_count: 5
+output_tokens: 1542
+status: ok
+```
+
+## iter_068: The non-conserving rule (A=3↔B=14) supports at least one stable, multi-bit object (final_bit_count > 1) from a 3-bit seed.
+
+**Analysis:** The research has successfully pivoted to a new paradigm of reversible, but non-bit-conserving rules, unblocking the project after all strictly-conserving rules failed to produce motion. The first rule in this new class (from kernel A=3↔B=14) was generated in iter_066.
+
+The first characterization attempt in iter_067 was informative but incomplete. It confirmed the rule supports stable objects, but the search stopped after finding that the first 3-bit seed tested decayed into a trivial 1-bit still life. All 2-bit seeds decayed to zero.
+
+This is insufficient evidence to either validate or discard this new rule. The most critical open question is whether this rule supports any more complex, multi-bit stable objects. The logical and minimal next step is to complete the exhaustive search over all contiguous 3-bit seeds to fully characterize the "particle zoo" at this complexity level.
+
+**Task:** Create a new script, `src/search_all_3bit_nonconserving.py`, to perform an exhaustive search of all 3-bit seeds under the non-conserving rule.
+
+1.  **Load Rule:** Load the symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2.  **Exhaustive Search:** The script must generate and test **all 11** unique, contiguous 3-bit seeds (trihexes). It should not stop after the first finding.
+
+3.  **Test Procedure for Each Seed:**
+    a. Initialize a grid (e.g., 50x50) with the seed pattern.
+    b. Simulate for up to 300 steps.
+    c. A seed is considered to have produced a **stable object** if its evolution enters a finite cycle. Decay to 0 bits is an unstable outcome, not a stable object.
+
+4.  **Analysis & Output:** After testing all 11 seeds, the script must analyze the results and create `archive/iter_068/result.yaml` with the following keys:
+    - `multi_bit_object_found`: `true` if any stable object with `final_bit_count > 1` was found.
+    - `glider_found`: `true` if any stable object had a non-zero net displacement.
+    - `patterns_checked`: The total number of seeds tested (should be 11).
+    - `stable_object_count`: The total number of seeds that resulted in a stable object (final_bit_count > 0).
+    - `decayed_seed_count`: The total number of seeds that decayed to 0 bits.
+    - `outcomes`: A list of summary objects, one for each of the 11 seeds, detailing the outcome. Each object should have keys like `seed_shape`, `outcome_class` (`STILL_LIFE`, `OSCILLATOR`, `DECAY`), `final_bit_count`, and `period`.
+
+**Status:** ok
+
+**Experimenter view:** The exhaustive search over all 11 unique 3-bit trihexes confirms the hypothesis:
+two seeds (seeds #2 and #7) produce stable STILL_LIFE objects retaining all 3
+bits (final_bit_count=3). Three more seeds produce 1-bit still lifes. Six seeds
+decay to zero. No gliders or oscillators were found among 3-bit seeds. The two
+3-bit still lives correspond to "bent" trihex shapes (L-shapes); the linear and
+zigzag shapes either decay or collapse to a single bit.
+
+
+**Metrics:** `{'patterns_checked': 11, 'stable_object_count': 5, 'decayed_seed_count': 6, 'multi_bit_object_found': 1, 'glider_found': 0, 'max_final_bit_count': 3}`
 
