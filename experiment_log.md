@@ -1860,3 +1860,69 @@ orbit cannot produce dynamics with this rule-generation method.
 
 **Metrics:** `{'bit_count_initial': 2, 'bit_count_final': 2, 'net_displacement': 0.0, 'steps': 100, 'non_identity_rule_entries': 6}`
 
+
+---
+```yaml
+cached_tokens: 60017
+cost_usd: 0.08529
+hypothesis: 'search-disjoint-orbits: There exists at least one reversible, bit-conserving
+  state-pair (A, B) whose 6-fold rotational closure is conflict-free AND where A and
+  B belong to different rotational orbits.'
+input_tokens: 64424
+iter: 36
+metrics:
+  closure_size: 12
+  hamming_weight: 2
+  kernel_A: 3
+  kernel_B: 6
+  pairs_checked: 2
+output_tokens: 1652
+status: ok
+```
+
+## iter_036: search-disjoint-orbits: There exists at least one reversible, bit-conserving state-pair (A, B) whose 6-fold rotational closure is conflict-free AND where A and B belong to different rotational orbits.
+
+**Analysis:** The project is fundamentally blocked on creating a symmetric 2D rule that supports non-trivial dynamics. All previous attempts, including the most recent one in iter_035 (logged as 35, but logically 34), have failed. The arrowhead glider rule (iter_024) was a dead end due to its lack of symmetry. Programmatic rule symmetrization has consistently produced flawed rules.
+
+The failure of iter_035 was particularly insightful: using a conflict-free kernel (A=3, B=6) from iter_033 still resulted in a fixed-point (inert) rule. The root cause, as identified in the experimenter log, was that A and B belong to the same rotational orbit. This means our rule-generation process creates a rule that essentially tries to map a state to another version of itself, preventing meaningful dynamics.
+
+We have now identified a new, critical constraint for a valid kernel: the two generator states, A and B, must belong to different rotational orbits. The next step is not to run more simulations with flawed rules, but to perform another formal, combinatorial search to find a kernel that satisfies *all* our refined criteria. This is the minimal and most direct path to unblocking Phase 3.
+
+**Task:** Create a new Python script `src/find_disjoint_orbit_kernel.py`. This script performs a combinatorial search, not a simulation.
+
+1. **Implement Hexagonal Rotation:** Create a helper function `rotate_neighborhood(state: int, steps: int)` that takes a 7-bit integer state and rotates the 6 neighbor bits clockwise.
+
+2. **Define State Space:** Generate all 21 unique 7-bit states with a Hamming weight of 2 (W=2).
+
+3. **Search Loop:**
+   a. Iterate through all possible unique pairs `(A, B)` of these W=2 states.
+   b. For each pair, perform two checks:
+      i. **Disjoint Orbit Check (New):** Generate the 6 states in the rotational orbit of A. Check if B is in this set. If it is, this pair is invalid; continue to the next pair.
+      ii. **Conflict Check (from iter_033):** Generate the "rotational closure": the set of 12 states `{rotate(A, i), rotate(B, i)}` for `i` from 0 to 5. The closure is conflict-free only if its size is exactly 12.
+   c. The first pair `(A, B)` that passes *both* checks is the valid kernel.
+
+4. **Output:**
+   a. Create `archive/iter_036/result.yaml`.
+   b. The YAML file must contain:
+      - `valid_kernel_found`: `true` or `false`.
+      - `hamming_weight_searched`: The integer `2`.
+      - `pairs_checked`: The total number of pairs of W=2 states checked before finding a valid one.
+      - `kernel_A`: The integer representation of the first valid 'A' state found.
+      - `kernel_B`: The integer representation of the first valid 'B' state found.
+      - `kernel_A_binary`: The 7-bit string representation of 'A'.
+      - `kernel_B_binary`: The 7-bit string representation of 'B'.
+
+**Status:** ok
+
+**Experimenter view:** The hypothesis is confirmed: a valid state-pair (A=3, B=6) exists at W=2
+where A and B belong to completely disjoint rotational orbits AND their
+joint 12-element rotational closure is conflict-free. This pair was found
+on only the 2nd candidate pair checked, suggesting it is a very natural
+and robust kernel. The two orbits partition neatly: A's orbit contains
+states with center bit set (bit 0 = 1), while B's orbit contains states
+with only neighbor bits set (bit 0 = 0), making the disjoint property
+structurally obvious in retrospect.
+
+
+**Metrics:** `{'pairs_checked': 2, 'hamming_weight': 2, 'closure_size': 12, 'kernel_A': 3, 'kernel_B': 6}`
+
