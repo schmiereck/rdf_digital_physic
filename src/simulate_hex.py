@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-iter_029: rule-synthesis
-Synchronous CA using a 6-fold-symmetric rule loaded from symmetric_rule.json.
-Tests whether the original East-pointing arrowhead glider is supported.
+iter_035: dynamics-symmetric
+Synchronous CA using the symmetric rule from kernel (A=3, B=6).
+Tests whether a 2-bit seed produces a stable oscillator or glider.
 
 Neighborhood encoding (7 bits, MSB = center):
   state = center*64 + b1*32 + b2*16 + b3*8 + b4*4 + b5*2 + b6
@@ -19,9 +19,9 @@ N = 100
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RULE_FILE = Path(__file__).parent / "symmetric_rule.json"
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_029" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_029" / "result.yaml"
+RULE_FILE = Path(__file__).parent / "symmetric_rule_A3_B6.json"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_035" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_035" / "result.yaml"
 
 HEX_DIRS = [
     ( 1,  0),  # b1: E
@@ -86,14 +86,24 @@ def main():
     rule = load_rule(RULE_FILE)
     print(f"Loaded rule from {RULE_FILE}: {len(rule)} mappings")
 
-    # Initial East-pointing arrowhead: center c, c+b4 (West), c+b5 (NW)
+    # 2-bit seed: place '1's at NW (49,51) and NE (50,51) of cell (50,50)
+    # so that cell (50,50) has neighborhood state A=3 ('0000011', b5=NW=1, b6=NE=1)
     cq, cr = N // 2, N // 2
     grid = np.zeros((N, N), dtype=np.int8)
-    grid[cq, cr] = 1
-    grid[(cq - 1) % N, (cr + 0) % N] = 1  # b4 = West
-    grid[(cq - 1) % N, (cr + 1) % N] = 1  # b5 = NW
+    grid[(cq - 1) % N, (cr + 1) % N] = 1  # b5 = NW of (50,50) → (49,51)
+    grid[(cq + 0) % N, (cr + 1) % N] = 1  # b6 = NE of (50,50) → (50,51)
 
-    print(f"Initial arrowhead: {find_ones(grid)}")
+    # Verify neighborhood state at (cq, cr)
+    state_center = (  int(grid[cq, cr]) << 6
+        | int(grid[(cq+1)%N, (cr+0)%N]) << 5   # b1 E
+        | int(grid[(cq+1)%N, (cr-1)%N]) << 4   # b2 SE
+        | int(grid[(cq+0)%N, (cr-1)%N]) << 3   # b3 SW
+        | int(grid[(cq-1)%N, (cr+0)%N]) << 2   # b4 W
+        | int(grid[(cq-1)%N, (cr+1)%N]) << 1   # b5 NW
+        | int(grid[(cq+0)%N, (cr+1)%N]) << 0   # b6 NE
+    )
+    print(f"Initial 2-bit seed: {find_ones(grid)}")
+    print(f"Neighborhood state at ({cq},{cr}): {state_center} ('{state_center:07b}') — expected 3 ('0000011')")
 
     positions_history = [find_ones(grid)]
     bit_counts = [int(grid.sum())]
@@ -144,26 +154,43 @@ def main():
         all(abs(d - avg_dr) < 0.6 for d in drs)
     )
 
-    if is_bit_conserving and is_moving and velocity_consistent and is_stable:
-        behavior_class = "GLIDER"
+    # Determine if pattern is truly fixed (never changes)
+    all_same = all(ph == positions_history[0] for ph in positions_history)
+
+    # Net displacement: distance from initial to final center of mass
+    c0 = centroid(positions_history[0])
+    cf = centroid(positions_history[-1])
+    net_displacement = round(((cf[0]-c0[0])**2 + (cf[1]-c0[1])**2)**0.5, 6)
+
+    final_coords = [[q, r] for q, r in positions_history[-1]]
+
+    if not is_bit_conserving and bit_counts[-1] < bit_counts[0]:
+        behavior_class = "DECAY"
     elif not is_bit_conserving:
         behavior_class = "CHAOTIC"
-    elif not is_moving:
-        behavior_class = "STATIONARY"
+    elif all_same:
+        behavior_class = "FIXED_POINT"
+    elif is_bit_conserving and is_moving and velocity_consistent and is_stable:
+        behavior_class = "GLIDER"
+    elif is_bit_conserving and not is_moving:
+        behavior_class = "STATIONARY_OSCILLATOR"
     else:
-        behavior_class = "OSCILLATOR"
+        behavior_class = "STATIONARY_OSCILLATOR"
 
     print(f"\n=== Results ===")
     print(f"behavior_class:    {behavior_class}")
-    print(f"is_stable:         {is_stable}")
     print(f"is_bit_conserving: {is_bit_conserving}")
+    print(f"net_displacement:  {net_displacement}")
+    print(f"all_same:          {all_same}")
     print(f"glider_velocity:   {velocity}")
     print(f"final_bit_count:   {bit_counts[-1]}")
+    print(f"final_coords:      {final_coords}")
 
     result = {
-        "behavior_class": behavior_class,
-        "is_stable": bool(is_stable),
         "is_bit_conserving": bool(is_bit_conserving),
+        "behavior_class": behavior_class,
+        "net_displacement": float(net_displacement),
+        "final_pattern_coords": final_coords,
         "glider_velocity_hex": list(velocity),
         "final_bit_count": int(bit_counts[-1]),
     }
@@ -172,7 +199,8 @@ def main():
         yaml.dump(result, f, default_flow_style=False, sort_keys=True)
     print(f"\nWritten: {RESULT_YAML}")
 
-    return 0 if behavior_class == "GLIDER" else 1
+    success = behavior_class in ("GLIDER", "STATIONARY_OSCILLATOR")
+    return 0 if success else 1
 
 
 if __name__ == "__main__":

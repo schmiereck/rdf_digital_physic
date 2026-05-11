@@ -74,6 +74,46 @@ def generate_symmetric_rule():
     return rule, conflicts
 
 
+def rotate_neighborhood(state: int) -> int:
+    """60-degree CW rotation of a 7-bit neighborhood state (alias for rotate60)."""
+    return rotate60(state)
+
+
+RULE_FILE_A3_B6 = Path(__file__).parent / "symmetric_rule_A3_B6.json"
+
+
+def generate_rule_A3_B6() -> dict:
+    """Generate symmetric rule from kernel pair A=3 ('0000011'), B=6 ('0000110').
+
+    Initializes all 128 states to identity, then applies 6-fold rotational
+    closure of (A, B): rule[A_rot]=B_rot and rule[B_rot]=A_rot for each rotation.
+    Returns the rule dict (int keys, int values).
+    """
+    A, B = 3, 6
+
+    rule = {i: i for i in range(128)}
+
+    print(f"Generating symmetric rule A={A} ('{A:07b}'), B={B} ('{B:07b}')")
+    print("Rotation mappings:")
+    for i in range(6):
+        a_rot = apply_n_rotations(A, i)
+        b_rot = apply_n_rotations(B, i)
+        print(f"  rot={i*60:3d}deg: A_rot={a_rot} ('{a_rot:07b}'), B_rot={b_rot} ('{b_rot:07b}')")
+        rule[a_rot] = b_rot
+        rule[b_rot] = a_rot
+
+    print("\nFinal explicit overrides (non-identity):")
+    for k in sorted(rule):
+        if rule[k] != k:
+            print(f"  {k} ('{k:07b}') -> {rule[k]} ('{rule[k]:07b}')")
+
+    rule_str = {str(k): v for k, v in rule.items()}
+    with open(RULE_FILE_A3_B6, "w") as f:
+        json.dump(rule_str, f, indent=2, sort_keys=True)
+    print(f"\nRule saved to: {RULE_FILE_A3_B6}")
+    return rule
+
+
 def main():
     print("Generating 6-fold symmetric rule from arrowhead-glider kernel...")
     print(f"Kernel pairs: {KERNEL_PAIRS}")
@@ -117,6 +157,9 @@ def main():
 
 
 if __name__ == "__main__":
-    conflicts, total = main()
     import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "A3_B6":
+        generate_rule_A3_B6()
+        sys.exit(0)
+    conflicts, total = main()
     sys.exit(0 if conflicts == 0 else 1)
