@@ -3,81 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61036
-campaign: Phase 3 - W=3 Cyclic Rules
-cost_usd: 0.09185
-hypothesis: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving,
-  4-bit glider.
-input_tokens: 67715
-iter: 64
-metrics:
-  glider_found: 0
-  glider_period: 0
-  patterns_checked: 16715
-  stable_oscillators_found: 88
-  stable_still_lifes_found: 3144
-  unstable_contiguous_seeds: 5
-output_tokens: 1435
-status: experiment_failed
-```
-
-## iter_064: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving, 4-bit glider.
-
-**Analysis:** The previous iteration (iter_063) was a conclusive negative result. An exhaustive search proved that our new, more complex 3-cycle rule does not support any 3-bit gliders. All 11 contiguous 3-bit patterns evolved into stable, but stationary, objects (still lifes or oscillators).
-
-This mirrors the failures of our previous 2-cycle rules (iter_052, iter_059), which also lacked motion at the 3-bit level. The research is therefore fundamentally blocked on finding a projectile to stage a collision.
-
-Before abandoning this new rule class, we must follow the established logical progression. The minimal next step is to test if motion emerges at a higher level of particle complexity. We will escalate the exhaustive search from 3-bit to 4-bit objects. This will either finally uncover a glider or provide strong evidence that this entire class of rule is a dead end for producing motion.
-
-**Task:** Create a new script, `src/find_gliders_3cycle_4bit.py`, to perform an exhaustive search for moving 4-bit objects.
-
-1. **Load Rule:** Load the symmetric 3-cycle W=3 rule from `src/symmetric_rule_w3_3cycle.json`.
-
-2. **Generate Seeds:** Generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 free tetrahexes, but the rule's C6 symmetry (not D6) means you must test all 10 unique one-sided orientations.
-
-3. **Test Each Seed:** For each of the unique 4-bit seeds:
-    a. Initialize a grid (e.g., 50x50) with the pattern.
-    b. Simulate for at least 300 steps to robustly detect cycles and movement.
-    c. At each step, verify that the bit count remains exactly 4. If it deviates, the seed is unstable; log this and continue.
-    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
-    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
-
-4. **Report Results:** The script should test all unique patterns and create `archive/iter_064/result.yaml` with a summary of the findings.
-
-5. **YAML Output:** The `result.yaml` must contain these keys:
-    - `glider_found`: `true` if a glider was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
-    - `stable_still_lifes_found`: The count of stable period-1 objects.
-    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
-    - `glider_period`: The integer period of the first glider found (or 0).
-    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
-
-**Status:** experiment_failed
-
-**Experimenter view:** The 3-cycle rule (A=7,B=11,C=14) does not appear to support 4-bit gliders.
-An exhaustive search of 16,715 unique 4-bit seed patterns (all contiguous
-tetrahexes, all radius-3 non-contiguous, all new radius-4 patterns) with
-up to 600 steps per seed found zero translating objects.
-
-Key observations:
-- 5 of the 10 contiguous tetrahex seeds are bit-non-conserving (unstable).
-- The remaining stable patterns all settle to period-1 or period-2 cycles.
-- No period-3 objects were detected, despite the rule's fundamental period-3 kernel.
-- The 3-cycle non-trivial dynamics (7→70→69→7, etc.) require very specific
-  neighbor configurations that appear too tightly constrained at 4-bit scale
-  to produce net spatial translation.
-- The rule's conservation is so strong that 88 period-2 oscillators form,
-  but none translate — oscillation and translation appear decoupled.
-
-The 4-bit glider hypothesis is rejected. Larger patterns (5+ bits) may be
-needed for gliders in this rule.
-
-
-**Metrics:** `{'glider_found': 0, 'patterns_checked': 16715, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'glider_period': 0, 'unstable_contiguous_seeds': 5}`
-
-
----
-```yaml
 cached_tokens: 61009
 campaign: Phase 3 - Non-conserving Rules
 campaign_status: completed
@@ -2094,4 +2019,75 @@ repurposing stability-evolved rules.
 
 
 **Metrics:** `{'rules_evaluated': 100, 'seeds_per_rule': 21, 'total_evaluations': 2100, 'rules_with_motion': 0, 'top_fitness_score': 0.0}`
+
+
+---
+```yaml
+cached_tokens: 66273
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.1049
+hypothesis: The random population from iter_091 contains at least one rule with non-zero
+  motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
+input_tokens: 74492
+iter: 94
+metrics:
+  population_size: 100
+  rules_with_motion: 0
+  seeds_evaluated: 21
+  top_fitness_score: 0.0
+output_tokens: 1728
+status: experiment_failed
+```
+
+## iter_094: The random population from iter_091 contains at least one rule with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
+
+**Analysis:** The research is critically blocked. The evolutionary search, our final paradigm, has stalled. We have a validated, motion-centric fitness metric (iter_090), but all attempts to find a rule with non-zero fitness have failed.
+- A random population evaluated with a single seed yielded no gliders (iter_091).
+- A stability-evolved population evaluated with a single seed yielded no gliders (iter_092).
+- The same stability-evolved population, re-evaluated robustly with 21 seeds per rule, also yielded no gliders (iter_093).
+
+The conclusion from iter_093 was that the stability-evolved population is a dead end. The conclusion from iter_091 was that finding gliders by chance is rare. However, the evaluation in iter_091 was weak, using only a single seed. The logical and minimal path forward is to combine the robust evaluation method from iter_093 with the random population from iter_091. This will definitively tell us if gliders are findable in a random search space when a sufficiently broad set of initial conditions is tested. If this fails, the rarity of gliders is so extreme that a much larger initial population size for evolution would be required.
+
+**Task:** Create a new script, `src/reevaluate_random_for_motion.py`.
+
+1.  **Load Population:**
+    - The script must load the 100 random rules from the population generated in iter_091, located at `archive/iter_091/population/`.
+
+2.  **Define Seed Suite:**
+    - The script must define the standard suite of 21 seeds: all 11 unique contiguous 3-bit trihexes and all 10 unique one-sided contiguous 4-bit tetrahexes.
+
+3.  **Evaluate Population with Multi-Seed Metric:**
+    - For each of the 100 rules:
+      a. Initialize a `max_fitness_for_rule` to 0.0.
+      b. Iterate through each of the 21 seeds.
+      c. For each seed, calculate its motion fitness using the standard procedure:
+         - Initialize a 150x150 grid with the seed.
+         - Simulate for 500 steps, detecting cycles.
+         - If a stable object is found, calculate `fitness = displacement / (1 + final_bit_count)`.
+         - If no stable object is found (decay, chaos, timeout), fitness is 0.
+      d. Update `max_fitness_for_rule = max(max_fitness_for_rule, fitness)`.
+      e. The final score for the rule is `max_fitness_for_rule`.
+
+4.  **Report Results:**
+    - Save the final score for each rule to `archive/iter_094/results/random_multiseed_scores.csv`.
+    - Create `archive/iter_094/result.yaml` summarizing the findings, with keys:
+      - `rules_with_motion`: Count of rules with a final fitness score > 0.
+      - `top_fitness_score`: The highest score found.
+      - `top_rule_id`: The filename of the best rule, or "" if none found.
+      - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider.
+      - `top_rule_glider_period`: Period of the best glider.
+      - `top_rule_glider_velocity`: The (dq, dr) velocity of the best glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The iter_091 random population (100 C6-symmetric rules) produced zero non-zero
+motion fitness scores even when evaluated across all 21 standard 3- and 4-bit
+seeds (11 trihexes + 10 tetrahexes). This is entirely consistent with iter_091's
+own evaluation (which used a single seed and also found 0 gliders). Expanding
+the seed suite from 1 to 21 seeds did not rescue the random population — gliders
+are simply absent from uniformly random C6-symmetric rule space. The success
+criterion (rules_with_motion >= 1) was not met, so the hypothesis is falsified.
+
+
+**Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21}`
 
