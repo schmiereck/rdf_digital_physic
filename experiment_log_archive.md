@@ -2655,3 +2655,75 @@ with its immediate ring shift.
 
 **Metrics:** `{'pairs_checked': 3, 'kernel_A': 7, 'kernel_B': 14, 'closure_size': 12}`
 
+
+---
+```yaml
+cached_tokens: 61936
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09458
+hypothesis: 'dynamics-w3: The symmetric rule from the W=3 kernel (A=7, B=14) produces
+  a stable, bit-conserving, non-trivial object from a 3-bit seed.'
+input_tokens: 68946
+iter: 50
+metrics:
+  bit_count_t1: 4
+  bit_count_t2: 2
+  final_bit_count: 2
+  initial_bit_count: 3
+  kernel_A: 7
+  kernel_B: 14
+  net_displacement: 0.0
+  oscillation_period: 1
+output_tokens: 1510
+status: experiment_failed
+```
+
+## iter_050: dynamics-w3: The symmetric rule from the W=3 kernel (A=7, B=14) produces a stable, bit-conserving, non-trivial object from a 3-bit seed.
+
+**Analysis:** The research is critically blocked. The previous campaign, "Phase 3 - 2D Symmetric Interactions," concluded with the definitive refutation of our W=2 rule (from kernel A=3, B=6). While the rule successfully produced a stable 3-bit oscillator (iter_044), subsequent experiments (iter_047, iter_048) proved it is not bit-conserving during multi-particle interactions, which is a fatal flaw for our physics model. This entire line of inquiry is now closed.
+
+The most recent iteration (iter_049) successfully unblocked the research by finding a new, more complex, and mathematically valid rule kernel at Hamming Weight 3 (A=7, B=14). This kernel satisfies all of our established constraints (contiguity, center-bit flipping, disjoint orbits, conflict-free closure) and represents the next logical step in our search for a robust "physical law".
+
+The immediate and only priority is to move from formal search back to empirical testing. We must generate the full rule from this new W=3 kernel and test its dynamics. This is the minimal validating step to determine if increasing the complexity of the rule's kernel can produce the kind of robust, non-trivial dynamics that the W=2 rule failed to deliver.
+
+**Task:** This is a two-part task: generate the new rule, then simulate it.
+
+**Part 1: Generate the W=3 Rule**
+1. Create a script, `src/generate_w3_rule.py`, that performs the following:
+2. Define the kernel pair from iter_049: `A = 7` ('0000111') and `B = 14` ('0001110').
+3. Implement the 6-fold hexagonal rotation for 7-bit integer states.
+4. Generate the full symmetric rule: Initialize a rule dictionary with identity mappings, then add the 12 mappings for the 6 rotations of the `(A, B)` pair and their inverses.
+5. Save the final rule dictionary to `src/symmetric_rule_w3_a7_b14.json`.
+
+**Part 2: Simulate the New Rule**
+1. Modify `src/generate_and_simulate.py` (or a similar script) to load the rule from `src/symmetric_rule_w3_a7_b14.json`.
+2. Use the standard CA update model.
+3. Run the simulation for 200 steps on a 100x100 grid with periodic boundaries.
+4. **Initial Condition:** A 3-bit seed that creates neighborhood `B=14` ('0001110') for a central '0' cell at `(50,50)`. This is achieved by placing '1's at its E, SE, and S neighbors: `(51,50)`, `(51,49)`, and `(50,49)`.
+5. The script must create `archive/iter_050/result.yaml` with the standard keys: `kernel_A`, `kernel_B`, `is_bit_conserving`, `behavior_class`, `net_displacement`, `oscillation_period`, and `final_bit_count`.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The rule generation is correct: A=7 (LSB) → A_msb=112, B=14 (LSB) → B_msb=56,
+yielding 12 non-identity mappings, verified as a bit-conserving involution.
+The seed places 1's at E=(51,50), SE=(51,49), SW=(50,49) so that center (50,50)
+sees exactly B_msb=56 — confirmed.
+
+However, the 3 seed cells themselves occupy neighborhood states 96, 69, and 72,
+which are all identity-mapped (not among the 12 active pairs). So at t=1 all 3
+seed cells retain their '1', while the center also fires to '1' → 4 bits total.
+At t=2, two of those 4 cells see orbit states (97→49 and 76→14) and flip to '0',
+leaving a 2-cell fixed point that persists for all remaining steps.
+
+Root cause: the seed does not form a closed orbit under the rule. For a 3-bit
+object to be bit-conserving, the seed cells must be arranged so that each cell
+gaining a '1' is offset by exactly one cell losing its '1' per step. The B=14
+neighborhood triggers the center to become '1', but none of the seed cells are
+triggered to become '0' in the same step.
+
+To find a working 3-bit oscillator, a systematic search over all 3-cell seeds
+would be needed, testing each for bit conservation and non-trivial dynamics.
+
+
+**Metrics:** `{'kernel_A': 7, 'kernel_B': 14, 'initial_bit_count': 3, 'bit_count_t1': 4, 'bit_count_t2': 2, 'final_bit_count': 2, 'oscillation_period': 1, 'net_displacement': 0.0}`
+
