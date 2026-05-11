@@ -1513,3 +1513,64 @@ this asymmetric kernel is fundamentally incompatible with it.
 
 **Metrics:** `{'generator_conflicts_found': 17, 'total_rule_mappings': 31, 'final_bit_count_at_t100': 9898, 'is_bit_conserving': False, 'is_stable': False}`
 
+
+---
+```yaml
+cached_tokens: 54279
+cost_usd: 0.07797
+hypothesis: 'still-life: A stable, non-trivial, stationary bit pattern (a ''still
+  life'') exists for the arrowhead glider rule.'
+input_tokens: 58218
+iter: 30
+metrics:
+  patterns_checked: 7596
+  small_localized_found: 0
+  smallest_still_life_size: 50
+  still_life_found: true
+  stripe_found: 1
+output_tokens: 1589
+status: ok
+```
+
+## iter_030: still-life: A stable, non-trivial, stationary bit pattern (a 'still life') exists for the arrowhead glider rule.
+
+**Analysis:** The previous iteration (iter_024) was a major breakthrough, successfully creating a stable, non-trivial 3-bit "arrowhead" glider in the 2D hexagonal grid. This unblocked Phase 3 and provided our first real tool for studying interactions.
+
+However, the immediate follow-up experiment (logged as iter_026, but being corrected to iter_025) failed in its premise. The attempt to collide the glider with a single '1' bit revealed that this bit is not stationary; the arrowhead rule also causes it to propagate at the exact same velocity as the glider. Consequently, no collision occurred.
+
+This is a critical finding. Before we can study interactions, we must have objects that can actually interact. This requires either a stationary target or another glider with a different velocity vector. The most direct and minimal next step is to investigate if the current rule supports any stationary patterns ("still lifes") at all. Finding one would provide a valid target to re-run the collision experiment.
+
+**Task:** Create a new script `src/find_still_life.py`.
+
+1.  **Reuse Logic:** This script should reuse the hexagonal grid simulator and the 5-pair permutation rule defined in `src/simulate_hex.py` from iter_024.
+2.  **Search Algorithm:**
+    a. Systematically generate small, contiguous patterns of bits. Start with all 2-bit patterns, then all 3-bit patterns, where the bits are within a 2-cell radius of each other.
+    b. For each candidate pattern:
+        i.  Initialize a 50x50 grid with the pattern at the center.
+        ii. Run the simulation for exactly ONE step.
+        iii. Compare the grid state at step 1 with the state at step 0.
+    c. If the states are identical, the pattern is a still life.
+3.  **Outputs:**
+    a. If any still lifes are found, create the directory `archive/iter_026/results/`.
+    b. Save the first valid still life found as a list of its `(q, r)` coordinates to `archive/iter_026/results/still_life.json`.
+    c. Create `archive/iter_026/result.yaml` with the following keys:
+        - `still_life_found`: boolean (`true` or `false`).
+        - `patterns_checked`: The total number of unique patterns tested.
+        - `smallest_still_life_size`: The number of bits in the smallest found still life (or 0 if none).
+
+**Status:** ok
+
+**Experimenter view:** No localized small-cluster still life (2–6 bits, within hex-radius 3) exists for
+the iter_024 arrowhead-glider rule. This is analytically explained by the state-4
+rule pair (4↔64): any 0-cell with exactly one West 1-neighbor turns ON, creating
+unavoidable East propagation at every finite right boundary. The only valid
+non-trivial still lifes are torus-wrapping stripes — patterns where every cell has
+both an East and West neighbor, so state 4 never fires. A full horizontal row
+(all 50 cells at r=25) was verified computationally: it remains identical after
+one CA step. This still life is non-trivial (50 bits) and stationary, confirming
+the hypothesis on the finite periodic grid, but rejecting the hypothesis for
+finite localized patterns in the infinite plane.
+
+
+**Metrics:** `{'patterns_checked': 7596, 'still_life_found': True, 'smallest_still_life_size': 50, 'small_localized_found': 0, 'stripe_found': 1}`
+
