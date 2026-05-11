@@ -6,15 +6,15 @@ Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 **BLOCKED:** Inability to create a non-trivial, moving, symmetric 2D particle for use in collision experiments.
 
 ### Confirmed Findings
+- A formal method exists to find conflict-free, symmetric rule kernels from disjoint rotational orbits with center-bit flipping properties (iter_036, iter_038).
+- The first valid kernel found by this method, `(A=65, B=6)`, produces a rule that results in a stable, non-moving 2-bit pattern (a still-life) from a minimal seed (iter_040).
 - A symmetric swap-based update model can create localized oscillators (iter_020).
-- A hand-crafted, non-symmetric rule can produce a stable "arrowhead" glider (iter_024), but this rule is a developmental dead-end.
-- A formal method now exists to find conflict-free, symmetric rule kernels from *disjoint rotational orbits* (iter_036). Kernel `(A=65, B=6)` is the first valid candidate found by this method.
+- A hand-crafted, non-symmetric rule can produce a stable "arrowhead" glider (iter_024), but this rule is a developmental dead-end due to lack of symmetry.
 
 ### Refuted Hypotheses
-- Simple rules on a standard 2D CA grid produce trivial global shifts (iter_017).
-- Rules based on symmetric seeds or symmetric actions tend to produce stationary oscillators or fixed points, not gliders (iter_021, iter_022, iter_023).
-- Hand-crafted rules are brittle and lack the necessary rotational symmetry for general physics (iter_028, iter_031).
-- Naive symmetrization of rule kernels creates conflicting or inert rules if the kernel states are not from disjoint rotational orbits (iter_029, iter_035).
+- Simple rules on a standard 2D CA grid produce trivial global shifts, not localized particles (iter_017).
+- Symmetric rules based on kernels from the *same* rotational orbit are dynamically inert (iter_035).
+- Hand-crafted rules are brittle and do not respect the lattice's rotational symmetry (iter_028, iter_031).
 
 ### In Progress
-- **iter_037:** Testing the dynamics of the first rule generated from a valid disjoint-orbit kernel to see if it can finally produce a symmetric 2D glider or oscillator.
+- **iter_041:** Searching for the next valid rule kernel and testing its dynamics, to see if it can produce motion where the first one failed.

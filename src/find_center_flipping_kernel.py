@@ -1,5 +1,5 @@
 """
-iter_038: Search for a state-pair (A, B) that is:
+iter_041: Search for the second state-pair (A, B) satisfying:
   1. Center-Bit Flip: center bit of A != center bit of B
   2. Disjoint Orbits: B is NOT in A's rotational orbit
   3. Conflict-Free Closure: joint 12-state rotational closure has exactly 12 unique states
@@ -8,8 +8,8 @@ import itertools
 import yaml
 import os
 
-RESULT_DIR = os.path.join(os.path.dirname(__file__), "..", "archive", "iter_038", "results")
-RESULT_FILE = os.path.join(os.path.dirname(__file__), "..", "archive", "iter_038", "result.yaml")
+RESULT_DIR = os.path.join(os.path.dirname(__file__), "..", "archive", "iter_041", "results")
+RESULT_FILE = os.path.join(os.path.dirname(__file__), "..", "archive", "iter_041", "result.yaml")
 
 
 def rotate_neighborhood(state: int, steps: int) -> int:
@@ -36,59 +36,63 @@ def get_orbit(state: int) -> frozenset:
     return frozenset(rotate_neighborhood(state, i) for i in range(6))
 
 
-def search_weight(w: int):
-    """Search all pairs of 7-bit states with Hamming weight w. Returns (pairs_checked, valid_pair or None)."""
+def search_all_valid(w: int, max_find: int = 2):
+    """Search all pairs of 7-bit states with Hamming weight w.
+    Returns list of up to max_find valid (A, B) pairs and total pairs checked."""
     states = [s for s in range(128) if bin(s).count("1") == w]
     print(f"W={w} states found: {len(states)}")
 
     pairs_checked = 0
+    found = []
 
     for A, B in itertools.combinations(states, 2):
         pairs_checked += 1
 
-        # Check 1 (cheapest): center bits must differ
         if get_center_bit(A) == get_center_bit(B):
             continue
 
-        # Check 2: B must NOT be in A's rotational orbit (disjoint orbits)
         orbit_A = get_orbit(A)
         if B in orbit_A:
             continue
 
-        # Check 3: joint rotational closure must have exactly 12 elements
         closure = set()
         for i in range(6):
             closure.add(rotate_neighborhood(A, i))
             closure.add(rotate_neighborhood(B, i))
         if len(closure) == 12:
-            print(f"Valid kernel found at pair #{pairs_checked}!")
-            return pairs_checked, (A, B)
+            found.append((A, B))
+            print(f"  Valid kernel #{len(found)} at pair #{pairs_checked}: A={A} ({A:07b}), B={B} ({B:07b})")
+            if len(found) >= max_find:
+                break
 
-    return pairs_checked, None
+    return pairs_checked, found
 
 
 def main():
     total_pairs = 0
-    valid_kernel = None
+    all_kernels = []
     found_weight = None
 
     for w in [2, 3]:
-        pairs_checked, result = search_weight(w)
+        pairs_checked, kernels = search_all_valid(w, max_find=2)
         total_pairs += pairs_checked
-        if result is not None:
-            valid_kernel = result
+        all_kernels.extend(kernels)
+        if len(all_kernels) >= 2:
             found_weight = w
             break
 
-    found = valid_kernel is not None
+    second_kernel = all_kernels[1] if len(all_kernels) >= 2 else None
+    found = second_kernel is not None
+
     yaml_result = {
-        "valid_kernel_found": found,
+        "valid_kernels_found": len(all_kernels),
         "hamming_weight_searched": found_weight if found_weight is not None else "none",
         "pairs_checked": total_pairs,
+        "first_kernel": {"A": int(all_kernels[0][0]), "B": int(all_kernels[0][1])} if all_kernels else None,
     }
 
     if found:
-        A, B = valid_kernel
+        A, B = second_kernel
         orbit_A = get_orbit(A)
         orbit_B = get_orbit(B)
         closure = set()
@@ -101,6 +105,7 @@ def main():
         yaml_result["kernel_A_binary"] = format(A, "07b")
         yaml_result["kernel_B_binary"] = format(B, "07b")
 
+        print(f"\nSecond valid kernel:")
         print(f"  A = {A} ({format(A, '07b')}), center_bit={get_center_bit(A)}")
         print(f"  B = {B} ({format(B, '07b')}), center_bit={get_center_bit(B)}")
         print(f"  Center bits differ: {get_center_bit(A) != get_center_bit(B)}")
@@ -110,7 +115,7 @@ def main():
         print(f"  Orbits disjoint: {orbit_A.isdisjoint(orbit_B)}")
         print(f"  Closure size: {len(closure)} (must be 12)")
     else:
-        print("No valid kernel found.")
+        print("Second valid kernel not found.")
 
     os.makedirs(RESULT_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(RESULT_FILE), exist_ok=True)
