@@ -3,69 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 35126
-cost_usd: 0.06103
-hypothesis: 'construction: A hybrid 2-bit/cell rule can produce a stable v=c/2 glider
-  by alternating an in-place state change with a translation step.'
-input_tokens: 39034
-iter: 13
-metrics:
-  displacement: 50
-  effective_velocity: 0.5
-  final_position: 70.0
-  is_stable: true
-  steps: 100
-output_tokens: 1583
-status: ok
-```
-
-## iter_013: construction: A hybrid 2-bit/cell rule can produce a stable v=c/2 glider by alternating an in-place state change with a translation step.
-
-**Analysis:** We have successfully completed the foundational experiments for Phase 1 and the beginning of Phase 2.
-- **iter_002** confirmed the existence of rules that support translation at the maximum possible speed (v=c), using a 1-bit/cell representation.
-- **iter_004** confirmed the existence of a rule that supports a stable, stationary internal oscillation (v=0), using a 2-bit/cell representation.
-
-The project's central thesis is that mass (and thus, velocities v < c) emerges from internal complexity. The logical and critical next step is to synthesize these two confirmed behaviors: translation and oscillation. We need to find out if a rule can be constructed that forces a particle to "spend" a time step on an internal state change, thereby reducing its effective velocity. The simplest target is a velocity of v=c/2, achieved by moving one step for every two ticks of the simulation clock.
-
-**Task:** Create a Python script `archive/iter_005/code/simulate_hybrid.py`, which is a 1D, 2-bit/cell cellular automaton simulator.
-
-1.  **Define Target Dynamics:** The goal is a particle with an effective velocity of v=c/2. This will be achieved via a two-step cycle:
-    - **Step 1 (t -> t+1): OSCILLATE.** A particle at position `i` with state `A` ('01') changes to state `B` ('10') but remains at position `i`.
-    - **Step 2 (t+1 -> t+2): MOVE.** The particle at position `i` with state `B` ('10') moves to position `i+1` and resets its state to `A` ('01').
-
-2.  **Construct a Minimal Rule:** Implement a local, reversible, bit-conserving rule that produces these dynamics. The rule should be a permutation of the 64 neighborhood states, respecting Hamming weights. A minimal rule would likely involve a 3-cycle permutation on a few key neighborhoods within the W=1 group to achieve the desired state transitions and movement, while leaving all other neighborhoods as identity mappings.
-
-3.  **Simulation:**
-    - Initialize a lattice of size 100 with all cells set to '00'.
-    - Set the cell at index 20 to '01' (State `A`) as the initial condition.
-    - Run the simulation for 100 steps.
-
-4.  **Analysis & Output:**
-    - Track the particle's "center of mass" at each step.
-    - Write a summary to `archive/iter_005/result.yaml` with the following keys:
-      - `behavior_class`: A string, must be `V_HALF_GLIDER` if successful. Other options: `STATIONARY`, `V_C_GLIDER`, `DECAY`, `CHAOTIC`.
-      - `effective_velocity`: The calculated average velocity over the last 50 steps.
-      - `is_stable`: Boolean, true if the particle pattern does not decay or grow.
-      - `final_position`: The final center of mass of the particle.
-
-**Status:** ok
-
-**Experimenter view:** The hybrid two-phase rule trivially achieves v=c/2. In the OSCILLATE phase
-(even t), state A ('01') flips to state B ('10') in-place — position unchanged.
-In the MOVE phase (odd t), state B ('10') vacates its cell and plants state A
-('01') one cell to the right. One displacement event per two time steps gives
-exactly v = 1/2 by construction. The particle is perfectly stable: it never
-decays, splits, or collides (single-particle initialisation). The position
-trace confirms uniform motion — 5 cells per 10 steps without fluctuation.
-The rule is trivially bit-conserving (Hamming weight 1 maps to Hamming weight 1
-in every transition) and locally reversible for the isolated-particle case.
-
-
-**Metrics:** `{'effective_velocity': 0.5, 'final_position': 70.0, 'displacement': 50, 'steps': 100, 'is_stable': True}`
-
-
----
-```yaml
 cached_tokens: 36382
 cost_usd: 0.06312
 hypothesis: 'composite: A rule can be constructed to make a two-cell particle (e.g.,
@@ -1929,4 +1866,70 @@ The oscillator conserves its 3-bit count indefinitely.
 
 
 **Metrics:** `{'kernel_A': 3, 'kernel_B': 6, 'oscillation_period': 2, 'final_bit_count': 3, 'net_displacement': 0.942809}`
+
+
+---
+```yaml
+cached_tokens: 63772
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.09552
+hypothesis: 'interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044,
+  interact in a non-trivial, bit-conserving manner.'
+input_tokens: 71128
+iter: 45
+metrics:
+  bit_count_max: 6
+  bit_count_min: 6
+  final_bit_count: 6
+  final_clusters: 2
+  initial_bit_count: 6
+  interaction_step: -1
+  is_bit_conserving: true
+  oscillation_period: 2
+output_tokens: 1331
+status: experiment_failed
+```
+
+## iter_045: interaction-oscillator: Two 3-bit oscillators, under the rule from iter_044, interact in a non-trivial, bit-conserving manner.
+
+**Analysis:** The previous iteration (iter_044) was a major breakthrough. By adding a geometric "contiguity" constraint to our formal kernel search, we successfully generated a symmetric, reversible, bit-conserving rule that produces a stable, non-trivial, dynamic pattern: a 3-bit, period-2 stationary oscillator. This is the first time we have created an "interesting" object in the symmetric 2D world, which unblocks the primary goal of Phase 3.
+
+The goal of this phase is to study interactions. With a stable, dynamic object now identified, the most direct and logical next step is to stage the simplest possible interaction experiment: a collision between two of these oscillators. This will be the first test of the emergent "physics" of our synthesized rule system when confronted with a multi-body problem.
+
+**Task:** Use the existing `src/generate_and_simulate.py` script and the symmetric rule generated from the contiguous kernel `(A=3, B=6)` as established in iter_044.
+
+1.  **Simulation Setup:**
+    - Grid Size: 100x100 with periodic boundaries.
+    - Steps: 200.
+
+2.  **Initial Condition:**
+    - Place two 3-bit oscillator seeds on the grid, positioned close enough for their oscillating patterns to interact.
+    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
+    - **Oscillator 2 Seed:** Place '1's at `(25,49)`, `(25,50)`, and `(26,50)`.
+    - The total initial bit count must be 6.
+
+3.  **Analysis and Output:**
+    - At each step, record the total number of '1's on the grid.
+    - Track the coordinates of all '1's throughout the simulation.
+    - Create `archive/iter_045/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if the bit count remains 6.
+      - `interaction_step`: The first step where a bit from one oscillator is in the neighborhood of a bit from the other.
+      - `outcome_class`: A classification of the result: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
+      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Both 3-bit seeds are stationary oscillators with period 2, alternating between
+two configurations in place. Oscillator 1 alternates between
+{(21,49),(21,50),(22,50)} and {(20,50),(21,50),(21,51)}, while Oscillator 2
+alternates between {(25,49),(25,50),(26,50)} and {(24,50),(25,50),(25,51)}.
+The closest the two oscillators ever get is q-distance 2 between cells (22,50)
+and (24,50), which is outside the 1-step hexagonal neighborhood. Since these
+oscillators have no translational velocity, they will never come close enough
+to interact. interaction_step = -1 throughout all 200 steps.
+Success criterion #2 is violated: the final state is exactly two independent,
+unchanged oscillators identical to the single-oscillator case.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'initial_bit_count': 6, 'final_bit_count': 6, 'bit_count_min': 6, 'bit_count_max': 6, 'interaction_step': -1, 'oscillation_period': 2, 'final_clusters': 2}`
 
