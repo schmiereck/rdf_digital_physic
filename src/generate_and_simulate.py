@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-iter_043 Part 2: Generate 6-fold symmetric rule from second valid kernel
+iter_044 Part 2: Generate 6-fold symmetric rule from contiguous kernel
 and simulate on a 100x100 hexagonal grid.
 
-Second valid kernel (from find_next_kernel.py):
-  LSB encoding:  A2=3  ('0000011'), B2=10 ('0001010')
-  MSB encoding:  A2=96 ('1100000'), B2=40 ('0101000')
+Contiguous kernel (from find_contiguous_kernel.py):
+  LSB encoding:  A=3  ('0000011'), B=6 ('0000110')
+  MSB encoding:  A=96 ('1100000'), B=48 ('0110000')
 
 Neighborhood encoding (7 bits, MSB = center = bit6):
   state = c*64 + b1*32 + b2*16 + b3*8 + b4*4 + b5*2 + b6
@@ -18,13 +18,13 @@ import yaml
 import numpy as np
 from pathlib import Path
 
-from find_next_kernel import find_kernels, orbit as lsb_orbit
+from find_contiguous_kernel import find_contiguous_kernel, orbit as lsb_orbit
 
 N = 100
 STEPS = 100
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_043" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_043" / "result.yaml"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_044" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_044" / "result.yaml"
 
 HEX_DIRS = [
     ( 1,  0),   # b1: E
@@ -155,23 +155,24 @@ def detect_period(shapes: list, start: int = 5, max_period: int = 50) -> int:
 def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    kernels = find_kernels(max_find=2)
-    if len(kernels) < 2:
-        print("ERROR: could not find second valid kernel")
+    kernel = find_contiguous_kernel()
+    if kernel is None:
+        print("ERROR: could not find contiguous kernel")
         sys.exit(1)
-    A2_lsb, B2_lsb = kernels[1]
-    print(f"Second valid kernel: A2={A2_lsb} ('{A2_lsb:07b}'), B2={B2_lsb} ('{B2_lsb:07b}')")
+    A2_lsb, B2_lsb = kernel
+    print(f"Contiguous kernel: A={A2_lsb} ('{A2_lsb:07b}'), B={B2_lsb} ('{B2_lsb:07b}')")
 
     rule = generate_rule(A2_lsb, B2_lsb)
     B2_msb = lsb_to_msb(B2_lsb)
 
-    # Initial condition: 2-bit seed so that center cell (50,50) sees B2 in its neighborhood.
-    # B2_MSB=40='0101000': b1(E)=1, b3(SW)=1
-    # Place 1s at E=(cq+1,cr) and SW=(cq,cr-1) of center (50,50).
+    # Initial condition: 3-cell seed encoding B's neighborhood (E+SE) plus E-of-E.
+    # B_MSB=48='0110000': b1(E)=1, b2(SE)=1 — center (50,50) sees state B.
+    # Third cell at E-of-E breaks the symmetry that causes immediate fixed-point collapse.
     cq, cr = N // 2, N // 2
     grid = np.zeros((N, N), dtype=np.int8)
     grid[(cq + 1) % N, (cr + 0) % N] = 1   # b1 = E
-    grid[(cq + 0) % N, (cr - 1) % N] = 1   # b3 = SW
+    grid[(cq + 1) % N, (cr - 1) % N] = 1   # b2 = SE
+    grid[(cq + 2) % N, (cr + 0) % N] = 1   # E of b1 (prevents immediate fixed-point)
 
     # Verify center neighborhood
     state_center = get_neighborhood(grid, cq, cr)
@@ -255,6 +256,7 @@ def main():
         "behavior_class": behavior_class,
         "net_displacement": float(net_displacement),
         "oscillation_period": int(oscillation_period),
+        "final_bit_count": int(bit_counts[-1]),
     }
 
     with open(RESULT_YAML, "w") as f:
