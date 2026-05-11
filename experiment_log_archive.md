@@ -3256,3 +3256,65 @@ the second W=3 kernel supports a stable, bit-conserving, non-trivial 3-bit still
 
 **Metrics:** `{'kernel_A': 11, 'kernel_B': 14, 'patterns_checked': 1, 'object_period': 1, 'net_displacement': 0.0}`
 
+
+---
+```yaml
+cached_tokens: 61432
+campaign: Phase 3 - Second W=3 Rule
+cost_usd: 0.09096
+hypothesis: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving,
+  3-bit glider.
+input_tokens: 67652
+iter: 59
+metrics:
+  glider_found: 0
+  glider_period: 0
+  patterns_checked: 11
+  stable_oscillators_found: 6
+  stable_still_lifes_found: 5
+output_tokens: 1470
+status: experiment_failed
+```
+
+## iter_059: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving, 3-bit glider.
+
+**Analysis:** The previous iteration (iter_058) successfully identified the second valid W=3 rule kernel (A=11, B=14) and confirmed it supports at least one stable object, a 3-bit "still life." This is a positive start, but it mirrors the trajectory of the previous rule, which supported still lifes but no moving objects ("gliders"), ultimately blocking Phase 3.
+
+The crucial, unanswered question is whether this new rule is any different. The search in iter_058 was designed to stop at the first stable object found, leaving the full characterization of the rule's 3-bit dynamics incomplete. To determine if this rule is a viable path forward, we must now complete that search and explicitly look for gliders. This is the minimal and most critical next step.
+
+**Task:** Create a new script, `src/find_gliders_w3_rule2.py`, to perform an exhaustive search for moving 3-bit objects under the second W=3 rule.
+
+1. **Load Rule:** Load the symmetric W=3 rule generated in iter_058 from `src/symmetric_rule_w3_next.json` (kernel A=11, B=14).
+
+2. **Generate Seeds:** Generate all 11 unique, contiguous 3-bit patterns (trihexes).
+
+3. **Test Each Seed:** For each of the 11 seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 200 steps to robustly detect cycles.
+    c. At each step, verify that the bit count remains exactly 3. If it deviates, the seed is unstable; log this and continue.
+    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
+
+4. **Report Results:** The script should run through all 11 patterns and report a summary of all stable objects found.
+
+5. **Output:** Create `archive/iter_059/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested (should be 11).
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The second W=3 rule (A=11, B=14) does not produce any 3-bit gliders. All 11 seeds
+are stable — 5 as period-1 still lifes and 6 as period-2 oscillators with zero
+displacement. Compared to the first W=3 rule (A=7, B=14) which also failed to produce
+3-bit gliders at this bit count, the second rule shares the same qualitative behaviour
+at the 3-bit level. Glider-capable dynamics may only emerge at 4-bit (or higher) seeds
+for this rule, analogous to what was found for rule 1 in iter_054.
+
+
+**Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 5, 'stable_oscillators_found': 6, 'glider_found': 0, 'glider_period': 0}`
+

@@ -3,68 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61432
-campaign: Phase 3 - Second W=3 Rule
-cost_usd: 0.09096
-hypothesis: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving,
-  3-bit glider.
-input_tokens: 67652
-iter: 59
-metrics:
-  glider_found: 0
-  glider_period: 0
-  patterns_checked: 11
-  stable_oscillators_found: 6
-  stable_still_lifes_found: 5
-output_tokens: 1470
-status: experiment_failed
-```
-
-## iter_059: The second W=3 rule (A=11, B=14) supports at least one stable, bit-conserving, 3-bit glider.
-
-**Analysis:** The previous iteration (iter_058) successfully identified the second valid W=3 rule kernel (A=11, B=14) and confirmed it supports at least one stable object, a 3-bit "still life." This is a positive start, but it mirrors the trajectory of the previous rule, which supported still lifes but no moving objects ("gliders"), ultimately blocking Phase 3.
-
-The crucial, unanswered question is whether this new rule is any different. The search in iter_058 was designed to stop at the first stable object found, leaving the full characterization of the rule's 3-bit dynamics incomplete. To determine if this rule is a viable path forward, we must now complete that search and explicitly look for gliders. This is the minimal and most critical next step.
-
-**Task:** Create a new script, `src/find_gliders_w3_rule2.py`, to perform an exhaustive search for moving 3-bit objects under the second W=3 rule.
-
-1. **Load Rule:** Load the symmetric W=3 rule generated in iter_058 from `src/symmetric_rule_w3_next.json` (kernel A=11, B=14).
-
-2. **Generate Seeds:** Generate all 11 unique, contiguous 3-bit patterns (trihexes).
-
-3. **Test Each Seed:** For each of the 11 seeds:
-    a. Initialize a grid (e.g., 50x50) with the pattern.
-    b. Simulate for at least 200 steps to robustly detect cycles.
-    c. At each step, verify that the bit count remains exactly 3. If it deviates, the seed is unstable; log this and continue.
-    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
-    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
-
-4. **Report Results:** The script should run through all 11 patterns and report a summary of all stable objects found.
-
-5. **Output:** Create `archive/iter_059/result.yaml` with the following keys:
-    - `glider_found`: `true` if a glider was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested (should be 11).
-    - `stable_still_lifes_found`: The count of stable period-1 objects.
-    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
-    - `glider_period`: The integer period of the first glider found (or 0).
-    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
-    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The second W=3 rule (A=11, B=14) does not produce any 3-bit gliders. All 11 seeds
-are stable — 5 as period-1 still lifes and 6 as period-2 oscillators with zero
-displacement. Compared to the first W=3 rule (A=7, B=14) which also failed to produce
-3-bit gliders at this bit count, the second rule shares the same qualitative behaviour
-at the 3-bit level. Glider-capable dynamics may only emerge at 4-bit (or higher) seeds
-for this rule, analogous to what was found for rule 1 in iter_054.
-
-
-**Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 5, 'stable_oscillators_found': 6, 'glider_found': 0, 'glider_period': 0}`
-
-
----
-```yaml
 cached_tokens: 61539
 campaign: Phase 3 - Second W=3 Rule
 cost_usd: 0.09241
@@ -2056,4 +1994,82 @@ zero final bit counts, reflecting a population dominated by stabilizing dynamics
 
 
 **Metrics:** `{'gen2_rescored_fitness_mean': 0.17592751, 'gen3_fitness_mean': 0.42783333, 'fitness_improvement_pct': 143.19, 'gen3_top_fitness': 1.0, 'gen2_chaotic_rules': 38, 'gen3_chaotic_rules': 0}`
+
+
+---
+```yaml
+cached_tokens: 65877
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10274
+hypothesis: 'glider-from-stabilizing-evolution: The best non-annihilating rule from
+  the Gen-3 population supports at least one stable, moving glider from a small contiguous
+  seed.'
+input_tokens: 74073
+iter: 89
+metrics:
+  best_rule_fitness: 0.5
+  decayed_seeds_found: 2
+  glider_found: 0
+  glider_period: 0
+  glider_seed_bits: 0
+  seeds_tested: 21
+  stable_objects_found: 19
+output_tokens: 1563
+status: experiment_failed
+```
+
+## iter_089: glider-from-stabilizing-evolution: The best non-annihilating rule from the Gen-3 population supports at least one stable, moving glider from a small contiguous seed.
+
+**Analysis:** The project has successfully pivoted to an evolutionary search paradigm and corrected its primary flaw. The original fitness metric rewarded chaos (iter_082-086). A new metric rewarding stability was designed (iter_087) and used to breed a new "Gen-3" population of rules (iter_088). This was highly successful: the new population is dominated by rules that stabilize or annihilate small seeds, with zero chaotic rules remaining.
+
+However, the goal is not just stability, but *stable motion*. The current fitness metric has a bias towards rules that annihilate patterns entirely (achieving a perfect score of 1.0). The most promising candidates for supporting gliders are likely those with high, but not perfect, fitness—rules that can sustain small, localized patterns without destroying them or letting them explode.
+
+The critical next step is to test if any of these newly evolved, highly-stabilizing rules actually produce the desired phenomenon of a glider. We must select the best candidate from Gen-3—one that preserves structure rather than annihilating it—and subject it to a rigorous, exhaustive glider search. This will be the first test that connects our successful new evolutionary process back to the original scientific goal.
+
+**Task:** Create a new script, `src/analyze_top_stabilizing_rule.py`, to find and analyze the most promising rule from the Gen-3 population.
+
+**Part 1: Identify the Best Candidate Rule**
+1. Read the `archive/iter_088/results/fitness_scores.csv` file.
+2. Filter out any rules with a `fitness_score` exactly equal to 1.0, as these are likely simple annihilators.
+3. From the remaining rules, identify the one with the highest `fitness_score`. This is the best candidate for supporting persistent, non-trivial structures.
+4. Record the `rule_id` and its `fitness_score`.
+
+**Part 2: Search for Gliders**
+1. Load the identified best candidate rule from `archive/iter_088/population/{rule_id}.json`.
+2. Perform an exhaustive search for gliders using all 21 standard contiguous seeds:
+   - All 11 unique 3-bit trihexes.
+   - All 10 unique one-sided 4-bit tetrahexes.
+3. For each seed:
+   - Initialize a 150x150 grid.
+   - Simulate for 500 steps.
+   - Detect if the pattern enters a stable cycle (bit_count > 0).
+   - For stable objects, calculate the net displacement over one period.
+
+**Part 3: Report Results**
+1. Create `archive/iter_089/result.yaml` with a summary of the findings.
+2. The YAML must contain:
+   - `best_rule_id`: The filename of the rule tested.
+   - `best_rule_fitness`: The fitness score of that rule from iter_088.
+   - `glider_found`: `true` or `false`.
+   - `seeds_tested`: The total number of seeds checked (21).
+   - `stable_objects_found`: The count of seeds that resulted in a stable object.
+   - `decayed_seeds_found`: The count of seeds that decayed to 0 bits.
+   - `glider_seed_bits`: The bit count of the seed that produced the first glider, or 0.
+   - `glider_period`: The period of the first glider found, or 0.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The hypothesis was falsified. The Gen-3 population from iter_088 was bred
+specifically to maximize annihilation of a 4-bit seed — its elites all had
+fitness=1.0 (complete annihilators). The best non-annihilating survivor,
+rule_015 (fitness=0.5, 1 bit remaining), supports only still lives and
+decayed patterns across all 21 seeds. No oscillators, no gliders. This
+is consistent with the iter_088 notes: the evolutionary pressure selected
+for stability-via-annihilation, which is the opposite pressure needed to
+produce traveling structures. To find gliders, a future iteration should
+either search earlier-generation rules with more dynamic behavior or
+redesign the fitness function to reward persistent moving patterns.
+
+
+**Metrics:** `{'best_rule_fitness': 0.5, 'seeds_tested': 21, 'stable_objects_found': 19, 'decayed_seeds_found': 2, 'glider_found': 0, 'glider_seed_bits': 0, 'glider_period': 0}`
 
