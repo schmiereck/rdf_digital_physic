@@ -4,15 +4,14 @@ Phase: 3 - Focused Exploration (2D Hex Interactions)
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-**UNBLOCKED.** We have a symmetric rule that produces a stable, non-trivial dynamic object (a 3-bit stationary oscillator). We are now attempting to stage a valid interaction experiment by correcting the flaws from previous attempts.
+**BLOCKED.** The current rule (from a W=2 kernel) has been proven unsuitable for interaction studies as it is not bit-conserving in multi-particle scenarios. We are now pivoting to find a more complex and robust rule by searching for a valid kernel at Hamming Weight 3.
 
 ### Confirmed Findings
-- A formal method exists to find conflict-free, symmetric rule kernels with specific geometric ("contiguity") and algebraic properties (iter_038, iter_044).
-- The rule generated from kernel `(A=3, B=6)` supports a stable, 3-bit, period-2 stationary oscillator (iter_044).
+- A formal method exists to find symmetric rule kernels with specific geometric and algebraic constraints (iter_038, iter_044).
+- The rule generated from the W=2 kernel `(A=3, B=6)` supports a stable, 3-bit, period-2 stationary oscillator (iter_044).
 
 ### Refuted Hypotheses
-- Interacting oscillators must be placed at a critical distance. Too close leads to chaotic, non-conserving mergers (iter_047), and too far leads to no interaction (iter_045).
-- Hand-crafted, asymmetric rules are a dead end for creating a generalizable, physics-like system (iter_028, iter_031).
+- **The W=2 rule `(A=3, B=6)` does not conserve bit count during multi-oscillator interactions.** This makes it an invalid "physical" rule for our purposes (iter_047, iter_048).
 
 ### In Progress
-- **iter_048:** Staging an interaction experiment between two 3-bit oscillators placed at the critical "just right" distance to test for emergent physics.
+- **iter_049:** Searching for a valid rule kernel at Hamming Weight 3 to serve as the foundation for a new, more robust rule.

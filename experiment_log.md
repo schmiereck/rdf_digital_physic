@@ -3,70 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 39768
-cost_usd: 0.06418
-hypothesis: 'dynamics-2D-swap: A center-neighbor bit-swap rule produces a stationary
-  period-2 oscillator.'
-input_tokens: 43701
-iter: 17
-metrics:
-  final_bit_count: 1
-  glider_velocity_q: -1
-  glider_velocity_r: 0
-  is_bit_conserving: true
-  oscillation_period: 50
-output_tokens: 1487
-status: experiment_failed
-```
-
-## iter_017: dynamics-2D-swap: A center-neighbor bit-swap rule produces a stationary period-2 oscillator.
-
-**Analysis:** The previous iteration (iter_016) was a success: we confirmed that a simple bit-rotation rule on the 2D hexagonal grid produces stable, propagating gliders from a single-bit initial state. However, the experimenter's view correctly noted that this rule is equivalent to a global, linear shift of the entire grid. While this confirms that our 2D simulator works and can support motion, it's a "trivial" form of motion. Two such gliders would never interact in a meaningful way; they would simply maintain their relative positions as the whole grid shifts.
-
-To progress towards the goal of Phase 3 — observing collisions and scattering — we must first establish rules that produce localized, non-trivial dynamics. A particle should be a local excitation moving *through* a static medium, not a feature of the medium itself moving.
-
-The minimal validating step is to test the simplest possible *local* rule that is not a global shift. A rule that swaps the state of the central cell with one of its neighbors is an ideal candidate. It is bit-conserving, reversible, and fundamentally local. This experiment will test if such a simple local rule can sustain a stable pattern, with the most likely outcome being a stationary oscillator (a "blinker"). This would be the first example of a non-trivial "particle" in our 2D world.
-
-**Task:** Use the existing simulator at `src/simulate_hex.py`.
-
-1.  **Modify the Rule:** Change the rule implemented in the simulator. The new rule is "Swap Center with Neighbor 1".
-    - For any 7-bit neighborhood input `b0b1b2b3b4b5b6` (where `b0` is the center and `b1..b6` are neighbors clockwise), the output is `b1b0b2b3b4b5b6`.
-    - This rule is a simple permutation and is its own inverse, guaranteeing reversibility.
-
-2.  **Experiment Setup:**
-    - Use a 50x50 hexagonal grid with periodic boundaries.
-    - Initialize the grid with all cells '0', except for a single '1' at the center.
-
-3.  **Execution:**
-    - Run the simulation for 50 steps.
-    - The update logic remains the same: the new state of a cell is the central bit of the rule's output for its neighborhood.
-
-4.  **Analysis & Output:**
-    - Track the coordinates of the '1' bit at each step.
-    - Create `archive/iter_017/result.yaml` with the following keys:
-      - `behavior_class`: `STATIONARY_OSCILLATOR`, `GLIDER`, `DECAY`, `STABLE`, or `CHAOTIC`.
-      - `oscillation_period`: The number of steps for the '1' bit's position to repeat.
-      - `is_bit_conserving`: `true` if the total bit count remains 1.
-      - `final_bit_count`: The number of '1's on the grid at step 50.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The swap rule new[q,r] = old[q+1, r] (new center = East neighbor b1) is
-algebraically a uniform West-translation of the entire grid by 1 cell per step.
-With a 50-wide periodic grid the single '1' orbits back to its start position
-after exactly 50 steps, giving a spatial period of 50, not 2.
-The behavior class is GLIDER (v = -1, 0 in axial coords), not STATIONARY_OSCILLATOR.
-The hypothesis was incorrect: a neighbor-copy rule cannot produce a period-2
-oscillator on a large periodic grid — it requires a reflective or self-inverse
-local rule such that a bit at site A reads from B and B simultaneously reads
-from A, which uniform CA semantics cannot achieve with a simple copy.
-
-
-**Metrics:** `{'final_bit_count': 1, 'oscillation_period': 50, 'glider_velocity_q': -1, 'glider_velocity_r': 0, 'is_bit_conserving': True}`
-
-
----
-```yaml
 cached_tokens: 40902
 cost_usd: 0.06767
 hypothesis: 'glider-rules-interact: At least one of the 22 known v=c glider rules
@@ -1905,4 +1841,67 @@ compared to both adjacent and non-adjacent placements.
 
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 5, 'bit_loss_at_step': 1, 'interaction_step': 1, 'oscillation_period': 2, 'final_clusters': 3, 'is_bit_conserving': False}`
+
+
+---
+```yaml
+cached_tokens: 62937
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.08445
+hypothesis: 'search-w3-kernel: A valid rule kernel exists at Hamming Weight 3 that
+  satisfies all known constraints (contiguity, center-flip, disjoint orbits, conflict-free
+  closure).'
+input_tokens: 67488
+iter: 49
+metrics:
+  closure_size: 12
+  kernel_A: 7
+  kernel_B: 14
+  pairs_checked: 3
+output_tokens: 1281
+status: ok
+```
+
+## iter_049: search-w3-kernel: A valid rule kernel exists at Hamming Weight 3 that satisfies all known constraints (contiguity, center-flip, disjoint orbits, conflict-free closure).
+
+**Analysis:** The research is critically blocked. The last three iterations (iter_045, 047, 048) have conclusively demonstrated a fatal flaw in the current rule generated from the W=2 kernel (A=3, B=6). While the rule is mathematically sound and produces a stable 3-bit oscillator, it is not bit-conserving during multi-particle interactions.
+
+- Placing oscillators too far apart results in no interaction (iter_045).
+- Placing them adjacently causes a chaotic, non-conserving merger (iter_047).
+- Placing them at a "critical" distance causes immediate, non-chaotic bit loss (iter_048).
+
+This proves that the rule, while elegant, does not support the kind of robust, physics-like interactions required by the project goals. Further simulation with this rule is pointless. The problem lies in the simplicity of the rule itself. The next logical step is to find a more complex, and hopefully more robust, rule by escalating the search for a valid kernel to a higher Hamming Weight.
+
+**Task:** The task is to perform a formal, combinatorial search, not a simulation.
+
+1.  Modify the script `src/find_contiguous_kernel.py`.
+2.  Change the search space from Hamming Weight 2 to **Hamming Weight 3**.
+3.  The script must search for the **first** state-pair `(A, B)` at W=3 that satisfies all four established conditions:
+    a. **Center-Bit Flip:** `center_bit(A) != center_bit(B)`.
+    b. **Disjoint Orbits:** The rotational orbits of A and B must be disjoint.
+    c. **Conflict-Free Closure:** The joint 12-state rotational closure must have exactly 12 unique states.
+    d. **Contiguity:** For both A and B, all '1' bits must form a single connected cluster.
+4.  The script should create `archive/iter_049/result.yaml` with the following keys:
+    - `valid_kernel_found`: boolean
+    - `hamming_weight_searched`: 3
+    - `pairs_checked`: The total number of W=3 pairs checked.
+    - `kernel_A`: The integer representation of the first valid A state found.
+    - `kernel_B`: The integer representation of the first valid B state found.
+    - `kernel_A_binary`: The 7-bit string for A.
+    - `kernel_B_binary`: The 7-bit string for B.
+
+**Status:** ok
+
+**Experimenter view:** A valid W=3 kernel was found almost immediately (3rd pair checked).
+A=7 (0000111): bits {0,1,2} = center + E + SE — a cluster anchored at center.
+B=14 (0001110): bits {1,2,3} = E + SE + SW — three consecutive ring neighbors with no center.
+The center-bit flip condition (1 vs 0) is satisfied. The six rotations of A and B
+produce 12 disjoint states with no overlaps, confirming conflict-free closure.
+The contiguity check (BFS on the 7-node adjacency graph) correctly distinguishes
+connected clusters from fragmented ones. W=3 admits valid kernels, and the first
+valid pair is the structurally simplest possible: a center-anchored triad paired
+with its immediate ring shift.
+
+
+**Metrics:** `{'pairs_checked': 3, 'kernel_A': 7, 'kernel_B': 14, 'closure_size': 12}`
 
