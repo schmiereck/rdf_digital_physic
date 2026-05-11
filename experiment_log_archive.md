@@ -3386,3 +3386,65 @@ not appear to support stable, bit-conserving 4-bit gliders.
 
 **Metrics:** `{'glider_found': 0, 'glider_period': 0, 'patterns_checked': 3237, 'stable_still_lifes_found': 3144, 'stable_oscillators_found': 88, 'contiguous_seeds': 10, 'extra_noncontiguous_seeds': 3227}`
 
+
+---
+```yaml
+cached_tokens: 61275
+campaign: Phase 3 - W=3 Cyclic Rules
+cost_usd: 0.09288
+hypothesis: 'search-3cycle-kernel: A valid W=3 kernel exists as a 3-cycle (A,B,C)
+  satisfying all known constraints.'
+input_tokens: 67763
+iter: 61
+metrics:
+  closure_size: 18
+  hamming_weight: 3
+  orbit_A_min: 7
+  orbit_B_min: 11
+  orbit_C_min: 14
+  triplets_checked: 2
+output_tokens: 1577
+status: ok
+```
+
+## iter_061: search-3cycle-kernel: A valid W=3 kernel exists as a 3-cycle (A,B,C) satisfying all known constraints.
+
+**Analysis:** The research is fundamentally blocked. The last two major campaigns, testing two different W=3 rules, have failed conclusively. Exhaustive searches (iter_052, iter_054, iter_059, iter_060) have proven that neither rule supports any moving particles ("gliders") at the 3-bit or 4-bit level. The rules are mathematically sound but only produce stationary "still lifes" and "oscillators". This strongly suggests that the underlying rule-generation principle itself is flawed.
+
+The common element in all our generated rules so far is that they are "involutions" based on simple state swaps (A↔B). This creates a very stable dynamic where states flip back and forth, which may be inherently hostile to sustained, directed motion.
+
+To unblock the project, we must change the rule generation method itself. The most principled and minimal change is to move from 2-cycles (A↔B) to 3-cycles (A→B→C→A). This retains our commitment to reversibility and symmetry but allows for a richer, non-reciprocal dynamic that could potentially support propagation. The immediate next step is therefore a formal search for a valid 3-cycle "kernel".
+
+**Task:** Create a new script `src/find_w3_cycle_kernel.py` to perform a combinatorial search for a valid 3-cycle kernel.
+
+1. **Search Space:** The script should search through triplets of unique states `(A, B, C)` where each state has a **Hamming Weight of 3**.
+
+2. **Constraints:** A triplet is considered valid if it satisfies all of the following conditions:
+    a. **Contiguity:** All three states (A, B, and C) must represent contiguous patterns on the hex grid.
+    b. **Center-Bit Flip:** The cycle must involve at least one flip of the center bit (i.e., the center bits of A, B, and C are not all identical).
+    c. **Disjoint Orbits:** The 6-fold rotational orbits of A, B, and C must be mutually disjoint from each other.
+    d. **Conflict-Free Closure:** The joint rotational closure, formed by the 18 states `{rotate(A,i), rotate(B,i), rotate(C,i)}` for `i` in `0..5`, must contain exactly 18 unique states.
+
+3. **Execution:** The script should iterate through combinations of valid W=3 states and test them against the constraints, stopping as soon as the *first* valid triplet is found.
+
+4. **Output:** The script must create `archive/iter_061/result.yaml` with the following keys:
+    - `kernel_found`: `true` or `false`.
+    - `hamming_weight_searched`: The integer `3`.
+    - `triplets_checked`: The total number of triplets checked.
+    - `kernel_A`, `kernel_B`, `kernel_C`: The integer representations of the found states.
+    - `kernel_A_binary`, `kernel_B_binary`, `kernel_C_binary`: The 7-bit string representations.
+
+**Status:** ok
+
+**Experimenter view:** The search space collapses dramatically under analysis: among contiguous W=3 states,
+there are exactly 3 full-size (size-6) rotational orbits — center-1 adjacent-pair,
+center-1 skip-one-pair, and center-0 consecutive-triple. The only possible valid triplet
+is {orbit(7), orbit(11), orbit(14)}, making the result deterministic. The first
+representative triplet encountered by combinations() is (7, 11, 14), found after
+checking just 2 triplets. The center bits form a 1,1,0 pattern satisfying the
+center-bit-flip constraint. This kernel encodes a 3-cycle A→B→C→A with full 6-fold
+rotational symmetry over a 18-state closure — a complete and minimal structure.
+
+
+**Metrics:** `{'triplets_checked': 2, 'closure_size': 18, 'hamming_weight': 3, 'orbit_A_min': 7, 'orbit_B_min': 11, 'orbit_C_min': 14}`
+

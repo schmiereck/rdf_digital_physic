@@ -3,68 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61275
-campaign: Phase 3 - W=3 Cyclic Rules
-cost_usd: 0.09288
-hypothesis: 'search-3cycle-kernel: A valid W=3 kernel exists as a 3-cycle (A,B,C)
-  satisfying all known constraints.'
-input_tokens: 67763
-iter: 61
-metrics:
-  closure_size: 18
-  hamming_weight: 3
-  orbit_A_min: 7
-  orbit_B_min: 11
-  orbit_C_min: 14
-  triplets_checked: 2
-output_tokens: 1577
-status: ok
-```
-
-## iter_061: search-3cycle-kernel: A valid W=3 kernel exists as a 3-cycle (A,B,C) satisfying all known constraints.
-
-**Analysis:** The research is fundamentally blocked. The last two major campaigns, testing two different W=3 rules, have failed conclusively. Exhaustive searches (iter_052, iter_054, iter_059, iter_060) have proven that neither rule supports any moving particles ("gliders") at the 3-bit or 4-bit level. The rules are mathematically sound but only produce stationary "still lifes" and "oscillators". This strongly suggests that the underlying rule-generation principle itself is flawed.
-
-The common element in all our generated rules so far is that they are "involutions" based on simple state swaps (A↔B). This creates a very stable dynamic where states flip back and forth, which may be inherently hostile to sustained, directed motion.
-
-To unblock the project, we must change the rule generation method itself. The most principled and minimal change is to move from 2-cycles (A↔B) to 3-cycles (A→B→C→A). This retains our commitment to reversibility and symmetry but allows for a richer, non-reciprocal dynamic that could potentially support propagation. The immediate next step is therefore a formal search for a valid 3-cycle "kernel".
-
-**Task:** Create a new script `src/find_w3_cycle_kernel.py` to perform a combinatorial search for a valid 3-cycle kernel.
-
-1. **Search Space:** The script should search through triplets of unique states `(A, B, C)` where each state has a **Hamming Weight of 3**.
-
-2. **Constraints:** A triplet is considered valid if it satisfies all of the following conditions:
-    a. **Contiguity:** All three states (A, B, and C) must represent contiguous patterns on the hex grid.
-    b. **Center-Bit Flip:** The cycle must involve at least one flip of the center bit (i.e., the center bits of A, B, and C are not all identical).
-    c. **Disjoint Orbits:** The 6-fold rotational orbits of A, B, and C must be mutually disjoint from each other.
-    d. **Conflict-Free Closure:** The joint rotational closure, formed by the 18 states `{rotate(A,i), rotate(B,i), rotate(C,i)}` for `i` in `0..5`, must contain exactly 18 unique states.
-
-3. **Execution:** The script should iterate through combinations of valid W=3 states and test them against the constraints, stopping as soon as the *first* valid triplet is found.
-
-4. **Output:** The script must create `archive/iter_061/result.yaml` with the following keys:
-    - `kernel_found`: `true` or `false`.
-    - `hamming_weight_searched`: The integer `3`.
-    - `triplets_checked`: The total number of triplets checked.
-    - `kernel_A`, `kernel_B`, `kernel_C`: The integer representations of the found states.
-    - `kernel_A_binary`, `kernel_B_binary`, `kernel_C_binary`: The 7-bit string representations.
-
-**Status:** ok
-
-**Experimenter view:** The search space collapses dramatically under analysis: among contiguous W=3 states,
-there are exactly 3 full-size (size-6) rotational orbits — center-1 adjacent-pair,
-center-1 skip-one-pair, and center-0 consecutive-triple. The only possible valid triplet
-is {orbit(7), orbit(11), orbit(14)}, making the result deterministic. The first
-representative triplet encountered by combinations() is (7, 11, 14), found after
-checking just 2 triplets. The center bits form a 1,1,0 pattern satisfying the
-center-bit-flip constraint. This kernel encodes a 3-cycle A→B→C→A with full 6-fold
-rotational symmetry over a 18-state closure — a complete and minimal structure.
-
-
-**Metrics:** `{'triplets_checked': 2, 'closure_size': 18, 'hamming_weight': 3, 'orbit_A_min': 7, 'orbit_B_min': 11, 'orbit_C_min': 14}`
-
-
----
-```yaml
 cached_tokens: 61485
 campaign: Phase 3 - W=3 Cyclic Rules
 cost_usd: 0.09475
@@ -2080,4 +2018,76 @@ the stabilizing rule in a few dozen steps.
 
 
 **Metrics:** `{'chaotic_rule_score': 0.0, 'stabilizing_rule_score': 0.0, 'still_life_rule_score': 0.0, 'metric_is_selective': True}`
+
+
+---
+```yaml
+cached_tokens: 66213
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10227
+hypothesis: 'motion-evolution: A random population of 100 rules contains at least
+  one rule with non-zero fitness when evaluated with the motion-based metric.'
+input_tokens: 74327
+iter: 91
+metrics:
+  decayed_count: 2
+  exploded_count: 23
+  glider_count: 0
+  oscillator_count: 2
+  population_size: 100
+  rules_with_motion: 0
+  still_life_count: 73
+  top_fitness_score: 0.0
+output_tokens: 1518
+status: experiment_failed
+```
+
+## iter_091: motion-evolution: A random population of 100 rules contains at least one rule with non-zero fitness when evaluated with the motion-based metric.
+
+**Analysis:** The research is fundamentally blocked. All prior "top-down" formal rule searches have failed to produce motion. The subsequent pivot to a "bottom-up" evolutionary search also failed due to two successive flawed fitness functions: the first rewarded chaos (iter_085), and the second rewarded annihilation (iter_089).
+
+The previous iteration (iter_090) was a critical success, designing and validating a new fitness function that *directly* measures the desired phenomenon: `displacement / (1 + final_bit_count)`. This metric was proven to correctly assign zero fitness to all known non-glider-producing rule archetypes (chaotic, annihilating, and still-life).
+
+The evolutionary machinery is sound, and we now have a validated, goal-aligned objective function. The only logical path forward is to apply this new tool. We must launch a new evolutionary search, starting from a fresh random population, guided by this motion-centric fitness metric. This is the first experiment that combines our validated evolutionary process with a correctly specified goal.
+
+**Task:** Create a new script, `src/run_motion_evolution_gen1.py`, to perform a full generation and evaluation cycle with the new motion-based fitness metric.
+
+**1. Generate Population:**
+- Create a new population of 100 random, reversible, C6-symmetric, non-conserving rules. Use the same procedure as in iter_083 (2-4 kernel pairs, A/B in [1,127]).
+- Save the 100 new rules to `archive/iter_091/population/`.
+
+**2. Evaluate Population:**
+- For each of the 100 new rules, calculate its fitness using the motion-based metric validated in iter_090.
+- **Procedure per rule:**
+  a. Initialize a 150x150 grid with a single 4-bit contiguous "T-shape" seed.
+  b. Simulate for 500 steps, detecting if the pattern enters a stable cycle.
+  c. If a stable, non-zero object is found, calculate its net displacement over one period.
+  d. Fitness = `displacement / (1 + final_bit_count)`. Fitness is 0 if no cycle is found, the object decays, or displacement is zero.
+- Save all results to `archive/iter_091/results/fitness_scores.csv`.
+
+**3. Report Summary:**
+- After evaluating all 100 rules, create `archive/iter_091/result.yaml` with the following information:
+  - `glider_rule_found`: `true` if any rule had a fitness score > 0, otherwise `false`.
+  - `population_size`: 100
+  - `rules_with_motion`: The count of rules with a non-zero fitness score.
+  - `top_fitness_score`: The highest fitness score found.
+  - `top_rule_id`: The filename of the rule with the highest score.
+  - `top_rule_glider_period`: The period of the glider produced by the top rule.
+  - `top_rule_glider_bit_count`: The final bit count of the glider from the top rule.
+  - `top_rule_glider_velocity`: The (dq, dr) velocity vector of the glider from the top rule.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The random Gen-1 population of 100 C6-symmetric, reversible, non-conserving
+rules produced zero gliders when evaluated from a 4-bit T-shape seed. The
+dominant behavior was still-life (~73% of rules), followed by explosive growth
+(~23%). Two period-2 oscillators and two decays rounded out the population.
+This confirms that gliders are extremely rare in the raw random rule space and
+essentially never emerge by chance — the evolved Gen-3 rule from iter_089 was
+exceptional and required directed evolution (stability-rewarding fitness) to
+find. The motion metric is appropriately selective; it just requires that we
+bring evolved candidate rules to it rather than random ones.
+
+
+**Metrics:** `{'population_size': 100, 'rules_with_motion': 0, 'top_fitness_score': 0.0, 'still_life_count': 73, 'exploded_count': 23, 'oscillator_count': 2, 'decayed_count': 2, 'glider_count': 0}`
 

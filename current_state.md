@@ -4,13 +4,13 @@ Phase: 3 - Evolutionary Search
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid. This requires first finding a stable, moving particle ("glider").
 
 ### Status
-The project is redesigning the core of its evolutionary search. Previous fitness metrics have failed, selecting for either chaos or annihilation. A new, motion-centric fitness function is currently being designed and validated.
+The project has pivoted to an evolutionary search guided by a new, motion-centric fitness function. Previous evolutionary attempts failed due to flawed metrics that rewarded either chaos or annihilation. This is the first attempt to breed rules by directly selecting for motion.
 
 ### Confirmed
-- **Evolutionary Breeding is Technically Sound (iter_084, 088):** The crossover/mutation mechanics successfully create new generations of rules, and the population's average fitness demonstrably responds to selection pressure.
-- **Flawed Fitness Metric (Chaos, iter_085):** A metric rewarding `mean_bit_count * stddev` successfully bred for complexity, but this manifested as chaotic, space-filling rules antithetical to stable particles.
-- **Flawed Fitness Metric (Annihilation, iter_089):** A metric rewarding stability (`1 / (1 + final_bit_count)`) successfully bred for non-chaotic behavior, but this manifested as rules that annihilate patterns, also failing to produce motion.
-- **Formal Search Exhausted (iter_049-081):** All top-down, principled rule searches failed to produce motion, validating the pivot to evolutionary search.
+- **Motion-Based Fitness Metric is Selective (iter_090):** The metric `displacement / (1 + final_bit_count)` correctly assigns zero fitness to known non-moving rule archetypes (chaotic, annihilating, still-life).
+- **Evolutionary Breeding Works (iter_084, 088):** The technical implementation of crossover and mutation effectively creates new generations of rules whose population fitness responds to selection pressure.
+- **Previous Fitness Metrics are Flawed (iter_085, 089):** Metrics based on abstract complexity or simple stability are misaligned with the goal and produce rules that are either chaotic or annihilating.
+- **Formal Search Exhausted (iter_049-081):** Top-down, principled rule design has been comprehensively explored and has failed to produce motion.
 
 ### In Progress
-- **iter_090:** Validating a new, motion-based fitness metric (`displacement / (1 + final_bit_count)`) to ensure it correctly rejects known non-glider-producing rules before it is used to guide a new evolutionary search.
+- **iter_091:** Launching the first generation of an evolutionary search using the new, validated, motion-based fitness function to find a glider-producing rule.
