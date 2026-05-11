@@ -1,0 +1,30 @@
+artifacts: []
+experimenter_view: No yaml block in output – check stdout.txt
+log_excerpt: "epo and you're unsure whether a command is covered, grep these files\
+  \ rather than guessing.\n\n5. **Pick the pattern form.** Use the narrowest pattern\
+  \ that still covers the observed usage:\n   - If the user runs many variants (`git\
+  \ log`, `git log --oneline`, `git log main..HEAD`): use `Bash(git log *)` — note\
+  \ the space before `*`, which is required for prefix matching to work correctly.\n\
+  \   - If a single exact invocation is common: use `Bash(foo)` with no wildcard.\n\
+  \   - For MCP: use the full tool name verbatim (no wildcard needed; they're already\
+  \ specific).\n   - Never widen a pattern to the point that it conflicts with the\
+  \ rules above (no arbitrary code execution, no mutation/side effects).\n\n6. **Prioritize.**\
+  \ Rank by count descending. Drop anything that appeared fewer than ~3 times — not\
+  \ worth the allowlist entry. Cap the list at the top ~20 so the user can skim it.\n\
+  \n7. **Present the prioritized list to the user** as a markdown table with columns:\
+  \ rank, pattern, count, one-line description. Example:\n\n   | # | Pattern | Count\
+  \ | Notes |\n   |---|---------|-------|-------|\n   | 1 | `Bash(git status *)` |\
+  \ 142 | repo status checks |\n   | 2 | `Bash(gh pr view *)` | 87 | PR inspection\
+  \ |\n   | 3 | `mcp__slack__slack_read_thread` | 54 | Slack thread reads |\n\n8.\
+  \ **Merge into `.claude/settings.json`** in the current project (not `~/.claude/settings.json`,\
+  \ not `.claude/settings.local.json`). Create the file if it doesn't exist. Preserve\
+  \ existing keys and existing entries in `permissions.allow`; de-duplicate against\
+  \ what's already there; don't remove anything; don't reorder unrelated fields.\n\
+  \n9. **Report back.** Tell the user what you added (count + a few examples), what\
+  \ was already in the allowlist, and what you skipped and why (e.g. \"dropped `rm`\
+  \ and `git push` — not read-only; dropped `cat`/`ls`/`git status` — already auto-allowed,\
+  \ no rule needed\").\n\nDo not add anything to `permissions.deny` or `permissions.ask`.\
+  \ Do not touch any other settings field.\n\n[Request interrupted by user]"
+metrics: {}
+notes: Parse failed
+status: code_error

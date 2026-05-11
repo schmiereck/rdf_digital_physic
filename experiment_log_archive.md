@@ -986,3 +986,65 @@ a true glider is absent in this rule/seed combination.
 
 **Metrics:** `{'control_bit_count_final': 1, 'test_bit_count_final': 2, 'oscillator_period': 2, 'steps': 100, 'grid_size': 50}`
 
+
+---
+```yaml
+cached_tokens: 44307
+cost_usd: 0.07059
+hypothesis: 'composite-rule: A rule combining two conditional swaps produces a stable,
+  non-trivial 2D glider from a two-bit seed.'
+input_tokens: 48785
+iter: 21
+metrics:
+  final_bit_count_test: 2
+  glider_velocity_dq: 0.0
+  glider_velocity_dr: 0.0
+  is_bit_conserving: true
+  is_nontrivial_motion: false
+  oscillator_period: 2
+output_tokens: 1538
+status: experiment_failed
+```
+
+## iter_021: composite-rule: A rule combining two conditional swaps produces a stable, non-trivial 2D glider from a two-bit seed.
+
+**Analysis:** The previous iteration (iter_020) was a critical breakthrough. By introducing a symmetric swap-based update model, we finally overcame the bit-conservation problem that plagued standard CA models (refuted in iter_019) and created the project's first non-trivial, localized 2D particle: a stable, period-2 oscillator. This successfully unblocks Phase 3.
+
+However, the goal of Phase 3 is to study collisions and scattering, which requires particles that *move*. The oscillator from iter_020 is stationary. The experimenter's view correctly noted that the combination of the rule and the seed lacked the necessary asymmetry to produce net motion.
+
+The immediate and highest-priority task is to build on the success of the symmetric swap model and find a rule that produces a true, non-trivial glider—a localized particle moving through a static background. The most promising path is to increase the complexity of the rule just enough to break the simple oscillatory symmetry. My analysis suggests that combining the previous conditional swap with a second, complementary one could provide the necessary ratchet-like effect to drive linear motion.
+
+**Task:** Modify the `src/simulate_hex.py` script. Continue using the symmetric swap update model from iter_020.
+
+1. **Implement Composite Rule:** The rule for a cell `c` to initiate a swap is now determined by two prioritized conditions:
+   a. **Condition 1:** If neighbor `b1` (East) is '1', swap with neighbor `b2` (South-East).
+   b. **Condition 2:** Else, if neighbor `b2` (South-East) is '1', swap with neighbor `b1` (East).
+   (If a cell `c` triggers a swap based on Condition 1, it does not evaluate Condition 2 in the same step).
+
+2. **Run Two Simulations** (100 steps, 50x50 grid):
+   a. **Test:** Initial state with two bits: one at center `(q,r)`, one at its East neighbor `(q+1,r)`.
+   b. **Control:** Initial state with a single bit at the center.
+
+3. **Analysis and Outputs:**
+   - For each simulation, track coordinates and bit count.
+   - Create `archive/iter_021/result.yaml` with the following keys:
+     - `is_bit_conserving`: `true` if both sims maintain initial bit counts.
+     - `control_behavior`: `STATIONARY` or `MOVED`.
+     - `test_behavior`: `GLIDER`, `OSCILLATOR`, `STATIONARY`, or `CHAOTIC`.
+     - `is_nontrivial_motion`: `true` if control is `STATIONARY` and test is `GLIDER`.
+     - `final_bit_count_test`: The final number of '1's in the test simulation.
+     - `glider_velocity_hex`: A tuple `(avg_dq_per_step, avg_dr_per_step)` for the test simulation's center of mass.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The composite rule (cond1: b1==1 → swap c↔b2; cond2: b2==1 → swap c↔b1) with
+the center+East two-bit seed produces a period-2 oscillator, not a glider.
+The pattern alternates between {(25,25),(26,25)} and {(26,24),(26,25)} with
+zero net translation. The symmetric restoration occurs because the East neighbor
+(26,25) never moves (no cell to its East-East is ever set), so condition 1 always
+fires for the center cell in both even and odd steps, creating a symmetric bounce.
+The control single-bit remains completely stationary as expected.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'is_nontrivial_motion': False, 'final_bit_count_test': 2, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0, 'oscillator_period': 2}`
+

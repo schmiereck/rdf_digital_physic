@@ -3,68 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 44307
-cost_usd: 0.07059
-hypothesis: 'composite-rule: A rule combining two conditional swaps produces a stable,
-  non-trivial 2D glider from a two-bit seed.'
-input_tokens: 48785
-iter: 21
-metrics:
-  final_bit_count_test: 2
-  glider_velocity_dq: 0.0
-  glider_velocity_dr: 0.0
-  is_bit_conserving: true
-  is_nontrivial_motion: false
-  oscillator_period: 2
-output_tokens: 1538
-status: experiment_failed
-```
-
-## iter_021: composite-rule: A rule combining two conditional swaps produces a stable, non-trivial 2D glider from a two-bit seed.
-
-**Analysis:** The previous iteration (iter_020) was a critical breakthrough. By introducing a symmetric swap-based update model, we finally overcame the bit-conservation problem that plagued standard CA models (refuted in iter_019) and created the project's first non-trivial, localized 2D particle: a stable, period-2 oscillator. This successfully unblocks Phase 3.
-
-However, the goal of Phase 3 is to study collisions and scattering, which requires particles that *move*. The oscillator from iter_020 is stationary. The experimenter's view correctly noted that the combination of the rule and the seed lacked the necessary asymmetry to produce net motion.
-
-The immediate and highest-priority task is to build on the success of the symmetric swap model and find a rule that produces a true, non-trivial glider—a localized particle moving through a static background. The most promising path is to increase the complexity of the rule just enough to break the simple oscillatory symmetry. My analysis suggests that combining the previous conditional swap with a second, complementary one could provide the necessary ratchet-like effect to drive linear motion.
-
-**Task:** Modify the `src/simulate_hex.py` script. Continue using the symmetric swap update model from iter_020.
-
-1. **Implement Composite Rule:** The rule for a cell `c` to initiate a swap is now determined by two prioritized conditions:
-   a. **Condition 1:** If neighbor `b1` (East) is '1', swap with neighbor `b2` (South-East).
-   b. **Condition 2:** Else, if neighbor `b2` (South-East) is '1', swap with neighbor `b1` (East).
-   (If a cell `c` triggers a swap based on Condition 1, it does not evaluate Condition 2 in the same step).
-
-2. **Run Two Simulations** (100 steps, 50x50 grid):
-   a. **Test:** Initial state with two bits: one at center `(q,r)`, one at its East neighbor `(q+1,r)`.
-   b. **Control:** Initial state with a single bit at the center.
-
-3. **Analysis and Outputs:**
-   - For each simulation, track coordinates and bit count.
-   - Create `archive/iter_021/result.yaml` with the following keys:
-     - `is_bit_conserving`: `true` if both sims maintain initial bit counts.
-     - `control_behavior`: `STATIONARY` or `MOVED`.
-     - `test_behavior`: `GLIDER`, `OSCILLATOR`, `STATIONARY`, or `CHAOTIC`.
-     - `is_nontrivial_motion`: `true` if control is `STATIONARY` and test is `GLIDER`.
-     - `final_bit_count_test`: The final number of '1's in the test simulation.
-     - `glider_velocity_hex`: A tuple `(avg_dq_per_step, avg_dr_per_step)` for the test simulation's center of mass.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The composite rule (cond1: b1==1 → swap c↔b2; cond2: b2==1 → swap c↔b1) with
-the center+East two-bit seed produces a period-2 oscillator, not a glider.
-The pattern alternates between {(25,25),(26,25)} and {(26,24),(26,25)} with
-zero net translation. The symmetric restoration occurs because the East neighbor
-(26,25) never moves (no cell to its East-East is ever set), so condition 1 always
-fires for the center cell in both even and odd steps, creating a symmetric bounce.
-The control single-bit remains completely stationary as expected.
-
-
-**Metrics:** `{'is_bit_conserving': True, 'is_nontrivial_motion': False, 'final_bit_count_test': 2, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0, 'oscillator_period': 2}`
-
-
----
-```yaml
 cached_tokens: 45840
 cost_usd: 0.07044
 hypothesis: 'asymmetric-seed: A three-bit ''L-shaped'' seed breaks the symmetry of
@@ -1872,4 +1810,57 @@ consider composite objects formed by interactions of still lifes.
 
 
 **Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 3, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
+
+
+---
+```yaml
+cached_tokens: 61110
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09145
+hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
+  4-bit glider.
+input_tokens: 67393
+iter: 53
+metrics: {}
+output_tokens: 1523
+status: code_error
+```
+
+## iter_053: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 4-bit glider.
+
+**Analysis:** The previous iteration (iter_052) was a critical negative result that now fully defines the research landscape. By exhaustively searching all 11 contiguous 3-bit patterns, we have proven that our current W=3 rule (from kernel A=7, B=14) does not support any 3-bit gliders. It only supports three stable, stationary "still life" patterns.
+
+This means Phase 3 is fundamentally blocked. We have a valid target (the 3-bit still life from iter_051), but no projectile to stage a collision. The W=3 rule itself is the most principled and robust we have constructed, so abandoning it would be premature. The failure of 3-bit patterns to move suggests they may be too simple to possess the necessary internal structure for self-propulsion under this rule.
+
+The most direct and logical path forward is to escalate the search. We will test the hypothesis that the rule supports motion, but only for particles of a higher complexity. The minimal next step is to extend our exhaustive search from 3-bit patterns to 4-bit patterns.
+
+**Task:** Create a new script, `src/find_w3_glider_4bit.py`, to systematically search for moving 4-bit objects.
+
+1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+
+2. **Generate Seeds:** Generate all unique, contiguous 4-bit patterns (tetrahexes). There are 7 unique free tetrahexes. Ensure your generation method finds them all.
+
+3. **Test Each Seed:** For each of the unique 4-bit seeds:
+    a. Initialize a grid (e.g., 50x50) with the pattern.
+    b. Simulate for at least 200 steps to robustly detect cycles.
+    c. At each step, verify that the bit count remains exactly 4. If it deviates, the seed is unstable; discard it and continue.
+    d. If bit count is stable, track the history of the pattern's coordinates to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
+
+4. **Report Results:** The script should run through all unique patterns and report on all stable objects found.
+
+5. **Output:** Create `archive/iter_053/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 4-bit seeds tested.
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the first glider found (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
+
+**Status:** code_error
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Metrics:** `{}`
 
