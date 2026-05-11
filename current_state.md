@@ -4,15 +4,15 @@ Phase: 3 - Second W=3 Rule
 Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
 ### Status
-BLOCKED. All attempts to find or construct a moving particle ("glider") under the first W=3 rule (from kernel A=7, B=14) have failed. The research has pivoted to finding and testing the next valid W=3 rule.
+BLOCKED. We have found a second W=3 rule (from kernel A=11, B=14) and confirmed it supports at least one stable, stationary 3-bit object. However, it is unknown if this rule supports any moving objects ("gliders"), which are required to stage a collision.
 
 ### Confirmed Findings
-- A valid, contiguous, center-flipping, conflict-free rule kernel exists at Hamming Weight 3 (A=7, B=14) (iter_049).
-- The rule from (A=7, B=14) supports stable 3-bit and 4-bit stationary "still life" objects (iter_051, iter_054).
+- A second valid, contiguous, center-flipping, conflict-free W=3 rule kernel exists (A=11, B=14) (iter_058).
+- The rule from (A=11, B=14) supports at least one stable, 3-bit stationary "still life" object (iter_058).
 
 ### Refuted Hypotheses
-- The W=3 rule (A=7, B=14) does not support any stable, bit-conserving 3-bit or 4-bit gliders from monolithic seeds (iter_052, iter_054).
-- Composite gliders do not form from symmetric or asymmetric arrangements of 3-bit still lifes under the (A=7, B=14) rule; interactions result in larger still lifes or non-conserving decay (iter_055, iter_056, iter_057).
+- The *first* W=3 rule (A=7, B=14) does not support any 3-bit or 4-bit gliders (iter_052, iter_054).
+- Composite objects under the first W=3 rule do not produce gliders (iter_055, iter_056, iter_057).
 
 ### In Progress
-- **iter_058:** Finding and testing the *second* valid W=3 rule kernel to see if it supports non-trivial dynamics.
+- **iter_059:** Exhaustively searching all 11 unique 3-bit patterns under the second W=3 rule to check for the existence of a glider.
