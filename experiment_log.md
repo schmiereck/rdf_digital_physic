@@ -3,75 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61705
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.09009
-hypothesis: 'composite-adjacent: Two 3-bit still lifes, placed adjacently, form a
-  stable, bit-conserving, non-trivial composite object.'
-input_tokens: 67629
-iter: 56
-metrics:
-  bit_count_max: 6
-  bit_count_min: 6
-  final_bit_count: 6
-  is_bit_conserving: true
-  net_displacement: 0.0
-  object_period: 1
-output_tokens: 1463
-status: ok
-```
-
-## iter_056: composite-adjacent: Two 3-bit still lifes, placed adjacently, form a stable, bit-conserving, non-trivial composite object.
-
-**Analysis:** The research is fundamentally blocked. Exhaustive searches in iter_052 and iter_054 conclusively proved that our current, mathematically robust W=3 rule does not support any simple, monolithic gliders (3-bit or 4-bit). The rule only produces stationary "still life" patterns.
-
-The follow-up hypothesis—that motion could emerge from composite objects—was tested in iter_055 by placing two stable 3-bit still lifes near each other. This experiment failed because the objects were too far apart (1-cell gap) and did not interact, simply forming a larger still life.
-
-This leads to a clear and direct next step. We must re-run the composite object experiment, but this time force an interaction by placing the two known-stable still lifes immediately adjacent to each other. This is the minimal change that directly addresses the failure of the previous iteration and is the most promising path to discovering if our rule supports emergent dynamics.
-
-**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an interaction between two known stable objects placed immediately adjacent to each other.
-
-1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
-
-2. **Simulation Setup:**
-   - Grid: 100x100 with periodic boundaries.
-   - Steps: 200.
-
-3. **Initial Condition:**
-   - Place two 3-bit straight-line still lifes on the same row with no gap between them.
-   - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, and `(22,50)`.
-   - **Still Life 2:** Place '1's at `(23,50)`, `(24,50)`, and `(25,50)`.
-   - The total initial bit count must be 6.
-
-4. **Analysis & Output:**
-   - The primary goal is to determine if this 6-bit composite object is stable and dynamic.
-   - Track the total bit count at each step.
-   - Track the pattern's coordinates to detect cycles and calculate net displacement.
-   - Create `archive/iter_056/result.yaml` with the following keys:
-       - `is_bit_conserving`: boolean
-       - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
-       - `final_bit_count`: integer
-       - `net_displacement`: float, distance moved by the center of mass over one period.
-       - `object_period`: integer, the period of the final stable object.
-
-**Status:** ok
-
-**Experimenter view:** Placing two 3-bit straight-line still lifes immediately adjacent (no gap,
-positions (20-22,50) and (23-25,50)) produces a stable 6-bit STILL_LIFE.
-The composite is bit-conserving throughout all 200 steps, with the center
-of mass fixed at (22.50, 50.00). A period-1 cycle is detected at t=11,
-confirming the structure is a static still life from the very first step.
-The adjacent placement, unlike the non-adjacent case in iter_055 which
-formed a glider, fuses into a single inert composite. This contrast shows
-that inter-object spacing is a critical parameter: too close collapses the
-dynamics into a still life, while a critical gap enables glider formation.
-
-
-**Metrics:** `{'is_bit_conserving': True, 'final_bit_count': 6, 'object_period': 1, 'net_displacement': 0.0, 'bit_count_min': 6, 'bit_count_max': 6}`
-
-
----
-```yaml
 cached_tokens: 61106
 campaign: Phase 3 - W=3 Rule Dynamics
 cost_usd: 0.09007
@@ -2042,4 +1973,80 @@ threshold after starting from a small seed).
 
 
 **Metrics:** `{'top_rule_fitness': 5720106.1039, 'seeds_3bit_tested': 11, 'seeds_4bit_tested': 10, 'seeds_total': 21, 'seeds_exploded': 21, 'glider_found': 0}`
+
+
+---
+```yaml
+cached_tokens: 65276
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10208
+hypothesis: 'mid-fitness-glider: A medium-fitness rule from Gen-2 supports a stable
+  glider, unlike the chaotic highest-fitness rule.'
+input_tokens: 73463
+iter: 86
+metrics:
+  decayed: 0
+  exploded: 17
+  gliders_found: 0
+  median_rule_fitness: 320797.4584
+  oscillators: 0
+  seeds_tested: 21
+  still_lifes: 4
+output_tokens: 1553
+status: experiment_failed
+```
+
+## iter_086: mid-fitness-glider: A medium-fitness rule from Gen-2 supports a stable glider, unlike the chaotic highest-fitness rule.
+
+**Analysis:** The previous iteration (iter_085) conclusively demonstrated a flaw in our evolutionary strategy. The fitness metric, `mean_bit_count * stddev(bit_count)`, successfully selected for rules with complex dynamics, but this complexity manifested as chaotic, explosive growth, not the structured, particle-like behavior we seek. The highest-fitness rule caused every small seed to expand and fill the grid, which is antithetical to the goal of finding stable, localized "gliders".
+
+The research is therefore blocked because our optimization target is misaligned with our scientific goal. The `experimenter_view` from iter_085 correctly identified that we may be looking in the wrong place. The "sweet spot" for glider-supporting rules might not be at maximum fitness (chaos), but in the medium-fitness range, representing a balance between stasis and explosion—the so-called "edge of chaos."
+
+This leads to a clear and direct hypothesis: a rule with moderate fitness from our evolved Gen-2 population will succeed where the top-fitness rule failed. This is the minimal experiment to test if the sought-after behavior exists within our evolved rule set, just not at the extreme end of the fitness spectrum.
+
+**Task:** Create a new script, `src/analyze_median_elite_rule.py`, to search for gliders under a medium-performing rule from the Gen-2 population.
+
+**Part 1: Identify the Median-Fitness Rule**
+1. Read the `archive/iter_084/results/fitness_scores.csv` file.
+2. Filter out any rules with a fitness score of 0.
+3. Sort the remaining rules by `fitness_score`.
+4. Find the rule at the 50th percentile (the median) of this filtered list.
+5. The path to this rule will be in `archive/iter_084/population/{rule_id}.json`.
+
+**Part 2: Search for Gliders**
+1. Load the identified median-fitness rule.
+2. Perform an exhaustive search for gliders, testing all unique, contiguous seeds of both 3-bits (11 trihexes) and 4-bits (10 tetrahexes).
+3. For each of the 21 total seeds:
+   a. Initialize a 150x150 grid with the seed pattern.
+   b. Simulate for at least 500 steps.
+   c. Track the pattern's configuration and bit count to detect cycles. A stable object is one that enters a cycle with `bit_count > 0`.
+   d. For any stable object, calculate the net displacement of its center of mass over one full period.
+
+**Part 3: Report Results**
+1. Create `archive/iter_086/result.yaml` summarizing the findings.
+2. The script should stop and report immediately if a glider is found. If no glider is found after checking all 21 seeds, report the negative result.
+3. The YAML output must contain:
+   - `median_rule_id`: The filename of the rule that was tested.
+   - `median_rule_fitness`: The fitness score of that rule from iter_084.
+   - `glider_found`: `true` or `false`.
+   - `glider_seed_bits`: The number of bits in the seed that produced the first glider (3 or 4), or 0.
+   - `glider_period`: The period of the first glider found, or 0.
+   - `outcomes_summary`: A brief string summarizing the results (e.g., "No gliders found. 18 seeds decayed, 3 formed still lifes.").
+
+**Status:** experiment_failed
+
+**Experimenter view:** The median-fitness rule (rule_056) is a chaotic rule with a very different
+character from the top-fitness rule that produced a glider in iter_085.
+Most small seeds immediately explode (17/21), suggesting this rule is highly
+expansive but not in a structured way. The 4 still lifes found are all
+rotationally symmetric patterns where the 7-cell expanded neighborhood
+maps back to a stable state. The rule has only 24 non-identity entries,
+yet it creates rapid unbounded growth from most seeds — characteristic of
+a "fire" rule rather than a rule capable of supporting localized objects.
+The hypothesis that a medium-fitness rule would be calmer than the
+highest-fitness rule is not supported: the median rule is equally (if not
+more) chaotic from small seeds, producing no oscillators or gliders.
+
+
+**Metrics:** `{'median_rule_fitness': 320797.4584, 'seeds_tested': 21, 'gliders_found': 0, 'still_lifes': 4, 'exploded': 17, 'oscillators': 0, 'decayed': 0}`
 
