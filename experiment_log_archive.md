@@ -2978,3 +2978,72 @@ of two still lifes that interact, or (c) random search over longer initial trans
 
 **Metrics:** `{'patterns_checked': 10, 'stable_still_lifes_found': 2, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
 
+
+---
+```yaml
+cached_tokens: 61591
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09037
+hypothesis: 'composite-glider: Two 3-bit still lifes, placed at a critical non-adjacent
+  distance, form a stable, bit-conserving 6-bit glider.'
+input_tokens: 67410
+iter: 55
+metrics:
+  bit_count_max: 6
+  bit_count_min: 6
+  final_bit_count: 6
+  glider_found: false
+  is_bit_conserving: true
+  net_displacement: 0.0
+  object_period: 1
+output_tokens: 1534
+status: experiment_failed
+```
+
+## iter_055: composite-glider: Two 3-bit still lifes, placed at a critical non-adjacent distance, form a stable, bit-conserving 6-bit glider.
+
+**Analysis:** The research is fundamentally blocked. The previous two iterations (iter_052, iter_054) were exhaustive searches that conclusively proved our W=3 rule does not support any stable, moving "gliders" for monolithic 3-bit or 4-bit patterns. The rule appears to strongly favor creating stable, but stationary, "still life" objects.
+
+This is a critical juncture. Continuing to simply increase the bit count in our search (e.g., to 5-bit objects) is a brute-force approach with diminishing returns. A more scientifically interesting path, suggested by the experimenter_view in iter_054, is to investigate if motion can be an *emergent* property of interacting components. We have confirmed the existence of stable 3-bit and 4-bit still lifes. The most promising next step is to test if placing two of these known stable objects in close proximity can create a "composite" object—a molecule—that has dynamic properties the atoms lack. This shifts the focus from finding elemental projectiles to building them.
+
+**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an interaction between two known stable objects.
+
+1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
+
+2. **Identify Still Life:** Use the 3-bit straight-line still life confirmed in iter_052.
+
+3. **Initial Condition:** On a 100x100 grid with periodic boundaries, place two of these still lifes on the same row, separated by one empty cell.
+    - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, and `(22,50)`.
+    - **Still Life 2:** Place '1's at `(24,50)`, `(25,50)`, and `(26,50)`.
+    - The total initial bit count will be 6.
+
+4. **Simulation:** Run for 200 steps, which is sufficient to detect cycles or long-term stability.
+
+5. **Analysis & Output:**
+    - The primary goal is to determine if this 6-bit composite object is a glider.
+    - Track the total bit count at each step.
+    - Track the pattern's coordinates to detect cycles and calculate net displacement.
+    - Create `archive/iter_055/result.yaml` with the following keys:
+        - `glider_found`: boolean
+        - `is_bit_conserving`: boolean
+        - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+        - `final_bit_count`: integer
+        - `net_displacement`: float, distance moved by the center of mass over one period.
+        - `object_period`: integer, the period of the final stable object.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The two 3-bit straight-line still lifes at positions (20-22, 50) and (24-26, 50)
+separated by a single empty cell form a composite 6-bit still life. The pattern is
+identical at every step from t=0 to t=200. Each individual still life is already
+stable, and the one-cell gap provides sufficient neighborhood isolation so that the
+two objects do not interact. The composite is a fixed point (period=1), perfectly
+bit-conserving, with zero center-of-mass displacement. The composite-glider
+hypothesis is not confirmed at this distance. To search for glider dynamics,
+future iterations should try different separations, different orientations, or
+seed patterns that are NOT individually stable (so interaction is required for
+either survival or motion).
+
+
+**Metrics:** `{'glider_found': False, 'is_bit_conserving': True, 'final_bit_count': 6, 'object_period': 1, 'net_displacement': 0.0, 'bit_count_min': 6, 'bit_count_max': 6}`
+

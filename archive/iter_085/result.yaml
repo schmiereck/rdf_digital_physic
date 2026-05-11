@@ -1,0 +1,52 @@
+artifacts:
+- src/analyze_top_elite_rule.py
+- archive/iter_085/result.yaml
+experimenter_view: 'The top Gen-2 rule (rule_023, fitness ~5.72M) causes every tested
+  seed to explode
+
+  to 500+ cells within 500 steps. This is expected given the fitness metric:
+
+  mean_bit_count × stddev(bit_count) rewards rules that (a) maintain high cell counts
+
+  and (b) have high temporal variance — both properties favor chaotic, space-filling
+
+  dynamics rather than localized stable structures. The evolutionary algorithm
+
+  optimized for a metric that is orthogonal to glider support. A future iteration
+
+  should either (1) search for gliders among rules with LOWER fitness scores that
+
+  might have more moderate, structured dynamics, or (2) redesign the fitness function
+
+  to reward small-object stability (e.g., penalize patterns that grow beyond a
+
+  threshold after starting from a small seed).
+
+  '
+log_excerpt: "Reading fitness scores from iter_084 ...\nTop rule: rule_023  fitness=5,720,106.1039\n\
+  Loading rule from .../archive/iter_084/population/rule_023.json ...\n  36 non-identity\
+  \ entries in rule table\nSeeds generated: 11 trihex (3-bit), 10 tetrahex (4-bit),\
+  \ total 21\n  [ 1/21 3bit] seed=[(0, 0), (0, 1), (0, 2)]  kind=exploded  period=0\
+  \  disp=(0, 0)  bits=519\n  [ 2/21 3bit] seed=[(0, 0), (0, 1), (1, 0)]  kind=exploded\
+  \  period=0  disp=(0, 0)  bits=546\n  [ 5/21 3bit] seed=[(0, 0), (1, 0), (2, 0)]\
+  \  kind=exploded  period=0  disp=(0, 0)  bits=519\n  [12/21 4bit] seed=[(0, 0),\
+  \ (0, 1), (0, 2), (0, 3)]  kind=exploded  period=0  disp=(0, 0)  bits=526\n  [21/21\
+  \ 4bit] seed=[(0, 0), (1, -2), (1, -1), (2, -1)]  kind=exploded  period=0  disp=(0,\
+  \ 0)  bits=556\n=== Summary ===\n  top_rule_id:        rule_023\n  top_rule_fitness:\
+  \   5,720,106.1039\n  glider_found:       False\n  outcome: No glider found in 21/21\
+  \ seeds. 0 still lifes, 0 oscillators, 0 decayed, 21 exploded, 0 no_cycle.\nWritten:\
+  \ .../archive/iter_085/result.yaml\n"
+metrics:
+  glider_found: 0
+  seeds_3bit_tested: 11
+  seeds_4bit_tested: 10
+  seeds_exploded: 21
+  seeds_total: 21
+  top_rule_fitness: 5720106.1039
+notes: 'Script uses sparse infinite-grid simulation (frozenset of cells) with cycle
+  detection via translation-normalized shape hashing. Explosion threshold set at 500
+  cells. Rule_023 has 36 non-identity entries; all tested states activate birth in
+  previously-dead cells, producing runaway growth from any small seed.
+
+  '
+status: experiment_failed

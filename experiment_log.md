@@ -3,75 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61591
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.09037
-hypothesis: 'composite-glider: Two 3-bit still lifes, placed at a critical non-adjacent
-  distance, form a stable, bit-conserving 6-bit glider.'
-input_tokens: 67410
-iter: 55
-metrics:
-  bit_count_max: 6
-  bit_count_min: 6
-  final_bit_count: 6
-  glider_found: false
-  is_bit_conserving: true
-  net_displacement: 0.0
-  object_period: 1
-output_tokens: 1534
-status: experiment_failed
-```
-
-## iter_055: composite-glider: Two 3-bit still lifes, placed at a critical non-adjacent distance, form a stable, bit-conserving 6-bit glider.
-
-**Analysis:** The research is fundamentally blocked. The previous two iterations (iter_052, iter_054) were exhaustive searches that conclusively proved our W=3 rule does not support any stable, moving "gliders" for monolithic 3-bit or 4-bit patterns. The rule appears to strongly favor creating stable, but stationary, "still life" objects.
-
-This is a critical juncture. Continuing to simply increase the bit count in our search (e.g., to 5-bit objects) is a brute-force approach with diminishing returns. A more scientifically interesting path, suggested by the experimenter_view in iter_054, is to investigate if motion can be an *emergent* property of interacting components. We have confirmed the existence of stable 3-bit and 4-bit still lifes. The most promising next step is to test if placing two of these known stable objects in close proximity can create a "composite" object—a molecule—that has dynamic properties the atoms lack. This shifts the focus from finding elemental projectiles to building them.
-
-**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an interaction between two known stable objects.
-
-1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
-
-2. **Identify Still Life:** Use the 3-bit straight-line still life confirmed in iter_052.
-
-3. **Initial Condition:** On a 100x100 grid with periodic boundaries, place two of these still lifes on the same row, separated by one empty cell.
-    - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, and `(22,50)`.
-    - **Still Life 2:** Place '1's at `(24,50)`, `(25,50)`, and `(26,50)`.
-    - The total initial bit count will be 6.
-
-4. **Simulation:** Run for 200 steps, which is sufficient to detect cycles or long-term stability.
-
-5. **Analysis & Output:**
-    - The primary goal is to determine if this 6-bit composite object is a glider.
-    - Track the total bit count at each step.
-    - Track the pattern's coordinates to detect cycles and calculate net displacement.
-    - Create `archive/iter_055/result.yaml` with the following keys:
-        - `glider_found`: boolean
-        - `is_bit_conserving`: boolean
-        - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
-        - `final_bit_count`: integer
-        - `net_displacement`: float, distance moved by the center of mass over one period.
-        - `object_period`: integer, the period of the final stable object.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The two 3-bit straight-line still lifes at positions (20-22, 50) and (24-26, 50)
-separated by a single empty cell form a composite 6-bit still life. The pattern is
-identical at every step from t=0 to t=200. Each individual still life is already
-stable, and the one-cell gap provides sufficient neighborhood isolation so that the
-two objects do not interact. The composite is a fixed point (period=1), perfectly
-bit-conserving, with zero center-of-mass displacement. The composite-glider
-hypothesis is not confirmed at this distance. To search for glider dynamics,
-future iterations should try different separations, different orientations, or
-seed patterns that are NOT individually stable (so interaction is required for
-either survival or motion).
-
-
-**Metrics:** `{'glider_found': False, 'is_bit_conserving': True, 'final_bit_count': 6, 'object_period': 1, 'net_displacement': 0.0, 'bit_count_min': 6, 'bit_count_max': 6}`
-
-
----
-```yaml
 cached_tokens: 61705
 campaign: Phase 3 - W=3 Rule Dynamics
 cost_usd: 0.09009
@@ -2037,4 +1968,78 @@ mutation operators consistently produce valid, non-conserving, C6-symmetric rule
 
 
 **Metrics:** `{'gen1_fitness_mean': 226850.54, 'gen2_fitness_mean': 604003.17, 'fitness_improvement_pct': 166.26, 'gen2_top_fitness': 5720106.1, 'zero_fitness_rules': 1, 'elite_carry_rules': 2, 'bred_rules': 98, 'failed_breed_attempts': 0}`
+
+
+---
+```yaml
+cached_tokens: 64707
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10339
+hypothesis: 'glider-from-evolution: The highest-fitness rule from Gen-2 supports at
+  least one stable, moving glider from a small (3- or 4-bit) contiguous seed.'
+input_tokens: 73249
+iter: 85
+metrics:
+  glider_found: 0
+  seeds_3bit_tested: 11
+  seeds_4bit_tested: 10
+  seeds_exploded: 21
+  seeds_total: 21
+  top_rule_fitness: 5720106.1039
+output_tokens: 1607
+status: experiment_failed
+```
+
+## iter_085: glider-from-evolution: The highest-fitness rule from Gen-2 supports at least one stable, moving glider from a small (3- or 4-bit) contiguous seed.
+
+**Analysis:** The project has successfully pivoted from a failed "top-down" formal rule search (iter_049-081) to a promising "bottom-up" evolutionary paradigm. The last three iterations have validated the core components of this new approach:
+1. A fitness metric that effectively identifies complex dynamics has been validated (iter_082).
+2. The selection of "elite" rules based on this metric has been demonstrated (iter_083).
+3. The breeding of a second, "fitter" generation via crossover and mutation has been confirmed, with the mean fitness improving by a remarkable +166% (iter_084).
+
+The evolutionary machinery is working and producing rules with a high potential for complex behavior. However, the fitness metric is abstract—it selects for general complexity, not specifically for the "gliders" that are the primary goal of this research phase. The critical, unanswered question is whether the most complex rule discovered through this process actually produces the specific phenomenon we are looking for. The logical and only next step is to take the "fittest" rule from our new, evolved population and analyze it for the existence of stable, moving particles.
+
+**Task:** Create a new script, `src/analyze_top_elite_rule.py`, to search for gliders under the best rule found in the previous iteration.
+
+**Part 1: Identify the Top Rule**
+1. Read the `archive/iter_084/results/fitness_scores.csv` file.
+2. Find the `rule_id` corresponding to the highest `fitness_score`.
+3. The path to the top rule will be in `archive/iter_084/population/{rule_id}.json`.
+
+**Part 2: Search for Gliders**
+1. Load the identified top-performing rule.
+2. Perform an exhaustive search for gliders, testing all unique, contiguous seeds of both 3-bits (11 trihexes) and 4-bits (10 tetrahexes).
+3. For each of the 21 total seeds:
+   a. Initialize a 150x150 grid with the seed pattern.
+   b. Simulate for at least 500 steps.
+   c. Track the pattern's configuration and bit count to detect cycles. An object is stable if it enters a cycle with `bit_count > 0`.
+   d. For any stable object, calculate the net displacement of its center of mass over one full period.
+
+**Part 3: Report Results**
+1. Create `archive/iter_085/result.yaml` with a summary of the findings.
+2. The script should stop and report immediately if a glider is found. If no glider is found after all 21 seeds are checked, it should report the negative result.
+3. The YAML output must contain:
+   - `top_rule_id`: The filename of the rule that was tested.
+   - `top_rule_fitness`: The fitness score of that rule from iter_084.
+   - `glider_found`: `true` or `false`.
+   - `glider_seed_bits`: The number of bits in the seed that produced the first glider (3 or 4), or 0.
+   - `glider_period`: The period of the first glider found, or 0.
+   - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity, or `(0,0)`.
+   - `outcomes_summary`: A brief string summarizing the results (e.g., "Found 1 glider from 4-bit seeds. 15 seeds decayed, 5 formed still lifes.").
+
+**Status:** experiment_failed
+
+**Experimenter view:** The top Gen-2 rule (rule_023, fitness ~5.72M) causes every tested seed to explode
+to 500+ cells within 500 steps. This is expected given the fitness metric:
+mean_bit_count × stddev(bit_count) rewards rules that (a) maintain high cell counts
+and (b) have high temporal variance — both properties favor chaotic, space-filling
+dynamics rather than localized stable structures. The evolutionary algorithm
+optimized for a metric that is orthogonal to glider support. A future iteration
+should either (1) search for gliders among rules with LOWER fitness scores that
+might have more moderate, structured dynamics, or (2) redesign the fitness function
+to reward small-object stability (e.g., penalize patterns that grow beyond a
+threshold after starting from a small seed).
+
+
+**Metrics:** `{'top_rule_fitness': 5720106.1039, 'seeds_3bit_tested': 11, 'seeds_4bit_tested': 10, 'seeds_total': 21, 'seeds_exploded': 21, 'glider_found': 0}`
 
