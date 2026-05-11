@@ -3,73 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61383
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.10202
-hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
-  3-bit glider.
-input_tokens: 70563
-iter: 52
-metrics:
-  glider_found: false
-  glider_period: 0
-  patterns_checked: 11
-  stable_oscillators_found: 0
-  stable_still_lifes_found: 3
-output_tokens: 1541
-status: experiment_failed
-```
-
-## iter_052: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 3-bit glider.
-
-**Analysis:** The previous iteration (iter_051) was a success and a critical step forward. By systematically searching, we confirmed that our new W=3 rule (from kernel A=7, B=14) supports a stable, bit-conserving, 3-bit object. Specifically, we found a "still life"—a stationary pattern with a period of 1. This is the first time we have a stable "particle" within a fully symmetric, principled rule system.
-
-This partially unblocks the research. The goal of Phase 3 is to observe interactions, and we now have a valid target (the still life). However, we still lack a projectile. To stage a collision, we need a moving object, or "glider." The search in iter_051 was programmed to stop at the first stable object it found, which happened to be stationary. The crucial open question is whether the same rule also supports objects that move.
-
-The most logical and minimal next step is to continue the systematic search started in iter_051, but this time, to look specifically for a glider.
-
-**Task:** Create a new script, `src/find_w3_glider.py`, to systematically search for moving objects.
-
-1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
-
-2. **Generate Seeds:** Generate all 11 unique, contiguous 3-bit patterns (as identified in iter_051's `total_unique_seeds_available`).
-
-3. **Test Each Seed:** For each of the 11 seeds:
-    a. Initialize a small grid (e.g., 50x50) with the pattern.
-    b. Simulate for a sufficient number of steps to detect a cycle (e.g., 100 steps).
-    c. At each step, verify that the bit count remains exactly 3. If it deviates, the seed is unstable; discard and continue.
-    d. If bit count is stable, track the history of the pattern's coordinates to detect a cycle.
-    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
-
-4. **Report Results:** The script should run through all 11 patterns and report on all stable objects found. The primary success is finding an object with a non-zero net displacement.
-
-5. **Output:** Create `archive/iter_052/result.yaml` with the following keys:
-    - `glider_found`: `true` if a glider was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested (should be 11).
-    - `stable_still_lifes_found`: The count of stable period-1 objects.
-    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
-    - `glider_period`: The integer period of the found glider (or 0).
-    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
-    - `glider_seed_coords`: The initial coordinates of the seed that produced the glider.
-
-**Status:** experiment_failed
-
-**Experimenter view:** All 11 unique contiguous 3-bit hex patterns were tested on an infinite sparse grid for
-up to 200 steps. Three of the seeds (all collinear arrangements — in the E, NE, and SE
-directions) are period-1 still lifes that are stable and bit-conserving. The remaining
-8 seeds (all bent/L-shaped and triangular arrangements) immediately lose the 3-bit count
-and are unstable. No seed produced an oscillator or glider. The hypothesis that the W=3
-rule (A=7, B=14) supports a 3-bit glider is falsified by exhaustive search. The
-stability is highly selective: only perfectly aligned triplets survive, and they do not
-move. To find gliders in this rule, one would need to search higher bit counts (4+) or
-consider composite objects formed by interactions of still lifes.
-
-
-**Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 3, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
-
-
----
-```yaml
 cached_tokens: 61110
 campaign: Phase 3 - W=3 Rule Dynamics
 cost_usd: 0.09145
@@ -1979,4 +1912,93 @@ sparse non-contiguous seeds of any size ≤4 fail to produce gliders under this 
 
 
 **Metrics:** `{'glider_found': 0, 'patterns_checked': 3227, 'total_unique_seeds': 3227, 'stable_object_count': 3139, 'decay_or_other_count': 88, 'contiguous_combos_filtered': 860, 'total_4cell_combos_in_grid': 66045, 'grid_radius': 3, 'grid_cells': 37}`
+
+
+---
+```yaml
+cached_tokens: 63651
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10535
+hypothesis: A dynamic fitness metric, based on object count and grid entropy over
+  time, can effectively discriminate between trivial and complex dynamics in a random
+  sample of reversible rules.
+input_tokens: 72046
+iter: 82
+metrics:
+  distinct_classes: 3
+  high_dynamic_class_count: 3
+  low_dynamic_class_count: 11
+  max_fitness: 604000.87
+  min_fitness: 0.0
+  num_rules: 20
+  static_class_count: 6
+  variance_of_scores: 24260686584.48
+output_tokens: 1931
+status: ok
+```
+
+## iter_082: A dynamic fitness metric, based on object count and grid entropy over time, can effectively discriminate between trivial and complex dynamics in a random sample of reversible rules.
+
+**Analysis:** The research is fundamentally and catastrophically blocked. All prior research paradigms have failed. A long series of exhaustive searches has conclusively proven that no gliders exist for any tested rule class under any tested update model when starting from small, simple (contiguous or non-contiguous) initial seeds.
+
+The failure modes are consistent:
+1.  **Strictly-Conserving Rules (iter_050-064):** These rules are too rigid, creating "crystalline" universes of only stationary objects.
+2.  **Non-Conserving Rules (iter_065-078):** While allowing local bit fluctuation, these rules were also exhaustively shown to lack elemental or simple composite gliders.
+3.  **Alternative Update Models & Symmetries (iter_070-073):** Asynchronous updates and reduced C2 symmetry only exacerbated the problem, suppressing dynamics even further.
+4.  **Non-Contiguous Seeds (iter_079-081):** This final paradigm failed due to a fundamental mismatch between the sparse seeds and the local density required to trigger the rule's non-trivial dynamics. The `experimenter_view` of iter_081 provided a theoretical proof of why this approach cannot work for seeds with <= 4 bits.
+
+Continuing to escalate complexity within these failed paradigms (e.g., searching for 5-bit non-contiguous gliders) is no longer scientifically justified. The evidence points to a flaw in the core methodology: the top-down, formal search for rules based on pre-defined "desirable" properties has failed.
+
+The only logical path forward is a radical strategic pivot. We will abandon the formal search and adopt the evolutionary approach mentioned in the original research goal. Instead of searching for rules with specific properties, we will search for rules that produce specific *behaviors*, as measured by a fitness function. The minimal first step is to design and validate such a function.
+
+**Task:** This is a meta-experiment to validate a new research methodology. It has two parts: generating random rules and then evaluating them.
+
+**Part 1: Create `src/generate_random_rules.py`**
+1. This script should generate 20 random, reversible, C6-symmetric, non-conserving rules.
+2. To generate one random rule:
+   a. Choose a number of kernel pairs, `k`, randomly between 2 and 4.
+   b. For each of the `k` pairs, randomly select integers `A` and `B` from 1 to 127.
+   c. Generate the full C6-symmetric rule by applying 6-fold rotation to each pair, adding both `A_rot -> B_rot` and the inverse `B_rot -> A_rot` to the rule dictionary. Ensure no conflicts arise.
+3. Save each of the 20 generated rules to a unique file in `archive/iter_082/rules/`, e.g., `random_rule_01.json`.
+
+**Part 2: Create `src/evaluate_rule_fitness.py`**
+1. This script will iterate through the 20 rule files generated in Part 1.
+2. For each rule:
+   a. Initialize a 100x100 grid with 50% random noise.
+   b. Simulate for 500 steps using the standard synchronous update.
+   c. Record the `bit_count` (number of live cells) at each step.
+   d. Calculate a "fitness score" designed to reward sustained, bounded complexity. A good candidate is: `fitness = mean(bit_count_last_100_steps) * stddev(bit_count_all_steps)`. A rule where everything dies or freezes will have a stddev of ~0, yielding a low score. A rule that explodes will have a high mean but may stabilize, while a complex one will have both sustained population and high variability.
+   e. If `stddev` is zero, the fitness is zero.
+3. After evaluating all 20 rules, create `archive/iter_082/results/fitness_scores.csv` with columns: `rule_id`, `fitness_score`, `final_bit_count`, `mean_bit_count`, `stddev_bit_count`.
+4. Create `archive/iter_082/result.yaml` summarizing whether the fitness metric showed significant variance, suggesting it can discriminate between rule types. Include `min_fitness`, `max_fitness`, and `variance_of_scores`.
+
+**Status:** ok
+
+**Experimenter view:** The fitness metric (mean_last100 × stddev_all) clearly discriminates between
+rule types across three distinct behavioral classes:
+
+1. STATIC (6/20 rules, fitness=0): The grid freezes completely within the first
+   few steps. stddev=0 because the bit count never changes after fixation.
+   Example: rules 01, 03, 09, 10, 12, 19. This is the CA analogue of a "dead"
+   phase transition where the rule annihilates all transient structure.
+
+2. LOW_DYNAMIC (11/20 rules, fitness=10K–186K): The grid reaches a near-stable
+   state with small, slow fluctuations (stddev 2–41). These rules support
+   persistent but low-complexity activity — structures that drift or flicker
+   without dramatic population swings.
+
+3. HIGH_DYNAMIC (3/20 rules, fitness=260K–604K): Rules 05, 06, and 11 show
+   large, sustained population variance (stddev 51–187). Rule 06 is the most
+   interesting: final bit count of 3222 (vs initial ~5000) with stddev=187,
+   suggesting the rule actively destroys bits while maintaining complex
+   transient structure. This non-conserving, active regime is exactly the
+   type of dynamic complexity the project seeks.
+
+The fitness score variance (24.26 billion >> 1.0) confirms the metric has
+high discriminating power. The metric correctly assigns low scores to trivial
+behaviors (frozen or static) and high scores to rules with sustained,
+heterogeneous dynamics.
+
+
+**Metrics:** `{'min_fitness': 0.0, 'max_fitness': 604000.87, 'variance_of_scores': 24260686584.48, 'num_rules': 20, 'static_class_count': 6, 'low_dynamic_class_count': 11, 'high_dynamic_class_count': 3, 'distinct_classes': 3}`
 
