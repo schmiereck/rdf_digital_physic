@@ -3,74 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61247
-campaign: Phase 3 - Second W=3 Rule
-cost_usd: 0.09179
-hypothesis: 'search-next-w3-rule: The second valid W=3 kernel produces a rule that
-  supports at least one stable, bit-conserving, non-trivial 3-bit object.'
-input_tokens: 67366
-iter: 58
-metrics:
-  kernel_A: 11
-  kernel_B: 14
-  net_displacement: 0.0
-  object_period: 1
-  patterns_checked: 1
-output_tokens: 1598
-status: ok
-```
-
-## iter_058: search-next-w3-rule: The second valid W=3 kernel produces a rule that supports at least one stable, bit-conserving, non-trivial 3-bit object.
-
-**Analysis:** The research is fundamentally blocked. The campaign to find or build a moving particle ("glider") under the current W=3 rule (from kernel A=7, B=14) has failed conclusively.
-- Iter_052 & iter_054: Exhaustive searches proved no monolithic 3-bit or 4-bit gliders exist. The rule only produces stationary "still lifes".
-- Iter_055, 056, 057: Attempts to build a composite "molecular" glider by arranging stable 3-bit still lifes in symmetric and asymmetric configurations all failed, resulting in either larger still lifes or destructive, non-bit-conserving decay.
-
-The evidence strongly suggests the current rule is a dead end for producing motion. The most logical and scientifically sound path forward is to abandon this rule and test the *next* valid rule candidate from our established formal search method. This involves finding the second valid W=3 kernel and probing its dynamics.
-
-**Task:** This is a two-part task: first find the next valid kernel, then test it.
-
-**Part 1: Find the Second W=3 Kernel**
-1. Create a script `src/find_next_w3_kernel.py`.
-2. This script must search for state-pairs `(A, B)` at Hamming Weight 3 that satisfy all four established conditions: Center-Bit Flip, Disjoint Orbits, Conflict-Free Closure, and Contiguity.
-3. The script must find and **ignore** the first valid kernel (`A=7, B=14`) and then find and report the **second** valid kernel.
-4. The script should print the integers and binary strings for this second kernel pair to stdout for verification.
-
-**Part 2: Generate Rule and Search for Objects**
-1. Create a script `src/generate_and_search_w3.py`.
-2. This script must programmatically take the new kernel pair `(A2, B2)` from Part 1 as input.
-3. It must generate the full 6-fold symmetric rule and save it to `src/symmetric_rule_w3_next.json`.
-4. It must then systematically test all 11 unique, contiguous 3-bit seeds for stability under this new rule.
-5. For each seed, simulate for up to 200 steps, checking for bit-conservation and cyclic behavior.
-6. The script should stop as soon as it finds the *first* stable object (still life, oscillator, or glider).
-7. The script's final action must be to create `archive/iter_058/result.yaml` with the results of the search.
-
-**YAML Output for iter_058:**
-- `kernel_A`: The integer `A2` used.
-- `kernel_B`: The integer `B2` used.
-- `object_found`: `true` if a stable 3-bit object was found, `false` otherwise.
-- `patterns_checked`: The number of 3-bit seeds tested before finding an object.
-- `object_type`: `STILL_LIFE`, `OSCILLATOR`, or `GLIDER`.
-- `object_period`: The period of the found object.
-- `net_displacement`: The net displacement of the object's center of mass over one period.
-
-**Status:** ok
-
-**Experimenter view:** The second valid W=3 kernel is (A=11, B=14) in LSB encoding.
-A=11 ('0001011') encodes {center, E, SW} — a non-contiguous-arc pattern where two
-neighbors span the center. B=14 ('0001110') encodes {E, SE, SW} — the same B-orbit
-as the first kernel (A=7, B=14). The two kernels share the B-orbit but differ in A.
-The rule is a bit-conserving involution with 12 non-identity state mappings.
-The very first 3-bit seed tested — a straight NE-line [(0,0),(0,1),(0,2)] — is
-immediately a STILL_LIFE (period=1, no displacement). This confirms the hypothesis:
-the second W=3 kernel supports a stable, bit-conserving, non-trivial 3-bit still life.
-
-
-**Metrics:** `{'kernel_A': 11, 'kernel_B': 14, 'patterns_checked': 1, 'object_period': 1, 'net_displacement': 0.0}`
-
-
----
-```yaml
 cached_tokens: 61432
 campaign: Phase 3 - Second W=3 Rule
 cost_usd: 0.09096
@@ -2051,4 +1983,77 @@ function for evolving stabilizing rules.
 
 
 **Metrics:** `{'chaotic_high_fitness_rule_score': 4.79e-05, 'chaotic_medium_fitness_rule_score': 0.000145, 'stabilizing_rule_score': 0.2, 'chaotic_high_final_bit_count': 20869, 'chaotic_medium_final_bit_count': 6913, 'stabilizing_final_bit_count': 4, 'ratio_stabilizing_vs_chaotic_high': 4174.0, 'ratio_stabilizing_vs_chaotic_medium': 1382.8}`
+
+
+---
+```yaml
+cached_tokens: 65775
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10235
+hypothesis: 'evolution-new-metric: Breeding a new generation using a stability-rewarding
+  fitness metric increases the population''s mean fitness by >50%.'
+input_tokens: 74043
+iter: 88
+metrics:
+  fitness_improvement_pct: 143.19
+  gen2_chaotic_rules: 38
+  gen2_rescored_fitness_mean: 0.17592751
+  gen3_chaotic_rules: 0
+  gen3_fitness_mean: 0.42783333
+  gen3_top_fitness: 1.0
+output_tokens: 1510
+status: ok
+```
+
+## iter_088: evolution-new-metric: Breeding a new generation using a stability-rewarding fitness metric increases the population's mean fitness by >50%.
+
+**Analysis:** The research was critically blocked because the evolutionary search was optimizing for a flawed fitness metric that rewarded chaos (iter_085, 086). Iteration 087 successfully designed and validated a new fitness function (`1 / (1 + final_bit_count)`) that strongly rewards the creation of stable, localized objects and heavily penalizes the explosive growth that plagued the previous metric.
+
+With a validated objective function, the only logical path forward is to apply it. We must now re-run a full evolutionary cycle—re-evaluating the last generation with the new metric, selecting a new set of "elite" rules based on their ability to stabilize a seed, and breeding a new generation from them. This will test whether the evolutionary process can now effectively optimize for the correct goal of stability.
+
+**Task:** Create a new script, `src/run_evolution_cycle_new_metric.py`, to perform a full generation, selection, and breeding cycle using the new fitness metric.
+
+**1. Re-evaluate Gen-2 Population:**
+- Load all 100 rules from the Gen-2 population stored in `archive/iter_084/population/`.
+- For each rule, calculate its fitness using the new metric from iter_087:
+  - Initialize a 150x150 grid with a single 4-bit "T-shape" seed.
+  - Simulate for 500 steps.
+  - Fitness = `1 / (1 + final_bit_count)`.
+- Record these scores and calculate the mean fitness for this re-scored Gen-2 population.
+
+**2. Select New Elites:**
+- From the 100 re-scored rules, identify the top 10 with the highest new fitness scores.
+
+**3. Breed Gen-3 Population:**
+- Create a new population of 100 rules for "Gen-3".
+- **Elitism:** Carry over the top 2 of the newly selected Gen-2 elites directly.
+- **Breeding:** Generate the remaining 98 rules by:
+  a. Randomly selecting two parents from the 10 new elites.
+  b. Creating a child's kernel set by taking a random half of the kernels from each parent (crossover).
+  c. Applying a mutation with 10% probability (add/delete a kernel pair, or flip a bit in a kernel).
+- Save the 100 new Gen-3 rules to `archive/iter_088/population/`.
+
+**4. Evaluate Gen-3 Population:**
+- Calculate the fitness for each of the 100 new Gen-3 rules using the exact same method as in Step 1.
+- Calculate the mean fitness for the new Gen-3 population.
+
+**5. Report & Compare:**
+- Create `archive/iter_088/result.yaml` with the following keys:
+  - `gen2_rescored_fitness_mean`: The mean fitness of the Gen-2 population under the new metric.
+  - `gen3_fitness_mean`: The mean fitness of the new Gen-3 population.
+  - `fitness_improvement_pct`: The percentage change in mean fitness from Gen-2 to Gen-3.
+  - `gen3_top_fitness`: The single highest fitness score in the Gen-3 population.
+
+**Status:** ok
+
+**Experimenter view:** Both success criteria were met decisively. Gen-3 mean fitness is 0.428 vs
+Gen-2's 0.176 — a 143% improvement, well above the 50% threshold.
+The chaotic-rule count dropped from 38 to 0: every rule in Gen-3 stabilizes
+from a 4-bit T-shape seed, leaving zero bits or only a handful after 500 steps.
+The 5 perfect-fitness rules (fitness=1.0, final_bits=0) from Gen-2 formed a
+strong selection pressure — their offspring nearly all converged to low or
+zero final bit counts, reflecting a population dominated by stabilizing dynamics.
+
+
+**Metrics:** `{'gen2_rescored_fitness_mean': 0.17592751, 'gen3_fitness_mean': 0.42783333, 'fitness_improvement_pct': 143.19, 'gen3_top_fitness': 1.0, 'gen2_chaotic_rules': 38, 'gen3_chaotic_rules': 0}`
 

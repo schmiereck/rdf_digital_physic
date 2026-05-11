@@ -3188,3 +3188,71 @@ cooperative.
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 2, 'is_bit_conserving': False, 'net_displacement': 0.0, 'object_period': 1, 'bit_count_max': 10, 'bit_count_min': 2}`
 
+
+---
+```yaml
+cached_tokens: 61247
+campaign: Phase 3 - Second W=3 Rule
+cost_usd: 0.09179
+hypothesis: 'search-next-w3-rule: The second valid W=3 kernel produces a rule that
+  supports at least one stable, bit-conserving, non-trivial 3-bit object.'
+input_tokens: 67366
+iter: 58
+metrics:
+  kernel_A: 11
+  kernel_B: 14
+  net_displacement: 0.0
+  object_period: 1
+  patterns_checked: 1
+output_tokens: 1598
+status: ok
+```
+
+## iter_058: search-next-w3-rule: The second valid W=3 kernel produces a rule that supports at least one stable, bit-conserving, non-trivial 3-bit object.
+
+**Analysis:** The research is fundamentally blocked. The campaign to find or build a moving particle ("glider") under the current W=3 rule (from kernel A=7, B=14) has failed conclusively.
+- Iter_052 & iter_054: Exhaustive searches proved no monolithic 3-bit or 4-bit gliders exist. The rule only produces stationary "still lifes".
+- Iter_055, 056, 057: Attempts to build a composite "molecular" glider by arranging stable 3-bit still lifes in symmetric and asymmetric configurations all failed, resulting in either larger still lifes or destructive, non-bit-conserving decay.
+
+The evidence strongly suggests the current rule is a dead end for producing motion. The most logical and scientifically sound path forward is to abandon this rule and test the *next* valid rule candidate from our established formal search method. This involves finding the second valid W=3 kernel and probing its dynamics.
+
+**Task:** This is a two-part task: first find the next valid kernel, then test it.
+
+**Part 1: Find the Second W=3 Kernel**
+1. Create a script `src/find_next_w3_kernel.py`.
+2. This script must search for state-pairs `(A, B)` at Hamming Weight 3 that satisfy all four established conditions: Center-Bit Flip, Disjoint Orbits, Conflict-Free Closure, and Contiguity.
+3. The script must find and **ignore** the first valid kernel (`A=7, B=14`) and then find and report the **second** valid kernel.
+4. The script should print the integers and binary strings for this second kernel pair to stdout for verification.
+
+**Part 2: Generate Rule and Search for Objects**
+1. Create a script `src/generate_and_search_w3.py`.
+2. This script must programmatically take the new kernel pair `(A2, B2)` from Part 1 as input.
+3. It must generate the full 6-fold symmetric rule and save it to `src/symmetric_rule_w3_next.json`.
+4. It must then systematically test all 11 unique, contiguous 3-bit seeds for stability under this new rule.
+5. For each seed, simulate for up to 200 steps, checking for bit-conservation and cyclic behavior.
+6. The script should stop as soon as it finds the *first* stable object (still life, oscillator, or glider).
+7. The script's final action must be to create `archive/iter_058/result.yaml` with the results of the search.
+
+**YAML Output for iter_058:**
+- `kernel_A`: The integer `A2` used.
+- `kernel_B`: The integer `B2` used.
+- `object_found`: `true` if a stable 3-bit object was found, `false` otherwise.
+- `patterns_checked`: The number of 3-bit seeds tested before finding an object.
+- `object_type`: `STILL_LIFE`, `OSCILLATOR`, or `GLIDER`.
+- `object_period`: The period of the found object.
+- `net_displacement`: The net displacement of the object's center of mass over one period.
+
+**Status:** ok
+
+**Experimenter view:** The second valid W=3 kernel is (A=11, B=14) in LSB encoding.
+A=11 ('0001011') encodes {center, E, SW} — a non-contiguous-arc pattern where two
+neighbors span the center. B=14 ('0001110') encodes {E, SE, SW} — the same B-orbit
+as the first kernel (A=7, B=14). The two kernels share the B-orbit but differ in A.
+The rule is a bit-conserving involution with 12 non-identity state mappings.
+The very first 3-bit seed tested — a straight NE-line [(0,0),(0,1),(0,2)] — is
+immediately a STILL_LIFE (period=1, no displacement). This confirms the hypothesis:
+the second W=3 kernel supports a stable, bit-conserving, non-trivial 3-bit still life.
+
+
+**Metrics:** `{'kernel_A': 11, 'kernel_B': 14, 'patterns_checked': 1, 'object_period': 1, 'net_displacement': 0.0}`
+
