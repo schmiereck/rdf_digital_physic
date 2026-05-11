@@ -3,68 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61233
-campaign: Phase 3 - W=3 Cyclic Rules
-cost_usd: 0.09326
-hypothesis: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving,
-  3-bit glider.
-input_tokens: 68088
-iter: 63
-metrics:
-  glider_found: 0
-  glider_period: 0
-  patterns_checked: 11
-  stable_oscillators_found: 6
-  stable_still_lifes_found: 5
-output_tokens: 1494
-status: experiment_failed
-```
-
-## iter_063: The 3-cycle rule (A=7,B=11,C=14) supports at least one stable, bit-conserving, 3-bit glider.
-
-**Analysis:** The previous iteration (iter_062) was a successful first step into a new class of rules. It confirmed that our new 3-cycle rule (from kernel A=7, B=11, C=14) supports at least one stable, bit-conserving 3-bit object. However, the search was designed to stop at the first object found, which happened to be a stationary "still life."
-
-This leaves the most critical question unanswered: can this new, more complex rule produce motion? We are in the same position as we were with previous rules after finding their first still life (e.g., iter_051, iter_058). The next logical and minimal step is to complete the characterization of the rule's 3-bit dynamics by performing an *exhaustive* search over all possible contiguous 3-bit patterns, specifically looking for a "glider."
-
-**Task:** Create a new script, `src/find_gliders_3cycle.py`, to perform an exhaustive search for moving 3-bit objects under the new rule.
-
-1. **Load Rule:** Load the symmetric 3-cycle W=3 rule from `src/symmetric_rule_w3_3cycle.json`.
-
-2. **Generate Seeds:** Generate all 11 unique, contiguous 3-bit patterns (trihexes).
-
-3. **Test Each Seed:** For each of the 11 seeds:
-    a. Initialize a grid (e.g., 50x50) with the pattern.
-    b. Simulate for at least 300 steps to robustly detect cycles and movement.
-    c. At each step, verify that the bit count remains exactly 3. If it deviates, the seed is unstable; log this and continue.
-    d. If the bit count is stable, track the history of the pattern's configuration to detect a cycle.
-    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
-
-4. **Report Results:** The script should test all 11 patterns and then create `archive/iter_063/result.yaml` with a summary of the findings.
-
-5. **YAML Output:** The `result.yaml` must contain these keys:
-    - `glider_found`: `true` if a glider was found, otherwise `false`.
-    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested (should be 11).
-    - `stable_still_lifes_found`: The count of stable period-1 objects.
-    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
-    - `glider_period`: The integer period of the first glider found (or 0).
-    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
-    - `glider_seed_coords`: The initial coordinates of the seed that produced the first glider found.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The 3-cycle rule (A=7, B=11, C=14) supports a rich set of stable 3-bit objects —
-all 11 unique seeds are bit-conserving and reach a cycle — but none translate spatially.
-The pattern is uniformly period-2 oscillators or still lifes: the rule appears to be
-too symmetric or too conservative at the 3-bit scale to produce translational motion.
-A glider search at 4-bit may be more promising, as prior rules (A=11, B=14) did produce
-gliders at 4 bits but not 3.
-
-
-**Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 5, 'stable_oscillators_found': 6, 'glider_found': 0, 'glider_period': 0}`
-
-
----
-```yaml
 cached_tokens: 61036
 campaign: Phase 3 - W=3 Cyclic Rules
 cost_usd: 0.09185
@@ -2079,4 +2017,81 @@ stability-evolved population.
 
 
 **Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'rules_decayed': 16, 'rules_still_life': 84}`
+
+
+---
+```yaml
+cached_tokens: 66144
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10357
+hypothesis: 'multi-seed-evaluation: The Gen-3 population contains at least one rule
+  with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit
+  seeds.'
+input_tokens: 74237
+iter: 93
+metrics:
+  rules_evaluated: 100
+  rules_with_motion: 0
+  seeds_per_rule: 21
+  top_fitness_score: 0.0
+  total_evaluations: 2100
+output_tokens: 1654
+status: experiment_failed
+```
+
+## iter_093: multi-seed-evaluation: The Gen-3 population contains at least one rule with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
+
+**Analysis:** The research is fundamentally blocked. The evolutionary search, our last resort after formal methods failed, has stalled. A validated, motion-centric fitness metric (`displacement / (1 + final_bit_count)`) was developed in iter_090. However, applying it to both a random population (iter_091) and a population evolved for stability (iter_092) found zero gliders.
+
+A critical flaw in the current evaluation process is the use of a single, arbitrary seed (a 4-bit T-shape) to determine a rule's fitness. A rule might support gliders from one seed but not another. Discarding an entire population based on a single seed's outcome is not robust.
+
+The most logical and minimal next step is to improve the evaluation protocol. Instead of testing a single seed, we must test each rule against a comprehensive suite of simple seeds and take the best outcome as its score. This will definitively determine if the stability-evolved Gen-3 population is truly devoid of simple gliders, or if our previous evaluation was simply too narrow.
+
+**Task:** Create a new script, `src/run_multiseed_motion_evaluation.py`.
+
+**1. Load Population:**
+- The script must load all 100 rules from the Gen-3 population located in `archive/iter_088/population/`.
+
+**2. Define Seed Suite:**
+- The script must define a standard suite of 21 seeds: all 11 unique contiguous 3-bit trihexes and all 10 unique one-sided contiguous 4-bit tetrahexes.
+
+**3. Evaluate Population with Multi-Seed Metric:**
+- For each of the 100 rules:
+  a. Initialize a `max_fitness_for_rule` to 0.0.
+  b. Iterate through each of the 21 seeds.
+  c. For each seed, calculate its motion fitness using the standard procedure:
+     - Initialize a 150x150 grid with the seed.
+     - Simulate for 500 steps, detecting cycles.
+     - If a stable object is found, calculate `fitness = displacement / (1 + final_bit_count)`.
+     - If no stable object is found (decay, chaos, timeout), fitness is 0.
+  d. Update `max_fitness_for_rule = max(max_fitness_for_rule, fitness)`.
+  e. The final score for the rule is `max_fitness_for_rule`.
+
+**4. Report Results:**
+- Save the final score and best-performing seed for each rule to `archive/iter_093/results/gen3_multiseed_scores.csv`.
+- Create `archive/iter_093/result.yaml` summarizing the findings, with keys:
+  - `rules_with_motion`: Count of rules with a final fitness score > 0.
+  - `top_fitness_score`: The highest score found.
+  - `top_rule_id`: The filename of the best rule.
+  - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider (e.g., "4-bit T-shape").
+  - `top_rule_glider_period`: Period of the best glider.
+  - `top_rule_glider_bit_count`: Final bit count of the best glider.
+  - `top_rule_glider_velocity`: The (dq, dr) velocity of the best glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The hypothesis is falsified — zero of the 100 Gen-3 rules achieve non-zero
+motion fitness across all 21 standard seeds (11 fixed trihexes + 10 one-sided
+tetrahexes). This is fully consistent with iter_089 (which tested the top
+non-annihilating rule against all 21 seeds: only still-lifes and decay) and
+iter_092 (which tested all 100 rules against the T-shape: 84 still-lifes,
+16 decays, 0 gliders). The Gen-3 population was bred under a stability/
+annihilation fitness pressure that is mechanistically opposed to sustained
+motion. Expanding the seed suite from 1 seed to 21 seeds does not rescue
+any rule. To find glider-capable rules, a population must be evolved directly
+under the motion-based fitness metric (as started in iter_091) rather than
+repurposing stability-evolved rules.
+
+
+**Metrics:** `{'rules_evaluated': 100, 'seeds_per_rule': 21, 'total_evaluations': 2100, 'rules_with_motion': 0, 'top_fitness_score': 0.0}`
 
