@@ -918,3 +918,71 @@ hypothesis is not supported by this rule formulation.
 
 **Metrics:** `{'final_bit_count_single': 1, 'final_bit_count_two': 1, 'is_nontrivial_motion': False, 'steps_run': 100, 'grid_size': 50}`
 
+
+---
+```yaml
+cached_tokens: 43201
+cost_usd: 0.0711
+hypothesis: 'symmetric-update: A symmetric swap-based update model, combined with
+  a conditional rule, can produce a non-trivial, localized 2D particle.'
+input_tokens: 47498
+iter: 20
+metrics:
+  control_bit_count_final: 1
+  grid_size: 50
+  oscillator_period: 2
+  steps: 100
+  test_bit_count_final: 2
+output_tokens: 1739
+status: ok
+```
+
+## iter_020: symmetric-update: A symmetric swap-based update model, combined with a conditional rule, can produce a non-trivial, localized 2D particle.
+
+**Analysis:** Phase 3 is blocked. All 2D experiments so far (iter_016, iter_017, iter_019) have failed to produce a truly local particle. Simple, unconditional rules result in trivial global grid shifts, not a particle moving through a static background. Our last attempt (iter_019) with a conditional rule failed because the standard Cellular Automaton (CA) update mechanism cannot implement a symmetric, bit-conserving swap between two cells. The update is local to the destination cell, causing one bit to be overwritten and lost.
+
+This is a fundamental methodological roadblock. Before we can test more complex rules, we must first fix the underlying update model to support the kind of local, reversible interactions required by the project's physics. The failure in iter_019 was not in the rule's logic, but in its execution.
+
+The most direct way to resolve this is to implement a symmetric update mechanism that guarantees bit-conservation for swap operations. We will then re-test a conditional swap rule, which is the simplest rule that could break the translational symmetry that causes the trivial global shifts.
+
+**Task:** Modify `src/simulate_hex.py` to use a new, symmetric update scheduler.
+
+1.  **New Update Mechanism ("Symmetric Swap"):**
+    - The simulation step should no longer compute a new state for each cell from scratch. Instead, it will apply swaps to the existing grid state.
+    - To avoid conflicting operations, only one cell in a potential swap pair should initiate the action. A simple convention is that a cell `c` can only initiate a swap with a neighbor `n` if `c`'s index/coordinates are less than `n`'s.
+    - The main loop should iterate through all cells `c`. For each `c`, it will evaluate a rule. The rule's output determines *if and with which neighbor* `c` should swap its state. If the rule says to swap with neighbor `n` (and `c < n`), the states of `c` and `n` are exchanged in place.
+
+2.  **Implement Conditional Swap Rule:**
+    - The rule to evaluate for each cell `c` is: "If my neighbor `b1` (East) is '1', then I should swap with my neighbor `b2` (South-East)."
+    - Note: This rule is evaluated from the perspective of cell `c`. The swap itself is a symmetric operation on the grid.
+
+3.  **Run Two Simulations (for 100 steps on a 50x50 grid):**
+    - **Sim 1 (Test):** Initial state is a two-bit pattern. Place a '1' at the grid center `(q,r)` and another '1' at its neighbor `b1` `(q+1, r)`.
+    - **Sim 2 (Control):** Initial state is a single '1' at the grid center.
+
+4.  **Outputs:**
+    - Create `archive/iter_020/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if both simulations maintained their initial bit counts.
+      - `control_behavior`: Behavior of the single-bit simulation (`STATIONARY` or `MOVED`).
+      - `test_behavior`: Behavior of the two-bit simulation (`GLIDER`, `OSCILLATOR`, `STATIONARY`, `DECAY`).
+      - `is_nontrivial_motion`: `true` only if `control_behavior` is `STATIONARY` AND `test_behavior` is `GLIDER` or `OSCILLATOR`. This is the primary success criterion.
+      - `final_pattern_test`: A string representation of the final coordinates of the '1's in the test simulation.
+
+**Status:** ok
+
+**Experimenter view:** The symmetric swap scheduler produces clean, deterministic behavior.
+The single bit is truly stationary: the rule fires for the cell to
+its West (which has the single 1 as its East neighbor), but that
+cell's swap target holds a 0, so the swap is a 0↔0 no-op.
+The two-bit seed {center, East} yields a strict period-2 oscillator
+anchored near the initial location: it toggles between
+{(25,25),(26,25)} and {(26,24),(26,25)} on every step.
+The two bits never drift — the oscillator is purely stationary.
+This confirms the hypothesis partially: a symmetric swap rule does
+produce a non-trivial localized particle (oscillator), but not a
+glider with net translational motion. The asymmetry needed for
+a true glider is absent in this rule/seed combination.
+
+
+**Metrics:** `{'control_bit_count_final': 1, 'test_bit_count_final': 2, 'oscillator_period': 2, 'steps': 100, 'grid_size': 50}`
+

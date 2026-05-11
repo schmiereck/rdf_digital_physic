@@ -3,74 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 43201
-cost_usd: 0.0711
-hypothesis: 'symmetric-update: A symmetric swap-based update model, combined with
-  a conditional rule, can produce a non-trivial, localized 2D particle.'
-input_tokens: 47498
-iter: 20
-metrics:
-  control_bit_count_final: 1
-  grid_size: 50
-  oscillator_period: 2
-  steps: 100
-  test_bit_count_final: 2
-output_tokens: 1739
-status: ok
-```
-
-## iter_020: symmetric-update: A symmetric swap-based update model, combined with a conditional rule, can produce a non-trivial, localized 2D particle.
-
-**Analysis:** Phase 3 is blocked. All 2D experiments so far (iter_016, iter_017, iter_019) have failed to produce a truly local particle. Simple, unconditional rules result in trivial global grid shifts, not a particle moving through a static background. Our last attempt (iter_019) with a conditional rule failed because the standard Cellular Automaton (CA) update mechanism cannot implement a symmetric, bit-conserving swap between two cells. The update is local to the destination cell, causing one bit to be overwritten and lost.
-
-This is a fundamental methodological roadblock. Before we can test more complex rules, we must first fix the underlying update model to support the kind of local, reversible interactions required by the project's physics. The failure in iter_019 was not in the rule's logic, but in its execution.
-
-The most direct way to resolve this is to implement a symmetric update mechanism that guarantees bit-conservation for swap operations. We will then re-test a conditional swap rule, which is the simplest rule that could break the translational symmetry that causes the trivial global shifts.
-
-**Task:** Modify `src/simulate_hex.py` to use a new, symmetric update scheduler.
-
-1.  **New Update Mechanism ("Symmetric Swap"):**
-    - The simulation step should no longer compute a new state for each cell from scratch. Instead, it will apply swaps to the existing grid state.
-    - To avoid conflicting operations, only one cell in a potential swap pair should initiate the action. A simple convention is that a cell `c` can only initiate a swap with a neighbor `n` if `c`'s index/coordinates are less than `n`'s.
-    - The main loop should iterate through all cells `c`. For each `c`, it will evaluate a rule. The rule's output determines *if and with which neighbor* `c` should swap its state. If the rule says to swap with neighbor `n` (and `c < n`), the states of `c` and `n` are exchanged in place.
-
-2.  **Implement Conditional Swap Rule:**
-    - The rule to evaluate for each cell `c` is: "If my neighbor `b1` (East) is '1', then I should swap with my neighbor `b2` (South-East)."
-    - Note: This rule is evaluated from the perspective of cell `c`. The swap itself is a symmetric operation on the grid.
-
-3.  **Run Two Simulations (for 100 steps on a 50x50 grid):**
-    - **Sim 1 (Test):** Initial state is a two-bit pattern. Place a '1' at the grid center `(q,r)` and another '1' at its neighbor `b1` `(q+1, r)`.
-    - **Sim 2 (Control):** Initial state is a single '1' at the grid center.
-
-4.  **Outputs:**
-    - Create `archive/iter_020/result.yaml` with the following keys:
-      - `is_bit_conserving`: `true` if both simulations maintained their initial bit counts.
-      - `control_behavior`: Behavior of the single-bit simulation (`STATIONARY` or `MOVED`).
-      - `test_behavior`: Behavior of the two-bit simulation (`GLIDER`, `OSCILLATOR`, `STATIONARY`, `DECAY`).
-      - `is_nontrivial_motion`: `true` only if `control_behavior` is `STATIONARY` AND `test_behavior` is `GLIDER` or `OSCILLATOR`. This is the primary success criterion.
-      - `final_pattern_test`: A string representation of the final coordinates of the '1's in the test simulation.
-
-**Status:** ok
-
-**Experimenter view:** The symmetric swap scheduler produces clean, deterministic behavior.
-The single bit is truly stationary: the rule fires for the cell to
-its West (which has the single 1 as its East neighbor), but that
-cell's swap target holds a 0, so the swap is a 0↔0 no-op.
-The two-bit seed {center, East} yields a strict period-2 oscillator
-anchored near the initial location: it toggles between
-{(25,25),(26,25)} and {(26,24),(26,25)} on every step.
-The two bits never drift — the oscillator is purely stationary.
-This confirms the hypothesis partially: a symmetric swap rule does
-produce a non-trivial localized particle (oscillator), but not a
-glider with net translational motion. The asymmetry needed for
-a true glider is absent in this rule/seed combination.
-
-
-**Metrics:** `{'control_bit_count_final': 1, 'test_bit_count_final': 2, 'oscillator_period': 2, 'steps': 100, 'grid_size': 50}`
-
-
----
-```yaml
 cached_tokens: 44307
 cost_usd: 0.07059
 hypothesis: 'composite-rule: A rule combining two conditional swaps produces a stable,
@@ -1873,4 +1805,71 @@ The search also confirms that out of 11 unique trihex topologies, at least
 
 
 **Metrics:** `{'object_found': True, 'patterns_checked': 1, 'object_period': 1, 'total_unique_seeds_available': 11}`
+
+
+---
+```yaml
+cached_tokens: 61383
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.10202
+hypothesis: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving,
+  3-bit glider.
+input_tokens: 70563
+iter: 52
+metrics:
+  glider_found: false
+  glider_period: 0
+  patterns_checked: 11
+  stable_oscillators_found: 0
+  stable_still_lifes_found: 3
+output_tokens: 1541
+status: experiment_failed
+```
+
+## iter_052: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, 3-bit glider.
+
+**Analysis:** The previous iteration (iter_051) was a success and a critical step forward. By systematically searching, we confirmed that our new W=3 rule (from kernel A=7, B=14) supports a stable, bit-conserving, 3-bit object. Specifically, we found a "still life"—a stationary pattern with a period of 1. This is the first time we have a stable "particle" within a fully symmetric, principled rule system.
+
+This partially unblocks the research. The goal of Phase 3 is to observe interactions, and we now have a valid target (the still life). However, we still lack a projectile. To stage a collision, we need a moving object, or "glider." The search in iter_051 was programmed to stop at the first stable object it found, which happened to be stationary. The crucial open question is whether the same rule also supports objects that move.
+
+The most logical and minimal next step is to continue the systematic search started in iter_051, but this time, to look specifically for a glider.
+
+**Task:** Create a new script, `src/find_w3_glider.py`, to systematically search for moving objects.
+
+1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+
+2. **Generate Seeds:** Generate all 11 unique, contiguous 3-bit patterns (as identified in iter_051's `total_unique_seeds_available`).
+
+3. **Test Each Seed:** For each of the 11 seeds:
+    a. Initialize a small grid (e.g., 50x50) with the pattern.
+    b. Simulate for a sufficient number of steps to detect a cycle (e.g., 100 steps).
+    c. At each step, verify that the bit count remains exactly 3. If it deviates, the seed is unstable; discard and continue.
+    d. If bit count is stable, track the history of the pattern's coordinates to detect a cycle.
+    e. If a cycle is detected, calculate the net displacement of the pattern's center of mass over one full period.
+
+4. **Report Results:** The script should run through all 11 patterns and report on all stable objects found. The primary success is finding an object with a non-zero net displacement.
+
+5. **Output:** Create `archive/iter_052/result.yaml` with the following keys:
+    - `glider_found`: `true` if a glider was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested (should be 11).
+    - `stable_still_lifes_found`: The count of stable period-1 objects.
+    - `stable_oscillators_found`: The count of stable period > 1 objects with zero displacement.
+    - `glider_period`: The integer period of the found glider (or 0).
+    - `glider_velocity_hex`: A tuple `(dq, dr)` for the glider's velocity per step (or `(0,0)`).
+    - `glider_seed_coords`: The initial coordinates of the seed that produced the glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** All 11 unique contiguous 3-bit hex patterns were tested on an infinite sparse grid for
+up to 200 steps. Three of the seeds (all collinear arrangements — in the E, NE, and SE
+directions) are period-1 still lifes that are stable and bit-conserving. The remaining
+8 seeds (all bent/L-shaped and triangular arrangements) immediately lose the 3-bit count
+and are unstable. No seed produced an oscillator or glider. The hypothesis that the W=3
+rule (A=7, B=14) supports a 3-bit glider is falsified by exhaustive search. The
+stability is highly selective: only perfectly aligned triplets survive, and they do not
+move. To find gliders in this rule, one would need to search higher bit counts (4+) or
+consider composite objects formed by interactions of still lifes.
+
+
+**Metrics:** `{'patterns_checked': 11, 'stable_still_lifes_found': 3, 'stable_oscillators_found': 0, 'glider_found': False, 'glider_period': 0}`
 
