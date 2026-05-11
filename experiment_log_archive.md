@@ -1115,3 +1115,63 @@ stable fixed point.
 
 **Metrics:** `{'is_bit_conserving': True, 'final_bit_count_test': 3, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0}`
 
+
+---
+```yaml
+cached_tokens: 47115
+cost_usd: 0.07062
+hypothesis: 'asymmetric-rule: An asymmetric swap rule (if East=1, swap Center<->NW)
+  produces a stable, non-trivial 2D glider from a two-bit seed.'
+input_tokens: 51050
+iter: 23
+metrics:
+  final_bit_count_test: 2
+  glider_velocity_dq: 0.0
+  glider_velocity_dr: 0.0
+  is_bit_conserving: true
+  is_nontrivial_motion: false
+output_tokens: 1488
+status: experiment_failed
+```
+
+## iter_023: asymmetric-rule: An asymmetric swap rule (if East=1, swap Center<->NW) produces a stable, non-trivial 2D glider from a two-bit seed.
+
+**Analysis:** We are fundamentally blocked on the primary goal of Phase 3: creating a non-trivial, moving 2D particle (a glider). All attempts so far have produced either trivial global grid shifts (iter_017), stationary oscillators (iter_020, iter_021), or stable fixed points (iter_022).
+
+The breakthrough in iter_020 gave us a robust, bit-conserving "symmetric swap" update mechanism. However, subsequent experiments showed that both complex symmetric rules (iter_021) and asymmetric initial seeds (iter_022) are insufficient to induce motion. They are too symmetric and self-locking. The common thread in these failures is that the rule's *action* is spatially coupled to its *condition* in a way that creates a stable bounce or lock.
+
+The most direct and logical next step is to break this coupling by making the rule's action spatially distant and asymmetric from its trigger condition. This is the one variable we have not yet systematically tested. We will test a rule where the trigger condition (neighbor East=1) causes a swap with a completely different neighbor (North-West). This creates a "push" rather than a "bounce," which is our best current theory for how to generate directed motion.
+
+**Task:** Use the existing script `src/simulate_hex.py` with the symmetric swap update model. No changes to the simulation logic are needed.
+
+1.  **Implement New Rule:** Modify the rule evaluated by each cell `c`.
+    - The rule is: "If my neighbor `b1` (East) is '1', then I initiate a swap with my neighbor `b6` (North-West)."
+    - This is the only swap condition. If `b1` is '0', the rule is a no-op for cell `c`.
+
+2.  **Test Simulation Initial Condition:**
+    - On a 50x50 grid, initialize two cells with '1's:
+      - The center cell `c = (25, 25)`
+      - Its East neighbor `b1 = (26, 25)`
+    - This two-bit seed is designed to trigger the rule from the first step.
+
+3.  **Control Simulation:**
+    - Run the standard control: a single '1' at the grid center.
+
+4.  **Execution & Output:**
+    - Run both simulations for 100 steps.
+    - Create `archive/iter_023/result.yaml` with the usual keys: `is_bit_conserving`, `control_behavior`, `test_behavior`, `is_nontrivial_motion`, `final_bit_count_test`, and `glider_velocity_hex`.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The asymmetric rule (if East=1, swap Center<->NW) produces a stable period-2
+oscillator rather than a glider. One bit locks in place at (26,25) because its
+own East neighbor is always 0, while the other bit is repeatedly pulled back to
+(25,25) when it wanders to (24,26) — the returning step is triggered by (25,25)
+having East=(26,25)=1 and swapping back with NW=(24,26). The opposite directions
+of the rule's trigger (East) and action (NW) create a restoring force rather than
+directed propagation. A glider likely requires the swap direction to be consistent
+with a propagation axis, or a multi-bit seed that breaks the simple 2-cycle.
+
+
+**Metrics:** `{'is_bit_conserving': True, 'is_nontrivial_motion': False, 'final_bit_count_test': 2, 'glider_velocity_dq': 0.0, 'glider_velocity_dr': 0.0}`
+
