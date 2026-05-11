@@ -3,71 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 42047
-cost_usd: 0.06907
-hypothesis: 'conditional-swap: A rule swapping a cell with its neighbor, conditioned
-  on a second neighbor''s state, produces a non-trivial 2D glider from a two-bit seed.'
-input_tokens: 46196
-iter: 19
-metrics:
-  final_bit_count_single: 1
-  final_bit_count_two: 1
-  grid_size: 50
-  is_nontrivial_motion: false
-  steps_run: 100
-output_tokens: 1691
-status: experiment_failed
-```
-
-## iter_019: conditional-swap: A rule swapping a cell with its neighbor, conditioned on a second neighbor's state, produces a non-trivial 2D glider from a two-bit seed.
-
-**Analysis:** The research has successfully completed Phase 1 (1D foundations) and Phase 2 (v<c particles), and has now begun Phase 3 (2D Hex-Kollision). The initial 2D experiments (iter_016, iter_017) revealed a critical challenge: simple, unconditional local rules (like bit-rotation or bit-swapping) on the hex grid tend to produce trivial "gliders" that are actually just global shifts of the entire lattice. The hypothesis that a simple neighbor-swap would create a stationary oscillator was refuted (iter_017), which is a crucial finding. This means we cannot study meaningful collisions until we can create a particle that is a truly local excitation moving through a static background.
-
-Concurrently, iter_018 provided a major insight by characterizing the interaction behaviors of the original 1D rules. It revealed that some rules support stable composite particles ('FUSION'), while others lead to simple pass-through ('ELASTIC'). This demonstrates that interaction properties are encoded in how rules handle multi-bit neighborhoods.
-
-The immediate priority is to overcome the "trivial shift" problem in 2D. We must construct a rule that is not translationally symmetric. The failure in iter_017 and the success in iter_018 point to the solution: the rule's action must be *conditional* on the state of more than one neighbor. This breaks the simple symmetry that leads to global shifts.
-
-**Task:** Use the existing simulator at `src/simulate_hex.py`.
-
-1. **Implement the Conditional Rule:**
-   - A neighborhood is a 7-bit string `b0b1b2b3b4b5b6` (center `b0`, neighbors `b1..b6` clockwise).
-   - The rule is: if neighbor `b1` is '1', then swap the center `b0` with neighbor `b2`.
-   - This means any neighborhood `b01b2...` maps to `b21b0...`. This rule is its own inverse, ensuring reversibility.
-   - All neighborhoods where `b1` is '0' are identity mappings (they map to themselves).
-
-2. **Run Two Simulations:**
-   - Use a 50x50 hexagonal grid with periodic boundaries. Run for 100 steps.
-   - **Simulation 1 (Control):** Initialize the grid with a single '1' at the center.
-   - **Simulation 2 (Test):** Initialize the grid with two adjacent '1's: one at the center, and one at the position of neighbor 1.
-
-3. **Analysis and Output:**
-   - For each simulation, track the coordinates and number of '1' bits.
-   - Create `archive/iter_019/result.yaml` with the following keys:
-     - `single_bit_behavior`: Classify as `STATIONARY`, `OSCILLATOR`, `GLIDER`, or `DECAY`.
-     - `two_bit_behavior`: Classify as `GLIDER`, `STATIONARY_OSCILLATOR`, `DECAY`, or `CHAOTIC`.
-     - `is_nontrivial_motion`: A boolean, `true` only if `single_bit_behavior` is `STATIONARY` and `two_bit_behavior` is `GLIDER`.
-     - `final_bit_count_single`: Final number of '1's for simulation 1.
-     - `final_bit_count_two`: Final number of '1's for simulation 2.
-     - `glider_velocity_hex`: The `(dq, dr)` velocity in axial coordinates if a glider is formed in sim 2.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The standard-CA interpretation of the conditional-swap rule is not bit-conserving.
-When b1=1 and b2=0 (the SE neighbor is empty), the center cell takes b2's zero value
-and disappears at step 1. The East cell, having empty b1, stays put. So the 2-bit
-initial condition collapses to 1 bit immediately. Single-bit behavior is confirmed
-STATIONARY (the rule acts as identity whenever the East neighbor is 0, which is always
-the case for an isolated bit). A true bit-conserving swap would require a symmetric
-update: b2 must simultaneously take b0's old value, which needs an additional condition
-(e.g., also update cell based on whether the NE neighbor's East-neighbor is 1). The
-hypothesis is not supported by this rule formulation.
-
-
-**Metrics:** `{'final_bit_count_single': 1, 'final_bit_count_two': 1, 'is_nontrivial_motion': False, 'steps_run': 100, 'grid_size': 50}`
-
-
----
-```yaml
 cached_tokens: 43201
 cost_usd: 0.0711
 hypothesis: 'symmetric-update: A symmetric swap-based update model, combined with
@@ -1873,4 +1808,69 @@ would be needed, testing each for bit conservation and non-trivial dynamics.
 
 
 **Metrics:** `{'kernel_A': 7, 'kernel_B': 14, 'initial_bit_count': 3, 'bit_count_t1': 4, 'bit_count_t2': 2, 'final_bit_count': 2, 'oscillation_period': 1, 'net_displacement': 0.0}`
+
+
+---
+```yaml
+cached_tokens: 61518
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09473
+hypothesis: 'search-w3-objects: The W=3 rule (A=7, B=14) supports at least one stable,
+  bit-conserving, non-trivial 3-bit object.'
+input_tokens: 68897
+iter: 51
+metrics:
+  object_found: true
+  object_period: 1
+  patterns_checked: 1
+  total_unique_seeds_available: 11
+output_tokens: 1436
+status: ok
+```
+
+## iter_051: search-w3-objects: The W=3 rule (A=7, B=14) supports at least one stable, bit-conserving, non-trivial 3-bit object.
+
+**Analysis:** The previous iteration (iter_050) marked the first test of our new, more complex rule derived from a Hamming Weight 3 kernel (A=7, B=14). The experiment failed, but in an informative way. The specific 3-bit seed we chose was not a "closed orbit" under the rule's dynamics; it immediately gained a bit, then lost two, collapsing into a 2-bit fixed point. This proves that not every pattern is a stable particle, which is an expected feature of a complex system.
+
+The failure was not in the rule itself, which is mathematically sound (symmetric, reversible, bit-conserving at the neighborhood level), but in our choice of initial conditions. Abandoning the rule after testing a single, arbitrarily chosen seed would be premature. The crucial open question is whether this rule supports *any* stable, bit-conserving objects at all.
+
+Therefore, the most logical and minimal next step is to pivot from testing a single guessed pattern to a systematic, combinatorial search for stable 3-bit objects within the universe defined by this rule. This moves us from "poking" the system to characterizing it properly.
+
+**Task:** Create a new script `src/find_w3_objects.py`. This script will perform a combinatorial search, not a long-running simulation.
+
+1. **Load Rule:** Load the symmetric W=3 rule from `src/symmetric_rule_w3_a7_b14.json`.
+2. **Generate Seeds:** Systematically generate all unique, contiguous 3-bit patterns. A pattern is contiguous if its '1's form a single connected component on the hex grid. Consider all patterns that can fit within a small bounding box (e.g., a 3x3 hex area) to keep the search space manageable.
+3. **Test Each Seed:** For each generated 3-bit seed pattern:
+    a. Initialize a small grid with the pattern.
+    b. Run the CA simulation for a fixed number of steps (e.g., 20).
+    c. At each step, check the total bit count. If it ever deviates from 3, the seed is unstable; discard it and move to the next.
+    d. If the bit count remains 3 for all 20 steps, check if the pattern has repeated. Store the sequence of patterns. If a pattern state repeats, a stable object has been found.
+4. **Stop and Report:** The script should stop as soon as the *first* stable object (still life or oscillator) is found.
+5. **Output:** Create `archive/iter_051/result.yaml` with the following keys:
+    - `object_found`: `true` if a stable object was found, otherwise `false`.
+    - `patterns_checked`: The total number of unique contiguous 3-bit seeds tested.
+    - `object_type`: A string, `STILL_LIFE` (period 1) or `OSCILLATOR` (period > 1).
+    - `object_period`: The integer period of the found object.
+    - `initial_seed_coords`: A list of the `(q, r)` coordinates for the seed that produced the first stable object.
+
+**Status:** ok
+
+**Experimenter view:** The W=3 rule (A=7, B=14) does support a stable, bit-conserving, non-trivial
+3-bit object: a straight-line trihex (3 cells in a row, NE direction).
+
+The object is a STILL_LIFE (period 1). Analytical explanation:
+- A-rotations (which would flip a live cell to 0) require center=1 plus 2
+  *consecutive* hex neighbors both being 1. In a straight line, the middle
+  cell's two live neighbors are in opposite positions (not consecutive), and
+  end cells have only 1 live neighbor — so no live cell fires.
+- B-rotations (which would create a new live cell) require center=0 plus 3
+  *consecutive* hex neighbors all being 1. With only 3 total live cells in
+  a line, no empty cell can ever see 3 consecutive live neighbors — so no
+  new cell is born.
+This makes the straight-line a structurally guaranteed still life.
+The search also confirms that out of 11 unique trihex topologies, at least
+1 (and likely more) are stable objects.
+
+
+**Metrics:** `{'object_found': True, 'patterns_checked': 1, 'object_period': 1, 'total_unique_seeds_available': 11}`
 

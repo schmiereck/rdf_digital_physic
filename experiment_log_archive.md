@@ -853,3 +853,68 @@ rule explicitly.
 
 **Metrics:** `{'rules_tested': 22, 'elastic_collisions': 8, 'fusions': 6, 'annihilations': 0, 'chaotic_outcomes': 8, 'elastic_rule_indices': [6, 9, 13, 14, 19, 20, 23, 25], 'fusion_rule_indices': [7, 8, 12, 15, 18, 24], 'chaotic_rule_indices': [5, 10, 11, 16, 17, 21, 22, 26]}`
 
+
+---
+```yaml
+cached_tokens: 42047
+cost_usd: 0.06907
+hypothesis: 'conditional-swap: A rule swapping a cell with its neighbor, conditioned
+  on a second neighbor''s state, produces a non-trivial 2D glider from a two-bit seed.'
+input_tokens: 46196
+iter: 19
+metrics:
+  final_bit_count_single: 1
+  final_bit_count_two: 1
+  grid_size: 50
+  is_nontrivial_motion: false
+  steps_run: 100
+output_tokens: 1691
+status: experiment_failed
+```
+
+## iter_019: conditional-swap: A rule swapping a cell with its neighbor, conditioned on a second neighbor's state, produces a non-trivial 2D glider from a two-bit seed.
+
+**Analysis:** The research has successfully completed Phase 1 (1D foundations) and Phase 2 (v<c particles), and has now begun Phase 3 (2D Hex-Kollision). The initial 2D experiments (iter_016, iter_017) revealed a critical challenge: simple, unconditional local rules (like bit-rotation or bit-swapping) on the hex grid tend to produce trivial "gliders" that are actually just global shifts of the entire lattice. The hypothesis that a simple neighbor-swap would create a stationary oscillator was refuted (iter_017), which is a crucial finding. This means we cannot study meaningful collisions until we can create a particle that is a truly local excitation moving through a static background.
+
+Concurrently, iter_018 provided a major insight by characterizing the interaction behaviors of the original 1D rules. It revealed that some rules support stable composite particles ('FUSION'), while others lead to simple pass-through ('ELASTIC'). This demonstrates that interaction properties are encoded in how rules handle multi-bit neighborhoods.
+
+The immediate priority is to overcome the "trivial shift" problem in 2D. We must construct a rule that is not translationally symmetric. The failure in iter_017 and the success in iter_018 point to the solution: the rule's action must be *conditional* on the state of more than one neighbor. This breaks the simple symmetry that leads to global shifts.
+
+**Task:** Use the existing simulator at `src/simulate_hex.py`.
+
+1. **Implement the Conditional Rule:**
+   - A neighborhood is a 7-bit string `b0b1b2b3b4b5b6` (center `b0`, neighbors `b1..b6` clockwise).
+   - The rule is: if neighbor `b1` is '1', then swap the center `b0` with neighbor `b2`.
+   - This means any neighborhood `b01b2...` maps to `b21b0...`. This rule is its own inverse, ensuring reversibility.
+   - All neighborhoods where `b1` is '0' are identity mappings (they map to themselves).
+
+2. **Run Two Simulations:**
+   - Use a 50x50 hexagonal grid with periodic boundaries. Run for 100 steps.
+   - **Simulation 1 (Control):** Initialize the grid with a single '1' at the center.
+   - **Simulation 2 (Test):** Initialize the grid with two adjacent '1's: one at the center, and one at the position of neighbor 1.
+
+3. **Analysis and Output:**
+   - For each simulation, track the coordinates and number of '1' bits.
+   - Create `archive/iter_019/result.yaml` with the following keys:
+     - `single_bit_behavior`: Classify as `STATIONARY`, `OSCILLATOR`, `GLIDER`, or `DECAY`.
+     - `two_bit_behavior`: Classify as `GLIDER`, `STATIONARY_OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+     - `is_nontrivial_motion`: A boolean, `true` only if `single_bit_behavior` is `STATIONARY` and `two_bit_behavior` is `GLIDER`.
+     - `final_bit_count_single`: Final number of '1's for simulation 1.
+     - `final_bit_count_two`: Final number of '1's for simulation 2.
+     - `glider_velocity_hex`: The `(dq, dr)` velocity in axial coordinates if a glider is formed in sim 2.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The standard-CA interpretation of the conditional-swap rule is not bit-conserving.
+When b1=1 and b2=0 (the SE neighbor is empty), the center cell takes b2's zero value
+and disappears at step 1. The East cell, having empty b1, stays put. So the 2-bit
+initial condition collapses to 1 bit immediately. Single-bit behavior is confirmed
+STATIONARY (the rule acts as identity whenever the East neighbor is 0, which is always
+the case for an isolated bit). A true bit-conserving swap would require a symmetric
+update: b2 must simultaneously take b0's old value, which needs an additional condition
+(e.g., also update cell based on whether the NE neighbor's East-neighbor is 1). The
+hypothesis is not supported by this rule formulation.
+
+
+**Metrics:** `{'final_bit_count_single': 1, 'final_bit_count_two': 1, 'is_nontrivial_motion': False, 'steps_run': 100, 'grid_size': 50}`
+
