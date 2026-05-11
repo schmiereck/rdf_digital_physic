@@ -1,0 +1,307 @@
+#!/usr/bin/env python3
+"""
+find_gliders_w3_rule2_4bit.py: Exhaustive search for moving 4-bit objects under the second W=3 rule (A=11, B=14).
+
+Tests all 10 unique one-sided tetrahex seeds (rotation-canonical; rule has C6 but not D6 symmetry)
+and classifies each stable object as still life, oscillator, or glider.
+"""
+
+import json
+import sys
+import yaml
+from itertools import combinations
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent.parent
+RULE_PATH = Path(__file__).parent / "symmetric_rule_w3_next.json"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_060" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_060" / "result.yaml"
+
+STEPS = 600
+MAX_PERIOD_SEARCH = 300
+# Search radius for non-contiguous seeds (hex distance from origin)
+NONCONTIG_RADIUS = 3
+
+# MSB encoding: bit6=center, bit5=E, bit4=SE, bit3=SW, bit2=W, bit1=NW, bit0=NE
+HEX_DIRS = [
+    ( 1,  0),   # E  (bit5)
+    ( 1, -1),   # SE (bit4)
+    ( 0, -1),   # SW (bit3)
+    (-1,  0),   # W  (bit2)
+    (-1,  1),   # NW (bit1)
+    ( 0,  1),   # NE (bit0)
+]
+
+
+def _apply_transform(q, r, t):
+    if t == 0:  return ( q,       r      )  # identity
+    if t == 1:  return (-r,       q + r  )  # 60° CCW
+    if t == 2:  return (-(q + r), q      )  # 120° CCW
+    if t == 3:  return (-q,      -r      )  # 180°
+    if t == 4:  return ( r,      -(q + r))  # 240° CCW
+    if t == 5:  return ( q + r,  -q      )  # 300° CCW
+    raise ValueError(f"Unknown transform {t}")
+
+
+def _normalize(cells):
+    sorted_cells = sorted(cells)
+    q0, r0 = sorted_cells[0]
+    return frozenset((q - q0, r - r0) for q, r in sorted_cells)
+
+
+def canonical_form_rotational(cells) -> frozenset:
+    """Canonical form under the 6 rotations only (rule lacks reflection symmetry)."""
+    best = None
+    for t in range(6):
+        transformed = [_apply_transform(q, r, t) for q, r in cells]
+        normalized = _normalize(transformed)
+        if best is None or sorted(normalized) < sorted(best):
+            best = normalized
+    return best
+
+
+def load_rule() -> dict:
+    with open(RULE_PATH) as f:
+        raw = json.load(f)
+    return {int(k): int(v) for k, v in raw.items()}
+
+
+def hex_distance(q, r):
+    return (abs(q) + abs(r) + abs(q + r)) // 2
+
+
+def is_connected(cells) -> bool:
+    cells_set = set(cells)
+    start = next(iter(cells_set))
+    visited = {start}
+    queue = [start]
+    while queue:
+        q, r = queue.pop()
+        for dq, dr in HEX_DIRS:
+            nb = (q + dq, r + dr)
+            if nb in cells_set and nb not in visited:
+                visited.add(nb)
+                queue.append(nb)
+    return len(visited) == len(cells_set)
+
+
+def get_all_contiguous_4bit_seeds():
+    """Return all 10 one-sided tetrahex patterns (rotation-canonical; rule has no reflection symmetry)."""
+    coord_range = range(-4, 5)
+    all_cells = [(q, r) for q in coord_range for r in coord_range]
+
+    seen = set()
+    seeds = []
+    for combo in combinations(all_cells, 4):
+        if not is_connected(combo):
+            continue
+        cf = canonical_form_rotational(combo)
+        if cf in seen:
+            continue
+        seen.add(cf)
+        seeds.append(sorted(cf))
+
+    return seeds
+
+
+def get_all_4bit_seeds_in_radius(radius=NONCONTIG_RADIUS):
+    """Return all unique 4-cell patterns (including non-contiguous) within hex radius,
+    deduplicated under C6 rotational symmetry."""
+    all_cells = [(q, r) for q in range(-radius, radius + 1)
+                 for r in range(-radius, radius + 1)
+                 if hex_distance(q, r) <= radius]
+
+    seen = set()
+    seeds = []
+    for combo in combinations(all_cells, 4):
+        cf = canonical_form_rotational(combo)
+        if cf in seen:
+            continue
+        seen.add(cf)
+        seeds.append(sorted(cf))
+
+    return seeds
+
+
+def neighborhood(cells_set, q, r) -> int:
+    val = (1 if (q, r) in cells_set else 0) << 6
+    for i, (dq, dr) in enumerate(HEX_DIRS):
+        val |= (1 if (q + dq, r + dr) in cells_set else 0) << (5 - i)
+    return val
+
+
+def step_cells(cells: frozenset, rule: dict) -> frozenset:
+    """One CA step on an infinite sparse grid."""
+    candidates = set(cells)
+    for q, r in cells:
+        for dq, dr in HEX_DIRS:
+            candidates.add((q + dq, r + dr))
+
+    new_cells = set()
+    for q, r in candidates:
+        nbr = neighborhood(cells, q, r)
+        mapped = rule.get(nbr, nbr)
+        if (mapped >> 6) & 1:
+            new_cells.add((q, r))
+
+    return frozenset(new_cells)
+
+
+def center_of_mass(cells):
+    n = len(cells)
+    if n == 0:
+        return (0.0, 0.0)
+    return (sum(q for q, r in cells) / n, sum(r for q, r in cells) / n)
+
+
+def test_seed_for_glider(seed_cells, rule, steps=STEPS):
+    """
+    Simulate a 4-bit seed for up to `steps` steps.
+
+    Returns dict with:
+      stable: bool
+      period: int  (0 if no cycle detected)
+      displacement: (dq, dr)
+      kind: 'still_life' | 'oscillator' | 'glider' | 'unstable' | 'no_cycle'
+    """
+    current = frozenset(seed_cells)
+    shapes = [_normalize(current)]
+    centers = [center_of_mass(current)]
+
+    for t in range(steps):
+        current = step_cells(current, rule)
+        if len(current) != 4:
+            return {"stable": False, "period": 0, "displacement": (0, 0), "kind": "unstable"}
+
+        shape = _normalize(current)
+        com = center_of_mass(current)
+
+        search_start = max(0, len(shapes) - MAX_PERIOD_SEARCH)
+        for prev_t in range(search_start, len(shapes)):
+            if shapes[prev_t] == shape:
+                period = (t + 1) - prev_t
+                dq_raw = com[0] - centers[prev_t][0]
+                dr_raw = com[1] - centers[prev_t][1]
+                dq = round(dq_raw)
+                dr = round(dr_raw)
+                is_moving = (dq != 0 or dr != 0)
+                if period == 1 and not is_moving:
+                    kind = "still_life"
+                elif is_moving:
+                    kind = "glider"
+                else:
+                    kind = "oscillator"
+                return {
+                    "stable": True,
+                    "period": period,
+                    "displacement": (dq, dr),
+                    "kind": kind,
+                    "velocity_per_step": (dq_raw / period, dr_raw / period),
+                }
+
+        shapes.append(shape)
+        centers.append(com)
+
+    return {"stable": True, "period": 0, "displacement": (0, 0), "kind": "no_cycle"}
+
+
+def main():
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    rule = load_rule()
+    print(f"Loaded rule from {RULE_PATH}: {len(rule)} entries")
+
+    # Phase 1: exhaustive contiguous (tetrahex) seeds
+    contiguous_seeds = get_all_contiguous_4bit_seeds()
+    print(f"Phase 1: {len(contiguous_seeds)} contiguous one-sided tetrahex seeds")
+
+    # Phase 2: all 4-cell patterns in radius (superset, includes non-contiguous)
+    all_seeds = get_all_4bit_seeds_in_radius(NONCONTIG_RADIUS)
+    print(f"Phase 2: {len(all_seeds)} total unique 4-cell seeds within radius={NONCONTIG_RADIUS}")
+
+    # Combine: contiguous first, then non-contiguous extras, deduped
+    contig_set = {canonical_form_rotational(tuple(s)) for s in contiguous_seeds}
+    extra_seeds = [s for s in all_seeds
+                   if canonical_form_rotational(tuple(s)) not in contig_set]
+    seeds = contiguous_seeds + extra_seeds
+    print(f"Total seeds to test: {len(seeds)} "
+          f"({len(contiguous_seeds)} contiguous + {len(extra_seeds)} extra)")
+
+    glider_found = False
+    glider_period = 0
+    glider_velocity_hex = (0, 0)
+    glider_seed_coords = []
+    stable_still_lifes = 0
+    stable_oscillators = 0
+    patterns_checked = 0
+
+    all_results = []
+
+    for seed in seeds:
+        patterns_checked += 1
+        result = test_seed_for_glider(seed, rule)
+        kind = result["kind"]
+
+        if kind in ("glider", "still_life", "oscillator"):
+            print(f"  [{patterns_checked:4d}] seed={seed}  kind={kind}  "
+                  f"period={result['period']}  displacement={result['displacement']}")
+
+        all_results.append({
+            "seed": [list(c) for c in seed],
+            "kind": kind,
+            "period": result["period"],
+            "displacement": list(result["displacement"]),
+        })
+
+        if kind == "still_life":
+            stable_still_lifes += 1
+        elif kind == "oscillator":
+            stable_oscillators += 1
+        elif kind == "glider":
+            if not glider_found:
+                glider_found = True
+                glider_period = result["period"]
+                glider_velocity_hex = result["displacement"]
+                glider_seed_coords = [list(c) for c in seed]
+            print(f"  *** GLIDER FOUND *** period={result['period']}  "
+                  f"velocity={result['displacement']}  seed={seed}")
+
+        if patterns_checked % 500 == 0:
+            print(f"  ... {patterns_checked}/{len(seeds)} checked, "
+                  f"gliders={glider_found}, still_lifes={stable_still_lifes}, "
+                  f"osc={stable_oscillators}")
+
+    print(f"\n=== Summary ===")
+    print(f"patterns_checked:         {patterns_checked}")
+    print(f"stable_still_lifes_found: {stable_still_lifes}")
+    print(f"stable_oscillators_found: {stable_oscillators}")
+    print(f"glider_found:             {glider_found}")
+    if glider_found:
+        print(f"glider_period:            {glider_period}")
+        print(f"glider_velocity_hex:      {glider_velocity_hex}")
+        print(f"glider_seed_coords:       {glider_seed_coords}")
+
+    results_path = RESULTS_DIR / "all_4bit_objects.yaml"
+    with open(results_path, "w") as f:
+        yaml.dump(all_results, f, default_flow_style=False, sort_keys=False)
+    print(f"Written: {results_path}")
+
+    yaml_result = {
+        "glider_found": bool(glider_found),
+        "patterns_checked": int(patterns_checked),
+        "stable_still_lifes_found": int(stable_still_lifes),
+        "stable_oscillators_found": int(stable_oscillators),
+        "glider_period": int(glider_period),
+        "glider_velocity_hex": list(glider_velocity_hex),
+        "glider_seed_coords": glider_seed_coords,
+    }
+
+    with open(RESULT_YAML, "w") as f:
+        yaml.dump(yaml_result, f, default_flow_style=False, sort_keys=True)
+    print(f"Written: {RESULT_YAML}")
+
+    return 0 if glider_found else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
