@@ -1,26 +1,20 @@
-Phase: Phase 3: Die 2D-Hex-Kollision (BLOCKED - Kernel Search)
+Phase: Focused Exploration (Phase 3 - Blocked)
 
-## Confirmed
-- 1D systems can support simple (v=c) and composite (v<c) particles (iter_010, iter_014).
-- A hand-crafted, non-symmetric CA rule can support a stable 2D glider (the "arrowhead," iter_024).
-- A formal method exists for finding mathematically conflict-free rule kernels (iter_033).
-- A valid kernel must have its generator states in disjoint rotational orbits (iter_036).
+**Goal:** Validate interaction logic (scattering) in a 2D hexagonal lattice. The immediate sub-goal is to create a symmetric, non-trivial rule that supports moving particles.
 
-## Refuted
-- Hand-crafted 2D rules are brittle and lack rotational symmetry, making them a dead end (iter_028, iter_029).
-- Simple local swap rules on the 2D hex grid produce trivial or stationary patterns (iter_017, iter_021, iter_023).
-- A kernel's generator states (A,B) must not be in the same rotational orbit, otherwise the resulting rule is inert (iter_035).
-- A symmetric rule whose kernel only contains center-bit=0 states cannot produce dynamics from simple seeds, as it cannot create or move '1's (iter_037).
+**Confirmed:**
+- Hand-crafted, non-symmetric rules can produce stable 2D gliders (iter_024).
+- A formal search can identify "conflict-free" kernels for generating symmetric rules (iter_033).
+- A symmetric swap-based update model guarantees bit conservation for local swaps (iter_020).
 
-## Current Best Result
-A refined, formal methodology for validating symmetric rule kernels based on three mathematical criteria (conflict-free closure, disjoint orbits, and center-bit parity).
+**Refuted:**
+- A symmetric rule generated from a kernel pair (A,B) where A and B are in the same rotational orbit is dynamically trivial (iter_035).
+- Hand-crafted rules for 2D motion often lack rotational symmetry, making them unsuitable for general physics (iter_028, iter_029).
+- Simple symmetric rules tend to produce inert or stationary patterns (fixed points/oscillators) rather than gliders (iter_021, iter_032, iter_035).
+- Simple, local, unconditional rules on the hex grid tend to produce trivial global shifts, not localized particles (iter_017).
 
-## In Progress
-- **iter_038:** Performing a combinatorial search for a rule kernel that satisfies all known criteria, including the ability to flip a cell's state.
+**Current Best Result:**
+- Arrowhead Glider: A stable 3-bit glider moving East under a non-symmetric rule (iter_024).
 
-## Open Questions
-1. Does a rule kernel exist that is conflict-free, has disjoint orbits, AND can flip the center bit?
-2. If such a kernel exists, does the resulting rule produce non-trivial dynamics (glider/oscillator)?
-3. Does a rule generated from a center-flipping kernel respect lattice symmetry?
-4. What is the full spectrum of particles and still-lifes supported by a fully valid symmetric rule?
-5. Can two particles under this rule collide non-trivially and bit-conservingly?
+**In Progress:**
+- iter_036: A formal search for a conflict-free rule kernel (A,B) where A and B belong to disjoint rotational orbits.
