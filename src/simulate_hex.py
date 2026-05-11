@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-iter_035: dynamics-symmetric
-Synchronous CA using the symmetric rule from kernel (A=3, B=6).
+iter_040: dynamics-disjoint-orbit
+Synchronous CA using the symmetric rule from kernel (A=65, B=6).
 Tests whether a 2-bit seed produces a stable oscillator or glider.
 
 Neighborhood encoding (7 bits, MSB = center):
@@ -19,9 +19,9 @@ N = 100
 STEPS = 100
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RULE_FILE = Path(__file__).parent / "symmetric_rule_A3_B6.json"
-RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_035" / "results"
-RESULT_YAML = PROJECT_ROOT / "archive" / "iter_035" / "result.yaml"
+RULE_FILE = Path(__file__).parent / "symmetric_rule_A65_B6.json"
+RESULTS_DIR = PROJECT_ROOT / "archive" / "iter_040" / "results"
+RESULT_YAML = PROJECT_ROOT / "archive" / "iter_040" / "result.yaml"
 
 HEX_DIRS = [
     ( 1,  0),  # b1: E
@@ -86,12 +86,13 @@ def main():
     rule = load_rule(RULE_FILE)
     print(f"Loaded rule from {RULE_FILE}: {len(rule)} mappings")
 
-    # 2-bit seed: place '1's at NW (49,51) and NE (50,51) of cell (50,50)
-    # so that cell (50,50) has neighborhood state A=3 ('0000011', b5=NW=1, b6=NE=1)
+    # 2-bit seed: place '1's at SE (51,49) and SW (50,49) of cell (50,50)
+    # so that cell (50,50) sees neighborhood state 24 ('0011000', b2=SE=1, b3=SW=1)
+    # which is rotate(B=6, 4) — part of the 6-fold closure of kernel (A=65, B=6)
     cq, cr = N // 2, N // 2
     grid = np.zeros((N, N), dtype=np.int8)
-    grid[(cq - 1) % N, (cr + 1) % N] = 1  # b5 = NW of (50,50) → (49,51)
-    grid[(cq + 0) % N, (cr + 1) % N] = 1  # b6 = NE of (50,50) → (50,51)
+    grid[(cq + 1) % N, (cr - 1) % N] = 1  # b2 = SE of (50,50) → (51,49)
+    grid[(cq + 0) % N, (cr - 1) % N] = 1  # b3 = SW of (50,50) → (50,49)
 
     # Verify neighborhood state at (cq, cr)
     state_center = (  int(grid[cq, cr]) << 6
@@ -103,7 +104,7 @@ def main():
         | int(grid[(cq+0)%N, (cr+1)%N]) << 0   # b6 NE
     )
     print(f"Initial 2-bit seed: {find_ones(grid)}")
-    print(f"Neighborhood state at ({cq},{cr}): {state_center} ('{state_center:07b}') — expected 3 ('0000011')")
+    print(f"Neighborhood state at ({cq},{cr}): {state_center} ('{state_center:07b}') — expected 24 ('0011000', rotate(B=6,4))")
 
     positions_history = [find_ones(grid)]
     bit_counts = [int(grid.sum())]

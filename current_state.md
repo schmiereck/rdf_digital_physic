@@ -1,20 +1,20 @@
-Phase: Focused Exploration (Phase 3 - Blocked)
+Phase: 3 - Focused Exploration (2D Hex Interactions)
+### Goal
+Observe deterministic, bit-conserving scattering in a 2D hexagonal grid.
 
-**Goal:** Validate interaction logic (scattering) in a 2D hexagonal lattice. The immediate sub-goal is to create a symmetric, non-trivial rule that supports moving particles.
+### Status
+**BLOCKED:** Inability to create a non-trivial, moving, symmetric 2D particle for use in collision experiments.
 
-**Confirmed:**
-- Hand-crafted, non-symmetric rules can produce stable 2D gliders (iter_024).
-- A formal search can identify "conflict-free" kernels for generating symmetric rules (iter_033).
-- A symmetric swap-based update model guarantees bit conservation for local swaps (iter_020).
+### Confirmed Findings
+- A symmetric swap-based update model can create localized oscillators (iter_020).
+- A hand-crafted, non-symmetric rule can produce a stable "arrowhead" glider (iter_024), but this rule is a developmental dead-end.
+- A formal method now exists to find conflict-free, symmetric rule kernels from *disjoint rotational orbits* (iter_036). Kernel `(A=65, B=6)` is the first valid candidate found by this method.
 
-**Refuted:**
-- A symmetric rule generated from a kernel pair (A,B) where A and B are in the same rotational orbit is dynamically trivial (iter_035).
-- Hand-crafted rules for 2D motion often lack rotational symmetry, making them unsuitable for general physics (iter_028, iter_029).
-- Simple symmetric rules tend to produce inert or stationary patterns (fixed points/oscillators) rather than gliders (iter_021, iter_032, iter_035).
-- Simple, local, unconditional rules on the hex grid tend to produce trivial global shifts, not localized particles (iter_017).
+### Refuted Hypotheses
+- Simple rules on a standard 2D CA grid produce trivial global shifts (iter_017).
+- Rules based on symmetric seeds or symmetric actions tend to produce stationary oscillators or fixed points, not gliders (iter_021, iter_022, iter_023).
+- Hand-crafted rules are brittle and lack the necessary rotational symmetry for general physics (iter_028, iter_031).
+- Naive symmetrization of rule kernels creates conflicting or inert rules if the kernel states are not from disjoint rotational orbits (iter_029, iter_035).
 
-**Current Best Result:**
-- Arrowhead Glider: A stable 3-bit glider moving East under a non-symmetric rule (iter_024).
-
-**In Progress:**
-- iter_036: A formal search for a conflict-free rule kernel (A,B) where A and B belong to disjoint rotational orbits.
+### In Progress
+- **iter_037:** Testing the dynamics of the first rule generated from a valid disjoint-orbit kernel to see if it can finally produce a symmetric 2D glider or oscillator.
