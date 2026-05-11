@@ -3116,3 +3116,75 @@ dynamics into a still life, while a critical gap enables glider formation.
 
 **Metrics:** `{'is_bit_conserving': True, 'final_bit_count': 6, 'object_period': 1, 'net_displacement': 0.0, 'bit_count_min': 6, 'bit_count_max': 6}`
 
+
+---
+```yaml
+cached_tokens: 61106
+campaign: Phase 3 - W=3 Rule Dynamics
+cost_usd: 0.09007
+hypothesis: 'asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes
+  forms a stable, bit-conserving glider.'
+input_tokens: 67244
+iter: 57
+metrics:
+  bit_count_max: 10
+  bit_count_min: 2
+  final_bit_count: 2
+  initial_bit_count: 6
+  is_bit_conserving: false
+  net_displacement: 0.0
+  object_period: 1
+output_tokens: 1440
+status: experiment_failed
+```
+
+## iter_057: asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes forms a stable, bit-conserving glider.
+
+**Analysis:** The research is fundamentally blocked. Our principled search for rules has yielded a robust, symmetric W=3 rule, but exhaustive searches have proven it supports no monolithic gliders at 3 or 4 bits (iter_052, iter_054). This strongly suggests simple, isolated particles do not move in this universe.
+
+Our subsequent hypothesis was that motion could be an emergent property of composite objects. However, all attempts to create a moving "molecule" by placing two stable 3-bit still lifes together have also failed. Both non-adjacent (iter_055) and adjacent, collinear (iter_056) placements resulted in larger, stable still lifes, producing no motion.
+
+The common thread in these failures is symmetry. The rule is symmetric, the component objects are symmetric, and the interaction setups have been symmetric. This may be creating perfectly balanced forces that prevent any net displacement. The most promising and scientifically interesting path forward is to break this symmetry, not by changing the rule, but by changing the initial conditions. We will stage an asymmetric interaction between two known-stable objects.
+
+**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an asymmetric interaction between two known stable 3-bit objects.
+
+1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
+
+2. **Simulation Setup:**
+   - Grid: 100x100 with periodic boundaries.
+   - Steps: 300.
+
+3. **Initial Condition:**
+   - Place two 3-bit straight-line still lifes in an adjacent but non-collinear "stepped" configuration.
+   - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, `(22,50)`.
+   - **Still Life 2:** Place '1's at `(22,51)`, `(23,51)`, `(24,51)`.
+   - The total initial bit count must be 6.
+
+4. **Analysis & Output:**
+   - Determine if the resulting 6-bit composite object is a stable glider.
+   - Track the total bit count at each step.
+   - Track the pattern's coordinates to detect cycles and calculate net displacement.
+   - Create `archive/iter_057/result.yaml` with the following keys:
+       - `is_bit_conserving`: boolean
+       - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
+       - `final_bit_count`: integer
+       - `net_displacement`: float, distance moved by the center of mass over one period.
+       - `object_period`: integer, the period of the final stable object.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The asymmetric "stepped" composite (Still Life 1 at rows 20-22, col 50;
+Still Life 2 at rows 22-24, col 51) is not stable. The two 3-bit objects
+share position (22,50)/(22,51) which is adjacent via the NE hex direction,
+creating a non-trivial interaction. The combined 6-bit object immediately
+starts changing: it briefly expands to 10 bits at t=2, then collapses
+through 8, 6, 4 bits, settling at exactly 2 bits from t=6 onward.
+The center of mass stays fixed at (22.00, 50.50) throughout, confirming
+no displacement. The residual 2-bit object is a period-1 still-life.
+The hypothesized asymmetric glider does not emerge from this initial
+configuration; instead, the interaction is destructive rather than
+cooperative.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 2, 'is_bit_conserving': False, 'net_displacement': 0.0, 'object_period': 1, 'bit_count_max': 10, 'bit_count_min': 2}`
+

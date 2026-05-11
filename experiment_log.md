@@ -3,78 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61106
-campaign: Phase 3 - W=3 Rule Dynamics
-cost_usd: 0.09007
-hypothesis: 'asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes
-  forms a stable, bit-conserving glider.'
-input_tokens: 67244
-iter: 57
-metrics:
-  bit_count_max: 10
-  bit_count_min: 2
-  final_bit_count: 2
-  initial_bit_count: 6
-  is_bit_conserving: false
-  net_displacement: 0.0
-  object_period: 1
-output_tokens: 1440
-status: experiment_failed
-```
-
-## iter_057: asymmetric-composite: An asymmetric arrangement of two 3-bit still lifes forms a stable, bit-conserving glider.
-
-**Analysis:** The research is fundamentally blocked. Our principled search for rules has yielded a robust, symmetric W=3 rule, but exhaustive searches have proven it supports no monolithic gliders at 3 or 4 bits (iter_052, iter_054). This strongly suggests simple, isolated particles do not move in this universe.
-
-Our subsequent hypothesis was that motion could be an emergent property of composite objects. However, all attempts to create a moving "molecule" by placing two stable 3-bit still lifes together have also failed. Both non-adjacent (iter_055) and adjacent, collinear (iter_056) placements resulted in larger, stable still lifes, producing no motion.
-
-The common thread in these failures is symmetry. The rule is symmetric, the component objects are symmetric, and the interaction setups have been symmetric. This may be creating perfectly balanced forces that prevent any net displacement. The most promising and scientifically interesting path forward is to break this symmetry, not by changing the rule, but by changing the initial conditions. We will stage an asymmetric interaction between two known-stable objects.
-
-**Task:** Use the existing W=3 rule from `src/symmetric_rule_w3_a7_b14.json` and the standard CA simulator. The task is to stage an asymmetric interaction between two known stable 3-bit objects.
-
-1. **Load Rule:** Use the W=3 symmetric rule (from kernel A=7, B=14).
-
-2. **Simulation Setup:**
-   - Grid: 100x100 with periodic boundaries.
-   - Steps: 300.
-
-3. **Initial Condition:**
-   - Place two 3-bit straight-line still lifes in an adjacent but non-collinear "stepped" configuration.
-   - **Still Life 1:** Place '1's at `(20,50)`, `(21,50)`, `(22,50)`.
-   - **Still Life 2:** Place '1's at `(22,51)`, `(23,51)`, `(24,51)`.
-   - The total initial bit count must be 6.
-
-4. **Analysis & Output:**
-   - Determine if the resulting 6-bit composite object is a stable glider.
-   - Track the total bit count at each step.
-   - Track the pattern's coordinates to detect cycles and calculate net displacement.
-   - Create `archive/iter_057/result.yaml` with the following keys:
-       - `is_bit_conserving`: boolean
-       - `behavior_class`: `GLIDER`, `STILL_LIFE`, `OSCILLATOR`, `DECAY`, or `CHAOTIC`.
-       - `final_bit_count`: integer
-       - `net_displacement`: float, distance moved by the center of mass over one period.
-       - `object_period`: integer, the period of the final stable object.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The asymmetric "stepped" composite (Still Life 1 at rows 20-22, col 50;
-Still Life 2 at rows 22-24, col 51) is not stable. The two 3-bit objects
-share position (22,50)/(22,51) which is adjacent via the NE hex direction,
-creating a non-trivial interaction. The combined 6-bit object immediately
-starts changing: it briefly expands to 10 bits at t=2, then collapses
-through 8, 6, 4 bits, settling at exactly 2 bits from t=6 onward.
-The center of mass stays fixed at (22.00, 50.50) throughout, confirming
-no displacement. The residual 2-bit object is a period-1 still-life.
-The hypothesized asymmetric glider does not emerge from this initial
-configuration; instead, the interaction is destructive rather than
-cooperative.
-
-
-**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 2, 'is_bit_conserving': False, 'net_displacement': 0.0, 'object_period': 1, 'bit_count_max': 10, 'bit_count_min': 2}`
-
-
----
-```yaml
 cached_tokens: 61247
 campaign: Phase 3 - Second W=3 Rule
 cost_usd: 0.09179
@@ -2049,4 +1977,78 @@ more) chaotic from small seeds, producing no oscillators or gliders.
 
 
 **Metrics:** `{'median_rule_fitness': 320797.4584, 'seeds_tested': 21, 'gliders_found': 0, 'still_lifes': 4, 'exploded': 17, 'oscillators': 0, 'decayed': 0}`
+
+
+---
+```yaml
+cached_tokens: 65511
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10337
+hypothesis: A fitness function rewarding low final bit count from a small seed will
+  correctly identify known chaotic rules as 'unfit' and known stabilizing rules as
+  'fit'.
+input_tokens: 73697
+iter: 87
+metrics:
+  chaotic_high_final_bit_count: 20869
+  chaotic_high_fitness_rule_score: 4.79e-05
+  chaotic_medium_final_bit_count: 6913
+  chaotic_medium_fitness_rule_score: 0.000145
+  ratio_stabilizing_vs_chaotic_high: 4174.0
+  ratio_stabilizing_vs_chaotic_medium: 1382.8
+  stabilizing_final_bit_count: 4
+  stabilizing_rule_score: 0.2
+output_tokens: 1657
+status: ok
+```
+
+## iter_087: A fitness function rewarding low final bit count from a small seed will correctly identify known chaotic rules as 'unfit' and known stabilizing rules as 'fit'.
+
+**Analysis:** The research is fundamentally blocked. The "Evolutionary Search" campaign, initiated as a promising pivot from failed formal rule searches, has hit a critical flaw. The fitness metric designed in iter_082, while successfully breeding rules with high dynamic complexity (iter_084), was shown to be misaligned with the project's goal. It selects for chaotic, space-filling dynamics, not the stable, localized, propagating particles ("gliders") we need.
+
+Both the highest-fitness rule (iter_085) and a medium-fitness rule (iter_086) from the evolved population proved to be chaotic, causing small initial seeds to explode and fill the grid. This demonstrates that simply maximizing abstract "complexity" is the wrong optimization target.
+
+The evolutionary paradigm itself is not invalidated, but the objective function is. Before we can proceed with breeding a new generation, we must design and validate a new fitness function that explicitly rewards the desired behavior: the creation and maintenance of *localized, non-explosive* structures from a small seed. This is the only logical path forward.
+
+**Task:** Create a new script, `src/validate_new_fitness_metric.py`, to test a redesigned fitness function.
+
+**1. Define the New Fitness Function:**
+The function will evaluate a given rule based on its behavior from a single, small seed.
+- **Metric:** `fitness = 1 / (1 + final_bit_count)`.
+- **Procedure:**
+  a. Initialize a 150x150 grid with a single, 4-bit contiguous "T-shape" seed.
+  b. Simulate for 500 steps.
+  c. Record the final `bit_count` at step 500.
+  d. Calculate the fitness score. A rule that destroys the seed (final_bit_count=0) gets a score of 1.0. A rule that creates a stable 4-bit object gets 1/(1+4) = 0.2. A rule that explodes to 1000 bits gets ~0.001.
+
+**2. Test on Known Rules:**
+The script will evaluate three specific rules to validate the metric's effectiveness:
+a. **Chaotic High-Fitness Rule:** Load `archive/iter_084/population/rule_023.json` (the top-fitness rule from iter_085).
+b. **Chaotic Medium-Fitness Rule:** Load `archive/iter_084/population/rule_056.json` (the median-fitness rule from iter_086).
+c. **Stabilizing Rule:** Load `src/symmetric_rule_nonconserving_A3_B14.json` (the rule from iter_069, known to produce stable still lifes from 4-bit seeds).
+
+**3. Report Results:**
+Create `archive/iter_087/result.yaml` with the following keys:
+- `chaotic_high_fitness_rule_score`: The new fitness score for rule_023.
+- `chaotic_medium_fitness_rule_score`: The new fitness score for rule_056.
+- `stabilizing_rule_score`: The new fitness score for the A3-B14 rule.
+- `metric_is_discriminating`: `true` if the stabilizing rule's score is at least 10x higher than both chaotic scores, `false` otherwise.
+
+**Status:** ok
+
+**Experimenter view:** The new fitness metric (1 / (1 + final_bit_count)) is extremely effective at
+discriminating between chaotic and stabilizing rules. From a single 4-bit T-shape
+seed on a 150x150 toroidal grid after 500 steps:
+- Both chaotic rules explode dramatically (6913 and 20869 bits), yielding near-zero
+  fitness scores (~0.000048 and ~0.000145).
+- The stabilizing rule (A3-B14) returns the exact 4-bit seed unchanged, yielding the
+  perfect near-maximum score of 0.2 (= 1/(1+4)).
+- The discrimination ratios are 4174x and 1383x — far exceeding the 10x threshold.
+The metric is not merely discriminating; it is decisively separating. The stabilizing
+rule's behavior (preserving the seed exactly) suggests it maps every still-life
+neighborhood to itself, a robust property. This metric would make a strong fitness
+function for evolving stabilizing rules.
+
+
+**Metrics:** `{'chaotic_high_fitness_rule_score': 4.79e-05, 'chaotic_medium_fitness_rule_score': 0.000145, 'stabilizing_rule_score': 0.2, 'chaotic_high_final_bit_count': 20869, 'chaotic_medium_final_bit_count': 6913, 'stabilizing_final_bit_count': 4, 'ratio_stabilizing_vs_chaotic_high': 4174.0, 'ratio_stabilizing_vs_chaotic_medium': 1382.8}`
 
