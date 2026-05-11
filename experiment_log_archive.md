@@ -619,3 +619,70 @@ within a Hamming weight group produces a valid rule.
 
 **Metrics:** `{'state_space_size': 128, 'hamming_group_sizes_sum': 128, 'W0': 1, 'W1': 7, 'W2': 21, 'W3': 35, 'W4': 35, 'W5': 21, 'W6': 7, 'W7': 1}`
 
+
+---
+```yaml
+cached_tokens: 38646
+cost_usd: 0.06469
+hypothesis: 'dynamics-2D-hex: A bit-rotation rule on the 7-cell neighborhood produces
+  stable, linear glider propagation from a single-bit initial state.'
+input_tokens: 42614
+iter: 16
+metrics:
+  final_bit_count: 1
+  glider_dq: 0
+  glider_dr: -1
+  glider_period: 1
+  is_bit_conserving: true
+output_tokens: 1618
+status: ok
+```
+
+## iter_016: dynamics-2D-hex: A bit-rotation rule on the 7-cell neighborhood produces stable, linear glider propagation from a single-bit initial state.
+
+**Analysis:** Phase 3 has commenced successfully. The previous iteration (iter_015) confirmed the formal existence of non-trivial, reversible, bit-conserving rules for a 2D hexagonal lattice, which is the foundational requirement for this phase. This is analogous to iter_009 for the 1D case.
+
+Following the established methodology, the next logical step is to move from formal existence to empirical dynamics. We must determine if this new topology can support the most basic form of complex behavior: stable propagation. The minimal validating step is to simulate the simplest possible non-trivial rule and observe if it produces a moving pattern (a glider). A simple bit-rotation of the neighborhood state is the most fundamental permutation we can test. This experiment will either produce our first 2D glider or reveal fundamental issues with our assumed update model, providing critical information either way.
+
+**Task:** Create a Python script `src/simulate_hex.py` for a 2D cellular automaton on a hexagonal grid.
+
+1.  **Grid Implementation**: Implement a 2D hexagonal grid (e.g., using axial coordinates) of at least 50x50 cells with periodic boundary conditions. Each cell should store a single bit ('0' or '1').
+
+2.  **Rule Definition**: The rule is a permutation `P` of the 128 possible 7-cell neighborhood states. Implement the "Rotate Right" permutation:
+    - A neighborhood is a 7-bit string `b0b1b2b3b4b5b6`, where `b0` is the center cell and `b1` to `b6` are the neighbors in clockwise order.
+    - The rule maps this input to the output `b6b0b1b2b3b4b5`.
+
+3.  **Update Logic**: The simulation updates the grid simultaneously. To compute the state at `t+1`:
+    - For each cell `(x,y)` on the grid, read its 7-cell neighborhood at time `t`.
+    - Apply the "Rotate Right" rule `P` to this 7-bit neighborhood state.
+    - The new state for cell `(x,y)` at `t+1` is the *central bit* (the new `b0`) of the resulting 7-bit output.
+
+4.  **Experiment Setup**:
+    - Initialize the grid with all cells set to '0'.
+    - Set a single cell near the center to '1'.
+    - Run the simulation for 100 steps.
+
+5.  **Analysis and Output**:
+    - At each step, record the total number of '1's on the grid and their coordinates.
+    - After 100 steps, determine the behavior.
+    - Create `archive/iter_016/result.yaml` with these keys:
+      - `is_bit_conserving`: `true` if the number of '1's at step 100 is equal to the initial count (1).
+      - `behavior_class`: `GLIDER`, `STABLE`, `DECAY`, or `CHAOTIC`.
+      - `final_bit_count`: The number of '1's on the grid at step 100.
+      - `glider_velocity_hex`: A tuple `(dq, dr)` representing velocity in axial coordinates, if it's a glider.
+      - `glider_period`: The number of steps for the glider's internal pattern to repeat (should be 7 for this rule).
+
+**Status:** ok
+
+**Experimenter view:** The Rotate-Right rule is algebraically equivalent to shifting the entire grid
+by −1 in the r (axial NE) direction each step. A single '1' therefore travels
+as a pure translation glider with velocity (0, −1) and perfect bit conservation.
+The glider period is 1 (not 7) because the single-bit pattern has no internal
+structure that changes between steps — it looks identical at every position.
+Period 7 would require an extended multi-cell pattern whose internal shape cycles
+through 7 distinct configurations before returning, which does not arise from a
+single-bit initial state under this rule.
+
+
+**Metrics:** `{'final_bit_count': 1, 'glider_dq': 0, 'glider_dr': -1, 'glider_period': 1, 'is_bit_conserving': True}`
+

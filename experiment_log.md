@@ -3,73 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 38646
-cost_usd: 0.06469
-hypothesis: 'dynamics-2D-hex: A bit-rotation rule on the 7-cell neighborhood produces
-  stable, linear glider propagation from a single-bit initial state.'
-input_tokens: 42614
-iter: 16
-metrics:
-  final_bit_count: 1
-  glider_dq: 0
-  glider_dr: -1
-  glider_period: 1
-  is_bit_conserving: true
-output_tokens: 1618
-status: ok
-```
-
-## iter_016: dynamics-2D-hex: A bit-rotation rule on the 7-cell neighborhood produces stable, linear glider propagation from a single-bit initial state.
-
-**Analysis:** Phase 3 has commenced successfully. The previous iteration (iter_015) confirmed the formal existence of non-trivial, reversible, bit-conserving rules for a 2D hexagonal lattice, which is the foundational requirement for this phase. This is analogous to iter_009 for the 1D case.
-
-Following the established methodology, the next logical step is to move from formal existence to empirical dynamics. We must determine if this new topology can support the most basic form of complex behavior: stable propagation. The minimal validating step is to simulate the simplest possible non-trivial rule and observe if it produces a moving pattern (a glider). A simple bit-rotation of the neighborhood state is the most fundamental permutation we can test. This experiment will either produce our first 2D glider or reveal fundamental issues with our assumed update model, providing critical information either way.
-
-**Task:** Create a Python script `src/simulate_hex.py` for a 2D cellular automaton on a hexagonal grid.
-
-1.  **Grid Implementation**: Implement a 2D hexagonal grid (e.g., using axial coordinates) of at least 50x50 cells with periodic boundary conditions. Each cell should store a single bit ('0' or '1').
-
-2.  **Rule Definition**: The rule is a permutation `P` of the 128 possible 7-cell neighborhood states. Implement the "Rotate Right" permutation:
-    - A neighborhood is a 7-bit string `b0b1b2b3b4b5b6`, where `b0` is the center cell and `b1` to `b6` are the neighbors in clockwise order.
-    - The rule maps this input to the output `b6b0b1b2b3b4b5`.
-
-3.  **Update Logic**: The simulation updates the grid simultaneously. To compute the state at `t+1`:
-    - For each cell `(x,y)` on the grid, read its 7-cell neighborhood at time `t`.
-    - Apply the "Rotate Right" rule `P` to this 7-bit neighborhood state.
-    - The new state for cell `(x,y)` at `t+1` is the *central bit* (the new `b0`) of the resulting 7-bit output.
-
-4.  **Experiment Setup**:
-    - Initialize the grid with all cells set to '0'.
-    - Set a single cell near the center to '1'.
-    - Run the simulation for 100 steps.
-
-5.  **Analysis and Output**:
-    - At each step, record the total number of '1's on the grid and their coordinates.
-    - After 100 steps, determine the behavior.
-    - Create `archive/iter_016/result.yaml` with these keys:
-      - `is_bit_conserving`: `true` if the number of '1's at step 100 is equal to the initial count (1).
-      - `behavior_class`: `GLIDER`, `STABLE`, `DECAY`, or `CHAOTIC`.
-      - `final_bit_count`: The number of '1's on the grid at step 100.
-      - `glider_velocity_hex`: A tuple `(dq, dr)` representing velocity in axial coordinates, if it's a glider.
-      - `glider_period`: The number of steps for the glider's internal pattern to repeat (should be 7 for this rule).
-
-**Status:** ok
-
-**Experimenter view:** The Rotate-Right rule is algebraically equivalent to shifting the entire grid
-by −1 in the r (axial NE) direction each step. A single '1' therefore travels
-as a pure translation glider with velocity (0, −1) and perfect bit conservation.
-The glider period is 1 (not 7) because the single-bit pattern has no internal
-structure that changes between steps — it looks identical at every position.
-Period 7 would require an extended multi-cell pattern whose internal shape cycles
-through 7 distinct configurations before returning, which does not arise from a
-single-bit initial state under this rule.
-
-
-**Metrics:** `{'final_bit_count': 1, 'glider_dq': 0, 'glider_dr': -1, 'glider_period': 1, 'is_bit_conserving': True}`
-
-
----
-```yaml
 cached_tokens: 39768
 cost_usd: 0.06418
 hypothesis: 'dynamics-2D-swap: A center-neighbor bit-swap rule produces a stationary
@@ -1903,4 +1836,73 @@ maintain separation long enough for a structured interaction to occur.
 
 
 **Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 6687, 'interaction_step': 1, 'stabilization_step': 161, 'grid_fill_fraction': 0.6687, 'is_bit_conserving': False}`
+
+
+---
+```yaml
+cached_tokens: 62964
+campaign: Phase 3 - 2D Symmetric Interactions
+cost_usd: 0.08586
+hypothesis: 'interaction-critical-distance: Two 3-bit oscillators, placed at a non-adjacent
+  critical distance, interact in a non-trivial and bit-conserving manner.'
+input_tokens: 67451
+iter: 48
+metrics:
+  bit_loss_at_step: 1
+  final_bit_count: 5
+  final_clusters: 3
+  initial_bit_count: 6
+  interaction_step: 1
+  is_bit_conserving: false
+  oscillation_period: 2
+output_tokens: 1434
+status: experiment_failed
+```
+
+## iter_048: interaction-critical-distance: Two 3-bit oscillators, placed at a non-adjacent critical distance, interact in a non-trivial and bit-conserving manner.
+
+**Analysis:** The project is on the cusp of achieving the primary goal of Phase 3: observing a 2D interaction. We have a symmetric, reversible, bit-conserving rule and a stable, dynamic object (a 3-bit oscillator) produced by it (iter_044).
+
+However, the last two attempts to stage a collision have failed due to experimental design flaws, not a flaw in the rule itself.
+- Iter_045 failed because the oscillators were placed too far apart, and their fields of influence never touched.
+- Iter_047 failed because the oscillators were placed immediately adjacent, causing their core structures to merge into a single, connected cluster which then grew chaotically, violating bit conservation.
+
+These two failures provide critical boundaries for a successful experiment. We have a classic "Goldilocks" problem: there must be a placement that is not too far and not too close. The most logical and minimal step is to place the oscillators at a critical distance where their oscillating fields will touch, but their initial seed patterns are not adjacent. This directly corrects the flaws of the previous experiments and provides the best chance to observe a clean, emergent interaction.
+
+**Task:** Use the existing `src/generate_and_simulate.py` script with the symmetric rule from the contiguous kernel `(A=3, B=6)` established in iter_044. The only change is the initial condition.
+
+1.  **Simulation Setup:**
+    - Grid Size: 100x100 with periodic boundaries.
+    - Steps: 200.
+
+2.  **Initial Condition:**
+    - Place two 3-bit oscillator seeds on the grid, separated by one empty column of cells.
+    - **Oscillator 1 Seed:** Place '1's at `(21,49)`, `(21,50)`, and `(22,50)`.
+    - **Oscillator 2 Seed:** Place '1's at `(24,49)`, `(24,50)`, and `(25,50)`.
+    - This setup ensures the initial patterns are not adjacent, but their oscillating fields will interact at `t=1`.
+
+3.  **Analysis and Output:**
+    - At each step, record the total number of '1's.
+    - Track the coordinates of all '1's.
+    - Create `archive/iter_048/result.yaml` with the following keys:
+      - `is_bit_conserving`: `true` if the bit count remains 6.
+      - `interaction_step`: The first step where the patterns are no longer two independent oscillators. Should be step 1 or 2.
+      - `outcome_class`: A classification: `REFLECTION`, `FUSION`, `ANNIHILATION`, `PASS_THROUGH`, `STABLE_COMPOUND`, or `CHAOTIC`.
+      - `final_state_summary`: A brief description of the final pattern(s) on the grid.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The "critical distance" of one empty row between the two 3-bit oscillators causes
+immediate and permanent bit loss at step 1. Unlike the adjacent case (iter_047)
+or the far case (iter_045), this distance creates a boundary condition where the
+overlapping hexagonal neighborhoods of both oscillators produce a neighborhood state
+that maps the center cell from 1→0 without a compensating gain elsewhere.
+After the destructive first step, the system instantly settles into a remarkably
+stable 3-cluster, 5-bit, period-2 compound oscillator — highly structured, not chaotic.
+The hypothesis of bit-conserving interaction is falsified: the critical distance
+produces a qualitatively different (non-conserving, still periodic) interaction regime
+compared to both adjacent and non-adjacent placements.
+
+
+**Metrics:** `{'initial_bit_count': 6, 'final_bit_count': 5, 'bit_loss_at_step': 1, 'interaction_step': 1, 'oscillation_period': 2, 'final_clusters': 3, 'is_bit_conserving': False}`
 
