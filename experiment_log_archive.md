@@ -3927,3 +3927,64 @@ zigzag shapes either decay or collapse to a single bit.
 
 **Metrics:** `{'patterns_checked': 11, 'stable_object_count': 5, 'decayed_seed_count': 6, 'multi_bit_object_found': 1, 'glider_found': 0, 'max_final_bit_count': 3}`
 
+
+---
+```yaml
+cached_tokens: 61273
+campaign: Phase 3 - Non-conserving Rules
+cost_usd: 0.0938
+hypothesis: The non-conserving rule (A=3↔B=14) supports at least one stable, 4-bit
+  glider.
+input_tokens: 68292
+iter: 69
+metrics:
+  decayed_seed_count: 2
+  glider_found: 0
+  glider_period: 0
+  patterns_checked: 10
+  stable_object_count: 8
+output_tokens: 1488
+status: experiment_failed
+```
+
+## iter_069: The non-conserving rule (A=3↔B=14) supports at least one stable, 4-bit glider.
+
+**Analysis:** The research is critically blocked. The current campaign is testing a new paradigm of reversible, but locally non-bit-conserving rules, after all strictly-conserving rules failed to produce motion. The first rule in this class (from kernel A=3↔B=14) was characterized at the 3-bit level in iter_068. The exhaustive search found stable, multi-bit "still life" objects but, crucially, no "gliders" (moving particles).
+
+This is a familiar dead end. With all previous rules, the failure to find gliders at N bits led us to search at N+1 bits. To determine if this promising new rule is also a dead end, we must follow the same rigorous, logical progression. The minimal and necessary next step is to escalate the exhaustive search from 3-bit to 4-bit patterns.
+
+**Task:** Create a new script, `src/search_4bit_nonconserving.py`, to perform an exhaustive search for moving 4-bit objects.
+
+1.  **Load Rule:** Load the symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2.  **Generate Seeds:** Programmatically generate all 10 unique, one-sided contiguous 4-bit patterns (tetrahexes). This is necessary because the rule only has C6 (rotational) symmetry, not full D6 symmetry.
+
+3.  **Test Each Seed:** For each of the 10 seeds:
+    a. Initialize a grid with the pattern.
+    b. Simulate for at least 400 steps to robustly detect cycles and movement.
+    c. A seed's evolution is considered a **stable object** if it enters a finite cycle with a final bit count > 0.
+    d. If a stable object is found, calculate the net displacement of its center of mass over one full period.
+
+4.  **Report Results:** The script should test all 10 patterns and create `archive/iter_069/result.yaml` with a summary of the findings.
+
+5.  **YAML Output:** The `result.yaml` must contain these keys:
+    - `glider_found`: `true` if any stable object had a non-zero net displacement.
+    - `patterns_checked`: The total number of seeds tested (should be 10).
+    - `stable_object_count`: The total count of seeds that resulted in a stable object (final_bit_count > 0).
+    - `decayed_seed_count`: The total count of seeds that decayed to 0 bits.
+    - `glider_period`: The period of the first glider found (or 0).
+    - `outcomes`: A list of summary strings, one for each of the 10 seeds, detailing its fate (e.g., "Seed 1 (straight): DECAY", "Seed 2 (T-shape): STILL_LIFE, 4 bits, period 1").
+
+**Status:** experiment_failed
+
+**Experimenter view:** All 10 one-sided tetrahex seeds were tested exhaustively under the A=3↔B=14
+non-conserving rule. 8 of 10 seeds produced stable objects: 7 still lifes
+(period 1) and 1 oscillator (period 2, "bent" shape). 2 seeds decayed to 0.
+No gliders were found — all stable objects had zero net displacement.
+The rule is highly stabilizing for 4-bit seeds but does not produce moving
+objects from contiguous tetrahex initial conditions. A next step could be
+to search non-contiguous 4-bit seeds or explore larger (5-bit) seeds.
+
+
+**Metrics:** `{'patterns_checked': 10, 'stable_object_count': 8, 'decayed_seed_count': 2, 'glider_found': 0, 'glider_period': 0}`
+

@@ -1,0 +1,77 @@
+artifacts:
+- src/run_targeted_soup_search.py
+- archive/iter_099/population/rule_001.json
+- archive/iter_099/population/rule_002.json
+- archive/iter_099/population/rule_003.json
+- archive/iter_099/result.yaml
+- archive/iter_099/results/interesting_rules.txt
+experimenter_view: 'The hypothesis failed. The key insight from the results is revealing:
+  many
+
+  rules (rule_001, 027, 051, 061, 064, etc.) show final_count=5665, which is
+
+  EXACTLY the initial soup cell count. These rules have zero measurable effect
+
+  on the soup after 1000 steps.
+
+
+  The root cause: a 25%-density soup has an average neighborhood Hamming
+
+  weight of ~2.0 (center=0.25 + 6 neighbors × 0.25 ≈ 2). Our targeted rules
+
+  only contain non-identity mappings for states with Hamming weight ≥ 4. At
+
+  25% density, these high-density neighborhoods are extremely rare (they appear
+
+  in fewer than ~5% of cells). The rules are effectively identity transforms on
+
+  the overwhelming majority of the grid.
+
+
+  The density paradox: rules targeting high-density states cannot disrupt a
+
+  low-density soup, because the soup never presents those high-density
+
+  neighborhoods in sufficient quantity. Conversely, from iter_096-098, dense
+
+  rules (32 mappings, all densities) also result in CHAOTIC outcomes because
+
+  they overwhelm the low-density soup back to chaos.
+
+
+  Next direction: the resolution gap demands rules that specifically map
+
+  medium-density states (weight 2-4) to lower-density outcomes, gradually
+
+  reducing the soup density rather than either ignoring it or amplifying it.
+
+  '
+log_excerpt: "Generated 100 rules (0 generation failures).\n\nInitial soup: 5665 live\
+  \ cells (150x150, 25% density, seed=42)\nSimulating 1000 steps per rule ...\n\n\
+  rule_001: final_count=  5665  [CHAOTIC]\nrule_016: final_count=  5485  [CHAOTIC]\n\
+  rule_052: final_count=  5388  [CHAOTIC]\nrule_058: final_count=  5758  [CHAOTIC]\n\
+  ...\n=== Summary ===\n  Total rules evaluated:  100\n  DEAD        (< 20):    0\n\
+  \  CHAOTIC     (> 1000): 100\n  INTERESTING (20-1000): 0\n"
+metrics:
+  chaotic_rules_count: 100
+  dead_rules_count: 0
+  directed_entries_per_rule: 16
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  n_input_pairs_per_rule: 4
+  soup_density: 0.25
+  steps: 1000
+  total_rules_evaluated: 100
+notes: '16 directed rule entries (4 input pairs × 4 C2-closure entries each) act as
+
+  near-identity on a 25%-density soup since high-density neighborhoods (weight
+
+  ≥ 4) represent ~5% of the state space encountered. The "targeted sparse"
+
+  strategy is insufficient — the targeting must match the actual density
+
+  distribution of the soup''s neighborhood states.
+
+  '
+status: experiment_failed
