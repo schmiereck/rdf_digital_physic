@@ -3,95 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 63651
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10535
-hypothesis: A dynamic fitness metric, based on object count and grid entropy over
-  time, can effectively discriminate between trivial and complex dynamics in a random
-  sample of reversible rules.
-input_tokens: 72046
-iter: 82
-metrics:
-  distinct_classes: 3
-  high_dynamic_class_count: 3
-  low_dynamic_class_count: 11
-  max_fitness: 604000.87
-  min_fitness: 0.0
-  num_rules: 20
-  static_class_count: 6
-  variance_of_scores: 24260686584.48
-output_tokens: 1931
-status: ok
-```
-
-## iter_082: A dynamic fitness metric, based on object count and grid entropy over time, can effectively discriminate between trivial and complex dynamics in a random sample of reversible rules.
-
-**Analysis:** The research is fundamentally and catastrophically blocked. All prior research paradigms have failed. A long series of exhaustive searches has conclusively proven that no gliders exist for any tested rule class under any tested update model when starting from small, simple (contiguous or non-contiguous) initial seeds.
-
-The failure modes are consistent:
-1.  **Strictly-Conserving Rules (iter_050-064):** These rules are too rigid, creating "crystalline" universes of only stationary objects.
-2.  **Non-Conserving Rules (iter_065-078):** While allowing local bit fluctuation, these rules were also exhaustively shown to lack elemental or simple composite gliders.
-3.  **Alternative Update Models & Symmetries (iter_070-073):** Asynchronous updates and reduced C2 symmetry only exacerbated the problem, suppressing dynamics even further.
-4.  **Non-Contiguous Seeds (iter_079-081):** This final paradigm failed due to a fundamental mismatch between the sparse seeds and the local density required to trigger the rule's non-trivial dynamics. The `experimenter_view` of iter_081 provided a theoretical proof of why this approach cannot work for seeds with <= 4 bits.
-
-Continuing to escalate complexity within these failed paradigms (e.g., searching for 5-bit non-contiguous gliders) is no longer scientifically justified. The evidence points to a flaw in the core methodology: the top-down, formal search for rules based on pre-defined "desirable" properties has failed.
-
-The only logical path forward is a radical strategic pivot. We will abandon the formal search and adopt the evolutionary approach mentioned in the original research goal. Instead of searching for rules with specific properties, we will search for rules that produce specific *behaviors*, as measured by a fitness function. The minimal first step is to design and validate such a function.
-
-**Task:** This is a meta-experiment to validate a new research methodology. It has two parts: generating random rules and then evaluating them.
-
-**Part 1: Create `src/generate_random_rules.py`**
-1. This script should generate 20 random, reversible, C6-symmetric, non-conserving rules.
-2. To generate one random rule:
-   a. Choose a number of kernel pairs, `k`, randomly between 2 and 4.
-   b. For each of the `k` pairs, randomly select integers `A` and `B` from 1 to 127.
-   c. Generate the full C6-symmetric rule by applying 6-fold rotation to each pair, adding both `A_rot -> B_rot` and the inverse `B_rot -> A_rot` to the rule dictionary. Ensure no conflicts arise.
-3. Save each of the 20 generated rules to a unique file in `archive/iter_082/rules/`, e.g., `random_rule_01.json`.
-
-**Part 2: Create `src/evaluate_rule_fitness.py`**
-1. This script will iterate through the 20 rule files generated in Part 1.
-2. For each rule:
-   a. Initialize a 100x100 grid with 50% random noise.
-   b. Simulate for 500 steps using the standard synchronous update.
-   c. Record the `bit_count` (number of live cells) at each step.
-   d. Calculate a "fitness score" designed to reward sustained, bounded complexity. A good candidate is: `fitness = mean(bit_count_last_100_steps) * stddev(bit_count_all_steps)`. A rule where everything dies or freezes will have a stddev of ~0, yielding a low score. A rule that explodes will have a high mean but may stabilize, while a complex one will have both sustained population and high variability.
-   e. If `stddev` is zero, the fitness is zero.
-3. After evaluating all 20 rules, create `archive/iter_082/results/fitness_scores.csv` with columns: `rule_id`, `fitness_score`, `final_bit_count`, `mean_bit_count`, `stddev_bit_count`.
-4. Create `archive/iter_082/result.yaml` summarizing whether the fitness metric showed significant variance, suggesting it can discriminate between rule types. Include `min_fitness`, `max_fitness`, and `variance_of_scores`.
-
-**Status:** ok
-
-**Experimenter view:** The fitness metric (mean_last100 × stddev_all) clearly discriminates between
-rule types across three distinct behavioral classes:
-
-1. STATIC (6/20 rules, fitness=0): The grid freezes completely within the first
-   few steps. stddev=0 because the bit count never changes after fixation.
-   Example: rules 01, 03, 09, 10, 12, 19. This is the CA analogue of a "dead"
-   phase transition where the rule annihilates all transient structure.
-
-2. LOW_DYNAMIC (11/20 rules, fitness=10K–186K): The grid reaches a near-stable
-   state with small, slow fluctuations (stddev 2–41). These rules support
-   persistent but low-complexity activity — structures that drift or flicker
-   without dramatic population swings.
-
-3. HIGH_DYNAMIC (3/20 rules, fitness=260K–604K): Rules 05, 06, and 11 show
-   large, sustained population variance (stddev 51–187). Rule 06 is the most
-   interesting: final bit count of 3222 (vs initial ~5000) with stddev=187,
-   suggesting the rule actively destroys bits while maintaining complex
-   transient structure. This non-conserving, active regime is exactly the
-   type of dynamic complexity the project seeks.
-
-The fitness score variance (24.26 billion >> 1.0) confirms the metric has
-high discriminating power. The metric correctly assigns low scores to trivial
-behaviors (frozen or static) and high scores to rules with sustained,
-heterogeneous dynamics.
-
-
-**Metrics:** `{'min_fitness': 0.0, 'max_fitness': 604000.87, 'variance_of_scores': 24260686584.48, 'num_rules': 20, 'static_class_count': 6, 'low_dynamic_class_count': 11, 'high_dynamic_class_count': 3, 'distinct_classes': 3}`
-
-
----
-```yaml
 cached_tokens: 63711
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.10379
@@ -1839,4 +1750,51 @@ simultaneously still-lifes under both rules, so switching rules did not trigger
 any dynamic behavio
 
 **Notes:** Both rules stabilize the same ash shapes; zero dynamic objects produced by the two-stage pipeline.
+
+
+---
+```yaml
+cached_tokens: 62894
+campaign: Phase 4 - Two-Stage Simulation
+campaign_status: completed
+campaign_summary: 'This campaign tested if a two-stage process (a ''cooling'' rule
+  to create structure, a second rule to animate it) could produce gliders. Both variants
+  failed: using a stable second rule resulted in a frozen grid (iter_118), and using
+  a chaotic second rule resulted in explosive, space-filling growth that destroyed
+  all structure (iter_119).'
+cost_usd: 0.10396
+hypothesis: 'evolution-for-animation: A population of rules evolved with a fitness
+  metric that rewards moving the specific ''ash'' objects from rule_023 will produce
+  at least one rule with non-zero motion fitness.'
+input_tokens: 72503
+iter: 119
+metrics:
+  ash_bit_count: 325
+  decayed_object_count: 72
+  final_bit_count: 20742
+  glider_count: 0
+  oscillator_count: 0
+  still_life_count: 0
+output_tokens: 1457
+status: ok
+```
+
+## iter_119: evolution-for-animation: A population of rules evolved with a fitness metric that rewards moving the specific 'ash' objects from rule_023 will produce at least one rule with non-zero motion fitness.
+
+**Analysis:** The research has conclusively refuted another major hypothesis. The "two-stage simulation" paradigm, which aimed to generate structure with a "cooling" rule and then animate it with a second rule, has failed in both tested variants.
+- Using a STABLE second rule (iter_118) failed because the "ash" objects were also stable under that rule.
+- Using a CHAOTIC second rule (iter_119) failed even more sp
+
+**Status:** ok
+
+**Metrics:** `{'ash_bit_count': 325, 'decayed_object_count': 72, 'final_bit_count': 20742, 'glider_count': 0, 'oscillator_count': 0, 'still_life_count': 0}`
+
+**Experimenter view:** The cooling rule (iter_105/rule_023) resolved the soup extremely quickly:
+by step 50 the grid had already dropped to 325 live cells and remained
+perfectly stable for all 200 steps, forming 72 isolated static objects.
+When the chaotic rule (iter_084/rule_023) was applied to this sparse ash,
+it triggered a rapid expansion — by step 400 the grid had grown from 325
+to 20,742 live cells and locked into
+
+**Notes:** Chaotic rule from iter_084 is space-filling on sparse ash; produces CHAOTIC_EXPLOSION fixed point at ~20k live cells, not object animation
 

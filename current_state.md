@@ -11,10 +11,11 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos and fail to resolve a soup or support gliders (iter_116, 117).
 - The "cooling" property (monotonically non-increasing cell count) is mathematically incompatible with glider formation (iter_115).
 - A two-stage process using a "cooling" rule followed by a highly stable "glider-friendly" rule fails to produce motion, as the "ash" objects are also still-lifes under the second rule (iter_118).
+- A two-stage process using a "cooling" rule followed by a chaotic "space-filling" rule fails, as the chaos consumes the ash and saturates the grid (iter_119).
 - Exhaustive searches of C6 and C2 symmetric rule spaces for simple gliders from small contiguous seeds have failed (iter_006-096).
 
 ## Open Questions
-- Can a two-stage simulation using a chaotic "motion" rule animate the stable "ash"?
-- Does adding random noise (perturbations) to the "ash" before Stage 2 trigger dynamics?
-- Is there an optimal "ash" density for fostering gliders?
-- Does glider motion fundamentally require non-C2 (i.e., chiral) symmetry?
+- Can a rule be evolved *directly* to animate the specific 'ash' objects produced by a cooling rule?
+- Is there a different class of rule (e.g., chiral/non-C2 symmetric) that is more conducive to motion?
+- Does adding random noise (perturbations) to the 'ash' before Stage 2 trigger dynamics under a stable rule?
+- Can we define a fitness metric that explicitly rewards the preservation and animation of pre-existing structures?
