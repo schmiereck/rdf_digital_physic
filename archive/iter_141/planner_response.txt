@@ -1,0 +1,75 @@
+```yaml
+analysis: |
+  The research was critically blocked. The previous champion rule (`rule_049` from iter_140), which had an extremely high fitness score of 6.55, was revealed to be a "false positive" in iter_141. A long-run analysis proved that the high score was an artifact of a one-time, transient expansion that occurred in the first ~400 steps. After this initial expansion, all net motion ceased, and the system settled into a large, stable oscillator.
+
+  This result invalidates our previous fitness metric, which measured displacement between steps 100-200. The evolutionary process had cleverly found a loophole: creating a brief, chaotic drift instead of a compact, sustained glider. To move forward, we must design a new fitness function that is immune to this failure mode. The most promising approach is to introduce a "settling period" and measure displacement only at a much later stage.
+open_questions:
+  - "Will a 'late-late-displacement' metric (measuring e.g. steps 400-800) correctly filter out the transient motion of the previous generation's champions?"
+  - "Can a new evolutionary run, using this more stringent metric, produce a rule with genuine, sustained motion?"
+  - "Is there a way to penalize structural change more directly, rather than relying on bit count as a proxy?"
+  - "Should we evolve rules on a different, simpler initial environment than the complex 'ash' pattern?"
+  - "What is the theoretical maximum velocity a glider can have in this system?"
+chosen_direction: "Validate a new 'late-late-displacement' fitness metric by re-evaluating the previous generation's champions."
+hypothesis: "late-metric-validation: A 'late-late-displacement' fitness metric, calculated between steps 400-800, will assign a near-zero fitness score (<0.01) to the top 5 rules from Gen-3 (iter_140)."
+rationale: |
+  Before launching another multi-generation evolutionary run, we must first validate that our proposed new fitness metric has closed the loophole discovered in iter_141. This experiment is the minimal validating step: re-evaluating our known "false positives" (the top 5 rules from Gen-3) with the new metric. If the new metric correctly assigns them near-zero scores, we can be confident that it is measuring true sustained motion and can proceed with a new evolutionary search. If it fails, we will have saved the cost of a full run and will need to develop a different metric.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  final_bit_count: 935
+  final_displacement: 10.9167
+  initial_bit_count: 325
+  sustained_motion: false
+  velocity_decay_ratio: 0.001319
+  velocity_early: 0.02545116
+  velocity_late: 3.356e-05
+experimenter_view: |
+  The motion of rule_049 is NOT coherent glider-like motion — it is a
+  transient expansion into a large stable periodic attractor.
+
+  During steps 0-400, the bit count grows explosively from 325 to a peak of
+  ~1092 (step 300), then contracts to a stable value of ~934-935. During this
+  transient, the global COM drifts by ~26 units from its initial position,
+  accounting for the high fitness scores measured over short windows (100-200
+  steps). The high fitness score of 6.55 from iter_140 was a measurement
+  artifact of sampling this fast transient drift.
+
+  After step ~400 the system locks into a periodic limit cycle: the bit count
+  oscillates between 934 and 935, and the COM cycles among just three very
+  close values ((93.68,55.91), (93.70,55.89), (93.71,55.90)), corresponding
+  to a spatial oscillation of amplitude <0.05 units. This is a stable
+  many-body oscillator, NOT a glider.
+
+  The velocity_decay_ratio of 0.00132 (<<< 0.8 threshold) is unambiguous:
+  late-time velocity is 760× slower than early-time, confirming complete
+  cessation of net motion. The final bit count (935, ratio 2.88x) is just
+  under the 3x explosion threshold, but this represents permanent structural
+  growth, not a conserved glider. The text frame at t=1000 shows a dense
+  cluster of structures shifted ~9 units in q and ~19 units in r from the
+  initial target COM — evidence of a one-time displacement, not ongoing travel.
+notes: "rule_049 fitness=6.55 is a transient-growth artifact; motion halts by step ~400 into a stable periodic attractor"
+campaign: "Phase 6 - Parity-Constrained Evolution"
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Parity-Conservation Unblocks Search:** A parity-conservation constraint is highly effective at suppressing chaotic growth, enabling the discovery of rules with non-explosive dynamics (iter_138).
+  - **Evolution is Effective at Maximizing Flawed Metrics:** The evolutionary process successfully finds rules that exploit loopholes in fitness functions. The Gen-3 champion (`rule_049`) achieved a score of 6.55 by creating a one-time, transient expansion (iter_140, iter_141).
+
+  ## Refuted
+  - **Sustained Motion Not Yet Achieved:** The high fitness scores observed up to Gen-3 were artifacts of a flawed metric that measured transient, expansive drift, not sustained motion. The current best rule (`rule_049`) creates a large, stable oscillator that stops moving after ~400 steps (iter_141).
+  - **`late-displacement` (100-200 steps) is insufficient:** This metric can be gamed by rules that undergo a slow expansion and drift, as demonstrated by the failure of `rule_049`.
+
+  ## Current Best
+  There is currently no rule known to produce sustained motion. `rule_049` from iter_140 is the best rule at exploiting the flawed `late-displacement` metric.
+
+  ## Open Questions
+  - Will a 'late-late-displacement' metric (measuring e.g. steps 400-800) correctly filter out the transient motion of the previous generation's champions?
+  - Can a new evolutionary run, using this more stringent metric, produce a rule with genuine, sustained motion?
+  - Is there a way to penalize structural change more directly, rather than relying on bit count as a proxy?
+  - Should we evolve rules on a different, simpler initial environment than the complex 'ash' pattern?
+  - What is the theoretical maximum velocity a glider can have in this system?
+```

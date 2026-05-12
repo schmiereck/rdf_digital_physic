@@ -6202,3 +6202,42 @@ appears in ~4% of rules by chance, explaining the 4/100 success rate.
 
 **Metrics:** `{'dead_rules_count': 0, 'chaotic_rules_count': 96, 'interesting_rules_count': 4, 'initial_soup_cells': 5665, 'interesting_rule_023_final_count': 325, 'interesting_rule_029_final_count': 331, 'interesting_rule_055_final_count': 657, 'interesting_rule_081_final_count': 358}`
 
+
+---
+```yaml
+cached_tokens: 60047
+campaign: Phase 4 - Emergent Glider Analysis
+cost_usd: 0.09485
+hypothesis: 'emergent-glider: The ''ash'' from a chaotic soup cooled by rule_023 from
+  iter_105 contains at least one stable, moving particle.'
+input_tokens: 68228
+iter: 110
+metrics:
+  decayed_objects: 5
+  glider_bit_count: 6
+  glider_count: 2
+  glider_period: 4
+  glider_velocity_q: -1.0
+  glider_velocity_r: 0.0
+  oscillator_count: 22
+  still_life_count: 38
+  total_objects_found: 67
+output_tokens: 1302
+status: ok
+```
+
+## iter_110: emergent-glider: The 'ash' from a chaotic soup cooled by rule_023 from iter_105 contains at least one stable, moving particle.
+
+**Analysis:** The research was catastrophically blocked for over 90 iterations due to the failure of all "top-down" and naive evolutionary methods to produce moving particles ("gliders"). A major breakthrough occurred in iter_105, where a new "primordial soup" evaluation, combined with a targeted "cooling" rule generation strategy, successfully identified four C2-symmetric rules that can resolve a chaotic, dens
+
+**Status:** ok
+
+**Metrics:** `{'decayed_objects': 5, 'glider_bit_count': 6, 'glider_count': 2, 'glider_period': 4, 'glider_velocity_q': -1.0, 'glider_velocity_r': 0.0, 'oscillator_count': 22, 'still_life_count': 38, 'total_objects_found': 67}`
+
+**Experimenter view:** The hypothesis is confirmed. Two identical 6-bit, period-4 gliders were found in the 'ash' of rule_023. These gliders are robust and travel in opposite directions along the grid's primary axes. The discovery of a small, stable, emergent glider represents a major breakthrough after a long series of failed attempts with other methods.
+
+The analysis process was effective:
+1. The soup simulation ran f
+
+**Notes:** 
+

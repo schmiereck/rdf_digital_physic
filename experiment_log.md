@@ -3,45 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 60047
-campaign: Phase 4 - Emergent Glider Analysis
-cost_usd: 0.09485
-hypothesis: 'emergent-glider: The ''ash'' from a chaotic soup cooled by rule_023 from
-  iter_105 contains at least one stable, moving particle.'
-input_tokens: 68228
-iter: 110
-metrics:
-  decayed_objects: 5
-  glider_bit_count: 6
-  glider_count: 2
-  glider_period: 4
-  glider_velocity_q: -1.0
-  glider_velocity_r: 0.0
-  oscillator_count: 22
-  still_life_count: 38
-  total_objects_found: 67
-output_tokens: 1302
-status: ok
-```
-
-## iter_110: emergent-glider: The 'ash' from a chaotic soup cooled by rule_023 from iter_105 contains at least one stable, moving particle.
-
-**Analysis:** The research was catastrophically blocked for over 90 iterations due to the failure of all "top-down" and naive evolutionary methods to produce moving particles ("gliders"). A major breakthrough occurred in iter_105, where a new "primordial soup" evaluation, combined with a targeted "cooling" rule generation strategy, successfully identified four C2-symmetric rules that can resolve a chaotic, dens
-
-**Status:** ok
-
-**Metrics:** `{'decayed_objects': 5, 'glider_bit_count': 6, 'glider_count': 2, 'glider_period': 4, 'glider_velocity_q': -1.0, 'glider_velocity_r': 0.0, 'oscillator_count': 22, 'still_life_count': 38, 'total_objects_found': 67}`
-
-**Experimenter view:** The hypothesis is confirmed. Two identical 6-bit, period-4 gliders were found in the 'ash' of rule_023. These gliders are robust and travel in opposite directions along the grid's primary axes. The discovery of a small, stable, emergent glider represents a major breakthrough after a long series of failed attempts with other methods.
-
-The analysis process was effective:
-1. The soup simulation ran f
-
-**Notes:** 
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
@@ -1105,4 +1066,45 @@ is near the chaos boundary (< 3.0), suggesting a high-displacement, near-
 chaotic rule. rule_089 
 
 **Notes:** Gen-3 top fitness 6.55 far exceeds the Gen-2 top of 0.731; hypothesis confirmed.
+
+
+---
+```yaml
+cached_tokens: 47721
+campaign: Phase 6 - Parity-Constrained Evolution
+cost_usd: 0.1031
+hypothesis: 'late-metric-validation: A ''late-late-displacement'' fitness metric,
+  calculated between steps 400-800, will assign a near-zero fitness score (<0.01)
+  to the top 5 rules from Gen-3 (iter_140).'
+input_tokens: 60311
+iter: 141
+metrics:
+  final_bit_count: 935
+  final_displacement: 10.9167
+  initial_bit_count: 325
+  sustained_motion: false
+  velocity_decay_ratio: 0.001319
+  velocity_early: 0.02545116
+  velocity_late: 3.356e-05
+output_tokens: 1646
+status: ok
+```
+
+## iter_141: late-metric-validation: A 'late-late-displacement' fitness metric, calculated between steps 400-800, will assign a near-zero fitness score (<0.01) to the top 5 rules from Gen-3 (iter_140).
+
+**Analysis:** The research was critically blocked. The previous champion rule (`rule_049` from iter_140), which had an extremely high fitness score of 6.55, was revealed to be a "false positive" in iter_141. A long-run analysis proved that the high score was an artifact of a one-time, transient expansion that occurred in the first ~400 steps. After this initial expansion, all net motion ceased, and the system s
+
+**Status:** ok
+
+**Metrics:** `{'final_bit_count': 935, 'final_displacement': 10.9167, 'initial_bit_count': 325, 'sustained_motion': False, 'velocity_decay_ratio': 0.001319, 'velocity_early': 0.02545116, 'velocity_late': 3.356e-05}`
+
+**Experimenter view:** The motion of rule_049 is NOT coherent glider-like motion — it is a
+transient expansion into a large stable periodic attractor.
+
+During steps 0-400, the bit count grows explosively from 325 to a peak of
+~1092 (step 300), then contracts to a stable value of ~934-935. During this
+transient, the global COM drifts by ~26 units from its initial position,
+accounting for the high fitness scores measured 
+
+**Notes:** rule_049 fitness=6.55 is a transient-growth artifact; motion halts by step ~400 into a stable periodic attractor
 
