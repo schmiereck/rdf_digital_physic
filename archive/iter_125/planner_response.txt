@@ -1,0 +1,64 @@
+```yaml
+analysis: |
+  The research was critically blocked by a fitness plateau in our evolutionary search. We hypothesized that the "motion" being rewarded was a sustained drift. This experiment was designed to test that by running the top-evolved rule for 500 steps, far longer than the 100-step fitness evaluation window.
+
+  The result conclusively refutes the hypothesis. The `experimenter_view` shows that all motion ceases within the first 10 steps. The "animation" that the evolutionary algorithm so successfully optimized is merely a one-time, minimal rearrangement of the initial ash pattern. The algorithm found a loophole in the fitness function: a small, initial displacement is enough to score well, and there is no evolutionary pressure for that motion to continue. The project is once again blocked, as our primary strategy for finding motion has been invalidated.
+open_questions:
+  - "Can the fitness metric be modified to reward sustained motion over transient rearrangement?"
+  - "Is there a different initial state (other than the ash) that would lead to sustained motion with the current top rules?"
+  - "Can we evolve rules specifically on a metric of 'sustained displacement' (e.g., displacement from steps 100-200)?"
+  - "Is the C2 symmetry class fundamentally too stable, preventing sustained motion?"
+  - "What if we increase the mutation rate dramatically to escape the current local optimum?"
+chosen_direction: "Address the flawed fitness metric by designing one that explicitly measures and rewards sustained motion."
+hypothesis: "A 'late-displacement' fitness metric, calculated between steps 100 and 200, will correctly assign near-zero fitness to the current top-evolved rule."
+rationale: |
+  The current fitness function is fundamentally flawed because it rewards any displacement, however transient. This experiment proved that our evolutionary search simply found the cheapest way to get a good score: a single, small rearrangement. Before we run more evolution, we must fix the objective. The most direct way to do this is to measure displacement during a "late" window (e.g., steps 100-200). This ensures that any initial rearrangement has already settled, and only rules that produce continuous motion will receive a high score. This experiment is a validation step for that new metric, ensuring it correctly identifies the failure mode of our current best rule.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  displacement_at_100_steps: 0.47924991
+  displacement_at_500_steps: 0.47924991
+  final_bit_count: 325
+  final_object_count: 71
+  motion_sustained: false
+experimenter_view: |
+  The top Gen-3 rule (rule_001) reaches a fixed point within the first 10 steps
+  on the canonical ash pattern. The COM displacement jumps from 0 to 0.4792 by
+  step 10 (one connected component merges, dropping objects from 72 to 71) and
+  then locks — displacement, bit count, and object count are all constant for
+  steps 10 through 500. The displacement ratio (500 vs 100 steps) is exactly
+  1.0x, well below the 4x threshold, so motion_sustained=false. This reveals
+  that the fitness signal captured by the evolutionary metric reflects a single
+  transient rearrangement, not ongoing locomotion. The rule is a still-life
+  generator rather than a glider producer on this ash background.
+notes: "Fixed point reached at step 10; no sustained motion observed over 500 steps."
+# --- Meta ---
+milestone_reached: ""
+user_question: ""
+campaign: "Phase 5 - Sustained Motion Evolution"
+campaign_status: ""
+campaign_summary: ""
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
+
+  ## Confirmed
+  - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
+  - A canonical "ash" pattern is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
+  - An evolutionary algorithm can successfully optimize rules to maximize a displacement-based fitness metric on this "ash" (iter_121-123).
+
+  ## Refuted
+  - The motion optimized by the evolutionary algorithm is not sustained. It is a transient, one-time rearrangement that completes within 10 steps. The algorithm found a loophole in the fitness function (iter_125).
+  - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
+  - A two-stage simulation process fails to animate the ash (iter_118, 119).
+  - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
+
+  ## Open Questions
+  - Can the fitness metric be modified to reward sustained motion over transient rearrangement?
+  - Is there a different initial state (other than the ash) that would lead to sustained motion with the current top rules?
+  - Can we evolve rules specifically on a metric of 'sustained displacement' (e.g., displacement from steps 100-200)?
+  - Is the C2 symmetry class fundamentally too stable, preventing sustained motion?
+  - What if we increase the mutation rate dramatically to escape the current local optimum?
+```

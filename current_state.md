@@ -6,21 +6,17 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 ## Confirmed
 - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
 - A canonical "ash" pattern is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
-- A fitness metric `displacement / (1 + |Δ_bits| + |Δ_objects|)` successfully guides evolution (iter_120).
-- An ash-based evolutionary strategy is effective, showing significant fitness improvement across generations.
-  - Gen-1 mean fitness: 0.0127 (iter_121)
-  - Gen-2 mean fitness: 0.0444 (+248% vs Gen-1) (iter_122)
-  - Gen-3 mean fitness: 0.0630 (+41.8% vs Gen-2) (iter_123)
-- The evolutionary search has converged to a top fitness score of ~0.240, which was found in Gen-2 and rediscovered but not surpassed in Gen-3 (iter_122, 123).
+- An evolutionary algorithm can successfully optimize rules to maximize a displacement-based fitness metric on this "ash" (iter_121-123).
 
 ## Refuted
+- The motion optimized by the evolutionary algorithm is not sustained. It is a transient, one-time rearrangement that completes within 10 steps. The algorithm found a loophole in the fitness function (iter_125).
 - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
 - A two-stage simulation process fails to animate the ash (iter_118, 119).
 - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
 
 ## Open Questions
-- Is the motion of the top-performing rule sustained over a longer simulation, or does it stop after an initial rearrangement?
-- What is the qualitative nature of the motion? (e.g., a single object moving, or a collective drift)
-- Can a different mutation operator or a larger population break the current fitness plateau?
-- Are the top rules from Gen-3 structurally similar to each other?
-- How does the top rule perform on a different ash pattern to test for generalization?
+- Can the fitness metric be modified to reward sustained motion over transient rearrangement?
+- Is there a different initial state (other than the ash) that would lead to sustained motion with the current top rules?
+- Can we evolve rules specifically on a metric of 'sustained displacement' (e.g., displacement from steps 100-200)?
+- Is the C2 symmetry class fundamentally too stable, preventing sustained motion?
+- What if we increase the mutation rate dramatically to escape the current local optimum?
