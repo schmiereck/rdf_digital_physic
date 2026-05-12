@@ -4502,3 +4502,73 @@ either smaller separation (distance 1, i.e. contiguous) or more seed bits.
 
 **Metrics:** `{'patterns_checked': 3, 'stable_object_count': 3, 'glider_found': 0, 'still_life_count': 3}`
 
+
+---
+```yaml
+cached_tokens: 63891
+campaign: Phase 3 - Non-Contiguous Seeds
+cost_usd: 0.09811
+hypothesis: 'noncontiguous-3bit: A 3-bit non-contiguous seed forms a stable, moving
+  object under the non-conserving rule (A=3,B=14).'
+input_tokens: 71413
+iter: 80
+metrics:
+  bits1_still_life: 52
+  bits3_still_life: 198
+  contiguous_combos_filtered: 267
+  glider_found: 0
+  patterns_checked: 250
+  stable_object_count: 250
+  total_combos_generated: 7770
+  total_unique_seeds: 250
+output_tokens: 1512
+status: experiment_failed
+```
+
+## iter_080: noncontiguous-3bit: A 3-bit non-contiguous seed forms a stable, moving object under the non-conserving rule (A=3,B=14).
+
+**Analysis:** The research is fundamentally blocked. The previous campaign, "Emergent Dynamics," conclusively proved that interactions between known-stable contiguous objects do not produce motion (iter_075-078). This failure, combined with the failure of all prior campaigns to find elemental gliders from contiguous seeds, has exhausted all avenues related to contiguous initial conditions.
+
+The most recent iteration (iter_079) initiated a new campaign, "Non-Contiguous Seeds," by testing 2-bit non-contiguous patterns. This also failed, but for an insightful reason: the two bits were too far apart to interact meaningfully under the rule's local influence. The experimenter's view correctly noted that triggering the rule's dynamics requires either closer spacing (which would be contiguous) or more bits.
+
+Therefore, the only logical and minimal path forward is to escalate the complexity within the non-contiguous paradigm. We must test 3-bit non-contiguous seeds. This directly addresses the failure mode of the last iteration, as three bits can form compact but non-contiguous arrangements that create the dense local neighborhoods required to activate the rule's non-trivial dynamics.
+
+**Task:** Create a new script, `src/search_noncontiguous_3bit.py`, to perform a systematic search for gliders.
+
+1.  **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
+
+2.  **Generate Seeds:** Systematically generate all unique 3-bit non-contiguous seeds that fit within a hex-radius of 2 (a 37-cell diamond). This ensures the patterns are compact enough to interact but are not contiguous. The script should enumerate all 3-cell combinations, filter out the 11 known contiguous trihexes, and then reduce the remaining set to its rotationally unique members.
+
+3.  **Test Each Seed:** For each unique seed:
+    a. Initialize a grid (e.g., 150x150) with the pattern.
+    b. Simulate for 500 steps.
+    c. Track the pattern's configuration and bit count at each step to detect cycles. An object is stable if it enters a cycle with `bit_count > 0`.
+    d. For any stable object, calculate the net displacement of its center of mass over one full period.
+
+4.  **Output:** Create `archive/iter_080/result.yaml`. The script should stop and report immediately if a glider is found. If no glider is found after checking all seeds, it should report a summary.
+    - `glider_found`: `true` if any seed produced a glider.
+    - `patterns_checked`: The number of unique non-contiguous seeds tested.
+    - `stable_object_count`: The number of seeds that produced a stable object.
+    - `outcomes`: A list of strings, one for each seed, detailing its fate, especially for the first glider found (e.g., "Seed #55: GLIDER, period 12, velocity (0.5, 0.25)").
+
+**Status:** experiment_failed
+
+**Experimenter view:** All 250 canonical non-contiguous 3-bit seeds are period-1 still lives; no
+gliders exist in this class under the non-conserving rule (A=3, B=14).
+
+Two distinct behavioral classes appear: (1) the 198 all-isolated seeds, where
+each bit has neighborhood=64 (identity mapping), resulting in a permanent 3-bit
+still life; and (2) the 52 adjacent-pair seeds, where each member of the pair
+sees exactly 1 live neighbor and is killed by the single-neighbor death rule
+(e.g. 68→7), leaving only the isolated third bit as a 1-bit still life.
+
+The birth condition for this rule requires 3 consecutive live neighbors (e.g.
+7→68). A sparse 3-bit non-contiguous seed can never assemble this local
+configuration, so no births occur and no gliders emerge. The hypothesis is
+refuted. To find non-contiguous gliders, one would need either (a) seeds with
+more bits that can create 3-consecutive-neighbor birth sites, or (b) seeds where
+component interactions generate birth via an indirect multi-step cascade.
+
+
+**Metrics:** `{'glider_found': 0, 'patterns_checked': 250, 'total_unique_seeds': 250, 'stable_object_count': 250, 'bits1_still_life': 52, 'bits3_still_life': 198, 'contiguous_combos_filtered': 267, 'total_combos_generated': 7770}`
+
