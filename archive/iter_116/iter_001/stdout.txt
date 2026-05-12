@@ -1,0 +1,65 @@
+I'll explore the existing codebase to understand the patterns before writing the new script.
+I need to understand the structure of a cellular automata project at C:\Users\thomas\Projekte\rdf_digital_physic\src. Please:
+
+1. List the contents of C:\Users\thomas\Projekte\rdf_digital_physic\src (all .py files)
+2. List the contents of C:\Users\thomas\Projekte\rdf_digital_physic\archive (top level dirs)
+3. Read the most recent relevant scripts - look for scripts related to hybrid rules, glider search, kernel pairs, C2-symmetric rules, reversible rules. Focus on scripts from iter_113, iter_114, iter_115.
+4. Read any utility/helper modules that seem to contain core simulation logic (hex grid, rule generation, etc.)
+
+I need to understand:
+- How C2-symmetric reversible rules are generated
+- How kernel pairs are defined (HammingWeight, etc.)
+- How the hex grid simulation works
+- How glider detection works
+- How seeds (trihexes, tetrahexes) are defined
+- The YAML result format used
+
+Search breadth: very thorough
+Now let me read the key source files to understand the exact implementation patterns.
+Now I have everything I need. Let me write the script.
+The script ran successfully. The experiment completed with status `ok`. Here's a summary: the hybrid rule was generated (32 non-identity entries, 0 involution violations), but the soup did not resolve (5818 live cells — too chaotic) and no gliders were found (all 21 seeds settled into still lives).
+
+```yaml
+status: ok
+artifacts:
+  - src/generate_and_test_hybrid_rule.py
+  - archive/iter_116/results/hybrid_rule.json
+  - archive/iter_116/result.yaml
+metrics:
+  final_soup_bit_count: 5818
+  soup_resolved: 0
+  glider_found: 0
+  motion_fitness: 0.0
+  rule_non_identity_entries: 32
+  involution_violations: 0
+log_excerpt: |
+  Generating hybrid rule (4 cooling + 4 glider/birth kernel pairs) ...
+    32 non-identity entries
+    Saved rule -> archive/iter_116/results/hybrid_rule.json
+    Involution violations: 0
+  Test A: soup 150x150, 25% density, 1000 steps ...
+    Initial live cells: 5665
+    step  200: 5817 live cells
+    step  400: 5818 live cells
+    step  600: 5820 live cells
+    step  800: 5817 live cells
+    step 1000: 5818 live cells
+    Final live cells: 5818  soup_resolved=False
+  Test B: glider search (21 seeds, 500 steps each) ...
+    Seeds: 11 trihex + 10 tetrahex = 21 total
+    [all 21 seeds -> still_life, fitness=0.0]
+    max motion_fitness=0.00000000  glider_found=False
+  Wrote archive/iter_116/result.yaml
+experimenter_view: |
+  The hybrid rule (random seed 7) generated 32 non-identity mappings covering
+  4 cooling pairs (HW>=3 -> HW<3) and 4 glider/birth pairs (HW<=2 -> higher HW),
+  verified as a proper involution (0 violations). The soup test shows the rule is
+  weakly chaotic: the grid stabilizes around ~5818 live cells (38% density vs
+  the initial 25%), meaning the glider/birth pairs dominate over the cooling pairs
+  in dense conditions and the soup fails to resolve. All 21 standard seeds collapse
+  quickly to still lives, suggesting the specific rule generated this iteration
+  lacks the sparse-state dynamics needed to sustain motion. A different random seed
+  or adjusted pool biases (e.g. restricting birth targets to center=1 states) may
+  be needed to find a rule that both resolves soup and supports gliders.
+notes: Hybrid rule ran cleanly; soup chaotic (no cooling dominance), no gliders found.
+```

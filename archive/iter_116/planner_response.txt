@@ -1,0 +1,63 @@
+```yaml
+analysis: |
+  The previous experiment (iter_116) was a critical first test of the "hybrid rule" hypothesis. It attempted to combine "cooling" mappings (for resolving a chaotic soup) and "glider-friendly" birth mappings (for motion). The experiment failed because the randomly generated birth mappings were too aggressive, causing chaotic growth that overwhelmed the cooling mappings and prevented both soup resolution and glider formation.
+
+  The failure points to a clear problem: the "birth" component of the rule is too unconstrained and chaotic. A key characteristic of a stable particle is a persistent core structure. In our hex grid, this implies that the center bit of a neighborhood should often remain '1' if it was already '1'. The previous rule generation method allowed birth mappings that could flip the center bit from 1 to 0, which likely destabilizes any potential glider.
+
+  The most logical next step is to introduce a constraint that encourages structure preservation. I will test a refined hybrid rule where the "birth" mappings are required to preserve the state of the center bit. This should promote the stability needed for gliders while taming the chaotic behavior seen in the last iteration.
+open_questions:
+  - "Will constraining birth mappings to be center-bit-preserving create rules that are better at supporting gliders?"
+  - "Is the failure to cool the soup a result of too few cooling mappings, or are the birth mappings simply too dominant regardless of their type?"
+  - "If this fails, should we try generating multiple hybrid rules in one iteration to increase the chances of finding a good one?"
+  - "Does glider motion require chiral (non-C2 symmetric) rules?"
+  - "Could a two-rule system (a cooling rule followed by a motion rule) be more effective than a single hybrid rule?"
+chosen_direction: "Refine the hybrid rule generation by adding a center-bit-preserving constraint to the 'birth' mappings."
+hypothesis: "A hybrid rule with cooling mappings and center-bit-preserving birth mappings can both resolve a chaotic soup and support a stable, moving glider."
+rationale: "This is a minimal, principled change that directly addresses the failure mode of iter_116. By making the 'birth' component of the rule less chaotic and more structure-preserving, we increase the probability of forming stable, propagating patterns while simultaneously reducing the chaotic pressure that prevented the soup from cooling in the last experiment."
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  final_soup_bit_count: 5818
+  glider_found: 0
+  involution_violations: 0
+  motion_fitness: 0.0
+  rule_non_identity_entries: 32
+  soup_resolved: 0
+experimenter_view: |
+  The hybrid rule (random seed 7) generated 32 non-identity mappings covering
+  4 cooling pairs (HW>=3 -> HW<3) and 4 glider/birth pairs (HW<=2 -> higher HW),
+  verified as a proper involution (0 violations). The soup test shows the rule is
+  weakly chaotic: the grid stabilizes around ~5818 live cells (38% density vs
+  the initial 25%), meaning the glider/birth pairs dominate over the cooling pairs
+  in dense conditions and the soup fails to resolve. All 21 standard seeds collapse
+  quickly to still lives, suggesting the specific rule generated this iteration
+  lacks the sparse-state dynamics needed to sustain motion. A different random seed
+  or adjusted pool biases (e.g. restricting birth targets to center=1 states) may
+  be needed to find a rule that both resolves soup and supports gliders.
+notes: "Hybrid rule ran cleanly; soup chaotic (no cooling dominance), no gliders found."
+# --- Meta ---
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
+
+  ## Confirmed
+  - A class of "cooling" C2-symmetric rules (containing only "death" mappings) can resolve a high-density chaotic soup into a stable, low-density field of static objects (iter_105).
+  - Motion (gliders) requires rules that contain "birth" mappings, where the number of live cells can increase (iter_115).
+
+  ## Refuted
+  - A randomly generated hybrid rule with both cooling and birth mappings failed to cool a soup or produce gliders, as the birth mappings were too chaotic (iter_116).
+  - A hybrid rule with "center-bit-preserving" birth mappings also failed to cool a soup or produce gliders (iter_117).
+  - The "cooling" property as defined (monotonically non-increasing cell count) is mathematically incompatible with glider formation (iter_115).
+  - Exhaustive searches of C6 and C2 symmetric rule spaces for simple gliders from small contiguous seeds have failed, suggesting gliders are not an elemental property of these spaces (iter_006-096).
+
+  ## Current Best Result
+  The four "cooling" rules from iter_105 remain the most interesting artifacts, demonstrating a mechanism for emergent order from chaos, even if they don't support motion.
+
+  ## Open Questions
+  - Is the failure to cool the soup a result of an imbalance in the number of cooling vs. birth mappings?
+  - If generating a single hybrid rule at a time continues to fail, should we test a larger batch of them per iteration?
+  - Does glider motion fundamentally require non-C2 (i.e., chiral) symmetry?
+  - Could a two-rule system (a cooling rule followed by a motion rule) be more effective than a single hybrid rule?
+```

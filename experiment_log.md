@@ -1893,3 +1893,40 @@ period distinguishes oscillators (disp=0)
 
 **Notes:** definitive negative result; cooling rules have no birth mappings, so gliders are mathematically impossible
 
+
+---
+```yaml
+cached_tokens: 64765
+cost_usd: 0.09778
+hypothesis: A hybrid rule with cooling mappings and center-bit-preserving birth mappings
+  can both resolve a chaotic soup and support a stable, moving glider.
+input_tokens: 72690
+iter: 116
+metrics:
+  final_soup_bit_count: 5818
+  glider_found: 0
+  involution_violations: 0
+  motion_fitness: 0.0
+  rule_non_identity_entries: 32
+  soup_resolved: 0
+output_tokens: 1274
+status: ok
+```
+
+## iter_116: A hybrid rule with cooling mappings and center-bit-preserving birth mappings can both resolve a chaotic soup and support a stable, moving glider.
+
+**Analysis:** The previous experiment (iter_116) was a critical first test of the "hybrid rule" hypothesis. It attempted to combine "cooling" mappings (for resolving a chaotic soup) and "glider-friendly" birth mappings (for motion). The experiment failed because the randomly generated birth mappings were too aggressive, causing chaotic growth that overwhelmed the cooling mappings and prevented both soup resolut
+
+**Status:** ok
+
+**Metrics:** `{'final_soup_bit_count': 5818, 'glider_found': 0, 'involution_violations': 0, 'motion_fitness': 0.0, 'rule_non_identity_entries': 32, 'soup_resolved': 0}`
+
+**Experimenter view:** The hybrid rule (random seed 7) generated 32 non-identity mappings covering
+4 cooling pairs (HW>=3 -> HW<3) and 4 glider/birth pairs (HW<=2 -> higher HW),
+verified as a proper involution (0 violations). The soup test shows the rule is
+weakly chaotic: the grid stabilizes around ~5818 live cells (38% density vs
+the initial 25%), meaning the glider/birth pairs dominate over the cooling pairs
+in dense
+
+**Notes:** Hybrid rule ran cleanly; soup chaotic (no cooling dominance), no gliders found.
+
