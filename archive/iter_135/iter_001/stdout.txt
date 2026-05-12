@@ -1,0 +1,70 @@
+I'll explore the relevant archive files and existing code structure before writing the script.
+Now let me look at the existing scripts to understand the simulation and evolution code.
+Now let me check a few more relevant scripts to understand the full picture, especially how objects are positioned on the grid.
+Now let me check the ash_pattern.json and Gen-3 scores to understand top-5 elites.
+Now I have all the data I need. Let me write the complete script.
+Now let's run the script:
+The script ran successfully. Let me verify the output files.
+The experiment completed successfully. Let me write the final YAML block.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_local_evolution.py
+  - archive/iter_133/results/remnant_objects.json
+  - archive/iter_135/results/gen4_local_fitness_scores.csv
+  - archive/iter_135/population/best_local_rule.json
+  - archive/iter_135/result.yaml
+metrics:
+  top_local_fitness_gen4: 0.00592729
+  baseline_local_fitness_gen3_champ: 0.0
+  rules_beating_baseline: 1
+log_excerpt: |
+  === SUMMARY ===
+    top_local_fitness_gen4:             0.00592729
+    baseline_local_fitness_gen3_champ:  0.00000000
+    rules_beating_baseline:             1
+    best_rule_id:                       rule_090
+    best_displacement:                  0.326594
+    best_bit_ratio:                     55.100000
+    best_bits_200:                      551
+  
+  === TOP 10 GEN-4 RULES BY LOCAL FITNESS ===
+    rule_090: fitness=0.00592729  disp=0.3266  bit_ratio=55.1000  bits_200=551
+    rule_000: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_001: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_002: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_003: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_004: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_005: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_006: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_007: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+    rule_008: fitness=0.00000000  disp=0.0000  bit_ratio=2.2000  bits_200=22
+experimenter_view: |
+  The local fitness metric revealed a stark landscape. All 99 of the 100 Gen-4
+  rules stabilize the target region to exactly 22 bits (bit_ratio=2.2) with zero
+  COM displacement between steps 100–200 — the same behaviour as the global
+  champion rule_011 (which has baseline local fitness = 0.0). This is a meaningful
+  null result: the entire Gen-4 cohort, like its parent, converts the 10-cell
+  target pair into a static 22-cell configuration that then sits frozen. The
+  local metric correctly scores this as zero since "sustained motion" requires
+  a shifting COM.
+
+  The sole exception, rule_090, achieves a small non-zero score (0.00593) but
+  for the wrong reason: its tracking box explodes to 551 cells by step 200
+  (bit_ratio=55.1), indicating chaotic growth across the entire local region.
+  The tiny displacement (0.33 cells) is swamped by the huge growth penalty in
+  the denominator, yielding the low score. So "beats baseline" is technically
+  true (0.006 > 0.000) but not biologically meaningful — this rule is just
+  chaotic, not coherently translating.
+
+  Key observations: (1) The baseline value of 0.0 is a consequence of rule_011
+  being a stable oscillator; its COM is constant, not translating. The local
+  metric is working as designed — it penalizes stasis and rewards translation.
+  (2) The evolutionary pressure from the global metric (rewarding COM of the
+  entire 78-cell field) has not created useful variation for local translation
+  of a 10-cell sub-region. (3) A second evolution pass seeded from rule_090
+  (the only locally-moving rule), or a larger population, may find rules that
+  combine coherent motion with bit stability.
+notes: "99/100 Gen-4 rules stabilize the target pair to a 22-cell still configuration (zero local displacement); only 1 rule shows any non-zero local fitness, via chaotic expansion rather than coherent translation"
+```

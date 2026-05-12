@@ -5845,3 +5845,80 @@ still-lifes/oscillators from small seeds.
 
 **Metrics:** `{'total_rules_evaluated': 1000, 'dead_rules_count': 0, 'chaotic_rules_count': 1000, 'interesting_rules_count': 0, 'initial_soup_cells': 5665, 'grid_size': 150, 'steps': 1000, 'soup_density': 0.25}`
 
+
+---
+```yaml
+cached_tokens: 65894
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10352
+hypothesis: 'soup-stability: A rule known to produce only still-lifes from small seeds
+  will resolve a chaotic soup into a low-density state of persistent objects.'
+input_tokens: 74098
+iter: 98
+metrics:
+  candidates_found: 79
+  chaotic_rules_count: 79
+  dead_rules_count: 0
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  soup_density: 0.25
+  soup_steps: 1000
+output_tokens: 1633
+status: experiment_failed
+```
+
+## iter_098: soup-stability: A rule known to produce only still-lifes from small seeds will resolve a chaotic soup into a low-density state of persistent objects.
+
+**Analysis:** The research is catastrophically blocked. All attempts to seed an evolutionary search for gliders have failed. Random populations of rules with C6, C2, and "dense" C2 symmetries have all proven to be barren of motion when evaluated with a comprehensive suite of small, contiguous seeds (iter_094, 095, 096). The evolutionary algorithm cannot start as the initial populations have zero fitness variance.
+
+The most recent attempt (iter_097) pivoted the evaluation strategy, using a "primordial soup" of random noise instead of small seeds. This also failed, as the "dense" C2 rules tested were too chaotic and maintained a high-density, unstructured state.
+
+The `experimenter_view` from iter_097 suggested that a different class of rules might be needed to organize the soup. The dense rules were too active. This leads to the final remaining hypothesis: that rules known to be *stabilizing* (but not totally static) with small seeds might be the ones capable of "cooling" a chaotic soup into a low-density state of persistent, emergent objects. This experiment will test that hypothesis by taking the non-chaotic rules from the sparse C2 population (iter_095) and running them in the soup environment.
+
+**Task:** Create a new script, `src/test_stable_rules_in_soup.py`.
+
+1. **Identify Candidate Rules:**
+   - Load the full multi-seed evaluation results for the 100 C2-symmetric rules from `archive/iter_095/results/c2_random_multiseed_scores.csv`.
+   - From this data, identify the subset of rules that, across all 21 tested seeds, produced *only* still-lifes or decayed patterns. Exclude any rule that produced an oscillator or an explosion. These are the "stably boring" candidates.
+
+2. **Evaluate Candidates in Soup:**
+   - For each of the identified candidate rules:
+     a. Initialize a 150x150 grid with 25% random noise (a "soup"). Use the same fixed random seed for the noise pattern as in iter_097 to ensure comparability.
+     b. Simulate for 1000 steps.
+     c. At step 1000, record the final number of live cells (`final_bit_count`).
+
+3. **Classify and Report:**
+   - After evaluating all candidates, classify each rule's outcome based on its `final_bit_count`:
+     - `DEAD`: `final_bit_count` < 20
+     - `CHAOTIC`: `final_bit_count` > 1000
+     - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+   - Create `archive/iter_098/result.yaml` with the following keys:
+     - `candidates_found`: The number of "stably boring" rules identified from the iter_095 population.
+     - `dead_rules_count`: The number of candidates classified as DEAD.
+     - `chaotic_rules_count`: The number of candidates classified as CHAOTIC.
+     - `interesting_rules_count`: The number of candidates classified as INTERESTING.
+   - Create a text file `archive/iter_098/results/interesting_rules.txt` and list the filenames of all rules classified as INTERESTING, one per line.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The soup-stability hypothesis is cleanly falsified. 79 of 100 iter_095
+C2 rules qualify as "stably boring" — every small seed either decays or
+settles to a still-life. Yet ALL 79 candidates remain chaotic on a
+150×150 25%-density soup after 1000 steps (final counts 4070–6573;
+initial was 5665). Several rules leave the soup exactly unchanged
+(final=5665), confirming they are near-identity maps: almost all
+128 neighborhood states map to themselves, so high-density states —
+which the non-identity rules were never designed to handle — are left
+untouched. The structural reason is clear: C2 rules generated here
+have only 8–16 non-identity mappings out of 128 states; dense-soup
+neighborhoods overwhelmingly fall into the identity region. Stability
+on sparse small seeds does not imply any dissolving pressure on dense
+soups. Next directions: explicitly select or evolve rules with non-
+identity mappings targeting high-density neighborhoods, or search for
+rules with both small-seed stability and soup-resolution by scanning
+a larger or different rule space.
+
+
+**Metrics:** `{'candidates_found': 79, 'dead_rules_count': 0, 'chaotic_rules_count': 79, 'interesting_rules_count': 0, 'grid_size': 150, 'soup_density': 0.25, 'soup_steps': 1000, 'initial_soup_cells': 5665}`
+

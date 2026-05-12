@@ -4,20 +4,17 @@ Phase: Focused Exploration
 Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
 
 ## Confirmed
-- **Remnant Composition:** The stable, ~80-bit remnant from `rule_011` is composed of 37 objects of 8 distinct types: 33 still-lifes and 4 oscillators (iter_133).
-- **Remnant Spatial Distribution:** The oscillators are not globally clustered, but one pair is extremely close (distance 3.46), suggesting a potential site for local interaction (iter_134).
-- **Pattern Transformation:** An evolutionary process found a rule (`rule_011`) that transforms the static "ash" pattern into this stable field of oscillators (iter_131, 132).
+- **Local Fitness Metric Works:** A fitness metric focused on a local subset of objects correctly identifies and rewards sustained displacement while penalizing stasis and chaotic growth (iter_135).
+- **Remnant Composition & Structure:** The `rule_011` remnant consists of 37 objects (33 still-lifes, 4 oscillators) with a specific spatial layout featuring one very close oscillator pair (iter_133, 134).
 - **Optimal Rule Density:** C2-symmetric rules with medium density (8 kernel pairs) are most likely to produce viable, non-chaotic, sustained motion (iter_129).
 
 ## Refuted
-- The remnant produced by `rule_011` is not a translating glider, but a collection of stable oscillators (iter_132).
-- The evolutionary lineage from the flawed early-displacement metric is a dead end (iter_127).
-- Hybrid "cooling" and "birth" rules are dominated by chaos (iter_117).
-- A two-stage simulation process fails to animate the ash (iter_118, 119).
+- **Local Evolution from Global Elites:** An evolutionary line successful at global animation is not a good source of genes for local animation. The globally-evolved rules are predisposed to freeze the most active local regions into still-lifes (iter_135).
+- **Remnant is Not a Glider:** The remnant from `rule_011` is a collection of oscillators, not a single translating object (iter_132).
 
 ## Open Questions
-- Can we evolve a rule that makes the close oscillator pair (obj2/obj3) move as a single composite object?
-- Can we find a rule that causes the oscillators to 'herd' the still-lifes?
-- Is there a rule that can cause the two distant oscillators to communicate or synchronize?
-- What happens if we manually delete all the still-lifes and simulate only the four oscillators with `rule_011`?
-- Can we find a rule that creates more oscillators from the existing still-lifes?
+- Can a fresh, random population of rules yield any "founder" individuals with non-chaotic local motion?
+- Is it more effective to evolve a rule to move a single, isolated oscillator before attempting to move a pair?
+- Would a fitness metric rewarding periodicity ("blinking") over translation be more effective?
+- Can we evolve rules to manipulate the still-lifes instead of the oscillators?
+- Is the `rule_011` remnant the best environment, or would a different "ash" be more amenable to animation?

@@ -1,0 +1,73 @@
+```yaml
+analysis: |
+  The hypothesis that a localized fitness metric would easily evolve motion in the target oscillator pair has been strongly refuted. The experiment revealed a critical flaw in the genetic feedstock: the elite rules from the previous global evolution were all predisposed to convert the target oscillator pair into a specific, static 22-cell still-life. Consequently, 99 of the 100 bred offspring inherited this exact behavior, resulting in a local fitness score of zero.
+
+  The experiment was successful in its design, however. The local fitness metric worked perfectly, correctly assigning zero fitness to the static outcomes and a tiny, non-zero fitness to the single chaotic rule (`rule_090`). This rule "beat the baseline" only in a technical sense; its motion was a byproduct of uncontrolled growth, not coherent translation.
+
+  This is a pivotal negative result. It demonstrates that the globally-evolved rules, despite creating a dynamic field of oscillators, did not learn a general-purpose "motion" primitive that could be repurposed locally. Instead, they learned a specific solution that freezes the most active local region. The path forward requires abandoning the current gene pool and starting a fresh search, as the existing genetic material is a dead end for local animation.
+open_questions:
+  - "Can a fresh, random population of rules yield any candidates with non-zero local fitness that are not pathologically chaotic?"
+  - "Is the 10-cell oscillator pair simply too complex to move? Should we target a smaller, single oscillator first?"
+  - "Would a fitness metric that rewards 'blinking' (periodicity) instead of translation find a different class of rules?"
+  - "Can we evolve a rule that first breaks the 22-cell still-life and then another rule to animate the pieces?"
+  - "What if we remove all other objects and try to evolve motion for the oscillator pair in isolation?"
+  - "Is there a different 'ash' pattern, created by a different cooling rule, that is more amenable to local animation?"
+chosen_direction: "The current evolutionary line is a dead end. We must start a fresh search for local motion. The next experiment will test a new, random population of rules against the local fitness metric to see if any 'founder' rules with non-chaotic sustained motion exist."
+hypothesis: "fresh-local-start: A fresh random population of 100 C2-symmetric rules contains at least one rule with a local fitness score > 0.01 that is not driven by chaotic bit-count explosion (bit_ratio < 3.0)."
+rationale: |
+  Iteration 135 proved that the genetic heritage from the global evolution is useless for local animation, as it is overwhelmingly biased towards creating a specific still-life. We are back at square one for finding a rule that can move a specific object. Before attempting a multi-generational evolution, we must first establish if a viable "founder" rule exists in the wild. This experiment performs a search for such a founder by evaluating a new, random population with the now-validated local fitness metric, but with an added constraint to explicitly filter out the chaotically-growing rules that produced false positives in the last run.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  baseline_local_fitness_gen3_champ: 0.0
+  rules_beating_baseline: 1
+  top_local_fitness_gen4: 0.00592729
+experimenter_view: |
+  The local fitness metric revealed a stark landscape. All 99 of the 100 Gen-4
+  rules stabilize the target region to exactly 22 bits (bit_ratio=2.2) with zero
+  COM displacement between steps 100–200 — the same behaviour as the global
+  champion rule_011 (which has baseline local fitness = 0.0). This is a meaningful
+  null result: the entire Gen-4 cohort, like its parent, converts the 10-cell
+  target pair into a static 22-cell configuration that then sits frozen. The
+  local metric correctly scores this as zero since "sustained motion" requires
+  a shifting COM.
+
+  The sole exception, rule_090, achieves a small non-zero score (0.00593) but
+  for the wrong reason: its tracking box explodes to 551 cells by step 200
+  (bit_ratio=55.1), indicating chaotic growth across the entire local region.
+  The tiny displacement (0.33 cells) is swamped by the huge growth penalty in
+  the denominator, yielding the low score. So "beats baseline" is technically
+  true (0.006 > 0.000) but not biologically meaningful — this rule is just
+  chaotic, not coherently translating.
+
+  Key observations: (1) The baseline value of 0.0 is a consequence of rule_011
+  being a stable oscillator; its COM is constant, not translating. The local
+  metric is working as designed — it penalizes stasis and rewards translation.
+  (2) The evolutionary pressure from the global metric (rewarding COM of the
+  entire 78-cell field) has not created useful variation for local translation
+  of a 10-cell sub-region. (3) A second evolution pass seeded from rule_090
+  (the only locally-moving rule), or a larger population, may find rules that
+  combine coherent motion with bit stability.
+notes: "99/100 Gen-4 rules stabilize the target pair to a 22-cell still configuration (zero local displacement); only 1 rule shows any non-zero local fitness, via chaotic expansion rather than coherent translation"
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Local Fitness Metric Works:** A fitness metric focused on a local subset of objects correctly identifies and rewards sustained displacement while penalizing stasis and chaotic growth (iter_135).
+  - **Remnant Composition & Structure:** The `rule_011` remnant consists of 37 objects (33 still-lifes, 4 oscillators) with a specific spatial layout featuring one very close oscillator pair (iter_133, 134).
+  - **Optimal Rule Density:** C2-symmetric rules with medium density (8 kernel pairs) are most likely to produce viable, non-chaotic, sustained motion (iter_129).
+
+  ## Refuted
+  - **Local Evolution from Global Elites:** An evolutionary line successful at global animation is not a good source of genes for local animation. The globally-evolved rules are predisposed to freeze the most active local regions into still-lifes (iter_135).
+  - **Remnant is Not a Glider:** The remnant from `rule_011` is a collection of oscillators, not a single translating object (iter_132).
+
+  ## Open Questions
+  - Can a fresh, random population of rules yield any "founder" individuals with non-chaotic local motion?
+  - Is it more effective to evolve a rule to move a single, isolated oscillator before attempting to move a pair?
+  - Would a fitness metric rewarding periodicity ("blinking") over translation be more effective?
+  - Can we evolve rules to manipulate the still-lifes instead of the oscillators?
+  - Is the `rule_011` remnant the best environment, or would a different "ash" be more amenable to animation?
+```
