@@ -1739,3 +1739,28 @@ The analysis process was effective:
 
 **Notes:** 
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 111
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_111: strategy_error
+
+**Analysis:** 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': "Role 'assistant' is not supported. Please use a valid role: MODEL, USER.", 'status': 'INVALID_ARGUMENT'}}
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': "Role 'assistant' is not supported. Please use a valid role: MODEL, USER.", 'status': 'INVALID_ARGUMENT'}}
+
