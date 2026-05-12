@@ -3,61 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 66180
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10551
-hypothesis: 'dense-c2-motion-search: A population of ''dense'' C2-symmetric rules
-  contains at least one rule with non-zero motion fitness.'
-input_tokens: 74594
-iter: 96
-metrics: {}
-output_tokens: 1729
-status: code_error
-```
-
-## iter_096: dense-c2-motion-search: A population of 'dense' C2-symmetric rules contains at least one rule with non-zero motion fitness.
-
-**Analysis:** The research is fundamentally blocked. The evolutionary search paradigm, which was adopted after all "top-down" formal methods failed, has stalled at the very first step. The core issue is that random populations of rules, whether constrained by high C6 symmetry (iter_094) or lower C2 symmetry (iter_095), are completely barren of the desired "glider" behavior. Even with a robust, multi-seed evaluation using a validated motion-centric fitness metric, the entire initial population consistently has a fitness of zero. The evolutionary algorithm cannot begin its optimization process because there is no variation to select from.
-
-The experimenter's view from iter_095 provided the most critical insight: the random rule generation method creates extremely "sparse" rule tables, where most cellular neighborhoods map to themselves (identity mapping). This inactivity bias makes the spontaneous emergence of complex, propagating structures highly improbable.
-
-Therefore, the next logical step is not to change the symmetry class again or abandon evolution, but to attack this core problem of rule sparsity. We must test if generating a population of "denser" rules, with more non-identity mappings, can create the initial spark of motion needed to seed the evolutionary process.
-
-**Task:** Create a new script, `src/run_c2_dense_motion_evolution.py`, to generate and evaluate a population of C2-symmetric rules with a higher density of non-identity mappings.
-
-**1. Implement Dense C2 Rule Generation:**
-- Implement a new function to generate a single random, reversible, dense C2-symmetric rule.
-- The function should aim for a target number of non-identity mappings (e.g., 32, which is 25% of the 128 states).
-- **Generation Logic:**
-  a. Start with a list of all 128 states [0-127] marked as "unmapped".
-  b. While the number of non-identity mappings is less than the target (32):
-     i. Pick a random state `A` from the "unmapped" list.
-     ii. Pick another random state `B` from the "unmapped" list, ensuring `A != B`.
-     iii. Check if the C2-closure `{A, B, rotate(A, 3), rotate(B, 3)}` is valid (i.e., all members are currently unmapped and distinct from each other).
-     iv. If valid, add the mappings `A <-> B` and `rotate(A, 3) <-> rotate(B, 3)` to the rule. Mark all four states as "mapped".
-     v. If not valid, try picking a different `B`.
-- This process creates a rule with a controlled number of active transitions.
-
-**2. Generate and Evaluate Population:**
-- Generate a population of 100 random, **dense** C2-symmetric rules using the new function. Save them to `archive/iter_096/population/`.
-- For each rule, calculate its motion fitness using the robust multi-seed evaluation protocol:
-  - The final fitness for a rule is the maximum fitness achieved across all 21 standard contiguous seeds (11 trihexes, 10 tetrahexes).
-  - Fitness for a single seed is `displacement / (1 + final_bit_count)`.
-  - Simulate each seed for 500 steps.
-
-**3. Report Results:**
-- Save the final score for each rule to `archive/iter_096/results/c2_dense_scores.csv`.
-- Create `archive/iter_096/result.yaml` summarizing the findings, with the standard keys: `rules_with_motion`, `top_fitness_score`, `top_rule_id`, etc.
-
-**Status:** code_error
-
-**Experimenter view:** No yaml block in output – check stdout.txt
-
-**Metrics:** `{}`
-
-
----
-```yaml
 cached_tokens: 65958
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.27842
@@ -1310,4 +1255,43 @@ original COM settled immediately into a tight oscillation between 8.71 and 9.34
 units and stayed there for the entire 1000-step run — it did not grow over 
 
 **Notes:** motion_sustained=false; remnant is a stable oscillating structure, not a glider
+
+
+---
+```yaml
+cached_tokens: 51887
+cost_usd: 0.10181
+hypothesis: 'visualization: A visualization of the remnant will reveal that the different
+  oscillator types are spatially clustered, not randomly distributed.'
+input_tokens: 64328
+iter: 133
+metrics:
+  decayed_count: 0
+  oscillator_count: 4
+  remnant_bit_count_at_step_200: 78
+  still_life_count: 33
+  total_objects_in_remnant: 37
+  unique_oscillator_types_count: 8
+output_tokens: 1225
+status: ok
+```
+
+## iter_133: visualization: A visualization of the remnant will reveal that the different oscillator types are spatially clustered, not randomly distributed.
+
+**Analysis:** The experiment was a success and has unblocked the research. The hypothesis that the stable remnant from `rule_011` is composed of a small number of simple, repeating structures is confirmed. The analysis script successfully isolated all 37 objects and found that they belong to only 8 unique types (5 still-lifes and 3 oscillators).
+
+The most crucial finding is the simplicity and skewed distributio
+
+**Status:** ok
+
+**Metrics:** `{'decayed_count': 0, 'oscillator_count': 4, 'remnant_bit_count_at_step_200': 78, 'still_life_count': 33, 'total_objects_in_remnant': 37, 'unique_oscillator_types_count': 8}`
+
+**Experimenter view:** The 78-bit remnant of rule_011 (captured at step 200 on a 200×200 grid)
+consists of 37 connected objects of 8 distinct types. The vast majority (33
+of 37) are still-lifes (period 1), dominated by 29 isolated single-cell
+survivors. The remaining 4 objects are oscillators: two copies of a p3
+6-cell type and single instances of a p4 4-cell and a p4 11-cell type.
+No objects decayed when simulated in i
+
+**Notes:** 8 unique types (5 still-life + 3 oscillating); remnant dominated by isolated 1-bit cells
 
