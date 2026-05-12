@@ -4,10 +4,9 @@ Phase: Focused Exploration
 Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
 
 ## Confirmed
-- **BREAKTHROUGH:** A stable, 6-bit, period-4 moving particle ("glider") has been discovered (iter_110).
+- **BREAKTHROUGH:** A stable, 6-bit, period-4 moving particle ("glider") has been discovered emerging from a chaotic soup under rule `archive/iter_105/population/rule_023.json` (iter_110).
+- The glider's precise 4-phase structure has been programmatically extracted and documented in `archive/iter_113/results/glider_structure.json` (iter_113).
 - The "primordial soup" evaluation method is a successful strategy for finding rules that generate complex, emergent structures (iter_105).
-- "Cooling" rules can reliably resolve a chaotic soup into a low-density "ash" of persistent objects (iter_105).
-- The glider's precise 4-phase structure has been extracted and documented (iter_112). It is created by rule `archive/iter_105/population/rule_023.json`.
 
 ## Refuted
 - Simple, contiguous initial seeds are not a reliable source of gliders for the rule spaces explored (iter_006-096).
