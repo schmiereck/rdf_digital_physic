@@ -1,0 +1,50 @@
+```yaml
+analysis: |
+  The evolutionary search for rules that "animate" a static "ash" pattern has been successful for three generations, with mean fitness improving consistently. However, the top fitness score hit a plateau of ~0.240 in Gen-2 and was not surpassed in Gen-3 (iter_122, 123). This suggests convergence to a local optimum.
+
+  The critical ambiguity is whether the "motion" rewarded by our fitness function is sustained linear movement (a true glider/animation) or merely a one-time, complex rearrangement of the ash that settles within the 100-step simulation window. The current fitness metric does not distinguish between these two cases. Before breeding another generation, we must determine the nature of the motion produced by the best-evolved rules.
+open_questions:
+  - "Is the motion of the top-performing rule sustained over a longer simulation, or does it stop after an initial rearrangement?"
+  - "What is the qualitative nature of the motion? (e.g., a single object moving, or a collective drift)"
+  - "Can a different mutation operator or a larger population break the current fitness plateau?"
+  - "Are the top rules from Gen-3 structurally similar to each other?"
+  - "How does the top rule perform on a different ash pattern to test for generalization?"
+chosen_direction: "The most critical question is whether the evolved motion is sustained. All other questions are secondary to this. We must test the top rule over a longer simulation to see if displacement increases linearly with time."
+hypothesis: "long-run: The displacement of the ash under the top Gen-3 rule increases linearly over 500 steps."
+rationale: |
+  This is the most direct test of whether our evolutionary search has discovered genuine, sustained animation or is simply optimizing for a complex but ultimately static rearrangement.
+  - If displacement scales with time, we have confirmed true motion and can proceed with analyzing the moving objects.
+  - If displacement plateaus after the first ~100 steps, it proves our current fitness function is insufficient, as it rewards one-time settling effects. This would necessitate a redesign of the fitness metric before continuing the evolutionary search.
+  This experiment is the minimal step to resolve the core ambiguity of our recent success.
+status: 'PENDING'
+metrics: {}
+experimenter_view: ''
+notes: ''
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
+
+  ## Confirmed
+  - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
+  - A canonical "ash" pattern is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
+  - A fitness metric `displacement / (1 + |Δ_bits| + |Δ_objects|)` successfully guides evolution (iter_120).
+  - An ash-based evolutionary strategy is effective, showing significant fitness improvement across generations.
+    - Gen-1 mean fitness: 0.0127 (iter_121)
+    - Gen-2 mean fitness: 0.0444 (+248% vs Gen-1) (iter_122)
+    - Gen-3 mean fitness: 0.0630 (+41.8% vs Gen-2) (iter_123)
+  - The evolutionary search has converged to a top fitness score of ~0.240, which was found in Gen-2 and rediscovered but not surpassed in Gen-3 (iter_122, 123).
+
+  ## Refuted
+  - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
+  - A two-stage simulation process fails to animate the ash (iter_118, 119).
+  - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
+
+  ## Open Questions
+  - Is the motion of the top-performing rule sustained over a longer simulation, or does it stop after an initial rearrangement?
+  - What is the qualitative nature of the motion? (e.g., a single object moving, or a collective drift)
+  - Can a different mutation operator or a larger population break the current fitness plateau?
+  - Are the top rules from Gen-3 structurally similar to each other?
+  - How does the top rule perform on a different ash pattern to test for generalization?
+```

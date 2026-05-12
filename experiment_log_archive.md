@@ -5062,3 +5062,77 @@ more) chaotic from small seeds, producing no oscillators or gliders.
 
 **Metrics:** `{'median_rule_fitness': 320797.4584, 'seeds_tested': 21, 'gliders_found': 0, 'still_lifes': 4, 'exploded': 17, 'oscillators': 0, 'decayed': 0}`
 
+
+---
+```yaml
+cached_tokens: 65511
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10337
+hypothesis: A fitness function rewarding low final bit count from a small seed will
+  correctly identify known chaotic rules as 'unfit' and known stabilizing rules as
+  'fit'.
+input_tokens: 73697
+iter: 87
+metrics:
+  chaotic_high_final_bit_count: 20869
+  chaotic_high_fitness_rule_score: 4.79e-05
+  chaotic_medium_final_bit_count: 6913
+  chaotic_medium_fitness_rule_score: 0.000145
+  ratio_stabilizing_vs_chaotic_high: 4174.0
+  ratio_stabilizing_vs_chaotic_medium: 1382.8
+  stabilizing_final_bit_count: 4
+  stabilizing_rule_score: 0.2
+output_tokens: 1657
+status: ok
+```
+
+## iter_087: A fitness function rewarding low final bit count from a small seed will correctly identify known chaotic rules as 'unfit' and known stabilizing rules as 'fit'.
+
+**Analysis:** The research is fundamentally blocked. The "Evolutionary Search" campaign, initiated as a promising pivot from failed formal rule searches, has hit a critical flaw. The fitness metric designed in iter_082, while successfully breeding rules with high dynamic complexity (iter_084), was shown to be misaligned with the project's goal. It selects for chaotic, space-filling dynamics, not the stable, localized, propagating particles ("gliders") we need.
+
+Both the highest-fitness rule (iter_085) and a medium-fitness rule (iter_086) from the evolved population proved to be chaotic, causing small initial seeds to explode and fill the grid. This demonstrates that simply maximizing abstract "complexity" is the wrong optimization target.
+
+The evolutionary paradigm itself is not invalidated, but the objective function is. Before we can proceed with breeding a new generation, we must design and validate a new fitness function that explicitly rewards the desired behavior: the creation and maintenance of *localized, non-explosive* structures from a small seed. This is the only logical path forward.
+
+**Task:** Create a new script, `src/validate_new_fitness_metric.py`, to test a redesigned fitness function.
+
+**1. Define the New Fitness Function:**
+The function will evaluate a given rule based on its behavior from a single, small seed.
+- **Metric:** `fitness = 1 / (1 + final_bit_count)`.
+- **Procedure:**
+  a. Initialize a 150x150 grid with a single, 4-bit contiguous "T-shape" seed.
+  b. Simulate for 500 steps.
+  c. Record the final `bit_count` at step 500.
+  d. Calculate the fitness score. A rule that destroys the seed (final_bit_count=0) gets a score of 1.0. A rule that creates a stable 4-bit object gets 1/(1+4) = 0.2. A rule that explodes to 1000 bits gets ~0.001.
+
+**2. Test on Known Rules:**
+The script will evaluate three specific rules to validate the metric's effectiveness:
+a. **Chaotic High-Fitness Rule:** Load `archive/iter_084/population/rule_023.json` (the top-fitness rule from iter_085).
+b. **Chaotic Medium-Fitness Rule:** Load `archive/iter_084/population/rule_056.json` (the median-fitness rule from iter_086).
+c. **Stabilizing Rule:** Load `src/symmetric_rule_nonconserving_A3_B14.json` (the rule from iter_069, known to produce stable still lifes from 4-bit seeds).
+
+**3. Report Results:**
+Create `archive/iter_087/result.yaml` with the following keys:
+- `chaotic_high_fitness_rule_score`: The new fitness score for rule_023.
+- `chaotic_medium_fitness_rule_score`: The new fitness score for rule_056.
+- `stabilizing_rule_score`: The new fitness score for the A3-B14 rule.
+- `metric_is_discriminating`: `true` if the stabilizing rule's score is at least 10x higher than both chaotic scores, `false` otherwise.
+
+**Status:** ok
+
+**Experimenter view:** The new fitness metric (1 / (1 + final_bit_count)) is extremely effective at
+discriminating between chaotic and stabilizing rules. From a single 4-bit T-shape
+seed on a 150x150 toroidal grid after 500 steps:
+- Both chaotic rules explode dramatically (6913 and 20869 bits), yielding near-zero
+  fitness scores (~0.000048 and ~0.000145).
+- The stabilizing rule (A3-B14) returns the exact 4-bit seed unchanged, yielding the
+  perfect near-maximum score of 0.2 (= 1/(1+4)).
+- The discrimination ratios are 4174x and 1383x — far exceeding the 10x threshold.
+The metric is not merely discriminating; it is decisively separating. The stabilizing
+rule's behavior (preserving the seed exactly) suggests it maps every still-life
+neighborhood to itself, a robust property. This metric would make a strong fitness
+function for evolving stabilizing rules.
+
+
+**Metrics:** `{'chaotic_high_fitness_rule_score': 4.79e-05, 'chaotic_medium_fitness_rule_score': 0.000145, 'stabilizing_rule_score': 0.2, 'chaotic_high_final_bit_count': 20869, 'chaotic_medium_final_bit_count': 6913, 'stabilizing_final_bit_count': 4, 'ratio_stabilizing_vs_chaotic_high': 4174.0, 'ratio_stabilizing_vs_chaotic_medium': 1382.8}`
+

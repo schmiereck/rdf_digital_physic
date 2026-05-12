@@ -19,8 +19,8 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
 
 ## Open Questions
-- Can a longer simulation time (e.g., 500 steps) reveal more significant motion and break the fitness plateau?
-- What do the dynamics of the top-performing rules actually look like when visualized?
-- Is there a different mutation operator that could break the current fitness plateau?
-- Are the top rules structurally similar, indicating convergence to a single 'family' of solutions?
-- How well does the best rule perform on a different ash pattern?
+- Is the motion of the top-performing rule sustained over a longer simulation, or does it stop after an initial rearrangement?
+- What is the qualitative nature of the motion? (e.g., a single object moving, or a collective drift)
+- Can a different mutation operator or a larger population break the current fitness plateau?
+- Are the top rules from Gen-3 structurally similar to each other?
+- How does the top rule perform on a different ash pattern to test for generalization?
