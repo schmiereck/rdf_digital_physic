@@ -9,7 +9,6 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 
 ## Refuted
 - A randomly generated hybrid rule with both cooling and birth mappings failed to cool a soup or produce gliders, as the birth mappings were too chaotic (iter_116).
-- A hybrid rule with "center-bit-preserving" birth mappings also failed to cool a soup or produce gliders (iter_117).
 - The "cooling" property as defined (monotonically non-increasing cell count) is mathematically incompatible with glider formation (iter_115).
 - Exhaustive searches of C6 and C2 symmetric rule spaces for simple gliders from small contiguous seeds have failed, suggesting gliders are not an elemental property of these spaces (iter_006-096).
 
