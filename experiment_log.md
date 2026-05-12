@@ -3,62 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 66200
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10542
-hypothesis: 'cooling-rules-fix: A population of C2-rules, biased to map medium-density
-  states to lower-density states, contains at least one rule that resolves a random
-  soup into a low-density state.'
-input_tokens: 74816
-iter: 101
-metrics: {}
-output_tokens: 1651
-status: code_error
-```
-
-## iter_101: cooling-rules-fix: A population of C2-rules, biased to map medium-density states to lower-density states, contains at least one rule that resolves a random soup into a low-density state.
-
-**Analysis:** The research is catastrophically blocked. All attempts to find a rule that supports moving particles ("gliders") have failed. The "Evolutionary Search" paradigm, which was the last resort after exhaustive formal searches failed, has stalled at its first step. The core problem is that initial random populations of rules, regardless of their symmetry (C6, C2) or density ("sparse", "dense"), are completely barren of the desired behavior. The evolutionary algorithm has no initial "spark" of motion to select and optimize.
-
-A pivot to a "primordial soup" evaluation (iter_097-099) also failed due to a "density paradox": rules were either too chaotic (dense rules) or too inactive (sparse rules) to organize the soup into a structured, low-density state.
-
-The last attempt, iter_100, proposed the most promising strategy yet: generating "cooling" rules that explicitly map medium-density states (common in the soup) to low-density states. This is a direct, engineered solution to the density paradox. However, this experiment failed due to a code error, leaving this critical hypothesis untested. The only logical path forward is to fix the implementation and re-run this experiment.
-
-**Task:** This task is a re-run of iter_100. Please debug and fix the `code_error` from the previous attempt.
-
-Create a script `src/run_cooling_soup_search.py`.
-
-**1. Implement 'Cooling' Rule Generation:**
-- Create a function to generate a single C2-symmetric rule with exactly 8 kernel pairs (16 non-identity mappings).
-- To generate the kernels, randomly select pairs `(A, B)` such that:
-  - The Hamming Weight of state `A` is in `{2, 3}` (medium density).
-  - The Hamming Weight of state `B` is in `{0, 1}` (low density).
-- The pools of medium- and low-density states must be sampled without replacement to ensure all 8 generated kernel pairs are unique and result in a conflict-free C2-symmetric rule.
-
-**2. Generate and Evaluate Population:**
-- Generate a population of 100 "cooling" rules and save them to `archive/iter_101/population/`.
-- Evaluate each rule using the established soup methodology:
-  - Initialize a 150x150 grid with 25% random noise (use the same fixed random seed as prior soup experiments, e.g., seed=42).
-  - Simulate for 1000 steps.
-  - Record the `final_bit_count`.
-
-**3. Classify and Report:**
-- Classify each rule's outcome based on its `final_bit_count`:
-  - `DEAD`: `final_bit_count` < 20
-  - `CHAOTIC`: `final_bit_count` > 1000
-  - `INTERESTING`: 20 <= `final_bit_count` <= 1000
-- Create `archive/iter_101/result.yaml` with the counts for each class (`dead_rules_count`, `chaotic_rules_count`, `interesting_rules_count`).
-- Create `archive/iter_101/results/interesting_rules.txt`, listing the filenames of all rules classified as `INTERESTING`.
-
-**Status:** code_error
-
-**Experimenter view:** No yaml block in output – check stdout.txt
-
-**Metrics:** `{}`
-
-
----
-```yaml
 cached_tokens: 66805
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.09414
@@ -1161,4 +1105,46 @@ chaotic-explosion trap: all three viable rules have bit_ratios well below 1.0 or
 very close to 1.0 (0.575, 0.877, 1.003), consistent with the parity constraint
 
 **Notes:** Parity constraint successfully biases search toward low-bit-ratio rules; 3 viable founders found.
+
+
+---
+```yaml
+cached_tokens: 49086
+campaign: Phase 6 - Parity-Constrained Evolution
+cost_usd: 0.11106
+hypothesis: 'evolution-parity-gen3: A third generation of rules, bred from the top
+  performers of Gen-2, will produce at least one rule with a fitness score greater
+  than the Gen-2 top score of 0.731.'
+input_tokens: 64224
+iter: 139
+metrics:
+  fitness_improvement_pct: -85.3707
+  gen1_mean_fitness: 0.31259824
+  gen1_top_fitness: 0.36059001
+  gen2_mean_fitness: 0.0457309
+  gen2_top_fitness: 0.73077873
+  rules_beating_gen1_top: 5
+output_tokens: 1441
+status: ok
+```
+
+## iter_139: evolution-parity-gen3: A third generation of rules, bred from the top performers of Gen-2, will produce at least one rule with a fitness score greater than the Gen-2 top score of 0.731.
+
+**Analysis:** The hypothesis that mean fitness would increase was strongly refuted; it dropped by 85%. This is because the three Gen-1 "founders" were pre-selected for viability, while the 100 Gen-2 offspring were not, and 79% of them proved to be inviable (zero fitness) due to destructive crossover.
+
+However, the experiment was a major success from a different perspective. The core goal of evolution—to produce
+
+**Status:** ok
+
+**Metrics:** `{'fitness_improvement_pct': -85.3707, 'gen1_mean_fitness': 0.31259824, 'gen1_top_fitness': 0.36059001, 'gen2_mean_fitness': 0.0457309, 'gen2_top_fitness': 0.73077873, 'rules_beating_gen1_top': 5}`
+
+**Experimenter view:** The hypothesis that Gen-2 mean fitness would be ≥100% higher than Gen-1 mean is
+FALSIFIED. Gen-2 mean (0.04573) is 85.4% LOWER than Gen-1 mean (0.31260). The
+reason is clear from the distribution: 79 of 100 Gen-2 rules collapsed to zero
+fitness (still-death or chaotic explosion), whereas all 3 Gen-1 founders were
+viable by construction (pre-screened in iter_138).
+
+However, the top individual resul
+
+**Notes:** Gen-2 mean fitness declined 85% vs Gen-1 (most offspring collapse), but 5 rules beat Gen-1 top; champion rule_033 achieves 0.731, 2× Gen-1 top.
 
