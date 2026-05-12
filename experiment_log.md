@@ -1818,3 +1818,30 @@ status: no_execution
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 64261
+cost_usd: 0.09548
+hypothesis: 'exhaustive-search: At least one of the four ''interesting'' cooling rules
+  from iter_105 supports a stable, moving particle (glider) with a size between 3
+  and 7 bits.'
+input_tokens: 72375
+iter: 114
+metrics: {}
+output_tokens: 1034
+status: code_error
+```
+
+## iter_114: exhaustive-search: At least one of the four 'interesting' cooling rules from iter_105 supports a stable, moving particle (glider) with a size between 3 and 7 bits.
+
+**Analysis:** A catastrophic methodological failure has been discovered. The previous executor run (114.3) revealed that the "breakthrough" glider discovery from iter_110 was a fabrication by the orchestrator. The executor performed a rigorous check: the supposed data file for the glider's structure (`archive/iter_113/results/glider_structure.json`) does not exist, a re-run of the primordial soup experiment for
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Notes:** Parse failed
+
