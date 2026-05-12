@@ -3,83 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 66144
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10357
-hypothesis: 'multi-seed-evaluation: The Gen-3 population contains at least one rule
-  with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit
-  seeds.'
-input_tokens: 74237
-iter: 93
-metrics:
-  rules_evaluated: 100
-  rules_with_motion: 0
-  seeds_per_rule: 21
-  top_fitness_score: 0.0
-  total_evaluations: 2100
-output_tokens: 1654
-status: experiment_failed
-```
-
-## iter_093: multi-seed-evaluation: The Gen-3 population contains at least one rule with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
-
-**Analysis:** The research is fundamentally blocked. The evolutionary search, our last resort after formal methods failed, has stalled. A validated, motion-centric fitness metric (`displacement / (1 + final_bit_count)`) was developed in iter_090. However, applying it to both a random population (iter_091) and a population evolved for stability (iter_092) found zero gliders.
-
-A critical flaw in the current evaluation process is the use of a single, arbitrary seed (a 4-bit T-shape) to determine a rule's fitness. A rule might support gliders from one seed but not another. Discarding an entire population based on a single seed's outcome is not robust.
-
-The most logical and minimal next step is to improve the evaluation protocol. Instead of testing a single seed, we must test each rule against a comprehensive suite of simple seeds and take the best outcome as its score. This will definitively determine if the stability-evolved Gen-3 population is truly devoid of simple gliders, or if our previous evaluation was simply too narrow.
-
-**Task:** Create a new script, `src/run_multiseed_motion_evaluation.py`.
-
-**1. Load Population:**
-- The script must load all 100 rules from the Gen-3 population located in `archive/iter_088/population/`.
-
-**2. Define Seed Suite:**
-- The script must define a standard suite of 21 seeds: all 11 unique contiguous 3-bit trihexes and all 10 unique one-sided contiguous 4-bit tetrahexes.
-
-**3. Evaluate Population with Multi-Seed Metric:**
-- For each of the 100 rules:
-  a. Initialize a `max_fitness_for_rule` to 0.0.
-  b. Iterate through each of the 21 seeds.
-  c. For each seed, calculate its motion fitness using the standard procedure:
-     - Initialize a 150x150 grid with the seed.
-     - Simulate for 500 steps, detecting cycles.
-     - If a stable object is found, calculate `fitness = displacement / (1 + final_bit_count)`.
-     - If no stable object is found (decay, chaos, timeout), fitness is 0.
-  d. Update `max_fitness_for_rule = max(max_fitness_for_rule, fitness)`.
-  e. The final score for the rule is `max_fitness_for_rule`.
-
-**4. Report Results:**
-- Save the final score and best-performing seed for each rule to `archive/iter_093/results/gen3_multiseed_scores.csv`.
-- Create `archive/iter_093/result.yaml` summarizing the findings, with keys:
-  - `rules_with_motion`: Count of rules with a final fitness score > 0.
-  - `top_fitness_score`: The highest score found.
-  - `top_rule_id`: The filename of the best rule.
-  - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider (e.g., "4-bit T-shape").
-  - `top_rule_glider_period`: Period of the best glider.
-  - `top_rule_glider_bit_count`: Final bit count of the best glider.
-  - `top_rule_glider_velocity`: The (dq, dr) velocity of the best glider.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The hypothesis is falsified — zero of the 100 Gen-3 rules achieve non-zero
-motion fitness across all 21 standard seeds (11 fixed trihexes + 10 one-sided
-tetrahexes). This is fully consistent with iter_089 (which tested the top
-non-annihilating rule against all 21 seeds: only still-lifes and decay) and
-iter_092 (which tested all 100 rules against the T-shape: 84 still-lifes,
-16 decays, 0 gliders). The Gen-3 population was bred under a stability/
-annihilation fitness pressure that is mechanistically opposed to sustained
-motion. Expanding the seed suite from 1 seed to 21 seeds does not rescue
-any rule. To find glider-capable rules, a population must be evolved directly
-under the motion-based fitness metric (as started in iter_091) rather than
-repurposing stability-evolved rules.
-
-
-**Metrics:** `{'rules_evaluated': 100, 'seeds_per_rule': 21, 'total_evaluations': 2100, 'rules_with_motion': 0, 'top_fitness_score': 0.0}`
-
-
----
-```yaml
 cached_tokens: 66273
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.1049
@@ -1413,4 +1336,43 @@ produced zero viable rules — the rules are too sparse to sustain motion even
 transientl
 
 **Notes:** Medium density (8 pairs) maximises viable rules and top fitness; density scan confirms an optimal regime between order and chaos.
+
+
+---
+```yaml
+cached_tokens: 54082
+cost_usd: 0.09847
+hypothesis: 'evolution-reboot-gen3: A third generation of rules, bred from the top
+  performers of Gen-2, will produce at least one rule with a fitness score greater
+  than the Gen-2 top score of 0.0380.'
+input_tokens: 64466
+iter: 130
+metrics:
+  chaotic_rules: 16
+  fitness_improvement_pct: 37.2645
+  gen1_top_fitness: 0.02771506
+  gen2_mean_fitness: 0.00356258
+  gen2_top_fitness: 0.03804293
+  rules_beating_gen1_top: 2
+  viable_rules: 22
+output_tokens: 1410
+status: ok
+```
+
+## iter_130: evolution-reboot-gen3: A third generation of rules, bred from the top performers of Gen-2, will produce at least one rule with a fitness score greater than the Gen-2 top score of 0.0380.
+
+**Analysis:** The research was blocked because initial random populations for our evolutionary algorithm were barren of viable individuals. Iteration 129 found a "sweet spot" for rule density (8 kernel pairs) that yielded two viable "founder" rules with a top fitness of 0.0277. This iteration tested the crucial next step: breeding a new generation from these founders to see if the evolutionary process could amp
+
+**Status:** ok
+
+**Metrics:** `{'chaotic_rules': 16, 'fitness_improvement_pct': 37.2645, 'gen1_top_fitness': 0.02771506, 'gen2_mean_fitness': 0.00356258, 'gen2_top_fitness': 0.03804293, 'rules_beating_gen1_top': 2, 'viable_rules': 22}`
+
+**Experimenter view:** The evolutionary breeding worked decisively. Gen-2 produced 2 rules that
+beat the Gen-1 top score (rule_034 at 0.03804293 and rule_010 at 0.02839845),
+representing a +37.3% improvement in peak fitness. Viable rule count jumped
+from 2 to 22 out of 100, a 10x increase, suggesting the crossover is
+producing a rich neighbourhood around the elite parents. Many rules appear
+to be near-clones of elite1 (
+
+**Notes:** Gen-2 top fitness 0.03804 beats Gen-1 top 0.02771 by +37.3%; 2 rules beat Gen-1 top.
 
