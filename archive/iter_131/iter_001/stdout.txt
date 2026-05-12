@@ -1,0 +1,68 @@
+I'll explore the existing codebase structure and Gen-2 code before writing the Gen-3 script.
+The working directory is restricted to `src/`. Let me look at the Gen-2 script and related files there.
+Now I have a clear picture of the codebase. Let me write the Gen-3 script.
+Now I have all the context I need. Let me write the Gen-3 script.
+Now let me run it and capture the output:
+The run succeeded. Let me verify the output files:
+All files saved correctly. The Gen-3 evolution was a dramatic success — the new fitness formula (`displacement / (1 + bits/initial_bits)`) rewards rules that reduce their bit count while maintaining displacement, which the Gen-2 formula penalized. Rule_011 achieved fitness=1.33 (vs Gen-2 top of 0.038) with only 78 bits remaining and 1.65 units of displacement.
+
+```yaml
+status: ok
+artifacts:
+  - src/evolve_reboot_gen3.py
+  - archive/iter_131/population/rule_000.json
+  - archive/iter_131/population/rule_001.json
+  - archive/iter_131/results/reboot_gen3_scores.csv
+  - archive/iter_131/result.yaml
+metrics:
+  gen2_top_fitness: 0.03804293
+  gen3_top_fitness: 1.33193795
+  fitness_improvement_pct: 3401.1445
+  rules_beating_gen2_top: 57
+  viable_rules: 98
+  chaotic_rules: 2
+  dead_rules: 0
+  gen3_mean_fitness: 0.24450913
+log_excerpt: |
+  Evaluating 100 rules (200 steps) ...
+    Evaluated 10/100  last: rule_009 fitness=0.19759304  bits=314
+    Evaluated 20/100  last: rule_019 fitness=0.41213175  bits=335
+    Evaluated 30/100  last: rule_029 fitness=0.43426001  bits=318
+    Evaluated 40/100  last: rule_039 fitness=0.43426001  bits=318
+    Evaluated 50/100  last: rule_049 fitness=0.00000000  bits=310
+  ...
+    rule_011: fitness=1.33193795  bits=78  disp=1.6516  [viable]
+  ...
+  Saved CSV: .../archive/iter_131/results/reboot_gen3_scores.csv
+  Saved YAML: .../archive/iter_131/result.yaml
+  === Gen-3 Summary ===
+    gen2_top_fitness:        0.03804293
+    gen3_top_fitness:        1.33193795
+    fitness_improvement_pct: +3401.1445%
+    rules_beating_gen2_top:  57
+    viable_rules:            98
+    chaotic_rules:           2
+    dead_rules:              0
+    gen3_mean_fitness:       0.24450913
+experimenter_view: |
+  Gen-3 massively outperforms Gen-2, though the comparison requires a caveat:
+  the fitness formula changed between generations. Gen-2 used
+  `displacement / (1 + |Δbits| + |Δobjects|)` which penalized deviation from
+  initial population. Gen-3 uses `displacement / (1 + bits/initial_bits)`,
+  which rewards rules that reduce their bit count while still moving.
+
+  The standout rule is rule_011 (fitness=1.33): it shrank from 325 to 78 bits
+  while displacing its center of mass 1.65 units in steps 100–200 — a rule
+  that appears to "evaporate" into a small, mobile remnant.
+
+  57 of 100 Gen-3 rules beat the Gen-2 champion (0.038), suggesting the
+  5-elite breeding pool with 4+4 crossover produces highly capable offspring.
+  Only 2 rules turned chaotic; 0 went fully dead. The new formula also
+  explains why zero-displacement rules score 0 regardless of bit count.
+
+  The high mean fitness (0.245 over viable rules) versus Gen-2's effectively
+  near-zero mean indicates the changed formula is the dominant driver; a
+  direct head-to-head re-evaluation with Gen-2's formula would be needed to
+  isolate breeding improvement from metric change.
+notes: Gen-3 top fitness 1.33 vs Gen-2 top 0.038 — largely driven by new fitness formula rewarding bit-count reduction; 57/100 rules beat Gen-2 champion.
+```

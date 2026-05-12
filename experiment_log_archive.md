@@ -5577,3 +5577,74 @@ repurposing stability-evolved rules.
 
 **Metrics:** `{'rules_evaluated': 100, 'seeds_per_rule': 21, 'total_evaluations': 2100, 'rules_with_motion': 0, 'top_fitness_score': 0.0}`
 
+
+---
+```yaml
+cached_tokens: 66273
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.1049
+hypothesis: The random population from iter_091 contains at least one rule with non-zero
+  motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
+input_tokens: 74492
+iter: 94
+metrics:
+  population_size: 100
+  rules_with_motion: 0
+  seeds_evaluated: 21
+  top_fitness_score: 0.0
+output_tokens: 1728
+status: experiment_failed
+```
+
+## iter_094: The random population from iter_091 contains at least one rule with non-zero motion fitness when evaluated across all 21 standard 3- and 4-bit seeds.
+
+**Analysis:** The research is critically blocked. The evolutionary search, our final paradigm, has stalled. We have a validated, motion-centric fitness metric (iter_090), but all attempts to find a rule with non-zero fitness have failed.
+- A random population evaluated with a single seed yielded no gliders (iter_091).
+- A stability-evolved population evaluated with a single seed yielded no gliders (iter_092).
+- The same stability-evolved population, re-evaluated robustly with 21 seeds per rule, also yielded no gliders (iter_093).
+
+The conclusion from iter_093 was that the stability-evolved population is a dead end. The conclusion from iter_091 was that finding gliders by chance is rare. However, the evaluation in iter_091 was weak, using only a single seed. The logical and minimal path forward is to combine the robust evaluation method from iter_093 with the random population from iter_091. This will definitively tell us if gliders are findable in a random search space when a sufficiently broad set of initial conditions is tested. If this fails, the rarity of gliders is so extreme that a much larger initial population size for evolution would be required.
+
+**Task:** Create a new script, `src/reevaluate_random_for_motion.py`.
+
+1.  **Load Population:**
+    - The script must load the 100 random rules from the population generated in iter_091, located at `archive/iter_091/population/`.
+
+2.  **Define Seed Suite:**
+    - The script must define the standard suite of 21 seeds: all 11 unique contiguous 3-bit trihexes and all 10 unique one-sided contiguous 4-bit tetrahexes.
+
+3.  **Evaluate Population with Multi-Seed Metric:**
+    - For each of the 100 rules:
+      a. Initialize a `max_fitness_for_rule` to 0.0.
+      b. Iterate through each of the 21 seeds.
+      c. For each seed, calculate its motion fitness using the standard procedure:
+         - Initialize a 150x150 grid with the seed.
+         - Simulate for 500 steps, detecting cycles.
+         - If a stable object is found, calculate `fitness = displacement / (1 + final_bit_count)`.
+         - If no stable object is found (decay, chaos, timeout), fitness is 0.
+      d. Update `max_fitness_for_rule = max(max_fitness_for_rule, fitness)`.
+      e. The final score for the rule is `max_fitness_for_rule`.
+
+4.  **Report Results:**
+    - Save the final score for each rule to `archive/iter_094/results/random_multiseed_scores.csv`.
+    - Create `archive/iter_094/result.yaml` summarizing the findings, with keys:
+      - `rules_with_motion`: Count of rules with a final fitness score > 0.
+      - `top_fitness_score`: The highest score found.
+      - `top_rule_id`: The filename of the best rule, or "" if none found.
+      - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider.
+      - `top_rule_glider_period`: Period of the best glider.
+      - `top_rule_glider_velocity`: The (dq, dr) velocity of the best glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The iter_091 random population (100 C6-symmetric rules) produced zero non-zero
+motion fitness scores even when evaluated across all 21 standard 3- and 4-bit
+seeds (11 trihexes + 10 tetrahexes). This is entirely consistent with iter_091's
+own evaluation (which used a single seed and also found 0 gliders). Expanding
+the seed suite from 1 to 21 seeds did not rescue the random population — gliders
+are simply absent from uniformly random C6-symmetric rule space. The success
+criterion (rules_with_motion >= 1) was not met, so the hypothesis is falsified.
+
+
+**Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21}`
+

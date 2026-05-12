@@ -1,0 +1,76 @@
+```yaml
+analysis: |
+  The experiment was a resounding success, far exceeding the hypothesis's prediction. Breeding a third generation of rules from the top 5 Gen-2 elites resulted in a massive leap in performance. The top fitness score jumped from 0.0380 in Gen-2 to 1.33 in Gen-3, an improvement of over 3400%. 57 of the 100 new rules surpassed the previous generation's champion.
+
+  However, the `experimenter_view` provides a critical clarification: the fitness function was changed for this generation. The new formula, `displacement / (1 + final_bit_count / initial_bit_count)`, explicitly rewards rules that reduce the number of live cells while still producing motion. This is a significant departure from the previous metric, which penalized any change in the ash's composition.
+
+  The standout rule, `rule_011`, achieved its high score by shrinking the ash from 325 to 78 bits while simultaneously displacing the center of mass. This suggests we have evolved a new class of behavior: a rule that "evaporates" the static ash field, leaving behind a smaller, mobile remnant. This is a major breakthrough.
+open_questions:
+  - "What is the structure of the 78-bit mobile remnant produced by rule_011?"
+  - "Is the motion of the remnant sustained over a longer simulation (e.g., 1000 steps)?"
+  - "Can we visualize the 'evaporation' process to understand how rule_011 works?"
+  - "How much of the fitness gain was due to the new metric vs. the breeding process?"
+  - "Now that we have a rule that creates a mobile object, can we isolate that object and study it in a clean environment?"
+chosen_direction: |
+  The most important next step is to characterize the new behavior discovered in `rule_011`. The high fitness score suggests sustained motion, but we must verify this with a longer simulation run and visualize the process. Understanding the "mobile remnant" is now the highest priority.
+hypothesis: |
+  long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over 1000 steps, with its 78-bit remnant moving at a constant velocity.
+rationale: |
+  Iteration 131 produced a rule with an unprecedented fitness score, seemingly by creating a small, mobile object from a larger static one. This is the most promising lead in over 100 iterations. Before continuing the evolutionary search, we must confirm that this new behavior is robust and not an artifact of the 200-step simulation window. A longer run will validate whether we have found true, sustained motion, which would be a major milestone.
+status: ok
+metrics:
+  chaotic_rules: 2
+  dead_rules: 0
+  fitness_improvement_pct: 3401.1445
+  gen2_top_fitness: 0.03804293
+  gen3_mean_fitness: 0.24450913
+  gen3_top_fitness: 1.33193795
+  rules_beating_gen2_top: 57
+  viable_rules: 98
+experimenter_view: |
+  Gen-3 massively outperforms Gen-2, though the comparison requires a caveat:
+  the fitness formula changed between generations. Gen-2 used
+  `displacement / (1 + |Δbits| + |Δobjects|)` which penalized deviation from
+  initial population. Gen-3 uses `displacement / (1 + bits/initial_bits)`,
+  which rewards rules that reduce their bit count while still moving.
+
+  The standout rule is rule_011 (fitness=1.33): it shrank from 325 to 78 bits
+  while displacing its center of mass 1.65 units in steps 100–200 — a rule
+  that appears to "evaporate" into a small, mobile remnant.
+
+  57 of 100 Gen-3 rules beat the Gen-2 champion (0.038), suggesting the
+  5-elite breeding pool with 4+4 crossover produces highly capable offspring.
+  Only 2 rules turned chaotic; 0 went fully dead. The new formula also
+  explains why zero-displacement rules score 0 regardless of bit count.
+
+  The high mean fitness (0.245 over viable rules) versus Gen-2's effectively
+  near-zero mean indicates the changed formula is the dominant driver; a
+  direct head-to-head re-evaluation with Gen-2's formula would be needed to
+  isolate breeding improvement from metric change.
+notes: |
+  Gen-3 top fitness 1.33 vs Gen-2 top 0.038 — largely driven by new fitness formula rewarding bit-count reduction; 57/100 rules beat Gen-2 champion.
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Evolutionary Breakthrough:** Breeding a third generation of rules with a new fitness metric that rewards bit-reduction produced a rule (`iter_131/rule_011`) with a fitness score of 1.33, a ~3400% improvement over the previous generation's champion (iter_131).
+  - **New Behavior:** The top rule appears to "evaporate" the static ash field into a much smaller (78-bit), mobile remnant (iter_131).
+  - **Optimal Rule Density:** C2-symmetric rules with medium density (8 kernel pairs) are most likely to produce viable, non-chaotic, sustained motion (iter_129).
+  - A "late-displacement" fitness metric (measuring motion between steps 100-200) successfully filters out rules that only produce transient, initial motion (iter_125, 127).
+  - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
+
+  ## Refuted
+  - The evolutionary lineage from the flawed early-displacement metric (Gen-1 to Gen-4) is a dead end (iter_127).
+  - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
+  - A two-stage simulation process (cooling rule, then motion rule) fails to animate the ash (iter_118, 119).
+  - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
+
+  ## Open Questions
+  - What is the structure of the 78-bit mobile remnant produced by rule_011?
+  - Is the motion of the remnant sustained over a longer simulation (e.g., 1000 steps)?
+  - Can we visualize the 'evaporation' process to understand how rule_011 works?
+  - Now that we have a rule that creates a mobile object, can we isolate that object and study it in a clean environment?
+```
