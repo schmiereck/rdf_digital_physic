@@ -5,16 +5,17 @@ Evolve a rule that produces sustained, coherent motion in a pre-structured "ash"
 
 ## Confirmed
 - **Parity-Conservation Unblocks Search:** A parity-conservation constraint is highly effective at suppressing chaotic growth, enabling the discovery of rules with non-explosive dynamics (iter_138).
-- **'Late-Late-Displacement' Metric is Effective:** An evolutionary fitness metric calculated between steps 400-800 successfully filters out rules with transient motion and selects for rules exhibiting sustained motion (iter_142).
 
 ## Refuted
-- **Sustained Motion Not Yet Confirmed:** The high fitness scores observed up to Gen-3 were artifacts of a flawed metric that measured transient, expansive drift, not sustained motion. The `rule_049` from iter_140 creates a large, stable oscillator that stops moving after ~400 steps (iter_141).
+- **Sustained Motion Not Yet Achieved:** All attempts to evolve sustained motion have resulted in "false positives" exhibiting transient motion.
+- **`rule_016` Motion Decays:** The Gen-4 champion rule (`rule_016`), evolved with a stringent 400-800 step metric, was shown to have a velocity decay of over 50% when measured in a subsequent 1200-1600 step window (iter_143).
+- **`rule_049` Motion is Transient:** The Gen-3 champion (`rule_049`) was shown to expand into a large, stable oscillator, with all motion ceasing after ~400 steps (iter_141).
 
 ## Current Best
-- `rule_016` from the Gen-4 population (iter_142) is the current champion. It achieves a fitness of 6.48 on the stringent 400-800 step metric, demonstrating motion that persists far longer than any previous rule. The nature and true persistence of this motion are now the primary subject of investigation.
+- There is currently no rule that has been demonstrated to produce sustained motion. The evolutionary search is effectively back at square one, but with a much better understanding of the failure modes.
 
 ## Open Questions
-- Is the motion of the new champion (rule_016) truly sustained, or will it also decay over a longer timescale (e.g., 2000 steps)?
-- What is the qualitative nature of the motion? Is it a coherent, glider-like object, or a more complex, amorphous 'cloud'?
-- Can we isolate the moving components from the stationary background in the `rule_016` dynamics?
-- How does the velocity of the moving object scale with simulation time?
+- Can a fitness metric based on velocity stability (e.g., standard deviation over multiple windows) finally filter out transient motion?
+- Is the "ash" environment too complex, and would evolution on a simpler seed pattern be more effective?
+- Can we programmatically identify and track a "core" object to make the fitness metric more robust than a global center-of-mass calculation?
+- Would penalizing high variance in bit-count help suppress the expansive-contractive patterns that are gaming the current metrics?

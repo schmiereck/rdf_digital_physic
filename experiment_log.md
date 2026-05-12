@@ -3,33 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 62158
-cost_usd: 0.095
-hypothesis: 'structure-extraction: The 6-bit, period-4 glider''s structure can be
-  programmatically extracted by re-running the discovery experiment and logging the
-  coordinates of the identified moving object.'
-input_tokens: 69331
-iter: 112
-metrics: {}
-output_tokens: 1477
-status: no_execution
-```
-
-## iter_112: structure-extraction: The 6-bit, period-4 glider's structure can be programmatically extracted by re-running the discovery experiment and logging the coordinates of the identified moving object.
-
-**Analysis:** The previous iteration (110) was a breakthrough, discovering the first stable, moving particle (a 6-bit, period-4 glider). This emerged from a "primordial soup" cooled by rule_023 from iter_105. However, while we know the glider's properties (bit count, period, velocity), we do not know its specific structure. This is a critical knowledge gap. Before we can study its interactions or try to synthes
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
 cached_tokens: 63648
 cost_usd: 0.09061
 hypothesis: 'structure-extraction: The 6-bit, period-4 glider''s structure can be
@@ -1123,4 +1096,45 @@ The top Gen-4 rule (rule_016) achieves fitness=6.479 with displacement=8.694 ove
 this same metric. The breeding process successfully
 
 **Notes:** Gen-4 evolved with 400-800 step metric; top rule achieves fitness=6.479, 80/100 viable rules
+
+
+---
+```yaml
+cached_tokens: 48228
+campaign: Phase 6 - Parity-Constrained Evolution
+cost_usd: 0.0979
+hypothesis: 'velocity-stability-metric: A fitness metric rewarding low standard deviation
+  of velocity across multiple time windows (400-800, 800-1200, 1200-1600) will assign
+  a higher score to a hypothetical stable glider than to the decaying motion of rule_016.'
+input_tokens: 59561
+iter: 143
+metrics:
+  disp_1200_1600: 16.97931866
+  disp_400_800: 40.40255499
+  final_bit_count_at_2000: 647
+  motion_sustained: false
+  velocity_ratio: 0.42025359
+output_tokens: 1527
+status: ok
+```
+
+## iter_143: velocity-stability-metric: A fitness metric rewarding low standard deviation of velocity across multiple time windows (400-800, 800-1200, 1200-1600) will assign a higher score to a hypothetical stable glider than to the decaying motion of rule_016.
+
+**Analysis:** The research has hit a significant and recurring roadblock. Iteration 142 evolved a new champion rule (`rule_016`) that scored highly on a stringent fitness metric designed to reward long-term motion (steps 400-800). This experiment (143) was a crucial verification to see if that motion persisted even longer.
+
+The result is a definitive failure. The long-run simulation showed that `rule_016`'s vel
+
+**Status:** ok
+
+**Metrics:** `{'disp_1200_1600': 16.97931866, 'disp_400_800': 40.40255499, 'final_bit_count_at_2000': 647, 'motion_sustained': False, 'velocity_ratio': 0.42025359}`
+
+**Experimenter view:** The motion produced by rule_016 is NOT sustained over the long run. The displacement
+in the primary fitness window (steps 400–800) was large at 40.4 grid units, confirming
+the rule scored well by the Gen-4 metric. However, the displacement in the later window
+(steps 1200–1600) was only 17.0 units, giving a velocity_ratio of 0.42 — well below the
+0.9 threshold for sustained motion.
+
+The bit count t
+
+**Notes:** Long-run verification for rule_016 from iter_142 complete. Motion not sustained (velocity_ratio=0.42 < 0.9).
 

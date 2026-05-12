@@ -1,0 +1,67 @@
+```yaml
+analysis: |
+  The research has hit a significant and recurring roadblock. Iteration 142 evolved a new champion rule (`rule_016`) that scored highly on a stringent fitness metric designed to reward long-term motion (steps 400-800). This experiment (143) was a crucial verification to see if that motion persisted even longer.
+
+  The result is a definitive failure. The long-run simulation showed that `rule_016`'s velocity decays by over 50% in the subsequent time window (1200-1600 steps). This proves that even our most rigorous evolutionary metric to date is still rewarding transient phenomena, not stable, glider-like motion. The core problem remains: the evolutionary process is finding loopholes by creating complex, expanding-and-contracting patterns that drift for a few hundred steps before settling down or dissipating. We have not yet found a metric that can distinguish this from true, sustained locomotion.
+open_questions:
+  - "Can a fitness metric based on velocity standard deviation over multiple windows filter out transient motion?"
+  - "Is the 'ash' environment fundamentally too complex, preventing the evolution of simple gliders?"
+  - "Can we evolve rules on a much smaller, simpler initial pattern to encourage simpler solutions?"
+  - "Would a fitness penalty for high bit-count *variance* (not just magnitude) suppress these expansive-contractive patterns?"
+  - "Is it possible to programmatically identify and track a 'core' object, calculating its velocity instead of the global center of mass?"
+chosen_direction: "The global center-of-mass metric is clearly insufficient. We need to focus on the stability of the moving object itself. The most direct way to address the current failure mode is to penalize changes in the object's properties over time. A fitness metric that rewards stable velocity and stable bit count seems most promising."
+hypothesis: "velocity-stability-metric: A fitness metric rewarding low standard deviation of velocity across multiple time windows (400-800, 800-1200, 1200-1600) will assign a higher score to a hypothetical stable glider than to the decaying motion of rule_016."
+rationale: |
+  The current fitness function rewards high displacement in a single, late time window. This experiment showed that this is not sufficient to guarantee sustained motion. The rule found a way to "game" the metric by creating a large displacement that later fizzled out. A better metric would not just measure displacement in one window, but would measure it in several consecutive windows and reward *consistency*. A true glider should have a near-constant velocity, and therefore a very low standard deviation of its displacement-per-window. This experiment will first establish a baseline by applying this new metric to the failed `rule_016`, which we predict will score poorly.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  disp_1200_1600: 16.97931866
+  disp_400_800: 40.40255499
+  final_bit_count_at_2000: 647
+  motion_sustained: false
+  velocity_ratio: 0.42025359
+experimenter_view: |
+  The motion produced by rule_016 is NOT sustained over the long run. The displacement
+  in the primary fitness window (steps 400–800) was large at 40.4 grid units, confirming
+  the rule scored well by the Gen-4 metric. However, the displacement in the later window
+  (steps 1200–1600) was only 17.0 units, giving a velocity_ratio of 0.42 — well below the
+  0.9 threshold for sustained motion.
+
+  The bit count trajectory tells the same story: the pattern grows from 325 to a peak of
+  ~1394 bits around t=1200, then decays sharply to 762 at t=1600 and 647 at t=2000. This
+  decay in live-cell count, combined with the erratic COM trajectory in the later phase
+  (the COM oscillates rather than drifting directionally), indicates the pattern is not a
+  true glider but rather a transient expansion event whose coherent motion diminishes after
+  the first 800 steps. The simulation was stable throughout — no infinite expansion or
+  chaotic blow-up — but the velocity clearly decays by more than half.
+notes: "Long-run verification for rule_016 from iter_142 complete. Motion not sustained (velocity_ratio=0.42 < 0.9)."
+# --- Meta ---
+milestone_reached: ""
+user_question: ""
+campaign: "Phase 6 - Parity-Constrained Evolution"
+campaign_status: ""
+campaign_summary: |
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Parity-Conservation Unblocks Search:** A parity-conservation constraint is highly effective at suppressing chaotic growth, enabling the discovery of rules with non-explosive dynamics (iter_138).
+
+  ## Refuted
+  - **Sustained Motion Not Yet Achieved:** All attempts to evolve sustained motion have resulted in "false positives" exhibiting transient motion.
+  - **`rule_016` Motion Decays:** The Gen-4 champion rule (`rule_016`), evolved with a stringent 400-800 step metric, was shown to have a velocity decay of over 50% when measured in a subsequent 1200-1600 step window (iter_143).
+  - **`rule_049` Motion is Transient:** The Gen-3 champion (`rule_049`) was shown to expand into a large, stable oscillator, with all motion ceasing after ~400 steps (iter_141).
+
+  ## Current Best
+  - There is currently no rule that has been demonstrated to produce sustained motion. The evolutionary search is effectively back at square one, but with a much better understanding of the failure modes.
+
+  ## Open Questions
+  - Can a fitness metric based on velocity stability (e.g., standard deviation over multiple windows) finally filter out transient motion?
+  - Is the "ash" environment too complex, and would evolution on a simpler seed pattern be more effective?
+  - Can we programmatically identify and track a "core" object to make the fitness metric more robust than a global center-of-mass calculation?
+  - Would penalizing high variance in bit-count help suppress the expansive-contractive patterns that are gaming the current metrics?
+```
