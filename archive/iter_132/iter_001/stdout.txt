@@ -1,0 +1,46 @@
+I'll examine the relevant files first to understand the data structures, then create the script.
+Now let me look at existing simulation scripts to understand the patterns used.
+Let me read the most relevant script from iter_131.
+Now I have everything I need. Let me create the script.
+Now run the script to generate the results.
+The script ran successfully. The results reveal an unexpected finding: the displacement oscillates between 8.7–9.3 units rather than growing, indicating the remnant is not a translating glider but a stable oscillating structure. The `motion_sustained` criterion failed (`disp_1000=8.71` vs threshold `4.5 × 9.34 = 42.05`).
+
+```yaml
+status: ok
+artifacts:
+  - src/test_long_run_motion.py
+  - archive/iter_132/result.yaml
+  - archive/iter_132/results/long_run_metrics.csv
+metrics:
+  initial_bit_count: 325
+  final_bit_count: 80
+  remnant_stable: true
+  displacement_at_200_steps: 9.3448578
+  displacement_at_1000_steps: 8.71275356
+  motion_sustained: false
+log_excerpt: |
+  step=   0  disp=0.000000  bits=  325  objs=  72
+  step=  20  disp=9.344858  bits=   78  objs=  37
+  step= 200  disp=9.344858  bits=   78  objs=  37
+  step= 400  disp=8.712754  bits=   80  objs=  37
+  step= 600  disp=9.344858  bits=   78  objs=  38
+  step= 800  disp=9.344858  bits=   78  objs=  37
+  step=1000  disp=8.712754  bits=   80  objs=  37
+  displacement_at_200_steps:  9.3448578
+  displacement_at_1000_steps: 8.71275356
+  motion_sustained: false
+experimenter_view: |
+  rule_011 from iter_131 ran for 1000 steps on the canonical ash pattern (200x200
+  grid, wrapping boundaries).  The initial 325-bit ash collapsed rapidly to a stable
+  ~78-80 bit remnant composed of ~37 objects by step 20.  The displacement from the
+  original COM settled immediately into a tight oscillation between 8.71 and 9.34
+  units and stayed there for the entire 1000-step run — it did not grow over time.
+  This means the remnant is not a translating glider but a fixed or oscillating
+  structure displaced from the ash centroid.  The remnant form was stable (bit count
+  within 5% from step 200 to 1000).  The sustained-motion criterion
+  (disp_1000 > 4.5 × disp_200) was not met: 8.71 vs threshold 42.05.
+  The iter_131 finding of "constant velocity motion" may have been observed on a
+  shorter run or with a different initial condition; over 1000 steps from the
+  canonical ash, no translational drift is present.
+notes: motion_sustained=false; remnant is a stable oscillating structure, not a glider
+```

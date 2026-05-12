@@ -5648,3 +5648,79 @@ criterion (rules_with_motion >= 1) was not met, so the hypothesis is falsified.
 
 **Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21}`
 
+
+---
+```yaml
+cached_tokens: 66230
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10305
+hypothesis: 'c2-motion-search: A random population of C2-symmetric rules contains
+  at least one rule with non-zero motion fitness.'
+input_tokens: 74520
+iter: 95
+metrics:
+  population_size: 100
+  rules_with_motion: 0
+  seeds_evaluated: 21
+  top_fitness_score: 0.0
+  total_evaluations: 2100
+output_tokens: 1532
+status: experiment_failed
+```
+
+## iter_095: c2-motion-search: A random population of C2-symmetric rules contains at least one rule with non-zero motion fitness.
+
+**Analysis:** The research is fundamentally blocked. All prior paradigms have failed to produce motion ("gliders"). The most recent "Evolutionary Search" campaign culminated in iter_094, which conclusively demonstrated that a random population of 100 C6-symmetric rules contains zero gliders, even when robustly tested with 21 different seeds per rule. This confirms that gliders are vanishingly rare in the C6-symmetric rule space.
+
+The consistent failure across all C6-symmetric rules, whether formally constructed or randomly generated, strongly suggests that the high symmetry itself is the problem. As hypothesized in iter_072, the 6-fold rotational symmetry may be creating an overly "crystalline" universe where forces are too perfectly balanced to permit net propagation.
+
+The only logical path forward is to abandon the C6 symmetry constraint and explore a lower-symmetry rule space. The minimal and most principled next step is to test whether the space of C2-symmetric (180-degree rotational symmetry) rules is more likely to contain the "spark" of motion needed to kickstart our evolutionary algorithm.
+
+**Task:** Create a new script, `src/run_c2_motion_evolution_gen1.py`. This script will generate and evaluate a population of C2-symmetric rules.
+
+**1. Implement C2 Rule Generation:**
+- Create a function to generate a single random, reversible, C2-symmetric, non-conserving rule.
+- This function should randomly choose `k` (between 2-4) kernel pairs `(A, B)`.
+- For each pair, it adds only the C2-symmetric mappings to the rule dictionary: `A -> B`, `rotate(A, 3) -> rotate(B, 3)`, and their inverses. Ensure no mapping conflicts arise.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 random C2-symmetric rules and save them to `archive/iter_095/population/`.
+- For each rule, calculate its motion fitness using the robust multi-seed evaluation protocol from iter_093/094:
+  - The final fitness for a rule is the maximum fitness achieved across all 21 standard contiguous seeds (11 trihexes, 10 tetrahexes).
+  - Fitness for a single seed is `displacement / (1 + final_bit_count)`.
+  - Simulation per seed should run for 500 steps.
+
+**3. Report Results:**
+- Save the final score for each rule to `archive/iter_095/results/c2_random_multiseed_scores.csv`.
+- Create `archive/iter_095/result.yaml` summarizing the findings, with the standard keys:
+  - `rules_with_motion`: Count of rules with a final fitness score > 0.
+  - `top_fitness_score`: The highest score found.
+  - `top_rule_id`: The filename of the best rule, or "" if none found.
+  - `top_rule_glider_seed_info`: A string describing the seed that produced the best glider.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The C2-symmetric random population (100 rules, seed=95) produced zero gliders
+across all 21 standard contiguous seeds (11 trihexes + 10 tetrahexes), each
+simulated for 500 steps. Manual inspection confirms the rules are genuinely
+C2-symmetric (180° rotation symmetry verified) and that the CA dynamics
+are well-behaved — seeds produce still-lifes (most common), occasional
+explosions, and fast decay, but no translating patterns.
+
+This continues the pattern from iter_093 (Gen-3 C6, 0/100) and iter_094
+(random C6, 0/100). Restricting symmetry from C6 to C2 did not help: the
+reduced symmetry constraint allows a broader rule space, but the additional
+degrees of freedom do not spontaneously produce motion.
+
+Key structural observation: C2 rules generated here have only 8–16
+non-identity mappings (2–4 pairs × 4 mappings/pair) out of 128 total
+neighborhood states. Most neighborhoods are mapped to themselves (identity),
+making truly novel dynamics very rare by chance.
+
+Next direction: evolutionary pressure (selection for motion) is likely
+required — random sampling alone is insufficient across C6 and C2
+symmetry classes.
+
+
+**Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'population_size': 100, 'seeds_evaluated': 21, 'total_evaluations': 2100}`
+
