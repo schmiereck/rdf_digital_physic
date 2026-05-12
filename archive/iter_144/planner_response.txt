@@ -1,0 +1,19 @@
+```yaml
+analysis: |
+  The research is stuck in a loop. Each new generation of the evolutionary algorithm finds a rule that exploits a flaw in the current fitness metric, producing "false positives" that exhibit transient or decaying motion rather than sustained, coherent locomotion.
+
+  - The Gen-3 champion (`rule_049`) produced a one-time expansion (iter_141).
+  - The Gen-4 champion (`rule_016`), evolved with a more stringent late-displacement metric (400-800 steps), was also found to have a velocity that decays by over 50% in a subsequent time window (iter_143).
+
+  The fundamental problem is that measuring displacement in a single time window is insufficient. A new approach is needed that explicitly rewards the *consistency* of motion over time. The most promising open question is whether a fitness metric based on velocity stability can finally solve this problem. Before starting a new, expensive evolutionary run, we must first create and validate this new metric.
+open_questions:
+  - "Can a fitness metric based on velocity stability (e.g., standard deviation over multiple windows) finally filter out transient motion?"
+  - "Can a new generation (Gen-5), evolved with the velocity-stability metric, produce a rule that defeats all prior champions in a long-run stability test?"
+  - "Is the 'ash' environment too complex, and would evolution on a simpler seed pattern be more effective?"
+  - "Can we programmatically identify and track a 'core' object to make the fitness metric more robust than a global center-of-mass calculation?"
+  - "Would penalizing high variance in bit-count help suppress the expansive-contractive patterns that are gaming the current metrics?"
+chosen_direction: "Develop and validate a new fitness metric based on velocity stability."
+hypothesis: "velocity-stability-metric: A fitness metric rewarding low standard deviation of velocity across three consecutive 400-step windows will assign a low fitness score (<1.0) to the previous champion, rule_016."
+rationale: |
+  Previous metrics have failed because they only measured displacement over a single window, allowing them to be gamed by transient or decaying motion. By measuring the consistency of velocity across multiple, sequential, long-term windows, this new metric should be able to reject "false positives" like `rule_016` and provide a much more reliable signal for true, sustained locomotion. This experiment validates the new metric itself, which is a prerequisite for the next evolutionary run. The hypothesis is that `rule_016`, with its known 58% velocity decay, will score poorly on this new metric.
+```
