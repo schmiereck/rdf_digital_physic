@@ -1,0 +1,52 @@
+I'll read the relevant files to understand the existing structure before writing the new script.
+Now let me look at an existing generation script for the breeding and simulation logic.
+Now I have everything I need. Let me write the Gen-4 script.
+Now run it:
+Let me verify the result.yaml was written correctly:
+Everything ran cleanly. The Gen-4 experiment completed with all artifacts saved.
+
+**Key finding:** The late-displacement metric exposes that the Gen-3 elite rules — despite having good early displacement scores — have converged to static or near-static patterns by step 100. Only 1 out of 100 Gen-4 offspring (rule_073) showed any late motion, but it does so via a population explosion (6331 bits vs. target 325), which heavily penalizes the fitness score (0.00020401). The metric is working correctly as a discriminator — it simply reveals the Gen-3 elites are not a good genetic foundation for sustained locomotion.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_ash_evolution_gen4.py
+  - archive/iter_127/population/rule_001.json
+  - archive/iter_127/population/rule_073.json
+  - archive/iter_127/results/fitness_scores.csv
+  - archive/iter_127/result.yaml
+metrics:
+  population_size: 100
+  rules_with_sustained_motion: 1
+  top_fitness_score: 0.00020401
+  top_rule_displacement_100_200: 1.229365
+  top_rule_final_bits: 6331
+  top_rule_final_objects: 53
+log_excerpt: |
+  rule_070: fitness=0.00000000  late_disp=0.0000  bits=  325  objs=  71
+  rule_071: fitness=0.00000000  late_disp=0.0000  bits=  323  objs=  72
+  rule_072: fitness=0.00000000  late_disp=0.0000  bits=  325  objs=  71
+  rule_073: fitness=0.00020401  late_disp=1.2294  bits= 6331  objs=  53
+  rule_074: fitness=0.00000000  late_disp=0.0000  bits=  327  objs=  71
+  ...
+  rule_100: fitness=0.00000000  late_disp=0.0000  bits=  325  objs=  71
+  Saved CSV: archive/iter_127/results/fitness_scores.csv
+  === Summary ===
+    top_fitness_score:            0.00020401
+    top_rule_id:                  rule_073.json
+    top_rule_displacement_100_200:1.229365
+    top_rule_final_bits:          6331
+    top_rule_final_objects:       53
+    rules_with_sustained_motion:  1
+  Saved YAML: archive/iter_127/result.yaml
+experimenter_view: |
+  The late-displacement metric correctly reveals that all Gen-3 elite rules have
+  settled into static or near-static attractors by step 100 — zero late displacement
+  for 99/100 offspring. The single exception (rule_073) achieves displacement via a
+  catastrophic bit-count explosion (6331 vs. target 325), yielding fitness 0.00020401.
+  This confirms iter_125's hypothesis: the Gen-3 plateau fitness was driven by early
+  transient motion, not sustained locomotion. The Gen-3 gene pool is not a viable
+  foundation for breeding sustained-motion rules; a different elite selection strategy
+  or a fresh random search targeting late-displacement directly is needed for Gen-5.
+notes: Gen-4 bred and evaluated; late-displacement metric functional; 1/100 rules shows motion (via explosion, not locomotion)
+```
