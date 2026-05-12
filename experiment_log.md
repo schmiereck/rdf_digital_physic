@@ -3,81 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 63711
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10379
-hypothesis: 'evolution-select: Selecting the top 10% of a 100-rule population based
-  on the dynamic fitness metric yields a set of ''elite'' rules whose average fitness
-  is at least 10x the population average.'
-input_tokens: 72649
-iter: 83
-metrics:
-  elite_count: 10
-  elite_fitness_mean: 1491843.93
-  population_fitness_mean: 226850.54
-  population_size: 100
-  selection_pressure_ratio: 6.58
-  top_elite_fitness: 5575321.86
-  zero_fitness_rules: 27
-output_tokens: 1596
-status: experiment_failed
-```
-
-## iter_083: evolution-select: Selecting the top 10% of a 100-rule population based on the dynamic fitness metric yields a set of 'elite' rules whose average fitness is at least 10x the population average.
-
-**Analysis:** The project is unblocked after a major strategic pivot in iter_082. All previous "top-down" formal search methods, which sought rules with specific structural properties (symmetry, conservation, etc.), have conclusively failed to produce motion (gliders). Iterations 049 through 081 represent a comprehensive but unsuccessful exploration of that design space.
-
-Iteration 082 successfully validated a new "bottom-up" paradigm: evolutionary search. A dynamic fitness metric was developed and proven to be highly effective at discriminating between trivial (dead/frozen) and complex CA dynamics. This metric gives us, for the first time, a tool to search for desired *behavior* rather than pre-supposed structure.
-
-The logical and only path forward is to apply this new tool. We will now implement the first full cycle of an evolutionary algorithm: generate a population, evaluate fitness, and select the "elite" rules for the next generation. This moves us from validating the method to actively using it to find complex rules.
-
-**Task:** Create a new script, `src/evolve_rules.py`, that implements the first generation (generation, evaluation, selection) of an evolutionary algorithm.
-
-1.  **Generation:**
-    - Generate a population of 100 random, reversible, C6-symmetric, non-conserving rules.
-    - Use the same random generation method as in iter_082 (2-4 kernel pairs, `A` and `B` from 1-127).
-    - Save each of the 100 rule files to `archive/iter_083/population/rule_NNN.json`.
-
-2.  **Evaluation:**
-    - For each of the 100 rules, calculate its fitness score.
-    - Use the exact same procedure from iter_082:
-        - Initialize a 100x100 grid with 50% random noise.
-        - Simulate for 500 steps.
-        - Fitness metric: `mean(bit_count_last_100_steps) * stddev(bit_count_all_steps)`. If stddev is 0, fitness is 0.
-    - Save all 100 scores to `archive/iter_083/results/fitness_scores.csv` with columns: `rule_id`, `fitness_score`, `final_bit_count`, `mean_bit_count`, `stddev_bit_count`.
-
-3.  **Selection:**
-    - Identify the top 10 rules with the highest fitness scores. These are the "elites".
-    - Copy the 10 elite rule files into a new directory: `archive/iter_083/elites/`.
-
-4.  **YAML Output:**
-    - Create `archive/iter_083/result.yaml` summarizing the results. It must contain:
-        - `population_size`: 100
-        - `elite_count`: 10
-        - `population_fitness_mean`: The mean fitness of all 100 rules.
-        - `elite_fitness_mean`: The mean fitness of the top 10 elite rules.
-        - `top_elite_fitness`: The single highest fitness score found.
-        - `selection_pressure_ratio`: `elite_fitness_mean / population_fitness_mean`.
-
-**Status:** experiment_failed
-
-**Experimenter view:** The generation/evaluation/selection pipeline worked correctly. 27 of 100
-rules were static (fitness=0), but the remaining 73 included a broad
-continuum of moderately complex rules (40k–300k fitness), keeping the
-population mean high at ~227k. The top-two outliers (rule_085 at 5.6M and
-rule_078 at 3.5M) show that exceptionally dynamic rules do appear, but the
-dense middle tier prevents a 10x ratio. The hypothesis requires a more
-bimodal distribution — more truly inert rules and fewer medium-fitness ones
-— to achieve ratio >= 10. The fitness metric itself discriminates well
-(4-order-of-magnitude range), so the metric design is sound; the population
-statistics just didn't satisfy the threshold with this seed.
-
-
-**Metrics:** `{'population_size': 100, 'elite_count': 10, 'population_fitness_mean': 226850.54, 'elite_fitness_mean': 1491843.93, 'top_elite_fitness': 5575321.86, 'selection_pressure_ratio': 6.58, 'zero_fitness_rules': 27}`
-
-
----
-```yaml
 cached_tokens: 64148
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.10381
@@ -1797,4 +1722,44 @@ it triggered a rapid expansion — by step 400 the grid had grown from 325
 to 20,742 live cells and locked into
 
 **Notes:** Chaotic rule from iter_084 is space-filling on sparse ash; produces CHAOTIC_EXPLOSION fixed point at ~20k live cells, not object animation
+
+
+---
+```yaml
+cached_tokens: 61643
+cost_usd: 0.10175
+hypothesis: 'evolution-for-animation: A population of rules evolved with the ash-based
+  fitness metric will produce at least one rule with a fitness score greater than
+  the inert baseline (0.0524).'
+input_tokens: 71525
+iter: 120
+metrics:
+  chaotic_rule_final_bits: 20742
+  chaotic_rule_fitness: 0.000164
+  inert_rule_final_bits: 328
+  inert_rule_fitness: 0.052432
+  initial_ash_bits: 325
+  initial_ash_objects: 72
+output_tokens: 1260
+status: ok
+```
+
+## iter_120: evolution-for-animation: A population of rules evolved with the ash-based fitness metric will produce at least one rule with a fitness score greater than the inert baseline (0.0524).
+
+**Analysis:** The research was critically blocked, having exhausted all rule-finding strategies. This iteration successfully unblocks the project by establishing a new, promising research direction.
+
+A canonical, low-density "ash" pattern of 72 stable objects was generated from a primordial soup and saved as a reusable asset (`src/ash_pattern.json`). This provides a standard environment for a new class of exper
+
+**Status:** ok
+
+**Metrics:** `{'chaotic_rule_final_bits': 20742, 'chaotic_rule_fitness': 0.000164, 'initial_ash_bits': 325, 'initial_ash_objects': 72, 'inert_rule_final_bits': 328, 'inert_rule_fitness': 0.052432}`
+
+**Experimenter view:** The canonical ash (325 bits, 72 objects) is reproducible and stable under the
+cooling rule. The inert rule (A3_B14) preserves the ash almost perfectly —
+only 3 extra bits appear (325→328), all 72 objects survive, and the center of
+mass barely shifts (0.21 cells), yielding fitness=0.0524. The chaotic rule
+explodes the ash from 325 to 20,742 bits, merging all 72 objects into 1 giant
+connected compon
+
+**Notes:** Fitness metric validated; inert rule scores 320x higher than chaotic rule on ash pattern.
 

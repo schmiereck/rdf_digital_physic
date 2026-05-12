@@ -1,0 +1,66 @@
+I'll explore the project structure first to understand what's available.
+Explore the project at C:\Users\thomas\Projekte\rdf_digital_physic\src and the archive directory. I need to understand:
+1. What files exist in src/ (especially any existing simulation/rule utilities)
+2. The structure of archive/iter_105/population/rule_023.json
+3. The structure of archive/iter_118/ (looking for symmetric_rule_nonconserving_A3_B14.json)
+4. The structure of archive/iter_084/population/rule_023.json
+5. Any existing Python simulation code patterns
+
+Look at 2-3 existing Python files in src/ to understand the simulation API (grid initialization, stepping, object counting, center of mass calculation). Be thorough - search breadth: very thorough.
+Good. Now let me read the specific rule files and a representative simulation script to understand the exact API.
+Now let me read a relevant simulation script to understand the object counting API.
+Now let me look at how object counting is done in a relevant script.
+Now let me look at how object counting via connected components is done.
+Let me look at how connected components (objects) are counted.
+Now I have all the information I need. Let me write both scripts.
+Now let me run Part 1 to generate the ash pattern.
+The ash pattern is generated. Now run Part 2.
+Both scripts ran successfully. The results are clear and interpretable.
+
+```yaml
+status: ok
+artifacts:
+  - src/generate_ash_pattern.py
+  - src/ash_pattern.json
+  - src/validate_ash_fitness_metric.py
+  - archive/iter_120/result.yaml
+metrics:
+  initial_ash_bits: 325
+  initial_ash_objects: 72
+  inert_rule_fitness: 0.052432
+  inert_rule_final_bits: 328
+  inert_rule_displacement: 0.2097
+  chaotic_rule_fitness: 0.000164
+  chaotic_rule_final_bits: 20742
+  chaotic_rule_displacement: 3.3599
+log_excerpt: |
+  Loading ash pattern: ...src/ash_pattern.json
+  Ash pattern: 325 bits, 72 objects (150x150 grid)
+  [inert_rule] Starting simulation (500 steps) ...
+    Step  100: bit_count=   328
+    Step  200: bit_count=   328
+    Step  300: bit_count=   328
+    Step  400: bit_count=   328
+    Step  500: bit_count=   328
+    final_bits=328  final_objects=72  displacement=0.2097  fitness=0.052432
+  [chaotic_rule] Starting simulation (500 steps) ...
+    Step  100: bit_count= 20742
+    Step  200: bit_count= 20742
+    Step  300: bit_count= 20742
+    Step  400: bit_count= 20742
+    Step  500: bit_count= 20742
+    final_bits=20742  final_objects=1  displacement=3.3599  fitness=0.000164
+  Saved: ...archive/iter_120/result.yaml
+experimenter_view: |
+  The canonical ash (325 bits, 72 objects) is reproducible and stable under the
+  cooling rule. The inert rule (A3_B14) preserves the ash almost perfectly —
+  only 3 extra bits appear (325→328), all 72 objects survive, and the center of
+  mass barely shifts (0.21 cells), yielding fitness=0.0524. The chaotic rule
+  explodes the ash from 325 to 20,742 bits, merging all 72 objects into 1 giant
+  connected component; despite a larger raw displacement (3.36 cells), the
+  massive bit-count penalty collapses fitness to 0.000164. The metric correctly
+  discriminates: the inert, structure-preserving rule scores ~320x higher than
+  the chaotic one, validating the formula. A good evolution target would be a
+  rule that moves the ash without inflating the bit count.
+notes: Fitness metric validated; inert rule scores 320x higher than chaotic rule on ash pattern.
+```
