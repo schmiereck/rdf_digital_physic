@@ -5,9 +5,13 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 
 ## Confirmed
 - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
-- A canonical "ash" pattern of 325 bits and 72 objects is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
-- A fitness metric `displacement / (1 + |Δ_bits| + |Δ_objects|)` successfully distinguishes between inert, chaotic, and motion-inducing rules (iter_120).
-- An ash-based evolutionary strategy is effective. Selection and crossover significantly improve the population's mean fitness for animating the ash (Gen-1 mean: 0.0127, Gen-2 mean: 0.0444, +248%) (iter_122).
+- A canonical "ash" pattern is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
+- A fitness metric `displacement / (1 + |Δ_bits| + |Δ_objects|)` successfully guides evolution (iter_120).
+- An ash-based evolutionary strategy is effective, showing significant fitness improvement across generations.
+  - Gen-1 mean fitness: 0.0127 (iter_121)
+  - Gen-2 mean fitness: 0.0444 (+248% vs Gen-1) (iter_122)
+  - Gen-3 mean fitness: 0.0630 (+41.8% vs Gen-2) (iter_123)
+- The evolutionary search has converged to a top fitness score of ~0.240, which was found in Gen-2 and rediscovered but not surpassed in Gen-3 (iter_122, 123).
 
 ## Refuted
 - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
@@ -15,8 +19,8 @@ Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge f
 - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
 
 ## Open Questions
-- Can we push the top fitness score above 0.5 by breeding a third generation?
-- What do the dynamics of the top-performing Gen-2 rules look like visually?
-- Is the fitness improvement starting to plateau?
-- What structural properties do the high-fitness rules share?
-- Can a rule evolved on this specific ash generalize to other initial conditions?
+- Can a longer simulation time (e.g., 500 steps) reveal more significant motion and break the fitness plateau?
+- What do the dynamics of the top-performing rules actually look like when visualized?
+- Is there a different mutation operator that could break the current fitness plateau?
+- Are the top rules structurally similar, indicating convergence to a single 'family' of solutions?
+- How well does the best rule perform on a different ash pattern?
