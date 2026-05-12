@@ -1621,110 +1621,6 @@ Create a script `src/run_cooling_soup_search.py`.
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 102
-metrics:
-  mock_value: 153.0
-output_tokens: 500
-status: ok
-```
-
-## iter_102: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 103. All systems nominal.
-
-**Task:** Create archive/iter_103/code/run.py that prints 'hello from iter 103' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 102 completed. No real computation.
-
-**Metrics:** `{'mock_value': 153.0}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 103
-metrics:
-  mock_value: 154.5
-output_tokens: 500
-status: ok
-```
-
-## iter_103: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 104. All systems nominal.
-
-**Task:** Create src/run_iter_104.py that prints 'hello from iter 104' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 103 completed. No real computation.
-
-**Metrics:** `{'mock_value': 154.5}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 104
-metrics:
-  mock_value: 156.0
-output_tokens: 500
-status: ok
-```
-
-## iter_104: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 105. All systems nominal.
-
-**Task:** Create src/run_iter_105.py that prints 'hello from iter 105' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 104 completed. No real computation.
-
-**Metrics:** `{'mock_value': 156.0}`
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 106
-metrics:
-  mock_value: 159.0
-output_tokens: 500
-status: ok
-```
-
-## iter_106: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 107. All systems nominal.
-
-**Task:** Create src/run_iter_107.py that prints 'hello from iter 107' and exits 0.
-
-**Status:** ok
-
-**Experimenter view:** [Mock] Iteration 106 completed. No real computation.
-
-**Metrics:** `{'mock_value': 159.0}`
-
-
----
-```yaml
 cached_tokens: 66805
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.09414
@@ -1807,80 +1703,39 @@ appears in ~4% of rules by chance, explaining the 4/100 success rate.
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 107
+cached_tokens: 60047
+campaign: Phase 4 - Emergent Glider Analysis
+cost_usd: 0.09485
+hypothesis: 'emergent-glider: The ''ash'' from a chaotic soup cooled by rule_023 from
+  iter_105 contains at least one stable, moving particle.'
+input_tokens: 68228
+iter: 110
 metrics:
-  mock_value: 162.0
-output_tokens: 500
+  decayed_objects: 5
+  glider_bit_count: 6
+  glider_count: 2
+  glider_period: 4
+  glider_velocity_q: -1.0
+  glider_velocity_r: 0.0
+  oscillator_count: 22
+  still_life_count: 38
+  total_objects_found: 67
+output_tokens: 1302
 status: ok
 ```
 
-## iter_107: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+## iter_110: emergent-glider: The 'ash' from a chaotic soup cooled by rule_023 from iter_105 contains at least one stable, moving particle.
 
-**Analysis:** [Mock] Iteration 108. All systems nominal.
-
-**Status:** ok
-
-**Metrics:** `{'mock_value': 162.0}`
-
-**Experimenter view:** [Mock] Iteration 108 executed successfully.
-
-**Notes:** [Mock] dry-run
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 108
-metrics:
-  mock_value: 163.5
-output_tokens: 500
-status: ok
-```
-
-## iter_108: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 109. All systems nominal.
+**Analysis:** The research was catastrophically blocked for over 90 iterations due to the failure of all "top-down" and naive evolutionary methods to produce moving particles ("gliders"). A major breakthrough occurred in iter_105, where a new "primordial soup" evaluation, combined with a targeted "cooling" rule generation strategy, successfully identified four C2-symmetric rules that can resolve a chaotic, dens
 
 **Status:** ok
 
-**Metrics:** `{'mock_value': 163.5}`
+**Metrics:** `{'decayed_objects': 5, 'glider_bit_count': 6, 'glider_count': 2, 'glider_period': 4, 'glider_velocity_q': -1.0, 'glider_velocity_r': 0.0, 'oscillator_count': 22, 'still_life_count': 38, 'total_objects_found': 67}`
 
-**Experimenter view:** [Mock] Iteration 109 executed successfully.
+**Experimenter view:** The hypothesis is confirmed. Two identical 6-bit, period-4 gliders were found in the 'ash' of rule_023. These gliders are robust and travel in opposite directions along the grid's primary axes. The discovery of a small, stable, emergent glider represents a major breakthrough after a long series of failed attempts with other methods.
 
-**Notes:** [Mock] dry-run
+The analysis process was effective:
+1. The soup simulation ran f
 
-
----
-```yaml
-cached_tokens: 64123
-cost_usd: 0.09042
-hypothesis: 'glider-from-ash: The low-density state produced by the ''cooling'' rule
-  from iter_105 (rule_023) contains at least one emergent, stable, moving particle
-  (glider).'
-input_tokens: 70900
-iter: 109
-metrics:
-  mock_value: 165.0
-output_tokens: 1009
-status: ok
-```
-
-## iter_109: glider-from-ash: The low-density state produced by the 'cooling' rule from iter_105 (rule_023) contains at least one emergent, stable, moving particle (glider).
-
-**Analysis:** The research has achieved a major breakthrough in iteration 105. After over 100 iterations of failed attempts to find "gliders" (moving particles) through formal rule design or evolutionary searches based on flawed fitness metrics, we have finally developed a successful strategy. The "primordial soup" evaluation method, combined with a "cooling" rule generation strategy, has yielded four candidate
-
-**Status:** ok
-
-**Metrics:** `{'mock_value': 165.0}`
-
-**Experimenter view:** [Mock] Iteration 110 executed successfully.
-
-**Notes:** [Mock] dry-run
+**Notes:** 
 

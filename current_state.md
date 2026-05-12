@@ -4,20 +4,19 @@ Phase: Focused Exploration
 Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
 
 ## Confirmed
-- Formal search for simple gliders from small seeds has failed across numerous rule classes (C6/C2 symmetry, conserving/non-conserving) (iter_006-081).
-- Evolutionary search using abstract complexity or simple stability as a fitness metric is ineffective, evolving chaotic or annihilating rules respectively (iter_082-089).
-- A "primordial soup" evaluation is a valid method for identifying rules that create structure from chaos (iter_105).
-- "Cooling" rules, with a bias for mapping higher-density states to lower-density ones, successfully resolve a chaotic soup into low-density, persistent, structured states (iter_105). We have four such rules.
+- **BREAKTHROUGH:** A stable, 6-bit, period-4 moving particle ("glider") has been discovered (iter_110). This is the first validated instance of motion in this research project.
+- The "primordial soup" evaluation method is a successful strategy for finding rules that generate complex, emergent structures (iter_105).
+- "Cooling" rules, which are biased to map higher-density states to lower-density ones, can reliably resolve a chaotic soup into a low-density "ash" of persistent objects (iter_105).
 
 ## Refuted
-- Simple, contiguous initial seeds are not a reliable source of gliders for the rule spaces explored.
-- Abstract complexity and simple stability are poor proxy metrics for glider-supporting behavior.
+- Simple, contiguous initial seeds are not a reliable source of gliders for the rule spaces explored (iter_006-096).
+- Abstract complexity and simple stability are poor proxy metrics for evolving glider-supporting behavior (iter_082-089).
 
 ## Current Best Result
-We have identified four C2-symmetric "cooling" rules that reliably create a sparse "ash" of complex objects from a dense, random soup (iter_105).
+We have discovered a 6-bit, period-4 glider that emerges naturally from a chaotic soup under C2-symmetric cooling rule `archive/iter_105/population/rule_023.json`. Its velocity is (-1, 0) in hex coordinates.
 
 ## Open Questions
-- Does the "ash" from cooling rules contain stable, moving particles (gliders)?
-- What are the properties of any emergent gliders found?
-- Are these gliders common across all four cooling rules?
-- Can emergent gliders interact in a non-trivial way?
+- What are the precise coordinates and structure of the new glider?
+- Can the glider be created reliably from a minimal seed, or is it purely emergent?
+- Do the other three "cooling" rules from iter_105 also produce this glider or others?
+- How do two of these gliders interact when they collide?
