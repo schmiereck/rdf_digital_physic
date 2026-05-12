@@ -5779,3 +5779,69 @@ Therefore, the next logical step is not to change the symmetry class again or ab
 
 **Metrics:** `{}`
 
+
+---
+```yaml
+cached_tokens: 65958
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.27842
+hypothesis: 'from-chaos: At least one ''dense'' C2 rule from iter_096, when seeded
+  with random noise, will resolve into a low-density state of persistent, non-chaotic
+  objects.'
+input_tokens: 124410
+iter: 97
+metrics:
+  chaotic_rules_count: 1000
+  dead_rules_count: 0
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  soup_density: 0.25
+  steps: 1000
+  total_rules_evaluated: 1000
+output_tokens: 1536
+status: experiment_failed
+```
+
+## iter_097: from-chaos: At least one 'dense' C2 rule from iter_096, when seeded with random noise, will resolve into a low-density state of persistent, non-chaotic objects.
+
+**Analysis:** The research is catastrophically blocked. A comprehensive series of experiments (iter_091-096) has proven that random populations of rules, regardless of C6 or C2 symmetry, and regardless of rule table density ("sparse" vs. "dense"), are completely barren of moving particles ("gliders") when tested with small, contiguous initial seeds. The evolutionary algorithm cannot start because the initial populations have zero fitness variance; every single rule scores zero with the motion-based metric.
+
+This persistent failure across all rule generation strategies points to a fundamental flaw in the evaluation methodology itself. The core assumption has been that "interesting" rules should produce simple gliders from simple initial conditions. The evidence suggests this is false. The only remaining hypothesis is that motion in these universes is an emergent phenomenon that arises from a complex, chaotic "primordial soup" rather than being an elemental property of small seeds.
+
+The logical next step is to completely change the fitness evaluation environment. Instead of seeding with a single, small, artificial pattern, we must seed with random noise and search for rules that can "cool" this chaos into a state of persistent, localized, non-explosive structures. This is a "filtering" step to identify candidate rules for further analysis.
+
+**Task:** Create a new script, `src/filter_soup_rules.py`, to identify promising rules from the "dense" C2 population generated in the previous (failed) iteration.
+
+1. **Load Rules:** Load all 100 "dense" C2-symmetric rules from the `archive/iter_096/population/` directory.
+
+2. **Evaluate Each Rule:** For each of the 100 rules:
+   a. Initialize a 150x150 grid with 25% random noise (a "soup"). Use a fixed random seed for reproducibility.
+   b. Simulate for 1000 steps.
+   c. At step 1000, record the final number of live cells (`final_bit_count`).
+
+3. **Classify and Report:** After evaluating all rules, analyze the distribution of `final_bit_count`.
+   a. Classify each rule based on its `final_bit_count`:
+      - `DEAD`: `final_bit_count` < 20
+      - `CHAOTIC`: `final_bit_count` > 1000
+      - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+   b. Create `archive/iter_097/result.yaml` with the following keys:
+      - `dead_rules_count`: The number of rules classified as DEAD.
+      - `chaotic_rules_count`: The number of rules classified as CHAOTIC.
+      - `interesting_rules_count`: The number of rules classified as INTERESTING.
+   c. Create a text file `archive/iter_097/results/interesting_rules.txt` and list the filenames of all rules classified as INTERESTING, one per line. If none are found, this file should be empty.
+
+**Status:** experiment_failed
+
+**Experimenter view:** Every single dense C2 rule maintained a final cell count well above the
+CHAOTIC threshold of 1000 (range roughly 3600–14000 cells; initial soup was
+5665 cells). No rule caused the soup to settle into a low-density structured
+state. Dense rules (32 non-identity mappings out of 128 states) are clearly
+too aggressive — they sustain or amplify high-density chaos rather than
+resolving it. A different strategy is needed: either sparser rules, longer
+simulation runs, or deliberately selecting rules that are known to produce
+still-lifes/oscillators from small seeds.
+
+
+**Metrics:** `{'total_rules_evaluated': 1000, 'dead_rules_count': 0, 'chaotic_rules_count': 1000, 'interesting_rules_count': 0, 'initial_soup_cells': 5665, 'grid_size': 150, 'steps': 1000, 'soup_density': 0.25}`
+

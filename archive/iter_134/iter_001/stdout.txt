@@ -1,0 +1,77 @@
+I'll read the relevant files first to understand the data structures, then write the script.
+Now I have a clear picture of the existing infrastructure. Let me check the iter_133 results and any prior visualization scripts.
+Now I have all the context I need. Let me write the script.
+Now run it:
+The script ran successfully. Let me verify the output file:
+Everything looks correct. The script ran cleanly and produced the remnant_map.txt with all 37 objects. Now I can write the final YAML with the analysis.
+
+```yaml
+status: ok
+artifacts:
+  - src/visualize_remnant.py
+  - archive/iter_134/results/remnant_map.txt
+metrics:
+  total_objects: 37
+  still_life_count: 33
+  oscillator_count: 4
+  remnant_live_cells: 78
+  avg_pairwise_dist_oscillators: 70.10
+  avg_pairwise_dist_all_objects: 70.68
+  osc_vs_all_dist_ratio: 0.992
+  closest_oscillator_pair_dist: 3.46
+log_excerpt: |
+  Finding connected components...
+    Found 37 objects
+  Characterizing objects in isolation...
+    [  2/37] oscillator   period=  4  bits=  4  COM=(  26.2,   39.0)
+    [  3/37] oscillator   period=  3  bits=  6  COM=(  25.3,   42.3)
+    [  5/37] oscillator   period=  4  bits= 11  COM=(  89.0,   61.0)
+    [  9/37] oscillator   period=  3  bits=  6  COM=( 139.5,   67.0)
+  === SPATIAL ANALYSIS ===
+    Oscillators : 4
+    Still-lifes : 33
+    Avg pairwise dist (oscillators only) : 70.10
+    Avg pairwise dist (all objects)       : 70.68
+    Ratio osc/all                         : 0.992
+    Oscillator q range : [25.3, 139.5]
+    Oscillator r range : [39.0, 67.0]
+    All-obj q range    : [9.0, 147.0]
+    All-obj r range    : [21.0, 143.0]
+    obj2 <-> obj3: 3.46
+    obj2 <-> obj5: 66.49
+    obj2 <-> obj9: 116.66
+    obj3 <-> obj5: 66.35
+    obj3 <-> obj9: 116.80
+    obj5 <-> obj9: 50.86
+experimenter_view: |
+  The remnant contains 37 objects: 33 still-lifes and 4 oscillators (2× period-3,
+  2× period-4). The core research question is whether the oscillators are spatially
+  clustered.
+
+  **Answer: No — the oscillators are NOT globally clustered, but one tight local
+  pair exists.**
+
+  The mean pairwise distance among the 4 oscillators is 70.10, compared to 70.68
+  for all 37 objects combined (ratio = 0.992). A ratio near 1.0 means the
+  oscillators are spread across the grid at roughly the same density as everything
+  else — no significant global clustering.
+
+  However, the pairwise distance matrix reveals one striking outlier: objects 2
+  (p4, 4-bit, COM 26.2/39.0) and 3 (p3, 6-bit, COM 25.3/42.3) are only 3.46
+  units apart — far closer than any other oscillator pair (next closest: obj5–obj9
+  at 50.86). These two live in the same corner of the grid and may interact via a
+  shared bath of single-bit still-lifes that also cluster in q≈25–50, r≈21–56.
+  Objects 5 and 9 are isolated from each other (66.49 and 116.80 units from the
+  pair, respectively).
+
+  Spatially the oscillators occupy a compressed r-band (39–67, range 28) versus all
+  objects (21–143, range 122), while spanning nearly the full q-extent (25–140 vs
+  9–147). This suggests the oscillators lie along a roughly horizontal stripe in
+  (q, r) space, with still-lifes scattered above and below them in the r-direction.
+
+  Conclusion: distribution is broadly intermingled rather than core-vs-periphery,
+  but there is one local oscillator cluster (obj2/obj3) and one wider still-life
+  zone at high r (obj12 at r=143). The topology matches a remnant that froze in
+  place from a random-walk decay rather than a structured collapse.
+notes: 4 oscillators intermingled with 33 still-lifes; one tight local oscillator pair at distance 3.46, global ratio osc/all = 0.992
+```
