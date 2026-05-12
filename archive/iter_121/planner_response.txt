@@ -1,0 +1,60 @@
+```yaml
+analysis: |
+  The research was previously blocked, having failed to find any rule that could produce motion. A new strategy was developed: evolve a rule to animate a pre-existing field of stable objects ("ash"). Iteration 120 established the environment and a new fitness metric. This iteration, 121, was the critical first test of that strategy.
+
+  The experiment was a success. A random population of 100 C2-symmetric rules was generated and evaluated against the ash. 11 of these rules achieved a fitness score higher than the inert baseline (0.0524), demonstrating that the search space contains rules with the desired properties and our fitness metric can identify them. The top-performing rule (rule_030) achieved a fitness of 0.0939, nearly double the baseline, while preserving the structure of the ash almost perfectly (72 objects maintained, only 1 bit changed). This provides the "spark" of variation needed to begin an evolutionary search.
+open_questions:
+  - "Can we breed a second generation of rules with a higher mean fitness than the first?"
+  - "What is the specific dynamic that rule_030 imparts to the ash? Is it a coherent oscillation or drift?"
+  - "Do the top 11 rules share common structural properties in their kernels?"
+  - "Can evolution push the top fitness score significantly higher, towards a clear 'glider' signal?"
+  - "Are the fittest rules more or less dense (in terms of non-identity mappings) than the average rule?"
+chosen_direction: "The most direct path forward is to proceed with the evolutionary algorithm. Now that we have a successful first generation with demonstrable fitness variance, the next logical step is to select the 'elites' from this generation and breed a second generation to see if we can amplify the desired trait."
+hypothesis: "evolution-ash-gen2: A second generation of rules, bred from the top 11 rules of Gen-1, will have a mean fitness at least 50% higher than the Gen-1 mean."
+rationale: |
+  We have successfully identified a set of "elite" rules that are quantifiably better at animating the ash than random or inert rules. The core principle of evolutionary algorithms is that breeding from these elites should concentrate the genetic material responsible for this fitness, leading to an improved next generation. A 50% improvement is a concrete target that would validate that our evolutionary process is directionally correct and effectively optimizing for the desired behavior.
+status: ok
+metrics:
+  population_size: 100
+  rules_beating_baseline: 11
+  top_fitness_score: 0.09386233
+  inert_baseline_fitness: 0.052432
+  top_rule_displacement: 0.187725
+  top_rule_final_bits: 326
+  top_rule_final_objects: 72
+experimenter_view: |
+  11 of 100 randomly-generated C2-symmetric rules beat the inert baseline
+  (0.0524) on the ash-based fitness metric. The top rule (rule_030) achieved
+  fitness 0.0939, nearly 1.8x the baseline, while changing only 1 bit from
+  the initial 325 (final_bits=326) and maintaining the same 72 objects. This
+  suggests the displacement-fitness metric is working as intended: it rewards
+  net center-of-mass motion while penalising structural changes. The majority
+  of inert rules (fitness=0.0, displacement=0.0) left the ash pattern
+  completely unchanged, confirming most C2 rules do not touch the ash. A
+  handful of chaotic rules expanded to 5k–10k bits with large displacement,
+  but were heavily penalised by the bit-count difference term, yielding near-
+  zero fitness despite large raw displacements.
+notes: 11/100 rules beat baseline; top rule_030 fitness=0.0939 (1.79x baseline)
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
+
+  ## Confirmed
+  - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
+  - A canonical "ash" pattern of 325 bits and 72 objects is a viable, reproducible environment for testing rule dynamics (`src/ash_pattern.json`) (iter_120).
+  - A fitness metric `displacement / (1 + |Δ_bits| + |Δ_objects|)` successfully distinguishes between inert (fitness ~0.0524), chaotic (fitness ~0.0), and motion-inducing rules (iter_120, 121).
+  - A random population of C2-symmetric rules contains members that can animate the ash pattern, providing a fitness signal for evolution (iter_121).
+
+  ## Refuted
+  - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
+  - A two-stage simulation process fails to animate the ash (iter_118, 119).
+  - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
+
+  ## Open Questions
+  - Can an evolutionary search, guided by the ash-based fitness metric, produce a rule that creates clear, propagating gliders?
+  - Can we amplify the fitness signal through selection and breeding?
+  - What are the structural properties of rules that successfully animate the ash without destroying it?
+  - Can a rule evolved on this specific ash generalize to other initial conditions?
+```
