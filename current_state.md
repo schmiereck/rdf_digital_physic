@@ -4,7 +4,8 @@ Phase: Focused Exploration
 Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
 
 ## Confirmed
-- A "late-displacement" fitness metric (measuring motion between steps 100-200) successfully filters out rules that only produce transient, initial motion (iter_125, iter_127).
+- A "late-displacement" fitness metric (measuring motion between steps 100-200) successfully filters out rules that only produce transient, initial motion (iter_125, 127).
+- A random population of C2-symmetric rules is almost entirely barren of sustained motion; the single exception found was pathologically chaotic (iter_127).
 - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
 
 ## Refuted
@@ -14,7 +15,7 @@ Evolve a rule that produces sustained, coherent motion in a pre-structured "ash"
 - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
 
 ## Open Questions
-- Can a fresh random population of rules contain any members with non-zero late-displacement fitness?
-- If sustained motion is found, is it linear drift or a random walk?
-- What is the minimum number of non-identity mappings required to sustain motion?
-- Can a rule be evolved to exhibit both cooling and motion properties simultaneously?
+- Is there an optimal rule density (number of non-identity mappings) for producing sustained, non-chaotic motion?
+- What is the distribution of behaviors (static, chaotic, sustained motion) as rule density changes?
+- Can we find a rule density that produces at least a 5% 'hit rate' of viable rules for Gen-1?
+- How does the magnitude of displacement correlate with rule density?
