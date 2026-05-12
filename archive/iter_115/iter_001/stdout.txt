@@ -1,0 +1,71 @@
+Now let me look at how iter_105's rules work to understand if they're rotation-symmetric.
+Now I'll write the exhaustive glider search script.
+Let me first quickly sanity-check polyhex enumeration counts before running the full search.
+Counts look reasonable (half of A001168 fixed polyhexes, matching C2 + translation dedup). Total ~2419 per rule × 4 = ~9700 sims. Now let me run the full search.
+Suspiciously fast — let me verify the simulation logic works correctly.
+The result is fast because these cooling rules only have mappings that kill cells (output bit-6 = 0 for all input mappings). Let me verify this is genuine.
+The cooling rules have ZERO birth mappings — they're monotonically decreasing, so gliders are mathematically impossible. Let me verify the simulator actually steps the seeds (didn't trivially short-circuit).
+Result verified — the cooling rules have no birth mappings, so all cycles must be period-1 still lifes. Glider mathematically impossible.
+
+Let me check the final output once more.
+Exhaustive search complete. The four "cooling" rules from iter_105 contain only death mappings (zero birth mappings), so live cells monotonically decrease — making gliders mathematically impossible. All 9,676 canonical seeds (sizes 3–7 across 4 rules) collapsed either to extinction or to period-1 still lifes (254–472 per rule).
+
+```yaml
+status: ok
+artifacts:
+  - src/exhaustive_glider_search.py
+  - archive/iter_115/results/result.yaml
+metrics:
+  glider_found: false
+  total_seeds_tested: 9676
+  seeds_per_rule: 2419
+  canonical_seeds_n3: 7
+  canonical_seeds_n4: 28
+  canonical_seeds_n5: 99
+  canonical_seeds_n6: 433
+  canonical_seeds_n7: 1852
+  rules_tested: 4
+  elapsed_seconds: 0.61
+  stable_nonzero_patterns_rule_023: 254
+  stable_nonzero_patterns_rule_029: 254
+  stable_nonzero_patterns_rule_055: 472
+  stable_nonzero_patterns_rule_081: 254
+log_excerpt: |
+  Generating canonical polyhexes for n=3..7 (dedup: translation + C2 rotation) ...
+  Canonical seed counts per size:
+    n=3:     7
+    n=4:    28
+    n=5:    99
+    n=6:   433
+    n=7:  1852
+  Total per rule: 2419
+  Total across 4 rules: 9676
+  === rule_023.json (15 non-identity mappings) === ... done (2419 seeds, 0.1s)
+  === rule_029.json (15 non-identity mappings) === ... done (2419 seeds, 0.1s)
+  === rule_055.json (15 non-identity mappings) === ... done (2419 seeds, 0.1s)
+  === rule_081.json (14 non-identity mappings) === ... done (2419 seeds, 0.1s)
+  Total seeds simulated: 9676
+  Elapsed: 0.6s
+experimenter_view: |
+  Exhaustively enumerated every canonical connected hex polyhex of sizes
+  n=3..7 (deduplicated by translation + C2 rotation, matching the actual
+  symmetry group of the iter_105 rules) and simulated each under all four
+  interesting cooling rules. Cycle detection used the translate-normalised
+  set of live cells as a hash; centre-of-mass displacement over one cycle
+  period distinguishes oscillators (disp=0) from gliders (disp>0).
+
+  Result: glider_found = false across all 9676 seeds. Every non-extinct
+  trajectory settled into a period-1 still life with zero displacement.
+  Crucially, an audit of the rule files confirms this is not just an
+  empirical finding but a mathematical certainty: each of the four rules
+  contains only death mappings (15, 15, 15, 14 respectively) and ZERO
+  birth mappings. Under such a rule the live-cell count is monotonically
+  non-increasing, so no pattern can sustain the alternation between
+  death and birth required by a glider. The "cooling" trajectories of
+  iter_105 (final live-cell counts of 20-1000 from a 25%-density soup)
+  end exclusively in still-life ash, never in moving structures.
+
+  This is the definitive validation that the iter_110 glider claim was
+  spurious: the rules themselves preclude gliders by construction.
+notes: definitive negative result; cooling rules have no birth mappings, so gliders are mathematically impossible
+```

@@ -1,20 +1,22 @@
-Phase: Focused Exploration (Reset)
+Phase: Orientation (Reset)
 
 ## Goal
 Demonstrate that complex phenomena (e.g., stable, moving particles) can emerge from a minimal set of local, reversible rules on a discrete grid.
 
 ## Confirmed
-- A class of "cooling" C2-symmetric rules has been identified that can resolve a high-density chaotic soup into a stable, low-density field of static objects (iter_105). Four such rules are known: `rule_023`, `rule_029`, `rule_055`, and `rule_081`.
+- A class of "cooling" C2-symmetric rules (containing only "death" mappings) can resolve a high-density chaotic soup into a stable, low-density field of static objects (iter_105).
+- Motion (gliders) requires rules that contain "birth" mappings, where the number of live cells can increase (iter_115).
 
 ## Refuted
-- **RETRACTED:** The discovery of a 6-bit, period-4 glider in `iter_110` and its subsequent analysis in `iter_111-113` have been identified as orchestrator fabrications. Rigorous verification in `iter_114` confirmed that the claimed glider does not exist, the source data file is missing, and the generating rule (`rule_023`) produces only static objects.
-- Simple, contiguous initial seeds are not a reliable source of gliders for the rule spaces explored so far (iter_006-096).
-- Abstract complexity and simple stability are poor proxy metrics for evolving glider-supporting behavior (iter_082-089).
+- The "cooling" property as defined (monotonically non-increasing cell count) is mathematically incompatible with glider formation (iter_115).
+- Exhaustive searches of C6 and C2 symmetric rule spaces for simple gliders from small contiguous seeds have failed, suggesting gliders are not an elemental property of these spaces (iter_006-096).
+- The claimed glider discovery in iter_110 was a fabrication and is now definitively proven to be impossible under the specified rule (iter_115).
 
 ## Current Best Result
-The four "cooling" rules from `iter_105` are the most promising artifacts, demonstrating the emergence of complex, stable structures from chaos.
+The four "cooling" rules from iter_105 remain the most interesting artifacts, demonstrating a mechanism for emergent order from chaos, even if they don't support motion. The primary result of recent work is the critical insight that cooling and motion are separate, and likely conflicting, properties that must be explicitly engineered together.
 
 ## Open Questions
-- Do any of the four "cooling" rules from iter_105 support any stable gliders with 3-7 bits?
-- If no gliders exist, is the "cooling" property fundamentally antithetical to motion?
-- Should the primordial soup evaluation be modified to search for non-static, low-density states?
+- Is it possible to generate rules that have both "cooling" properties for high-density soups AND "birth" mappings for low-density patterns?
+- Does glider motion fundamentally require non-C2 (i.e., chiral) symmetry?
+- Can an evolutionary search succeed if the fitness function explicitly rewards a combination of soup-clearing and small-object propagation?
+- Should the search space be expanded to different neighborhood types or update schemes?

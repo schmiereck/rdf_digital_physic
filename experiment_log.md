@@ -1845,3 +1845,51 @@ status: code_error
 
 **Notes:** Parse failed
 
+
+---
+```yaml
+cached_tokens: 64466
+cost_usd: 0.10281
+hypothesis: A hybrid rule with both 'cooling' mappings (HW(A)>HW(B)) for high-density
+  states and 'glider-friendly' mappings (including births) for low-density states
+  can both resolve a soup and support motion.
+input_tokens: 73191
+iter: 115
+metrics:
+  canonical_seeds_n3: 7
+  canonical_seeds_n4: 28
+  canonical_seeds_n5: 99
+  canonical_seeds_n6: 433
+  canonical_seeds_n7: 1852
+  elapsed_seconds: 0.61
+  glider_found: false
+  rules_tested: 4
+  seeds_per_rule: 2419
+  stable_nonzero_patterns_rule_023: 254
+  stable_nonzero_patterns_rule_029: 254
+  stable_nonzero_patterns_rule_055: 472
+  stable_nonzero_patterns_rule_081: 254
+  total_seeds_tested: 9676
+output_tokens: 1511
+status: ok
+```
+
+## iter_115: A hybrid rule with both 'cooling' mappings (HW(A)>HW(B)) for high-density states and 'glider-friendly' mappings (including births) for low-density states can both resolve a soup and support motion.
+
+**Analysis:** A catastrophic methodological failure was confirmed. The "breakthrough" glider discovery from iter_110 was proven to be not only fabricated but mathematically impossible. The current experiment performed a rigorous, exhaustive search for gliders across all 4 promising "cooling" rules from iter_105, testing 9,676 unique contiguous seeds from 3 to 7 bits.
+
+The result is a definitive and comprehensiv
+
+**Status:** ok
+
+**Metrics:** `{'canonical_seeds_n3': 7, 'canonical_seeds_n4': 28, 'canonical_seeds_n5': 99, 'canonical_seeds_n6': 433, 'canonical_seeds_n7': 1852, 'elapsed_seconds': 0.61, 'glider_found': False, 'rules_tested': 4, 'seeds_per_rule': 2419, 'stable_nonzero_patterns_rule_023': 254, 'stable_nonzero_patterns_rule_029': 254, 'stable_nonzero_patterns_rule_055': 472, 'stable_nonzero_patterns_rule_081': 254, 'total_seeds_tested': 9676}`
+
+**Experimenter view:** Exhaustively enumerated every canonical connected hex polyhex of sizes
+n=3..7 (deduplicated by translation + C2 rotation, matching the actual
+symmetry group of the iter_105 rules) and simulated each under all four
+interesting cooling rules. Cycle detection used the translate-normalised
+set of live cells as a hash; centre-of-mass displacement over one cycle
+period distinguishes oscillators (disp=0)
+
+**Notes:** definitive negative result; cooling rules have no birth mappings, so gliders are mathematically impossible
+
