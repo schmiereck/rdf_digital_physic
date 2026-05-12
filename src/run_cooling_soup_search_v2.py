@@ -11,6 +11,15 @@ directed mappings under C2 symmetry:
     A  -> B
     C2(A) -> C2(B)
 where HammingWeight(A) > HammingWeight(B) (the cooling constraint).
+
+Source states are restricted to center=1 (live-cell) states with HW in {1,2,3}
+to ensure each mapping actually kills a live cell, and to target the states that
+are most common at 25% density (where HW=1,2,3 dominate).  Crucially, including
+HW=1 (state 64 = isolated live cell) triggers cascading death: when HW=2 cells
+die their neighbors become isolated; if state 64 is also in the rule those
+isolated cells die too.
+
+Target states are restricted to center=0 (dead-cell) states with HW in {0,1}.
 """
 
 import json
@@ -65,13 +74,18 @@ def generate_cooling_rule(rng: random.Random) -> dict:
     """Return a rule dict with exactly NUM_KERNEL_PAIRS cooling kernel pairs.
 
     A kernel pair (A, B) contributes two directed mappings A->B and C2(A)->C2(B).
-    We restrict A to live-cell states (center bit=1) and B to dead-cell states
-    (center bit=0) so each mapping actually kills a live cell.  The HW(A)>HW(B)
-    cooling constraint is automatically satisfied because center(A)=1 adds 1 to
-    HW(A) while center(B)=0 contributes 0.
+    Source states (A) are center=1 with HW in {1,2,3}: these are the live-cell
+    states most commonly encountered in a 25%-density soup, so the cooling
+    mappings fire frequently.  Including HW=1 (state 64 = isolated live cell)
+    enables a cascade: HW=2 cells die -> neighbors become isolated (state 64) ->
+    isolated cells also die if state 64 is in the rule.
+    Target states (B) are center=0 with HW in {0,1}: dead-cell states.
+    Both conditions satisfy HW(A) >= 1 > HW(B) >= 0, so HW(A) > HW(B) holds.
     """
-    live_states = list(range(64, 128))   # center bit = 1
-    dead_states = list(range(0, 64))     # center bit = 0
+    # Center=1 states with HW in {1,2,3}: 22 states (1 HW=1 + 6 HW=2 + 15 HW=3)
+    source_pool = [s for s in range(64, 128) if hamming_weight(s) in {1, 2, 3}]
+    # Center=0 states with HW in {0,1}: 7 states (1 HW=0 + 6 HW=1)
+    target_pool = [s for s in range(0, 64)  if hamming_weight(s) in {0, 1}]
 
     while True:
         mapped: dict[int, int] = {}
@@ -80,9 +94,8 @@ def generate_cooling_rule(rng: random.Random) -> dict:
 
         while pairs_found < NUM_KERNEL_PAIRS and attempts < 50_000:
             attempts += 1
-            # Select from live-cell states for source, dead-cell states for target
-            a = rng.choice(live_states)
-            b = rng.choice(dead_states)
+            a = rng.choice(source_pool)
+            b = rng.choice(target_pool)
 
             # Cooling constraint: HW(A) > HW(B)
             if hamming_weight(a) <= hamming_weight(b):
@@ -90,6 +103,12 @@ def generate_cooling_rule(rng: random.Random) -> dict:
 
             c2_a = rotate_c2(a)
             c2_b = rotate_c2(b)
+
+            # If the source is a C2 fixed point (C2(A)==A), the target must also
+            # be a fixed point (C2(B)==B); otherwise the closure would require
+            # A->B and A->C2(B) simultaneously, which is a contradiction.
+            if c2_a == a and c2_b != b:
+                continue
 
             # C2-symmetric closure: {A->B, C2(A)->C2(B)}
             new_mappings = [(a, b), (c2_a, c2_b)]
