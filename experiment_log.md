@@ -3,71 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 66295
-campaign: Phase 3 - Evolutionary Search
-cost_usd: 0.10286
-hypothesis: 're-evaluate-gen3-motion: The Gen-3 population, evolved for stability,
-  contains at least one rule with non-zero motion-based fitness.'
-input_tokens: 74414
-iter: 92
-metrics:
-  rules_decayed: 16
-  rules_still_life: 84
-  rules_with_motion: 0
-  top_fitness_score: 0.0
-output_tokens: 1565
-status: experiment_failed
-```
-
-## iter_092: re-evaluate-gen3-motion: The Gen-3 population, evolved for stability, contains at least one rule with non-zero motion-based fitness.
-
-**Analysis:** The research is critically blocked. The project pivoted to an evolutionary search after all "top-down" formal rule searches failed to produce motion. This new paradigm has also struggled due to flawed objective functions: the first metric evolved chaos (iter_085), and the second evolved annihilation (iter_089).
-
-A breakthrough occurred in iter_090 with the validation of a new, motion-centric fitness function (`displacement / (1 + final_bit_count)`) that correctly identifies non-moving rules. However, the first application of this metric in iter_091 failed, because it was tested against a random population of rules. The `experimenter_view` correctly noted that gliders are too rare to emerge by chance; we must apply our new metric to an *evolved* population.
-
-The most promising candidate population is "Gen-3" from iter_088, which was bred for stability. While the selection pressure was imperfect (favoring annihilation), these rules are far more likely to support localized structures than purely random or chaotic rules. The only logical next step is to re-evaluate this entire Gen-3 population with our validated motion-based metric to see if the search for stability inadvertently produced any rules capable of motion.
-
-**Task:** Create a new script, `src/reevaluate_gen3_for_motion.py`.
-
-1.  **Load Population:** The script must load all 100 rules from the Gen-3 population located in `archive/iter_088/population/`.
-
-2.  **Evaluate Population:** For each of the 100 rules, calculate its fitness using the motion-based metric validated in iter_090.
-    - **Procedure per rule:**
-      a. Initialize a 150x150 grid with a single 4-bit contiguous "T-shape" seed.
-      b. Simulate for 500 steps.
-      c. Detect if the pattern enters a stable cycle with `bit_count > 0`.
-      d. If a stable object is found, calculate its net displacement over one period.
-      e. Fitness = `displacement / (1 + final_bit_count)`. Fitness is 0 if no cycle is found, the object decays, or displacement is zero.
-
-3.  **Report Results:**
-    - Save the fitness score and behavior class for all 100 rules to `archive/iter_092/results/gen3_motion_scores.csv`.
-    - Create `archive/iter_092/result.yaml` summarizing the findings. It must contain the following keys:
-      - `rules_with_motion`: The count of rules with a fitness score > 0.
-      - `top_fitness_score`: The highest fitness score found.
-      - `top_rule_id`: The filename of the rule with the highest score.
-      - `top_rule_glider_period`: The period of the glider produced by the top rule (or 0).
-      - `top_rule_glider_bit_count`: The final bit count of the glider from the top rule (or 0).
-      - `top_rule_glider_velocity`: The (dq, dr) velocity vector of the glider from the top rule (or (0,0)).
-
-**Status:** experiment_failed
-
-**Experimenter view:** The Gen-3 population (100 rules evolved for stability via low-bit-count fitness
-in iter_088) contains zero rules with non-zero motion-based fitness when evaluated
-from a T-shape seed. 84 rules produce immediate still lifes and 16 cause the seed
-to decay to zero. No oscillators or no_cycle (chaotic) behaviors were observed.
-This result is mechanistically coherent: the stability selection pressure in iter_088
-explicitly rewarded rules that minimize final bit count, which directly opposes any
-dynamics that would sustain a moving, coherent object. The hypothesis is falsified.
-The next logical step is to evolve a dedicated population using the motion-based
-fitness metric from scratch (as begun in iter_091) rather than re-evaluating a
-stability-evolved population.
-
-
-**Metrics:** `{'rules_with_motion': 0, 'top_fitness_score': 0.0, 'rules_decayed': 16, 'rules_still_life': 84}`
-
-
----
-```yaml
 cached_tokens: 66144
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.10357
@@ -1438,4 +1373,44 @@ status: no_execution
 **Experimenter view:** 
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 54916
+cost_usd: 0.09825
+hypothesis: 'evolution-from-density: A second generation of rules, bred from the two
+  viable medium-density rules, will produce at least one rule with a fitness score
+  greater than the Gen-1 top score of 0.0277.'
+input_tokens: 64617
+iter: 129
+metrics:
+  high_density_top_fitness: 0.01238769
+  high_density_viable_rules: 1
+  low_density_top_fitness: 0.00121878
+  low_density_viable_rules: 0
+  medium_density_top_fitness: 0.02771506
+  medium_density_viable_rules: 2
+output_tokens: 1547
+status: ok
+```
+
+## iter_129: evolution-from-density: A second generation of rules, bred from the two viable medium-density rules, will produce at least one rule with a fitness score greater than the Gen-1 top score of 0.0277.
+
+**Analysis:** The research was blocked because the initial random populations for our evolutionary algorithm were barren of viable individuals. Iteration 127, using a low rule density (4 kernel pairs), produced 99% static or chaotic rules and zero viable candidates. This suggested that rule density is a critical parameter.
+
+This iteration executed a density scan, testing populations at low (4 pairs), medium (8 
+
+**Status:** ok
+
+**Metrics:** `{'low_density_viable_rules': 0, 'low_density_top_fitness': 0.00121878, 'medium_density_viable_rules': 2, 'medium_density_top_fitness': 0.02771506, 'high_density_viable_rules': 1, 'high_density_top_fitness': 0.01238769}`
+
+**Experimenter view:** The density scan confirms a clear non-linear relationship between rule density
+and viability. Medium density (8 pairs, 32 non-identity mappings) is the
+optimal regime: it yields the most viable rules (2) and the highest top fitness
+(0.0277), roughly 22x better than low density's top score. Low density (4 pairs)
+produced zero viable rules — the rules are too sparse to sustain motion even
+transientl
+
+**Notes:** Medium density (8 pairs) maximises viable rules and top fitness; density scan confirms an optimal regime between order and chaos.
 

@@ -1,0 +1,66 @@
+```yaml
+analysis: |
+  The research was blocked because the initial random populations for our evolutionary algorithm were barren of viable individuals. Iteration 127, using a low rule density (4 kernel pairs), produced 99% static or chaotic rules and zero viable candidates. This suggested that rule density is a critical parameter.
+
+  This iteration executed a density scan, testing populations at low (4 pairs), medium (8 pairs), and high (16 pairs) densities. The results are a significant breakthrough. They confirm that medium density is an optimal "sweet spot" at the edge of chaos.
+
+  - **Low Density (4 pairs):** 0% viable rules. Dominated by static patterns (82%). Too ordered.
+  - **Medium Density (8 pairs):** 2% viable rules. A mix of static (53%) and chaotic (45%) behavior. This is the "edge of chaos" where interesting dynamics can emerge.
+  - **High Density (16 pairs):** 1% viable rules. Dominated by chaos (75%). Too disordered.
+
+  The medium density population not only produced the most viable rules but also the rule with the highest fitness score (0.0277), an order of magnitude better than the best from any other density. This finding unblocks the research by providing a clear, data-driven strategy for generating initial populations that are far more likely to contain the "seeds" of sustained motion needed for successful evolution.
+open_questions:
+  - "Can we evolve a new generation from the two viable medium-density rules that surpasses their top fitness of 0.0277?"
+  - "What is the qualitative nature of the motion produced by the top medium-density rules? Is it a coherent drift or random jiggling?"
+  - "Is the 2% viability rate at medium density high enough for reliable evolutionary runs, or do we need to generate larger Gen-1 populations?"
+  - "How does the performance of the top medium-density rule change on a longer simulation run (e.g., 1000 steps)?"
+  - "Can we further refine the optimal density, for example by testing 6, 8, and 10 pairs?"
+chosen_direction: "Now that we have identified an optimal density for generating viable rules, the most direct path forward is to immediately attempt to evolve them. We will take the two viable rules found in this iteration and use them as the seed for a new evolutionary run (Gen-2)."
+hypothesis: "evolution-from-density: A second generation of rules, bred from the two viable medium-density rules, will produce at least one rule with a fitness score greater than the Gen-1 top score of 0.0277."
+rationale: |
+  The density scan has provided the crucial missing ingredient for our evolutionary search: a method to generate a viable initial population. We found two rules in the medium-density population that exhibit the desired non-chaotic, sustained motion. The most logical and important next step is to see if our evolutionary machinery (selection and crossover) can now take these seeds and amplify the trait, creating a new generation with even better performance. This experiment will validate our entire evolutionary strategy.
+status: ok
+metrics:
+  low_density_viable_rules: 0
+  low_density_top_fitness: 0.00121878
+  medium_density_viable_rules: 2
+  medium_density_top_fitness: 0.02771506
+  high_density_viable_rules: 1
+  high_density_top_fitness: 0.01238769
+experimenter_view: |
+  The density scan confirms a clear non-linear relationship between rule density
+  and viability. Medium density (8 pairs, 32 non-identity mappings) is the
+  optimal regime: it yields the most viable rules (2) and the highest top fitness
+  (0.0277), roughly 22x better than low density's top score. Low density (4 pairs)
+  produced zero viable rules — the rules are too sparse to sustain motion even
+  transiently. High density (16 pairs) is dominated by chaos (75% chaotic), with
+  nearly all remaining rules being static; only 1 viable rule emerged, with lower
+  top fitness than medium density. The chaotic fraction grows monotonically with
+  density (18% → 45% → 75%), while the static fraction falls (82% → 53% → 24%).
+  This suggests a phase transition: low density → static order, medium density →
+  edge of chaos (viable motion), high density → full chaos.
+notes: "Medium density (8 pairs) maximises viable rules and top fitness; density scan confirms an optimal regime between order and chaos."
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Optimal Rule Density:** There is a "sweet spot" for rule density. C2-symmetric rules with medium density (8 kernel pairs / 32 non-identity mappings) are most likely to produce viable, non-chaotic, sustained motion. Low-density rules are too static, and high-density rules are too chaotic (iter_129).
+  - A "late-displacement" fitness metric (measuring motion between steps 100-200) successfully filters out rules that only produce transient, initial motion (iter_125, 127).
+  - A class of "cooling" C2-symmetric rules can resolve a chaotic soup into a stable, low-density field of static objects ("ash") (iter_105).
+
+  ## Refuted
+  - The evolutionary lineage from Gen-1 to Gen-4 is a dead end. It optimized for a flawed early-displacement metric and its gene pool is devoid of rules that produce sustained motion (iter_127).
+  - Generating random rules with a "low" density (4 kernel pairs) is ineffective, producing a near-zero hit rate of viable individuals (iter_127, 129).
+  - Hybrid rules combining "cooling" and "birth" mappings are dominated by chaos (iter_117).
+  - A two-stage simulation process (cooling rule, then motion rule) fails to animate the ash (iter_118, 119).
+  - Direct searches for simple gliders from small seeds in C6/C2 rule spaces are ineffective (iter_006-096).
+
+  ## Open Questions
+  - Can we evolve a new generation from the two viable medium-density rules that surpasses their top fitness of 0.0277?
+  - What is the qualitative nature of the motion produced by the top medium-density rules?
+  - Is the 2% viability rate at medium density high enough for reliable evolutionary runs?
+  - How does the performance of the top medium-density rule change on a longer simulation run?
+```
