@@ -5922,3 +5922,88 @@ a larger or different rule space.
 
 **Metrics:** `{'candidates_found': 79, 'dead_rules_count': 0, 'chaotic_rules_count': 79, 'interesting_rules_count': 0, 'grid_size': 150, 'soup_density': 0.25, 'soup_steps': 1000, 'initial_soup_cells': 5665}`
 
+
+---
+```yaml
+cached_tokens: 66021
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10373
+hypothesis: A population of C2-rules with mappings biased to high-density neighborhoods
+  will contain at least one rule that resolves a random soup into a low-density state.
+input_tokens: 74367
+iter: 99
+metrics:
+  chaotic_rules_count: 100
+  dead_rules_count: 0
+  directed_entries_per_rule: 16
+  grid_size: 150
+  initial_soup_cells: 5665
+  interesting_rules_count: 0
+  n_input_pairs_per_rule: 4
+  soup_density: 0.25
+  steps: 1000
+  total_rules_evaluated: 100
+output_tokens: 1595
+status: experiment_failed
+```
+
+## iter_099: A population of C2-rules with mappings biased to high-density neighborhoods will contain at least one rule that resolves a random soup into a low-density state.
+
+**Analysis:** The research is catastrophically blocked. All attempts to seed an evolutionary search for "gliders" (moving particles) have failed. The core problem is that randomly generated populations of rules have zero initial members with the desired "motion" trait, giving the evolutionary algorithm no variation to select from.
+
+Previous attempts to solve this have included:
+- Testing C6 and C2 symmetric rules (iter_094, 095): Both barren.
+- Testing "dense" rules with more active mappings (iter_096): Barren.
+- Pivoting to a "primordial soup" evaluation to find rules that create structure from chaos (iter_097, 098): Also failed. The "dense" rules were too chaotic, and the "sparse" rules were too inactive to affect the dense soup, as their few active mappings were for low-density neighborhoods not present in the soup.
+
+This last failure (iter_098) provides the crucial insight: our rule generation has been misaligned with our evaluation environment. To find a rule that "cools" a dense soup, we must generate rules that actually *act* on dense neighborhoods. This leads to a new, targeted rule generation strategy.
+
+**Task:** Create a new script, `src/run_targeted_soup_search.py`.
+
+**1. Implement Targeted Rule Generation:**
+- Create a function to generate one C2-symmetric rule with exactly 8 kernel pairs (16 non-identity mappings).
+- Define "high-density states" as those with a Hamming Weight of 4, 5, or 6 (there are 35+21+7=63 such states, plus the all-1s state for a total of 64 if you include weight 7).
+- To generate the rule's kernels, randomly select pairs `(A, B)` exclusively from the pool of unmapped, high-density states. This ensures all active mappings are in the high-density regime. The generation must ensure the resulting C2-closure for each pair is valid and conflict-free.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 of these "targeted sparse" rules and save them to `archive/iter_099/population/`.
+- Evaluate each rule using the established soup methodology:
+  - Initialize a 150x150 grid with 25% random noise (use the same fixed random seed as iter_097/098).
+  - Simulate for 1000 steps.
+  - Record the `final_bit_count`.
+
+**3. Classify and Report:**
+- Classify each rule's outcome based on its `final_bit_count`:
+  - `DEAD`: `final_bit_count` < 20
+  - `CHAOTIC`: `final_bit_count` > 1000
+  - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+- Create `archive/iter_099/result.yaml` with the counts for each class (`dead_rules_count`, `chaotic_rules_count`, `interesting_rules_count`).
+- Create `archive/iter_099/results/interesting_rules.txt`, listing the filenames of all rules classified as `INTERESTING`. This file should be empty if none are found.
+
+**Status:** experiment_failed
+
+**Experimenter view:** The hypothesis failed. The key insight from the results is revealing: many
+rules (rule_001, 027, 051, 061, 064, etc.) show final_count=5665, which is
+EXACTLY the initial soup cell count. These rules have zero measurable effect
+on the soup after 1000 steps.
+
+The root cause: a 25%-density soup has an average neighborhood Hamming
+weight of ~2.0 (center=0.25 + 6 neighbors × 0.25 ≈ 2). Our targeted rules
+only contain non-identity mappings for states with Hamming weight ≥ 4. At
+25% density, these high-density neighborhoods are extremely rare (they appear
+in fewer than ~5% of cells). The rules are effectively identity transforms on
+the overwhelming majority of the grid.
+
+The density paradox: rules targeting high-density states cannot disrupt a
+low-density soup, because the soup never presents those high-density
+neighborhoods in sufficient quantity. Conversely, from iter_096-098, dense
+rules (32 mappings, all densities) also result in CHAOTIC outcomes because
+they overwhelm the low-density soup back to chaos.
+
+Next direction: the resolution gap demands rules that specifically map
+medium-density states (weight 2-4) to lower-density outcomes, gradually
+reducing the soup density rather than either ignoring it or amplifying it.
+
+
+**Metrics:** `{'dead_rules_count': 0, 'chaotic_rules_count': 100, 'interesting_rules_count': 0, 'total_rules_evaluated': 100, 'initial_soup_cells': 5665, 'grid_size': 150, 'soup_density': 0.25, 'steps': 1000, 'n_input_pairs_per_rule': 4, 'directed_entries_per_rule': 16}`
+

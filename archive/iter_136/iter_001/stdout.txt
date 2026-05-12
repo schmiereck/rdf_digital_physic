@@ -1,0 +1,67 @@
+I'll explore the codebase to understand the existing infrastructure before writing the new script.
+I need to understand the codebase in C:\Users\thomas\Projekte\rdf_digital_physic\src to write a new script. Please read and summarize these key files:
+
+1. List all Python files in src/ directory
+2. Read src/ash_pattern.json (or look for it)
+3. Find how C2-symmetric rules are generated - look for functions related to rule generation, especially anything with "c2", "symmetric", "kernel", "density"
+4. Find how the local fitness metric is computed - look for iter_135 related scripts or files with "local_fitness", "displacement", "center_of_mass", "oscillator"
+5. Find how objects/oscillators are identified and tracked
+6. Read the iter_135 script if it exists (likely src/run_iter135.py or similar)
+7. Find the iter_129 density scan script to understand the pattern used
+
+Search breadth: very thorough. Report file contents for the most relevant files (especially rule generation code, fitness evaluation, and any iter_135 or iter_129 scripts).
+Now let me read the key scripts in detail before writing the new one.
+Let me check for the remnant objects file and the ash pattern before writing the script.
+Good. I have everything I need. Now I'll write the script.
+Now let me run the script and capture the output.
+Let me verify the result.yaml was written correctly.
+The script ran cleanly and produced all required outputs. Here is the mandatory result block:
+
+```yaml
+status: ok
+artifacts:
+  - src/run_local_density_scan.py
+  - archive/iter_136/population/low_density/rule_000.json
+  - archive/iter_136/population/medium_density/rule_000.json
+  - archive/iter_136/population/high_density/rule_000.json
+  - archive/iter_136/results/low_density_scores.csv
+  - archive/iter_136/results/medium_density_scores.csv
+  - archive/iter_136/results/high_density_scores.csv
+  - archive/iter_136/results/result.yaml
+metrics:
+  low_density_viable_rules: 0
+  low_density_top_fitness: 0.02815354
+  medium_density_viable_rules: 0
+  medium_density_top_fitness: 1.23850134
+  high_density_viable_rules: 0
+  high_density_top_fitness: 0.29541164
+log_excerpt: |
+  === low_density (n_pairs=4, 16 non-identity mappings) ===
+    viable=0  top_fitness=0.02815354  mean_fitness=0.00202508
+    Saved CSV: .../archive/iter_136/results/low_density_scores.csv
+  === medium_density (n_pairs=8, 32 non-identity mappings) ===
+    viable=0  top_fitness=1.23850134  mean_fitness=0.03248616
+    Saved CSV: .../archive/iter_136/results/medium_density_scores.csv
+  === high_density (n_pairs=16, 64 non-identity mappings) ===
+    viable=0  top_fitness=0.29541164  mean_fitness=0.01718494
+    Saved CSV: .../archive/iter_136/results/high_density_scores.csv
+  Saved YAML: .../archive/iter_136/results/result.yaml
+  === FINAL SUMMARY ===
+    low_density: viable=0  top_fitness=0.02815354
+    medium_density: viable=0  top_fitness=1.23850134
+    high_density: viable=0  top_fitness=0.29541164
+experimenter_view: |
+  All three density levels produced zero viable founders under the local fitness
+  metric (fitness > 0.001 AND bit_ratio < 3.0). However the results are not
+  uniformly barren: medium_density (8 pairs) achieves the highest top fitness
+  (1.238) by far, but every high-fitness rule in that tier accompanies a
+  massive bit explosion (bit_ratio >> 3, often 50–150x initial). Rules with
+  controlled bit counts (bit_ratio < 3) universally show zero displacement.
+  This reveals a clean coupling problem: the remnant perturbation that produces
+  local motion also drives chaotic growth. Medium density is the most promising
+  tier because it maximises displacement before explosion, suggesting that a
+  targeted search (e.g., elitism seeded from medium-density high-fitness rules
+  combined with a bit-ratio penalty) may be able to decouple the two effects
+  and find a true viable founder.
+notes: Zero viable founders across all densities; medium density (8 pairs) gives highest raw local fitness but all high-scoring rules are chaotic (bit_ratio >> 3.0).
+```

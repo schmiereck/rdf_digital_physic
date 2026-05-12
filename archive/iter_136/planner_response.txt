@@ -1,0 +1,58 @@
+```yaml
+analysis: |
+  The hypothesis that a quadratic penalty would reveal a viable founder has been conclusively refuted. The re-evaluation of the 100 medium-density rules from iter_136 showed that while the new fitness function successfully identified rules with very high displacement, this displacement is inextricably linked to chaotic, bit-count-exploding behavior.
+
+  The top-scoring rule under the new metric, `rule_061`, had a very high displacement of 6.8, but also a `bit_ratio` of 5.5, failing the viability criterion of `< 3.0`. No rule with a fitness score above the `0.001` threshold met the stability requirement. This is a critical negative result: it demonstrates that for randomly generated C2-symmetric rules of this type, the traits for "high motion" and "chaotic growth" are strongly correlated. Simply filtering for one while penalizing the other is not enough, because no individuals exist in the overlap. The evolutionary search is blocked because there is no "there" there in the initial random population.
+open_questions:
+  - "Can we visualize the top 'chaotic movers' (e.g., rule_061) to see if they contain any coherent, glider-like structures amidst the noise?"
+  - "Can we generate rules with an explicit structural constraint, such as guaranteeing that all mappings are involutions, to suppress chaotic growth at the source?"
+  - "Is it possible to evolve a *modifier* to a known stable rule, rather than evolving a whole rule from scratch?"
+  - "Would a different evaluation environment, other than the 'ash', be less prone to chaotic explosions?"
+  - "If random search is failing, could we return to a constructive approach, designing a simple moving object and deriving the minimal rule to support it?"
+chosen_direction: "Visualize the dynamics of the top-scoring 'chaotic mover' (rule_061) to qualitatively assess if its high displacement is due to coherent motion or just explosive, asymmetric growth."
+hypothesis: "A visualization of rule_061's dynamics will show that its high displacement score is caused by explosive, asymmetric growth, not by any coherent, glider-like structures."
+rationale: |
+  We are at a strategic impasse. We have found rules that move, but they are all pathologically chaotic. Before we abandon this line of inquiry or add more complex constraints, we need to understand the *nature* of this chaotic motion. Is it just random expansion, or is there a "signal" (a glider) hidden in the "noise" (the explosion)? Visualizing the top-scoring rule, `rule_061`, is the fastest and most direct way to answer this. If we see a structure, we can try to isolate it. If we see only noise, we can confidently close this chapter on purely random rule generation and pivot to a more constrained, structured approach. This is a crucial, minimal validating step to inform our next major strategic decision.
+status: ok
+metrics:
+  best_rule_bit_ratio: 5.5
+  best_rule_displacement: 6.811757
+  best_rule_quadratic_fitness: 0.32055327
+  viable_founder_found: 0
+experimenter_view: |
+  The quadratic penalty (dividing by 1 + (bit_ratio-1)^2) heavily suppresses rules
+  with high bit-ratios compared to the original linear penalty, reshuffling the
+  leaderboard dramatically. The top two rules (rule_061, rule_012) both have large
+  displacement (6.8 and 6.9) but bit_ratios of 5.5 and 6.0 respectively — they
+  survive as top scorers because their displacements are so large that even the
+  quadratic denominator (~21.25 and ~26) cannot drive the score to zero.
+  However, both fail the bit_ratio < 3.0 viability gate. The highest-ranked rules
+  passing the quadratic fitness > 0.001 threshold are rule_061, rule_012, rule_015,
+  rule_071, rule_021, and rule_093, but none have bit_ratio < 3.0. The medium-density
+  population from iter_136 contains no viable founder under the new stricter criteria.
+  A targeted search in a different density regime or with explicit bit_ratio
+  constraints during generation would be needed to find a viable founder.
+notes: 'No viable founder found; all high-displacement rules have bit_ratio >> 3.0'
+state_update: |
+  Phase: Focused Exploration
+
+  ## Goal
+  Evolve a rule that produces sustained, coherent motion in a pre-structured "ash" environment.
+
+  ## Confirmed
+  - **Local Fitness Metric Works:** A fitness metric focused on a local subset of objects correctly identifies and rewards sustained displacement while penalizing stasis and chaotic growth (iter_135).
+  - **Remnant Composition & Structure:** The `rule_011` remnant consists of 37 objects (33 still-lifes, 4 oscillators) with a specific spatial layout featuring one very close oscillator pair (iter_133, 134).
+  - **Optimal Rule Density for Motion Signal:** C2-symmetric rules with medium density (8 kernel pairs) are most likely to produce a *signal* of motion, although this is strongly correlated with chaotic growth (iter_129, 136).
+
+  ## Refuted
+  - **Viable Founders in Random Populations:** Randomly generated populations of C2-symmetric rules, even at optimal density, do not contain any "viable founders" that exhibit both sustained motion and non-chaotic growth. Stricter fitness penalties confirm that high displacement is always coupled with high bit-count explosions (iter_136, 137).
+  - **Local Evolution from Global Elites:** An evolutionary line successful at global animation is not a good source of genes for local animation. The globally-evolved rules are predisposed to freeze the most active local regions into still-lifes (iter_135).
+  - **Remnant is Not a Glider:** The remnant from `rule_011` is a collection of oscillators, not a single translating object (iter_132).
+
+  ## Open Questions
+  - Can we visualize the top 'chaotic movers' (e.g., rule_061) to see if they contain any coherent, glider-like structures amidst the noise?
+  - Can we generate rules with an explicit structural constraint, such as guaranteeing that all mappings are involutions, to suppress chaotic growth at the source?
+  - Is it possible to evolve a *modifier* to a known stable rule, rather than evolving a whole rule from scratch?
+  - Would a different evaluation environment, other than the 'ash', be less prone to chaotic explosions?
+  - If random search is failing, could we return to a constructive approach, designing a simple moving object and deriving the minimal rule to support it?
+```
