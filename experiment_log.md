@@ -3,102 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 63596
-campaign: Phase 3 - Non-Contiguous Seeds
-cost_usd: 0.10011
-hypothesis: 'noncontiguous-4bit: A 4-bit non-contiguous seed forms a stable, moving
-  object under the non-conserving rule (A=3,B=14).'
-input_tokens: 71326
-iter: 81
-metrics:
-  contiguous_combos_filtered: 860
-  decay_or_other_count: 88
-  glider_found: 0
-  grid_cells: 37
-  grid_radius: 3
-  patterns_checked: 3227
-  stable_object_count: 3139
-  total_4cell_combos_in_grid: 66045
-  total_unique_seeds: 3227
-output_tokens: 1658
-status: experiment_failed
-```
-
-## iter_081: noncontiguous-4bit: A 4-bit non-contiguous seed forms a stable, moving object under the non-conserving rule (A=3,B=14).
-
-**Analysis:** The research is fundamentally blocked. The previous iteration (iter_080) completed the test of 3-bit non-contiguous seeds, which was the minimal step to address the failure of 2-bit non-contiguous seeds in iter_079. This experiment also failed, but for a highly informative reason: the `experimenter_view` noted that a 3-bit seed, even if non-contiguous, is too sparse to create the local neighborhood density (3 consecutive live neighbors) required to trigger the rule's non-trivial "birth" dynamics. All 250 unique seeds tested collapsed into stationary still lifes.
-
-This provides a clear path forward. The failure was not in the non-contiguous seed paradigm itself, but in using an insufficient number of bits. To test the paradigm properly, we must use a seed complex enough to actually engage the rule's interesting dynamics. The minimal and only logical next step is to escalate the search from 3-bit to 4-bit non-contiguous seeds. Four bits is the smallest number that can form a non-contiguous pattern while also being dense enough to create the "3-consecutive-neighbor" condition that was absent in all previous non-contiguous tests.
-
-**Task:** Create a new script, `src/search_noncontiguous_4bit.py`, to perform a systematic search for gliders from 4-bit non-contiguous seeds.
-
-1. **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
-
-2. **Generate Seeds:**
-   a. Systematically generate all unique 4-bit seeds that fit within a hex-radius of 2 (a 37-cell diamond shape).
-   b. Filter out all 10 known contiguous tetrahexes.
-   c. Reduce the remaining set to its rotationally unique members to create the final list of seeds to test.
-
-3. **Test Each Seed:** For each unique seed:
-   a. Initialize a grid (e.g., 150x150) with the pattern.
-   b. Simulate for at least 500 steps.
-   c. Track the pattern's configuration and bit count at each step to detect cycles. An object is considered stable if it enters a cycle with `bit_count > 0`.
-   d. For any stable object, calculate the net displacement of its center of mass over one full period.
-
-4. **Output:** Create `archive/iter_081/result.yaml`. The script should stop and report immediately if a glider is found. If no glider is found after checking all seeds, it should report a summary.
-   - `glider_found`: `true` if any seed produced a glider.
-   - `patterns_checked`: The number of unique non-contiguous seeds tested.
-   - `stable_object_count`: The number of seeds that produced a stable object.
-   - `glider_seed_coords`: The coordinates of the seed that produced the first glider, if found.
-   - `glider_period`: The period of the first glider found.
-   - `glider_velocity_hex`: The (dq, dr) velocity of the first glider found.
-
-**Status:** experiment_failed
-
-**Experimenter view:** All 3,227 unique canonical non-contiguous 4-bit seeds within hex-radius 3 (37
-cells) were tested for up to 500 steps. No gliders were found. The 3,139 stable
-objects were all period-1 still lives; the remaining 88 seeds decayed to 0 bits.
-
-A complete theoretical analysis explains why 4-bit non-contiguous gliders cannot
-exist under rule (A=3, B=14):
-
-The five possible connected-component topologies of a 4-bit non-contiguous seed
-are: (1) four isolated bits, (2) one 2-bit cluster + two isolated bits, (3) two
-separate 2-bit clusters, (4) one 3-bit triangle + one isolated bit, (5) one 3-bit
-chain + one isolated bit.
-
-Under the rule: isolated cells survive (neighborhood 64 = identity); cells with
-exactly 1 live neighbor die (neighborhoods 65, 66, 68, 72, 80, 96); dead cells
-with 3 consecutive live neighbors are born (patterns 7, 14, 28, 35, 49, 56).
-
-- Types (1) and (4): Isolated bits and hex triangles are inert still lives. The
-  triangle cannot generate birth at any adjacent dead cell (no dead cell can be
-  adjacent to all 3 triangle vertices in 3 consecutive directions), and isolated
-  bits contribute no dynamics. Result: permanent still life.
-- Type (3): Both 2-cell clusters decay simultaneously (each cell has 1 live
-  neighbor → dies). No birth occurs because non-adjacent clusters cannot place
-  3 consecutive live neighbors at any dead cell without being connected. Result:
-  full decay to 0 bits.
-- Type (2): The 2-cell cluster decays, leaving 2 isolated bits → 2-bit still life.
-- Type (5): The chain A-B-C creates birth at dead cell D (adjacent to A,B,C in
-  3-consecutive directions). End cells A,C die (1 neighbor each); middle B
-  survives; D is born. After step 1: {D,B,X}. In step 2, D and B each see the
-  other as their sole live neighbor → both die. Only X remains. The X cell cannot
-  prevent this because any X placement that would create a step-2 birth event
-  requires X to be adjacent to A, B, or C (making the original seed contiguous).
-  Result: decay to 1 isolated bit → still life.
-
-This exhaustive case analysis proves that 4-bit non-contiguous seeds cannot
-sustain oscillatory dynamics and thus cannot produce gliders under rule A=3,B=14.
-The hypothesis is refuted. In agreement with iter_079 (2-bit) and iter_080 (3-bit),
-sparse non-contiguous seeds of any size ≤4 fail to produce gliders under this rule.
-
-
-**Metrics:** `{'glider_found': 0, 'patterns_checked': 3227, 'total_unique_seeds': 3227, 'stable_object_count': 3139, 'decay_or_other_count': 88, 'contiguous_combos_filtered': 860, 'total_4cell_combos_in_grid': 66045, 'grid_radius': 3, 'grid_cells': 37}`
-
-
----
-```yaml
 cached_tokens: 63651
 campaign: Phase 3 - Evolutionary Search
 cost_usd: 0.10535
@@ -1897,4 +1801,42 @@ pairs. All 21 motion seeds exploded past the MAX_CELLS=500 limit, so no
 glider or oscillator 
 
 **Notes:** Biased hybrid rule generation and evaluation complete.
+
+
+---
+```yaml
+cached_tokens: 63923
+campaign: Phase 4 - Two-Stage Simulation
+cost_usd: 0.10711
+hypothesis: 'two-stage-chaotic: Applying a ''cooling'' rule, then switching to a known
+  chaotic ''motion'' rule (from iter_084), will produce at least one stable, moving
+  particle.'
+input_tokens: 74380
+iter: 118
+metrics:
+  ash_bit_count: 325
+  final_bit_count: 328
+  glider_count: 0
+  oscillator_count: 0
+  still_life_count: 72
+output_tokens: 1388
+status: experiment_failed
+```
+
+## iter_118: two-stage-chaotic: Applying a 'cooling' rule, then switching to a known chaotic 'motion' rule (from iter_084), will produce at least one stable, moving particle.
+
+**Analysis:** The experiment to test the "two-stage simulation" hypothesis has failed. The core idea was that a pure "cooling" rule would create a structured, low-density "ash" from a chaotic soup, and a second "glider-friendly" rule would then animate this ash, producing motion. The experiment showed that the first stage worked as expected, resolving a 25% density soup into a stable field of 72 small objects. 
+
+**Status:** experiment_failed
+
+**Metrics:** `{'ash_bit_count': 325, 'final_bit_count': 328, 'glider_count': 0, 'oscillator_count': 0, 'still_life_count': 72}`
+
+**Experimenter view:** The two-stage pipeline produced no gliders or oscillators. Stage 1 (rule_023)
+resolved the 25%-density soup to a stable ash of 325 live cells (72 connected
+components) in under 200 steps. Stage 2 (symmetric_rule_nonconserving_A3_B14)
+caused only 3 births and no deaths, then froze: the ash shapes are
+simultaneously still-lifes under both rules, so switching rules did not trigger
+any dynamic behavio
+
+**Notes:** Both rules stabilize the same ash shapes; zero dynamic objects produced by the two-stage pipeline.
 

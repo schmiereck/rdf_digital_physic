@@ -1,0 +1,67 @@
+I'll explore the project structure and existing files to understand the codebase before writing the script.
+Search the project at C:\Users\thomas\Projekte\rdf_digital_physic\src for:
+1. The file `archive/iter_105/population/rule_023.json` - read its full content
+2. The file `src/symmetric_rule_nonconserving_A3_B14.json` - read its full content
+3. Any existing simulation scripts in src/ that show how the hex grid simulation works (look for files like run_*.py or simulate*.py)
+4. Any utility modules that handle hex grid operations, rule loading, connected components, or glider detection
+
+Report the full content of both JSON rule files and the key functions/patterns from any simulation utilities found.
+Good, I have enough context. Let me look at one recent script for exact patterns before writing.
+Now I have everything I need. Let me write the script.
+Now let me run the script:
+Let me verify the result.yaml:
+The simulation ran successfully. Here's a summary of what happened:
+
+**Stage 1 (Cooling with rule_023):** The soup of 5665 cells collapsed to a stable ash of 325 cells within the first 200 steps and remained frozen for the remaining 800 steps.
+
+**Stage 2 (Motion with symmetric_rule_nonconserving_A3_B14):** The ash grew by just 3 cells (325→328) and immediately stabilized again. All 72 connected components were still-lifes under the new rule — no oscillators or gliders emerged.
+
+**Interpretation:** The experiment's hypothesis is falsified. The ash produced by the cooling rule consists of shapes that happen to also be still-lifes under the glider-friendly rule. The two-stage hand-off does not create the conditions needed for motion. A possible direction: instead of using the raw ash, one could perturb it (add small random perturbations) before switching rules, or find an intermediate seeding strategy that places the glider-friendly rule's known glider seeds near the ash objects.
+
+```yaml
+status: experiment_failed
+artifacts:
+  - src/run_two_stage_simulation.py
+  - archive/iter_118/result.yaml
+metrics:
+  glider_count: 0
+  oscillator_count: 0
+  still_life_count: 72
+  ash_bit_count: 325
+  final_bit_count: 328
+log_excerpt: |
+  === Stage 1: Cooling ===
+  Loaded cooling rule: rule_023.json
+  Initial soup: 5665 live cells  (150x150, density=0.25, seed=42)
+    Step   200:    325 live cells
+    Step   400:    325 live cells
+    Step   600:    325 live cells
+    Step   800:    325 live cells
+    Step  1000:    325 live cells
+  Cooling complete. Ash: 325 live cells
+  === Stage 2: Motion ===
+  Loaded motion rule: symmetric_rule_nonconserving_A3_B14.json
+  Stage 2 init: 325 live cells
+    Step   200:    328 live cells
+    Step   400:    328 live cells
+    Step  1000:    328 live cells
+  Motion complete. Final: 328 live cells
+  === Characterizing Objects ===
+  Connected components found: 72
+  glider_count:     0
+  oscillator_count: 0
+  still_life_count: 72
+  Written: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_118\result.yaml
+experimenter_view: |
+  The two-stage pipeline produced no gliders or oscillators. Stage 1 (rule_023)
+  resolved the 25%-density soup to a stable ash of 325 live cells (72 connected
+  components) in under 200 steps. Stage 2 (symmetric_rule_nonconserving_A3_B14)
+  caused only 3 births and no deaths, then froze: the ash shapes are
+  simultaneously still-lifes under both rules, so switching rules did not trigger
+  any dynamic behaviour. The hypothesis — that the glider-friendly rule would
+  animate the structured ash — is falsified for this particular rule pair and
+  initial condition. A follow-up could try: (a) adding small random perturbations
+  to the ash before switching rules, or (b) seeding the ash grid with known
+  glider seeds for the motion rule at the locations of isolated ash objects.
+notes: Both rules stabilize the same ash shapes; zero dynamic objects produced by the two-stage pipeline.
+```
