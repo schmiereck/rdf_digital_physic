@@ -6007,3 +6007,60 @@ reducing the soup density rather than either ignoring it or amplifying it.
 
 **Metrics:** `{'dead_rules_count': 0, 'chaotic_rules_count': 100, 'interesting_rules_count': 0, 'total_rules_evaluated': 100, 'initial_soup_cells': 5665, 'grid_size': 150, 'soup_density': 0.25, 'steps': 1000, 'n_input_pairs_per_rule': 4, 'directed_entries_per_rule': 16}`
 
+
+---
+```yaml
+cached_tokens: 65953
+campaign: Phase 3 - Evolutionary Search
+cost_usd: 0.10477
+hypothesis: 'cooling-rules: A population of C2-rules with mappings biased to map medium-density
+  states to lower-density states will contain at least one rule that resolves a random
+  soup into a low-density state.'
+input_tokens: 74806
+iter: 100
+metrics: {}
+output_tokens: 1531
+status: code_error
+```
+
+## iter_100: cooling-rules: A population of C2-rules with mappings biased to map medium-density states to lower-density states will contain at least one rule that resolves a random soup into a low-density state.
+
+**Analysis:** The research is catastrophically blocked. A comprehensive series of experiments has demonstrated that the evolutionary algorithm cannot be seeded. Random populations of rules, regardless of symmetry (C6, C2) or density ("sparse", "dense"), are completely barren of the desired "glider" motion when evaluated with small seeds (iter_094-096).
+
+Pivoting the evaluation environment to a "primordial soup" of random noise also failed. Iterations 097-099 revealed a "density paradox":
+1.  "Dense" rules are too chaotic and amplify the soup (iter_097).
+2.  "Sparse" rules are too inactive, as their few active mappings target low-density neighborhoods that are rare in the soup (iter_098).
+3.  "Targeted sparse" rules, with mappings aimed at high-density neighborhoods, also fail because a 25% soup has a low *average local* density, so these targeted rules are rarely triggered (iter_099).
+
+The only remaining, well-motivated hypothesis comes from the failure of iter_099: to find rules that can "cool" the soup into a structured, low-density state, we must generate rules whose active mappings explicitly map medium-density states (which are common in the soup) to lower-density states. This is the last unexplored rule generation strategy.
+
+**Task:** Create a new script, `src/run_cooling_soup_search.py`.
+
+**1. Implement "Cooling" Rule Generation:**
+- Create a function to generate one C2-symmetric rule with exactly 8 kernel pairs (16 non-identity mappings).
+- To generate the kernels, randomly select pairs `(A, B)` such that:
+  - The Hamming Weight of `A` is in `{2, 3}`.
+  - The Hamming Weight of `B` is in `{0, 1}`.
+- This pool of states must be sampled without replacement to ensure all 8 generated kernels are unique and conflict-free under C2 symmetry.
+
+**2. Generate and Evaluate Population:**
+- Generate a population of 100 of these "cooling" rules and save them to `archive/iter_100/population/`.
+- Evaluate each rule using the established soup methodology:
+  - Initialize a 150x150 grid with 25% random noise (use the same fixed random seed as prior soup experiments).
+  - Simulate for 1000 steps.
+  - Record the `final_bit_count`.
+
+**3. Classify and Report:**
+- Classify each rule's outcome based on its `final_bit_count`:
+  - `DEAD`: `final_bit_count` < 20
+  - `CHAOTIC`: `final_bit_count` > 1000
+  - `INTERESTING`: 20 <= `final_bit_count` <= 1000
+- Create `archive/iter_100/result.yaml` with the counts for each class (`dead_rules_count`, `chaotic_rules_count`, `interesting_rules_count`).
+- Create `archive/iter_100/results/interesting_rules.txt`, listing the filenames of all rules classified as `INTERESTING`.
+
+**Status:** code_error
+
+**Experimenter view:** No yaml block in output – check stdout.txt
+
+**Metrics:** `{}`
+

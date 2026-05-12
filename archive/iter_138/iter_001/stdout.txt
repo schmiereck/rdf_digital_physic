@@ -1,0 +1,58 @@
+I'll explore the existing codebase to understand the structure before writing the new script.
+I need to understand the structure of a cellular automata research project. Please find and read the following:
+
+1. Find scripts in `src/` related to density scan (iter_129) and rule generation with C2-symmetric rules - look for files matching `*density*`, `*iter_129*`, `*parity*`, `*c2*` patterns
+2. Find and read `src/ash_pattern.json`
+3. Find any recent scripts that use "late displacement" metric and quadratic fitness penalty (iter_136 related)
+4. Find files in `archive/iter_129/` and `archive/iter_136/` to understand rule file format
+5. Look at `src/run_fresh_local_start.py` (iter_135) as it's mentioned as generating C2-symmetric rules
+
+Report the exact file contents of any relevant Python scripts you find, especially rule generation code with C2 symmetry and the fitness calculation logic. I need to write a new script that extends this work.
+Now let me read the specific scripts I need to base the new one on.
+Now let me read the iter_135 script and the quadratic penalty evaluation script.
+Now I have all I need. Let me also check what's in the iter_136 scripts for the evaluation pattern with `bit_ratio`.
+I have everything I need. Let me write the new script.
+Now let me run it.
+The script ran successfully. Let me verify the summary YAML was written correctly.
+Everything is correct. The script found 3 viable founders out of 100 parity-constrained C2 rules.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_parity_constrained_search.py
+  - archive/iter_138/population/rule_000.json
+  - archive/iter_138/results/summary.yaml
+metrics:
+  viable_founder_count: 3
+  top_fitness_score: 0.36059001
+  top_fitness_bit_ratio: 1.0031
+  top_fitness_rule_id: rule_002.json
+log_excerpt: |
+  Loading ash pattern ...
+    325 bits on 150x150 grid
+  Generating and evaluating 100 parity-constrained C2 rules (n_pairs=8, 32 non-identity mappings) ...
+    rule_002  fitness=0.360590  disp=0.3606  bit_ratio=1.003  *** VIABLE ***
+    rule_024  fitness=0.264503  disp=0.3122  bit_ratio=0.575  *** VIABLE ***
+    rule_051  fitness=0.312702  disp=0.3174  bit_ratio=0.877  *** VIABLE ***
+    rule_099  fitness=0.000000  disp=0.0000  bit_ratio=1.003
+  Saved summary: .../archive/iter_138/results/summary.yaml
+  === Final Summary ===
+    viable_founder_count : 3
+    top_fitness_score    : 0.36059001
+    top_fitness_bit_ratio: 1.0031
+    top_fitness_rule_id  : rule_002.json
+    rule_002  fitness=0.360590  bit_ratio=1.003
+    rule_051  fitness=0.312702  bit_ratio=0.877
+    rule_024  fitness=0.264503  bit_ratio=0.575
+experimenter_view: |
+  The parity-conservation constraint (HammingWeight(A) % 2 == HammingWeight(B) % 2)
+  yields 3 viable founders in 100 rules — a 3% hit rate with the quadratic penalty
+  (fitness > 0.01 AND bit_ratio < 3.0). This is notably higher than the typical
+  chaotic-explosion trap: all three viable rules have bit_ratios well below 1.0 or
+  very close to 1.0 (0.575, 0.877, 1.003), consistent with the parity constraint
+  suppressing runaway bit growth. The top rule (rule_002) achieves fitness=0.361
+  with bit_ratio=1.003 — near-perfect bit conservation combined with real
+  displacement. The constraint appears effective at biasing the search toward
+  dynamically stable, motile rules rather than chaotic exploders.
+notes: Parity constraint successfully biases search toward low-bit-ratio rules; 3 viable founders found.
+```
