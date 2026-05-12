@@ -3,74 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 63795
-campaign: Phase 3 - Non-Contiguous Seeds
-cost_usd: 0.09702
-hypothesis: 'noncontiguous-glider: A 2-bit non-contiguous seed forms a stable, moving
-  object under the non-conserving rule (A=3,B=14).'
-input_tokens: 71097
-iter: 79
-metrics:
-  glider_found: 0
-  patterns_checked: 3
-  stable_object_count: 3
-  still_life_count: 3
-output_tokens: 1490
-status: experiment_failed
-```
-
-## iter_079: noncontiguous-glider: A 2-bit non-contiguous seed forms a stable, moving object under the non-conserving rule (A=3,B=14).
-
-**Analysis:** The research is fundamentally blocked. The "Emergent Dynamics" campaign has conclusively failed. Exhaustive tests of symmetric (iter_075, 076, 078) and asymmetric (iter_077) interactions between all known stable 3-bit still lifes under the C6 non-conserving rule (A=3↔B=14) have produced no moving particles. All arrangements resulted in either static fusion, no interaction, or non-conserving decay.
-
-This series of failures, combined with the earlier failures to find any elemental gliders from contiguous 3-bit or 4-bit seeds (iter_068, 069, 074), strongly suggests a fundamental flaw in our search space. Every experiment so far has assumed that a particle, whether elemental or composite, must be formed from a spatially *contiguous* set of initial '1's.
-
-The experimenter's view in iter_078 provided a crucial insight: "the non-conserving rule's glider-producing potential requires non-compact seed configurations." This is the only well-motivated, unexplored avenue remaining. The next logical step is to pivot our search from contiguous to non-contiguous initial seeds.
-
-**Task:** Create a new script, `src/search_noncontiguous_2bit.py`, to perform a systematic search for gliders from simple non-contiguous seeds.
-
-1.  **Load Rule:** Load the C6-symmetric, non-conserving rule from `src/symmetric_rule_nonconserving_A3_B14.json` (kernel A=3↔B=14).
-
-2.  **Generate Seeds:** The script should systematically generate and test all unique 2-bit seeds separated by a hexagonal distance of 2. For a seed with one bit at `(0,0)`, the second bit will be at `(2,0)`, `(1,1)`, and `(0,2)`. Due to the rule's C6 symmetry, these three orientations cover all unique cases for distance=2.
-
-3.  **Test Each Seed:** For each of the 3 unique seeds:
-    a. Initialize a grid (e.g., 150x150) with the pattern.
-    b. Simulate for 500 steps.
-    c. Track the pattern's configuration and bit count at each step to detect cycles. An object is stable if it enters a cycle with `bit_count > 0`.
-    d. For any stable object, calculate the net displacement of its center of mass over one full period.
-
-4.  **Output:** Create `archive/iter_079/result.yaml` with the following keys:
-    - `glider_found`: `true` if any seed produced a glider.
-    - `patterns_checked`: The number of unique seeds tested (should be 3).
-    - `stable_object_count`: The number of seeds that produced a stable object.
-    - `outcomes`: A list of strings, one for each seed, detailing its fate (e.g., "Seed dist=2, orient=(2,0): DECAY", "Seed dist=2, orient=(1,1): GLIDER, period 8, velocity (1.0, 0.5)").
-
-**Status:** experiment_failed
-
-**Experimenter view:** All 3 distance-2 non-contiguous 2-bit seeds are trivial still lives under the
-non-conserving rule (A=3, B=14). The hypothesis is refuted.
-
-The physical reason is clear: at hex-distance 2, the two live bits do not share
-any common neighbor, except via one intermediate cell (e.g. (76,75) for orient
-(2,0)). That shared cell sees at most 2 live neighbors, which is below the birth
-threshold of 3 consecutive neighbors. Meanwhile, each isolated live cell has 0
-neighbors, so it cannot die (death requires exactly 1 neighbor). Both bits are
-therefore frozen in place indefinitely.
-
-Under C6 symmetry, distance-2 seeds fall into only 2 true equivalence classes
-((2,0)-type "straight" and (1,1)-type "diagonal"), so testing (0,2) is redundant
-with (2,0). All classes produce the same still-life outcome.
-
-To find a non-contiguous glider, one would need seeds where the interaction
-region between the two bits has ≥3 consecutive live neighbors, which requires
-either smaller separation (distance 1, i.e. contiguous) or more seed bits.
-
-
-**Metrics:** `{'patterns_checked': 3, 'stable_object_count': 3, 'glider_found': 0, 'still_life_count': 3}`
-
-
----
-```yaml
 cached_tokens: 63891
 campaign: Phase 3 - Non-Contiguous Seeds
 cost_usd: 0.09811
@@ -1921,6 +1853,34 @@ status: ok
 **Metrics:** `{'mock_value': 163.5}`
 
 **Experimenter view:** [Mock] Iteration 109 executed successfully.
+
+**Notes:** [Mock] dry-run
+
+
+---
+```yaml
+cached_tokens: 64123
+cost_usd: 0.09042
+hypothesis: 'glider-from-ash: The low-density state produced by the ''cooling'' rule
+  from iter_105 (rule_023) contains at least one emergent, stable, moving particle
+  (glider).'
+input_tokens: 70900
+iter: 109
+metrics:
+  mock_value: 165.0
+output_tokens: 1009
+status: ok
+```
+
+## iter_109: glider-from-ash: The low-density state produced by the 'cooling' rule from iter_105 (rule_023) contains at least one emergent, stable, moving particle (glider).
+
+**Analysis:** The research has achieved a major breakthrough in iteration 105. After over 100 iterations of failed attempts to find "gliders" (moving particles) through formal rule design or evolutionary searches based on flawed fitness metrics, we have finally developed a successful strategy. The "primordial soup" evaluation method, combined with a "cooling" rule generation strategy, has yielded four candidate
+
+**Status:** ok
+
+**Metrics:** `{'mock_value': 165.0}`
+
+**Experimenter view:** [Mock] Iteration 110 executed successfully.
 
 **Notes:** [Mock] dry-run
 
