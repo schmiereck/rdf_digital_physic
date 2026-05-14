@@ -3,48 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 49086
-campaign: Phase 6 - Parity-Constrained Evolution
-cost_usd: 0.11106
-hypothesis: 'evolution-parity-gen3: A third generation of rules, bred from the top
-  performers of Gen-2, will produce at least one rule with a fitness score greater
-  than the Gen-2 top score of 0.731.'
-input_tokens: 64224
-iter: 139
-metrics:
-  fitness_improvement_pct: -85.3707
-  gen1_mean_fitness: 0.31259824
-  gen1_top_fitness: 0.36059001
-  gen2_mean_fitness: 0.0457309
-  gen2_top_fitness: 0.73077873
-  rules_beating_gen1_top: 5
-output_tokens: 1441
-status: ok
-```
-
-## iter_139: evolution-parity-gen3: A third generation of rules, bred from the top performers of Gen-2, will produce at least one rule with a fitness score greater than the Gen-2 top score of 0.731.
-
-**Analysis:** The hypothesis that mean fitness would increase was strongly refuted; it dropped by 85%. This is because the three Gen-1 "founders" were pre-selected for viability, while the 100 Gen-2 offspring were not, and 79% of them proved to be inviable (zero fitness) due to destructive crossover.
-
-However, the experiment was a major success from a different perspective. The core goal of evolution—to produce
-
-**Status:** ok
-
-**Metrics:** `{'fitness_improvement_pct': -85.3707, 'gen1_mean_fitness': 0.31259824, 'gen1_top_fitness': 0.36059001, 'gen2_mean_fitness': 0.0457309, 'gen2_top_fitness': 0.73077873, 'rules_beating_gen1_top': 5}`
-
-**Experimenter view:** The hypothesis that Gen-2 mean fitness would be ≥100% higher than Gen-1 mean is
-FALSIFIED. Gen-2 mean (0.04573) is 85.4% LOWER than Gen-1 mean (0.31260). The
-reason is clear from the distribution: 79 of 100 Gen-2 rules collapsed to zero
-fitness (still-death or chaotic explosion), whereas all 3 Gen-1 founders were
-viable by construction (pre-screened in iter_138).
-
-However, the top individual resul
-
-**Notes:** Gen-2 mean fitness declined 85% vs Gen-1 (most offspring collapse), but 5 rules beat Gen-1 top; champion rule_033 achieves 0.731, 2× Gen-1 top.
-
-
----
-```yaml
 cached_tokens: 48698
 campaign: Phase 6 - Parity-Constrained Evolution
 cost_usd: 0.09652
@@ -1018,6 +976,31 @@ status: no_execution
 ## iter_168: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 169. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 169
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_169: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 170. All systems nominal.
 
 **Status:** no_execution
 
