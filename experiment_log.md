@@ -3,45 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 54082
-cost_usd: 0.09847
-hypothesis: 'evolution-reboot-gen3: A third generation of rules, bred from the top
-  performers of Gen-2, will produce at least one rule with a fitness score greater
-  than the Gen-2 top score of 0.0380.'
-input_tokens: 64466
-iter: 130
-metrics:
-  chaotic_rules: 16
-  fitness_improvement_pct: 37.2645
-  gen1_top_fitness: 0.02771506
-  gen2_mean_fitness: 0.00356258
-  gen2_top_fitness: 0.03804293
-  rules_beating_gen1_top: 2
-  viable_rules: 22
-output_tokens: 1410
-status: ok
-```
-
-## iter_130: evolution-reboot-gen3: A third generation of rules, bred from the top performers of Gen-2, will produce at least one rule with a fitness score greater than the Gen-2 top score of 0.0380.
-
-**Analysis:** The research was blocked because initial random populations for our evolutionary algorithm were barren of viable individuals. Iteration 129 found a "sweet spot" for rule density (8 kernel pairs) that yielded two viable "founder" rules with a top fitness of 0.0277. This iteration tested the crucial next step: breeding a new generation from these founders to see if the evolutionary process could amp
-
-**Status:** ok
-
-**Metrics:** `{'chaotic_rules': 16, 'fitness_improvement_pct': 37.2645, 'gen1_top_fitness': 0.02771506, 'gen2_mean_fitness': 0.00356258, 'gen2_top_fitness': 0.03804293, 'rules_beating_gen1_top': 2, 'viable_rules': 22}`
-
-**Experimenter view:** The evolutionary breeding worked decisively. Gen-2 produced 2 rules that
-beat the Gen-1 top score (rule_034 at 0.03804293 and rule_010 at 0.02839845),
-representing a +37.3% improvement in peak fitness. Viable rule count jumped
-from 2 to 22 out of 100, a 10x increase, suggesting the crossover is
-producing a rich neighbourhood around the elite parents. Many rules appear
-to be near-clones of elite1 (
-
-**Notes:** Gen-2 top fitness 0.03804 beats Gen-1 top 0.02771 by +37.3%; 2 rules beat Gen-1 top.
-
-
----
-```yaml
 cached_tokens: 53403
 cost_usd: 0.1044
 hypothesis: 'long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over
@@ -1099,6 +1060,31 @@ status: no_execution
 ## iter_160: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 161. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 161
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_161: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 162. All systems nominal.
 
 **Status:** no_execution
 
