@@ -7,9 +7,10 @@ Phase: Phase 7 - Velocity-Stable Evolution
 - The composite metric provides a valid evolutionary signal, driving mean population fitness up for three consecutive generations. (iter_151, 152, 153)
 
 **Refuted:**
-- The champion rule from Gen-3, `rule_021`, is not a stable glider. It is a "transient puffer" that exhibits high velocity for ~500 steps before decelerating significantly. Its high fitness score (3.465) was an artifact of an evaluation period that was too short to capture this decay in motion. (iter_154)
+- The champion rule from Gen-3, `rule_021`, is a "transient puffer" that decelerates significantly after ~500 steps. (iter_154)
+- Simply extending the evaluation window to 2000 steps is **insufficient** to penalize transient puffers. The `total_displacement / (1 + std_dev)` metric is fundamentally flawed because the initial high-velocity burst dominates the calculation, masking later decay. (iter_155)
 
 **Open Questions:**
-- Can a longer fitness evaluation period (e.g., 2000 steps) effectively filter out transient puffers like `rule_021`?
-- Will re-running the Gen-3 evolution with a longer evaluation window produce a champion with more persistent motion?
-- Is there an alternative fitness metric that is less susceptible to being fooled by transient puffers?
+- Will a fitness metric based purely on late-stage displacement (e.g., steps 1200-2000) correctly assign a low score to the transient puffer `rule_021`?
+- Is late-stage displacement a sufficient signal to drive a new evolutionary search?
+- Should a new fitness metric also include a penalty for population growth to avoid selecting for space-fillers?

@@ -6711,3 +6711,31 @@ offspring that independently rediscovered the same attractor. The 12 Gen-2 el
 
 **Notes:** Gen-3 mean fitness improved 41.85% over Gen-2; top score matched but did not exceed Gen-2's 0.23962495 ceiling.
 
+
+---
+```yaml
+cached_tokens: 58621
+cost_usd: 0.08867
+hypothesis: 'long-run: The displacement of the ash under the top Gen-3 rule increases
+  linearly over 500 steps.'
+input_tokens: 66196
+iter: 124
+metrics: {}
+output_tokens: 1035
+status: no_execution
+```
+
+## iter_124: long-run: The displacement of the ash under the top Gen-3 rule increases linearly over 500 steps.
+
+**Analysis:** The evolutionary search for rules that "animate" a static "ash" pattern has been successful for three generations, with mean fitness improving consistently. However, the top fitness score hit a plateau of ~0.240 in Gen-2 and was not surpassed in Gen-3 (iter_122, 123). This suggests convergence to a local optimum.
+
+The critical ambiguity is whether the "motion" rewarded by our fitness function is s
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+

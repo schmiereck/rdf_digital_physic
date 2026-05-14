@@ -1,0 +1,63 @@
+```yaml
+analysis: |
+  The previous iteration decisively refuted the hypothesis that a longer evaluation window would fix our fitness metric. The experiment in iter_155 showed that the `total_displacement / (1 + std_dev)` metric is fundamentally flawed, as it's dominated by initial high-velocity bursts and fails to penalize the subsequent decay characteristic of "transient puffers". The fitness score for `rule_021` remained high (3.465 -> 3.557) even over 2000 steps, despite the simulation data clearly showing its motion had almost completely ceased after step 500.
+
+  This proves that we need a new fitness function. The most promising direction, as suggested by the previous experimenter, is to focus on motion during the *later* stages of the simulation, as this should directly select for sustained movement and filter out transient effects. I will test this by re-evaluating `rule_021` with a metric that only considers displacement in the final 800 steps of the 2000-step simulation.
+open_questions:
+  - "Will a fitness metric based purely on late-stage displacement (steps 1200-2000) correctly assign a low score to the transient puffer `rule_021`?"
+  - "Is late-stage displacement a sufficient signal to drive a new evolutionary search?"
+  - "Should the new fitness metric also include a penalty for population growth to avoid selecting for space-fillers?"
+chosen_direction: "Validate a new late-stage displacement fitness metric on the known failure case, `rule_021`."
+hypothesis: "late-displacement-metric: A fitness metric based on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021."
+rationale: |
+  This is the most direct test of a solution to the problem identified in iter_155. Instead of running a full, expensive evolutionary search with an unproven metric, this minimal experiment validates the new metric on the specific rule that broke the old one. If `rule_021` is correctly identified as a low-fitness rule, we can confidently adopt this metric for future evolutionary runs. A threshold of <0.5 is chosen because the per-window displacement for this rule in the late stages was observed to be around 0.1-0.2.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  fitness_reduction_pct: -2.65
+  new_fitness_2000_steps: 3.556738
+  original_fitness_1000_steps: 3.465
+  total_com_displacement: 7.005198
+  velocity_std_dev: 0.96955714
+  window_1000_1250: 0.406092
+  window_1250_1500: 0.134422
+  window_1500_1750: 0.221067
+  window_1750_2000: 0.162393
+  window_250_500: 2.618603
+  window_500_750: 0.848512
+  window_750_1000: 0.211068
+  window_0_250: 2.40304
+experimenter_view: |
+  The hypothesis that the 2000-step evaluation would reveal a significant fitness
+  drop for rule_021 was NOT supported. The new composite fitness (3.557) is
+  essentially identical to the original 1000-step score (3.465), a change of only
+  -2.65%. The per-window displacement profile clearly confirms the transient-puffer
+  character: extremely high velocity in windows 0-500 (2.40, 2.62) followed by a
+  dramatic and sustained collapse in windows 500-2000 (0.85, 0.21, 0.41, 0.13, 0.22,
+  0.16). However, the composite metric total_displacement / (1 + std_dev) is not
+  sensitive enough to penalise this pattern: the large early-window displacements
+  dominate the numerator while the std_dev penalty in the denominator remains modest.
+  The key implication is that the current fitness function cannot distinguish a
+  transient puffer from a sustained mover when the burst is large enough.
+  A revised metric — such as scoring only the FINAL N windows, or using the minimum
+  per-window velocity, or exponentially discounting early windows — would be needed
+  to properly penalise transient behaviour.
+notes: "Script src/long_evaluate.py created; hypothesis refuted — composite metric does not penalise transient puffers."
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A composite fitness metric, `total_displacement / (1 + std_dev)`, effectively penalizes inactive "settler" rules while rewarding displacement. (iter_151)
+  - The composite metric provides a valid evolutionary signal, driving mean population fitness up for three consecutive generations. (iter_151, 152, 153)
+
+  **Refuted:**
+  - The champion rule from Gen-3, `rule_021`, is a "transient puffer" that decelerates significantly after ~500 steps. (iter_154)
+  - Simply extending the evaluation window to 2000 steps is **insufficient** to penalize transient puffers. The `total_displacement / (1 + std_dev)` metric is fundamentally flawed because the initial high-velocity burst dominates the calculation, masking later decay. (iter_155)
+
+  **Open Questions:**
+  - Will a fitness metric based purely on late-stage displacement (e.g., steps 1200-2000) correctly assign a low score to the transient puffer `rule_021`?
+  - Is late-stage displacement a sufficient signal to drive a new evolutionary search?
+  - Should a new fitness metric also include a penalty for population growth to avoid selecting for space-fillers?
+```

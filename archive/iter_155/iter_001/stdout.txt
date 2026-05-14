@@ -1,0 +1,68 @@
+I'll start by reading the relevant files to understand the codebase structure.
+Let me search for the rule_021.json file location.
+The `population/rule_021.json` path doesn't exist, but there is a `population_gen3.json` file. Let me check if rule_021 is in there.
+Found rule_021 in `population_gen3.json`. Now I'll create the long evaluation script and run it.
+The simulation ran successfully but produced an unexpected result — fitness did NOT drop. Let me verify the saved results file.
+The experiment ran cleanly. The actual results reveal a scientifically important finding: the fitness did **not** drop as hypothesized — it actually slightly increased (+2.65%). Here is the analysis of why:
+
+- **Per-window velocities**: `[2.403, 2.619, 0.849, 0.211, 0.406, 0.134, 0.221, 0.162]` — the rule is clearly a transient puffer; velocity collapses after the first 500 steps.
+- **But the composite metric absorbs the decay**: `total_displacement = 7.005`, `std_dev = 0.970`. The composite formula `7.005 / (1 + 0.970) = 3.557` remains nearly identical to the original 3.465 because the huge early displacement in the numerator outweighs the std_dev penalty in the denominator.
+- This means the current fitness function is **not sensitive enough** to temporal velocity decay; a puffer that burns out after 500 steps of 2000 still scores as highly as a sustained mover.
+
+```yaml
+status: ok
+artifacts:
+  - src/long_evaluate.py
+  - archive/iter_155/results/results.yaml
+metrics:
+  original_fitness_1000_steps: 3.465
+  new_fitness_2000_steps: 3.556738
+  fitness_reduction_pct: -2.65
+  total_com_displacement: 7.005198
+  velocity_std_dev: 0.96955714
+  window_0_250: 2.40304
+  window_250_500: 2.618603
+  window_500_750: 0.848512
+  window_750_1000: 0.211068
+  window_1000_1250: 0.406092
+  window_1250_1500: 0.134422
+  window_1500_1750: 0.221067
+  window_1750_2000: 0.162393
+log_excerpt: |
+  Loading rule rule_021 from archive/iter_153/results/population_gen3.json
+  Rule rule_021: 32 entries
+  Soup: 150x150, density=0.25, seed=21
+  Simulation: 2000 steps, 8 windows x 250 steps each
+  Running simulation ...
+    Window 1/8 done, CoM=(72.695, 72.275)
+    Window 2/8 done, CoM=(75.005, 73.509)
+    Window 3/8 done, CoM=(74.157, 73.480)
+    Window 4/8 done, CoM=(73.981, 73.363)
+    Window 5/8 done, CoM=(74.182, 73.716)
+    Window 6/8 done, CoM=(74.187, 73.582)
+    Window 7/8 done, CoM=(73.966, 73.584)
+    Window 8/8 done, CoM=(74.123, 73.544)
+  Displacement per window: [2.403, 2.6186, 0.8485, 0.2111, 0.4061, 0.1344, 0.2211, 0.1624]
+  Total displacement: 7.005198
+  Velocity std dev: 0.96955714
+  New fitness score: 3.556738
+  Original fitness score: 3.465
+  Fitness reduction: -2.65%
+  Saved: archive/iter_155/results/results.yaml
+experimenter_view: |
+  The hypothesis that the 2000-step evaluation would reveal a significant fitness
+  drop for rule_021 was NOT supported. The new composite fitness (3.557) is
+  essentially identical to the original 1000-step score (3.465), a change of only
+  -2.65%. The per-window displacement profile clearly confirms the transient-puffer
+  character: extremely high velocity in windows 0-500 (2.40, 2.62) followed by a
+  dramatic and sustained collapse in windows 500-2000 (0.85, 0.21, 0.41, 0.13, 0.22,
+  0.16). However, the composite metric total_displacement / (1 + std_dev) is not
+  sensitive enough to penalise this pattern: the large early-window displacements
+  dominate the numerator while the std_dev penalty in the denominator remains modest.
+  The key implication is that the current fitness function cannot distinguish a
+  transient puffer from a sustained mover when the burst is large enough.
+  A revised metric — such as scoring only the FINAL N windows, or using the minimum
+  per-window velocity, or exponentially discounting early windows — would be needed
+  to properly penalise transient behaviour.
+notes: "Script src/long_evaluate.py created; hypothesis refuted — composite metric does not penalise transient puffers."
+```
