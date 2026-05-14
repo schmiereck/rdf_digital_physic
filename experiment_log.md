@@ -1142,3 +1142,28 @@ status: no_execution
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 146
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_146: strategy_error
+
+**Analysis:** MockPlanner.call_async() got an unexpected keyword argument 'log_path'
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'log_path'
+
