@@ -1,0 +1,36 @@
+artifacts:
+- src/fitness_stable_velocity.py
+- src/evaluate.py
+experimenter_view: 'Created fitness_stable_velocity.py implementing StableVelocityFitness
+  as
+
+  specified: 2000-step simulation, COM recorded at 5 checkpoints (400,800,
+
+  1200,1600,2000), velocities computed over 4 post-settling windows, final
+
+  formula (mean_v / (1+std_v)) * (initial_bits / final_bits). The
+
+  final_bit_count=0 edge case correctly returns fitness=0. Created evaluate.py
+
+  as a new general-purpose CLI script supporting all three metrics
+
+  (conservation, velocity_stability, StableVelocityFitness) via
+
+  --fitness-metric. Both files import cleanly and produce correct outputs on
+
+  tested rules. The L-tromino seed (3 cells at [(63,63),(64,63),(64,64)]) is
+
+  reused from evolution.py without duplication.
+
+  '
+log_excerpt: "=== StableVelocityFitness (identity rule) ===\n  fitness: 0.0\n  mean_velocity:\
+  \ 0.0\n  std_dev_velocity: 0.0\n  initial_bit_count: 3\n  final_bit_count: 3\n \
+  \ velocities: [0.0, 0.0, 0.0, 0.0]\n=== StableVelocityFitness (annihilation rule)\
+  \ ===\n  fitness: 0.0\n  final_bit_count: 0  (edge case handled correctly)\nFitness\
+  \ metric: StableVelocityFitness\nrandom_rule_01.json:\n  fitness = 0.000000\n  mean_velocity\
+  \ = 0.000000\n  std_dev_velocity = 0.000000\n  initial_bit_count = 3\n  final_bit_count\
+  \ = 3\npython evaluate.py --help → shows all 3 metric choices correctly\n"
+metrics: {}
+notes: New StableVelocityFitness rewards sustained coherent motion (high mean_v, low
+  std_v) while penalising growth (initial_bits/final_bits ratio).
+status: ok
