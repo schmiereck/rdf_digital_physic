@@ -6508,3 +6508,50 @@ any dynamic behavio
 
 **Notes:** Both rules stabilize the same ash shapes; zero dynamic objects produced by the two-stage pipeline.
 
+
+---
+```yaml
+cached_tokens: 62894
+campaign: Phase 4 - Two-Stage Simulation
+campaign_status: completed
+campaign_summary: 'This campaign tested if a two-stage process (a ''cooling'' rule
+  to create structure, a second rule to animate it) could produce gliders. Both variants
+  failed: using a stable second rule resulted in a frozen grid (iter_118), and using
+  a chaotic second rule resulted in explosive, space-filling growth that destroyed
+  all structure (iter_119).'
+cost_usd: 0.10396
+hypothesis: 'evolution-for-animation: A population of rules evolved with a fitness
+  metric that rewards moving the specific ''ash'' objects from rule_023 will produce
+  at least one rule with non-zero motion fitness.'
+input_tokens: 72503
+iter: 119
+metrics:
+  ash_bit_count: 325
+  decayed_object_count: 72
+  final_bit_count: 20742
+  glider_count: 0
+  oscillator_count: 0
+  still_life_count: 0
+output_tokens: 1457
+status: ok
+```
+
+## iter_119: evolution-for-animation: A population of rules evolved with a fitness metric that rewards moving the specific 'ash' objects from rule_023 will produce at least one rule with non-zero motion fitness.
+
+**Analysis:** The research has conclusively refuted another major hypothesis. The "two-stage simulation" paradigm, which aimed to generate structure with a "cooling" rule and then animate it with a second rule, has failed in both tested variants.
+- Using a STABLE second rule (iter_118) failed because the "ash" objects were also stable under that rule.
+- Using a CHAOTIC second rule (iter_119) failed even more sp
+
+**Status:** ok
+
+**Metrics:** `{'ash_bit_count': 325, 'decayed_object_count': 72, 'final_bit_count': 20742, 'glider_count': 0, 'oscillator_count': 0, 'still_life_count': 0}`
+
+**Experimenter view:** The cooling rule (iter_105/rule_023) resolved the soup extremely quickly:
+by step 50 the grid had already dropped to 325 live cells and remained
+perfectly stable for all 200 steps, forming 72 isolated static objects.
+When the chaotic rule (iter_084/rule_023) was applied to this sparse ash,
+it triggered a rapid expansion — by step 400 the grid had grown from 325
+to 20,742 live cells and locked into
+
+**Notes:** Chaotic rule from iter_084 is space-filling on sparse ash; produces CHAOTIC_EXPLOSION fixed point at ~20k live cells, not object animation
+

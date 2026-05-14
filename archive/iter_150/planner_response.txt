@@ -1,0 +1,57 @@
+```yaml
+analysis: |
+  The experiment to establish a baseline for the velocity-stability metric has produced a surprising and informative result. My hypothesis was that the mean fitness of a random population would be low (<0.1), assuming that most random rules would produce chaotic, high-variance motion. The opposite is true: the mean fitness was very high, at 0.824.
+
+  The `experimenter_view` provides the crucial insight: the dominant behavior for a random rule is to have a brief burst of motion from the initial soup, which then quickly "cools" or freezes into a static or low-activity state. This results in a velocity profile like `[displaced, 0, 0, 0]`. While the standard deviation of this is non-zero, it's small enough to yield a high fitness score. In effect, the metric, as currently formulated, strongly rewards rules that settle down quickly. The highest-scoring rules (fitness ~0.98) were those that settled the fastest with the least initial motion.
+
+  This is a critical finding. It refutes the hypothesis but, more importantly, it clarifies the fitness landscape. The metric is working correctly, but the "path of least resistance" for a high score is stability through inactivity, not stability through sustained motion. This means that to find a true glider, evolution will have to overcome this strong local minimum and find rules that maintain non-zero velocity across all measurement windows. The annihilation check was successful (0 cases), but we now need to explicitly reward total displacement to counteract the bias towards inactivity.
+open_questions:
+  - "Can we evolve a rule with both high velocity-stability fitness (>0.9) AND significant total displacement (>10.0)?"
+  - "How can the fitness function be modified to explicitly reward total displacement alongside velocity stability?"
+  - "Will a multi-objective approach (pareto front of stability vs. displacement) be more effective than a single composite score?"
+  - "What do the dynamics of the high-fitness 'settling' rules look like visually?"
+chosen_direction: "The most direct path forward is to modify the fitness function to reward both stability and total motion, then launch a new evolutionary run. This directly addresses the problem revealed in the baseline analysis."
+hypothesis: "evolution: A fitness function `total_displacement / (1 + std_dev)` will produce a generation of rules (Gen-1) with a mean fitness at least 50% greater than the mean of a similarly-calculated baseline."
+rationale: |
+  The baseline experiment revealed that rewarding stability alone (`1 / (1 + std_dev)`) is insufficient, as it favors rules that quickly become inert. By multiplying the stability score by the total displacement, we create a new fitness function that explicitly rewards sustained motion. This directly incentivizes the discovery of true gliders (high displacement, low stdev) over static patterns (low displacement, low stdev). This experiment will test if evolution can optimize this new, more challenging metric, using the baseline population (re-calculated with the new metric) as a control.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  annihilation_count: 0
+  max_fitness: 0.981041
+  mean_fitness: 0.823996
+  median_fitness: 0.827807
+  population_size: 100
+  std_dev_fitness: 0.090029
+experimenter_view: |
+  Baseline over 100 random C2-symmetric rules with 8 kernel pairs each.
+  Soup: 150x150, 25% density. Evaluation: 1600 steps (4 windows x 400).
+  Annihilation_count=0: all rules preserved some initial COM motion; none erased the soup entirely.
+  Dominant pattern is a large window-1 burst that decays to near-zero by window-2 onward,
+  which the std_dev term penalizes. The metric correctly scores these low-to-mid (0.62–0.98).
+  High-fitness outliers (rule_024, rule_086 ≈ 0.981) show very small, flat velocity profiles
+  — the metric rewards both sustained motion AND rapid-settling rules. Evolution target:
+  rules with sustained, non-zero velocity across all 4 windows (true gliders).
+  Mean=0.824 and std=0.090 establish the random-population floor for comparison.
+notes: "Baseline measurement for velocity-stability metric."
+# --- Meta ---
+campaign: "Phase 7 - Velocity-Stable Evolution"
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based on `1 / (1 + std_dev)` of velocity over multiple time windows can measure motion stability. (iter_149)
+  - For a random population, this metric strongly favors rules that quickly become inactive ("settlers") over rules with sustained motion. The mean baseline fitness for random C2 rules is ~0.824. (iter_150)
+  - The "annihilation" failure mode (total erasure of the grid) appears to be rare in the C2 rule space. (iter_150)
+
+  **Refuted:**
+  - The initial hypothesis that random rules would have low velocity-stability fitness was incorrect. They achieve high scores through inactivity. (iter_150)
+  - The motion produced by champions from previous evolutionary runs (e.g., `rule_016`) was not stable and decayed over longer simulations. (iter_142, iter_149)
+
+  **Open Questions:**
+  - Can we evolve a rule with both high velocity-stability fitness (>0.9) AND significant total displacement (>10.0)?
+  - How can the fitness function be modified to explicitly reward total displacement alongside velocity stability?
+  - Will a multi-objective approach be more effective than a single composite score?
+```

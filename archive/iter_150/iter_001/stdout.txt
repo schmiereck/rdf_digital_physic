@@ -1,0 +1,54 @@
+I'll read the existing fitness implementation and project structure before writing the script.
+Let me look at the rule generator and a recent iteration script for patterns.
+Let me look at the C2 rule generation and the validate_motion_fitness script for more patterns.
+Now let me look at how the existing evolution code generates C2-symmetric rules with medium density.
+Let me look at how 'soup' initial conditions are defined in the codebase.
+Now let me check for the velocity stability validation script that was mentioned in the recent git commits.
+I have enough context. Now I'll create the output directory and write the script.
+Now let me run the script to get actual results.
+The script ran successfully. The CSV is saved and all metrics are computed. Here's a summary of what the script does and what the results show:
+
+**Script created:** `src/measure_baseline.py`
+
+**What it does:**
+1. Generates 100 random C2-symmetric rules with 8 kernel pairs using a fixed seed (150)
+2. Evaluates each on a 150×150 soup (25% density, seed=42) for 1600 steps (4 windows × 400)
+3. Applies annihilation check (sum of window displacements < 1e-9 → fitness = 0.0)
+4. Saves per-rule results to CSV and reports population statistics
+
+**Key finding:** `annihilation_count=0` — no rule in this population completely erased the soup's motion. The typical pattern is a large initial displacement in window 1 that decays to near-zero by window 2-4, which the std_dev penalizes. Rules like `rule_086` (fitness=0.981) show very small, low-variance displacements — the metric rewards rapid settling, not sustained gliding. Evolution must find rules with *constant* non-zero velocity across all windows to score meaningfully above this ~0.82 mean baseline.
+
+```yaml
+status: ok
+artifacts:
+  - "archive/iter_150/results/fitness_scores.csv"
+metrics:
+  mean_fitness: 0.823996
+  median_fitness: 0.827807
+  max_fitness: 0.981041
+  std_dev_fitness: 0.090029
+  annihilation_count: 0
+  population_size: 100
+log_excerpt: |
+  rule_001: fitness=0.878036  vel=[0.321, 0.0, 0.0, 0.0]  std=0.1389
+  rule_024: fitness=0.980972  vel=[0.045, 0.0, 0.0, 0.0]  std=0.0194
+  rule_086: fitness=0.981041  vel=[0.045, 0.0, 0.0, 0.0]  std=0.0193
+  rule_100: fitness=0.677712  vel=[1.122, 0.022, 0.016, 0.034]  std=0.4756
+  annihilation_count=0
+  mean_fitness=0.823996
+  median_fitness=0.827807
+  max_fitness=0.981041
+  std_dev_fitness=0.090029
+  Saved: archive/iter_150/results/fitness_scores.csv
+experimenter_view: |
+  Baseline over 100 random C2-symmetric rules with 8 kernel pairs each.
+  Soup: 150x150, 25% density. Evaluation: 1600 steps (4 windows x 400).
+  Annihilation_count=0: all rules preserved some initial COM motion; none erased the soup entirely.
+  Dominant pattern is a large window-1 burst that decays to near-zero by window-2 onward,
+  which the std_dev term penalizes. The metric correctly scores these low-to-mid (0.62–0.98).
+  High-fitness outliers (rule_024, rule_086 ≈ 0.981) show very small, flat velocity profiles
+  — the metric rewards both sustained motion AND rapid-settling rules. Evolution target:
+  rules with sustained, non-zero velocity across all 4 windows (true gliders).
+  Mean=0.824 and std=0.090 establish the random-population floor for comparison.
+notes: "Baseline measurement for velocity-stability metric."
+```

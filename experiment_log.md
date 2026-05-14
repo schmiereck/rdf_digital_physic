@@ -3,53 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 62894
-campaign: Phase 4 - Two-Stage Simulation
-campaign_status: completed
-campaign_summary: 'This campaign tested if a two-stage process (a ''cooling'' rule
-  to create structure, a second rule to animate it) could produce gliders. Both variants
-  failed: using a stable second rule resulted in a frozen grid (iter_118), and using
-  a chaotic second rule resulted in explosive, space-filling growth that destroyed
-  all structure (iter_119).'
-cost_usd: 0.10396
-hypothesis: 'evolution-for-animation: A population of rules evolved with a fitness
-  metric that rewards moving the specific ''ash'' objects from rule_023 will produce
-  at least one rule with non-zero motion fitness.'
-input_tokens: 72503
-iter: 119
-metrics:
-  ash_bit_count: 325
-  decayed_object_count: 72
-  final_bit_count: 20742
-  glider_count: 0
-  oscillator_count: 0
-  still_life_count: 0
-output_tokens: 1457
-status: ok
-```
-
-## iter_119: evolution-for-animation: A population of rules evolved with a fitness metric that rewards moving the specific 'ash' objects from rule_023 will produce at least one rule with non-zero motion fitness.
-
-**Analysis:** The research has conclusively refuted another major hypothesis. The "two-stage simulation" paradigm, which aimed to generate structure with a "cooling" rule and then animate it with a second rule, has failed in both tested variants.
-- Using a STABLE second rule (iter_118) failed because the "ash" objects were also stable under that rule.
-- Using a CHAOTIC second rule (iter_119) failed even more sp
-
-**Status:** ok
-
-**Metrics:** `{'ash_bit_count': 325, 'decayed_object_count': 72, 'final_bit_count': 20742, 'glider_count': 0, 'oscillator_count': 0, 'still_life_count': 0}`
-
-**Experimenter view:** The cooling rule (iter_105/rule_023) resolved the soup extremely quickly:
-by step 50 the grid had already dropped to 325 live cells and remained
-perfectly stable for all 200 steps, forming 72 isolated static objects.
-When the chaotic rule (iter_084/rule_023) was applied to this sparse ash,
-it triggered a rapid expansion — by step 400 the grid had grown from 325
-to 20,742 live cells and locked into
-
-**Notes:** Chaotic rule from iter_084 is space-filling on sparse ash; produces CHAOTIC_EXPLOSION fixed point at ~20k live cells, not object animation
-
-
----
-```yaml
 cached_tokens: 61643
 cost_usd: 0.10175
 hypothesis: 'evolution-for-animation: A population of rules evolved with the ash-based
@@ -1094,4 +1047,44 @@ velocity proxy — using per-step velocity would have given std_dev ~ 0.04 and f
 0.96, which would have failed the criterion; the per-window mea
 
 **Notes:** Velocity-stability metric validated; fitness=0.056 for rule_016 confirms decaying-motion hypothesis.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.13929
+hypothesis: 'evolution: A fitness function `total_displacement / (1 + std_dev)` will
+  produce a generation of rules (Gen-1) with a mean fitness at least 50% greater than
+  the mean of a similarly-calculated baseline.'
+input_tokens: 32690
+iter: 150
+metrics:
+  annihilation_count: 0
+  max_fitness: 0.981041
+  mean_fitness: 0.823996
+  median_fitness: 0.827807
+  population_size: 100
+  std_dev_fitness: 0.090029
+output_tokens: 2369
+status: ok
+```
+
+## iter_150: evolution: A fitness function `total_displacement / (1 + std_dev)` will produce a generation of rules (Gen-1) with a mean fitness at least 50% greater than the mean of a similarly-calculated baseline.
+
+**Analysis:** The experiment to establish a baseline for the velocity-stability metric has produced a surprising and informative result. My hypothesis was that the mean fitness of a random population would be low (<0.1), assuming that most random rules would produce chaotic, high-variance motion. The opposite is true: the mean fitness was very high, at 0.824.
+
+The `experimenter_view` provides the crucial insigh
+
+**Status:** ok
+
+**Metrics:** `{'annihilation_count': 0, 'max_fitness': 0.981041, 'mean_fitness': 0.823996, 'median_fitness': 0.827807, 'population_size': 100, 'std_dev_fitness': 0.090029}`
+
+**Experimenter view:** Baseline over 100 random C2-symmetric rules with 8 kernel pairs each.
+Soup: 150x150, 25% density. Evaluation: 1600 steps (4 windows x 400).
+Annihilation_count=0: all rules preserved some initial COM motion; none erased the soup entirely.
+Dominant pattern is a large window-1 burst that decays to near-zero by window-2 onward,
+which the std_dev term penalizes. The metric correctly scores these low-to
+
+**Notes:** Baseline measurement for velocity-stability metric.
 
