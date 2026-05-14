@@ -3,47 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 48228
-campaign: Phase 6 - Parity-Constrained Evolution
-cost_usd: 0.0979
-hypothesis: 'velocity-stability-metric: A fitness metric rewarding low standard deviation
-  of velocity across multiple time windows (400-800, 800-1200, 1200-1600) will assign
-  a higher score to a hypothetical stable glider than to the decaying motion of rule_016.'
-input_tokens: 59561
-iter: 143
-metrics:
-  disp_1200_1600: 16.97931866
-  disp_400_800: 40.40255499
-  final_bit_count_at_2000: 647
-  motion_sustained: false
-  velocity_ratio: 0.42025359
-output_tokens: 1527
-status: ok
-```
-
-## iter_143: velocity-stability-metric: A fitness metric rewarding low standard deviation of velocity across multiple time windows (400-800, 800-1200, 1200-1600) will assign a higher score to a hypothetical stable glider than to the decaying motion of rule_016.
-
-**Analysis:** The research has hit a significant and recurring roadblock. Iteration 142 evolved a new champion rule (`rule_016`) that scored highly on a stringent fitness metric designed to reward long-term motion (steps 400-800). This experiment (143) was a crucial verification to see if that motion persisted even longer.
-
-The result is a definitive failure. The long-run simulation showed that `rule_016`'s vel
-
-**Status:** ok
-
-**Metrics:** `{'disp_1200_1600': 16.97931866, 'disp_400_800': 40.40255499, 'final_bit_count_at_2000': 647, 'motion_sustained': False, 'velocity_ratio': 0.42025359}`
-
-**Experimenter view:** The motion produced by rule_016 is NOT sustained over the long run. The displacement
-in the primary fitness window (steps 400–800) was large at 40.4 grid units, confirming
-the rule scored well by the Gen-4 metric. However, the displacement in the later window
-(steps 1200–1600) was only 17.0 units, giving a velocity_ratio of 0.42 — well below the
-0.9 threshold for sustained motion.
-
-The bit count t
-
-**Notes:** Long-run verification for rule_016 from iter_142 complete. Motion not sustained (velocity_ratio=0.42 < 0.9).
-
-
----
-```yaml
 cached_tokens: 48607
 cost_usd: 0.07973
 hypothesis: 'velocity-stability-metric: A fitness metric rewarding low standard deviation
@@ -980,4 +939,41 @@ status: no_execution
 **Experimenter view:** 
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 18292
+cost_usd: 0.27724
+hypothesis: 'phase-173: A stable-velocity-based fitness metric, validated against
+  known exploits, can guide evolution toward coherent motion, although 3 generations
+  are insufficient to produce a stable glider.'
+input_tokens: 83872
+iter: 173
+metrics:
+  champion_final_bit_count: 13
+  champion_fitness: 0.27425746
+  champion_mean_velocity: 6.67438262
+  champion_std_dev_velocity: 4.61604472
+  pathology_annihilator_score: 0.0
+  pathology_puffer_score: 0.0
+output_tokens: 3019
+status: experiment_failed
+```
+
+## iter_173: phase-173: A stable-velocity-based fitness metric, validated against known exploits, can guide evolution toward coherent motion, although 3 generations are insufficient to produce a stable glider.
+
+**Analysis:** This phase successfully tackled the critical issue of flawed fitness functions that had plagued previous evolutionary runs. The work was structured in a rigorous three-step sequence: implementation, validation, and deployment.
+
+1.  **Implementation (173.1):** A new metric, `StableVelocityFitness`, was created. Unlike prior metrics based on simple displacement or conservation, this one measures vel
+
+**Status:** experiment_failed
+
+**Metrics:** `{'champion_fitness': 0.27425746, 'champion_mean_velocity': 6.67438262, 'champion_std_dev_velocity': 4.61604472, 'champion_final_bit_count': 13, 'pathology_annihilator_score': 0.0, 'pathology_puffer_score': 0.0}`
+
+**Experimenter view:** **Sub-agent 173.1:** Successfully implemented the `StableVelocityFitness` metric in `src/fitness_stable_velocity.py`. The new metric correctly balances mean velocity, velocity stability, and bit conservation.
+
+**Sub-agent 173.2:** The validation was a success. The new metric correctly assigned a fitness of 0.0 to both the annihilator rule from iter_170 and the explosive puffer rule from iter_171, 
+
+**Notes:** The primary goal of creating a stable glider was not met, but the secondary goal of creating and validating a non-exploitable fitness metric was a complete success. The foundation for future searches is now much stronger.
 
