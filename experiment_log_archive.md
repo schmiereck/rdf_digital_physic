@@ -6807,3 +6807,43 @@ This experiment conclusive
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 56525
+campaign: Phase 5 - Sustained Motion Evolution
+cost_usd: 0.09731
+hypothesis: 'fresh-start: A random population of 100 C2-symmetric rules, when evaluated
+  with the late-displacement metric, contains at least one rule with a fitness score
+  > 0.'
+input_tokens: 66518
+iter: 127
+metrics:
+  population_size: 100
+  rules_with_sustained_motion: 1
+  top_fitness_score: 0.00020401
+  top_rule_displacement_100_200: 1.229365
+  top_rule_final_bits: 6331
+  top_rule_final_objects: 53
+output_tokens: 1226
+status: ok
+```
+
+## iter_127: fresh-start: A random population of 100 C2-symmetric rules, when evaluated with the late-displacement metric, contains at least one rule with a fitness score > 0.
+
+**Analysis:** The previous iteration, 126, failed to execute, blocking the research. This iteration successfully re-ran the critical experiment: breeding a new generation (Gen-4) from Gen-3 elites and evaluating it with the corrected "late-displacement" fitness metric.
+
+The results are a conclusive and informative failure. As suspected in iter_125, the previous evolutionary line was optimizing for a flawed obje
+
+**Status:** ok
+
+**Metrics:** `{'population_size': 100, 'rules_with_sustained_motion': 1, 'top_fitness_score': 0.00020401, 'top_rule_displacement_100_200': 1.229365, 'top_rule_final_bits': 6331, 'top_rule_final_objects': 53}`
+
+**Experimenter view:** The late-displacement metric correctly reveals that all Gen-3 elite rules have
+settled into static or near-static attractors by step 100 — zero late displacement
+for 99/100 offspring. The single exception (rule_073) achieves displacement via a
+catastrophic bit-count explosion (6331 vs. target 325), yielding fitness 0.00020401.
+This confirms iter_125's hypothesis: the Gen-3 plateau fitness was driv
+
+**Notes:** Gen-4 bred and evaluated; late-displacement metric functional; 1/100 rules shows motion (via explosion, not locomotion)
+

@@ -1,0 +1,49 @@
+```yaml
+analysis: |
+  In iter_157, an attempt to evolve rules for sustained motion failed. A second generation of rules, bred from the best of the first, showed a *decrease* in fitness. This suggested that the small fitness advantage of the parent rules was not a heritable trait, but likely just random noise. The landscape appeared unnavigable from that starting point.
+
+  This led to the primary open question: was the initial population from iter_157 simply an unlucky draw? This iteration tested that by re-running the initial 'Generation 1' search with a different random seed for the population. The results were nearly identical. The mean and max fitness were marginally higher, but critically, zero rules met the viability threshold of 0.2. This provides strong evidence that the problem is not the specific random seed, but the intrinsic rarity of the desired "late-stage mover" behavior in the C2-symmetric rule space. Simply re-running random searches is unlikely to be productive.
+open_questions:
+  - "Can a modified fitness metric that penalizes final object size distinguish compact movers from slow, expanding 'creepers'?"
+  - "Is the initial random soup (density=0.25) inherently hostile to the formation of late-stage movers?"
+  - "Could a different initial condition, such as a pre-formed object, provide a better substrate for evolving motion?"
+  - "Is the C2 symmetry class itself the problem? Should we explore less constrained rule spaces?"
+chosen_direction: "Address the most likely flaw in our current approach: the fitness metric. The `late_displacement` metric is blind to the *nature* of the object causing the displacement. Slow, expanding patterns can generate displacement, but they aren't the desired stable gliders. The next step is to introduce a penalty for large final object sizes."
+hypothesis: "evolution-reboot-new-seed: A new random population, generated with a different seed, will contain at least one rule with a late-displacement fitness score > 0.2."
+rationale: "The failure of Gen-2 to improve on Gen-1 in iter_157 could be due to a poor starting population. This experiment tests if a completely new random 'Gen-1' search can find a more promising set of parent rules from which to launch a successful evolutionary run."
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  best_rule_id: rule_058
+  gen1_max_fitness: 0.158514
+  gen1_mean_fitness: 0.017089
+  num_viable_rules: 0
+experimenter_view: |
+  Fresh Gen-1 search with population_seed=43 produced results nearly identical to
+  the iter_157 Gen-1 (seed-42-equivalent): mean=0.0171 vs 0.0148, max=0.1585 vs
+  prior max. No rules exceeded the 0.2 viability threshold. The top three rules
+  (rule_058=0.1585, rule_100=0.1343, rule_075=0.1095) are the best candidates for
+  breeding, but their fitness is still well below the level that produced heritable
+  advantage in past experiments. This suggests the challenge is not the random seed
+  but rather the intrinsic rarity of high-displacement rules in the C2-symmetric
+  rule space under the late-displacement metric.
+notes: "Gen-1 reboot with seed=43; no viable rules found; max_fitness=0.1585 (rule_058)"
+# --- Meta ---
+campaign: "Phase 7 - Velocity-Stable Evolution"
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based *only* on late-stage displacement (steps 1200-2000) **successfully** identifies transient puffers as low-fitness individuals. (iter_156)
+
+  **Refuted:**
+  - The small late-stage displacement observed in random rules is not a heritable trait that can be amplified by breeding. (iter_157)
+  - The failure to find "viable" rules (fitness > 0.2) in a random population is not due to an unlucky random seed. A second, independent search yielded nearly identical, low-fitness results, suggesting the desired behavior is intrinsically rare. (iter_158)
+
+  **Open Questions:**
+  - Can a modified fitness metric that penalizes final object size distinguish compact movers from slow, expanding 'creepers'?
+  - Is the initial random soup (density=0.25) inherently hostile to the formation of late-stage movers?
+  - Could a different initial condition, such as a pre-formed object, provide a better substrate for evolving motion?
+```

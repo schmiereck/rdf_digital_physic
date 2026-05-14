@@ -3,46 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 56525
-campaign: Phase 5 - Sustained Motion Evolution
-cost_usd: 0.09731
-hypothesis: 'fresh-start: A random population of 100 C2-symmetric rules, when evaluated
-  with the late-displacement metric, contains at least one rule with a fitness score
-  > 0.'
-input_tokens: 66518
-iter: 127
-metrics:
-  population_size: 100
-  rules_with_sustained_motion: 1
-  top_fitness_score: 0.00020401
-  top_rule_displacement_100_200: 1.229365
-  top_rule_final_bits: 6331
-  top_rule_final_objects: 53
-output_tokens: 1226
-status: ok
-```
-
-## iter_127: fresh-start: A random population of 100 C2-symmetric rules, when evaluated with the late-displacement metric, contains at least one rule with a fitness score > 0.
-
-**Analysis:** The previous iteration, 126, failed to execute, blocking the research. This iteration successfully re-ran the critical experiment: breeding a new generation (Gen-4) from Gen-3 elites and evaluating it with the corrected "late-displacement" fitness metric.
-
-The results are a conclusive and informative failure. As suspected in iter_125, the previous evolutionary line was optimizing for a flawed obje
-
-**Status:** ok
-
-**Metrics:** `{'population_size': 100, 'rules_with_sustained_motion': 1, 'top_fitness_score': 0.00020401, 'top_rule_displacement_100_200': 1.229365, 'top_rule_final_bits': 6331, 'top_rule_final_objects': 53}`
-
-**Experimenter view:** The late-displacement metric correctly reveals that all Gen-3 elite rules have
-settled into static or near-static attractors by step 100 — zero late displacement
-for 99/100 offspring. The single exception (rule_073) achieves displacement via a
-catastrophic bit-count explosion (6331 vs. target 325), yielding fitness 0.00020401.
-This confirms iter_125's hypothesis: the Gen-3 plateau fitness was driv
-
-**Notes:** Gen-4 bred and evaluated; late-displacement metric functional; 1/100 rules shows motion (via explosion, not locomotion)
-
-
----
-```yaml
 cached_tokens: 55573
 cost_usd: 0.08676
 hypothesis: 'density-scan: A population of C2-rules with a medium density (8 kernel
@@ -1114,4 +1074,43 @@ status: experiment_failed
 **Experimenter view:** The hypothesis was decisively refuted. A new generation of 100 rules was bred from the top 3 rules of Gen-1 (rule_025, rule_068, rule_019). The resulting Gen-2 population showed a *decrease* in performance compared to its parent generation. The mean fitness dropped by 15.2% (from 0.0148 to 0.0125), and the maximum fitness also dropped from 0.1429 to 0.1306. Only two rules in the new generation sco
 
 **Notes:** Breeding from the top 3 Gen-1 rules failed to improve fitness, suggesting their small advantage was not heritable. The fitness signal is too weak/random to drive evolution.
+
+
+---
+```yaml
+cached_tokens: 32328
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.12451
+hypothesis: 'evolution-reboot-new-seed: A new random population, generated with a
+  different seed, will contain at least one rule with a late-displacement fitness
+  score > 0.2.'
+input_tokens: 53705
+iter: 158
+metrics:
+  best_rule_id: rule_058
+  gen1_max_fitness: 0.158514
+  gen1_mean_fitness: 0.017089
+  num_viable_rules: 0
+output_tokens: 2038
+status: ok
+```
+
+## iter_158: evolution-reboot-new-seed: A new random population, generated with a different seed, will contain at least one rule with a late-displacement fitness score > 0.2.
+
+**Analysis:** In iter_157, an attempt to evolve rules for sustained motion failed. A second generation of rules, bred from the best of the first, showed a *decrease* in fitness. This suggested that the small fitness advantage of the parent rules was not a heritable trait, but likely just random noise. The landscape appeared unnavigable from that starting point.
+
+This led to the primary open question: was the in
+
+**Status:** ok
+
+**Metrics:** `{'best_rule_id': 'rule_058', 'gen1_max_fitness': 0.158514, 'gen1_mean_fitness': 0.017089, 'num_viable_rules': 0}`
+
+**Experimenter view:** Fresh Gen-1 search with population_seed=43 produced results nearly identical to
+the iter_157 Gen-1 (seed-42-equivalent): mean=0.0171 vs 0.0148, max=0.1585 vs
+prior max. No rules exceeded the 0.2 viability threshold. The top three rules
+(rule_058=0.1585, rule_100=0.1343, rule_075=0.1095) are the best candidates for
+breeding, but their fitness is still well below the level that produced heritable
+ad
+
+**Notes:** Gen-1 reboot with seed=43; no viable rules found; max_fitness=0.1585 (rule_058)
 

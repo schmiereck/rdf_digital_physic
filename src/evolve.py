@@ -267,11 +267,137 @@ def evaluate_composite(rule_dict: dict, soup: np.ndarray) -> dict:
     }
 
 
+# ── Late-displacement fitness ──────────────────────────────────────────────────
+
+def evaluate_late_displacement(rule_dict: dict, soup: np.ndarray,
+                               num_steps: int = 2000,
+                               com_t1: int = 1200) -> dict:
+    """Fitness = Euclidean CoM displacement from step com_t1 to num_steps."""
+    lut  = _rule_to_lut(rule_dict)
+    grid = np.copy(soup)
+
+    com_start: tuple | None = None
+    com_end:   tuple | None = None
+
+    for t in range(1, num_steps + 1):
+        grid = _step_grid(grid, lut)
+        if t == com_t1:
+            com_start = _center_of_mass(grid)
+        if t == num_steps:
+            com_end = _center_of_mass(grid)
+
+    if com_start is None or com_end is None:
+        return {"late_displacement": 0.0, "annihilated": 1}
+
+    dx      = com_end[0] - com_start[0]
+    dy      = com_end[1] - com_start[1]
+    fitness = math.sqrt(dx * dx + dy * dy)
+
+    return {
+        "late_displacement": round(fitness, 8),
+        "com_t1":            [round(com_start[0], 4), round(com_start[1], 4)],
+        "com_t2":            [round(com_end[0],   4), round(com_end[1],   4)],
+        "annihilated":       1 if fitness < 1e-9 else 0,
+    }
+
+
 # ── Soup ──────────────────────────────────────────────────────────────────────
 
 def make_soup() -> np.ndarray:
     rng = np.random.default_rng(SOUP_SEED)
     return (rng.random((GRID_SIZE, GRID_SIZE)) < SOUP_DENSITY).astype(np.uint8)
+
+
+# ── Evolutionary search class ─────────────────────────────────────────────────
+
+class EvolutionarySearch:
+    """Generate, evaluate, and save a random initial population."""
+
+    def __init__(self, num_steps: int = 2000,
+                 fitness_fn_name: str = "late_displacement",
+                 population_size: int = 100,
+                 soup_seed: int = 42,
+                 soup_density: float = 0.25):
+        self.num_steps       = num_steps
+        self.fitness_fn_name = fitness_fn_name
+        self.population_size = population_size
+        self.soup_seed       = soup_seed
+        self.soup_density    = soup_density
+
+    def _make_soup(self) -> np.ndarray:
+        rng = np.random.default_rng(self.soup_seed)
+        return (rng.random((GRID_SIZE, GRID_SIZE)) < self.soup_density).astype(np.uint8)
+
+    def _evaluate(self, rule_dict: dict, soup: np.ndarray) -> float:
+        if self.fitness_fn_name == "late_displacement":
+            com_t1  = self.num_steps - 800
+            result  = evaluate_late_displacement(rule_dict, soup,
+                                                 num_steps=self.num_steps,
+                                                 com_t1=com_t1)
+            return result["late_displacement"]
+        elif self.fitness_fn_name == "composite":
+            result = evaluate_composite(rule_dict, soup)
+            return result["composite_fitness"]
+        else:
+            raise ValueError(f"Unknown fitness function: {self.fitness_fn_name}")
+
+    def run_generation(self, population_seed: int, output_dir) -> dict:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        print(f"\n=== Gen-1 Search (population_seed={population_seed}) ===")
+        print(f"  fitness_fn:  {self.fitness_fn_name}")
+        print(f"  num_steps:   {self.num_steps}")
+        print(f"  soup:        {GRID_SIZE}x{GRID_SIZE}, "
+              f"density={self.soup_density}, seed={self.soup_seed}")
+
+        rng = random.Random(population_seed)
+        print(f"\nGenerating {self.population_size} random C2 rules "
+              f"(seed={population_seed}) ...")
+        rules: dict[str, dict] = {}
+        for i in range(1, self.population_size + 1):
+            rule_id          = f"rule_{i:03d}"
+            rules[rule_id]   = generate_random_c2_rule(rng)
+            if i % 10 == 0:
+                print(f"  Generated {i}/{self.population_size} ...")
+
+        soup = self._make_soup()
+        print(f"\nEvaluating {self.population_size} rules ({self.num_steps} steps each) ...")
+        scores: dict[str, float] = {}
+        for rule_id, rule_dict in rules.items():
+            fitness           = self._evaluate(rule_dict, soup)
+            scores[rule_id]   = fitness
+            print(f"  {rule_id}: {self.fitness_fn_name}={fitness:.6f}")
+
+        pop_path = output_dir / "population_gen1.json"
+        with open(pop_path, "w") as f:
+            json.dump(rules, f, indent=2)
+        print(f"\nSaved population: {pop_path}")
+
+        scores_path = output_dir / "scores_gen1.csv"
+        with open(scores_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["rule_id", "fitness"])
+            writer.writeheader()
+            for rule_id, fitness in scores.items():
+                writer.writerow({"rule_id": rule_id, "fitness": fitness})
+        print(f"Saved scores:     {scores_path}")
+
+        fitness_values = list(scores.values())
+        mean_fitness   = float(np.mean(fitness_values))
+        max_fitness    = float(np.max(fitness_values))
+        best_rule_id   = max(scores, key=scores.__getitem__)
+        num_viable     = sum(1 for f in fitness_values if f > 0.2)
+
+        return {
+            "gen1_mean_fitness": round(mean_fitness, 6),
+            "gen1_max_fitness":  round(max_fitness,  6),
+            "num_viable_rules":  num_viable,
+            "best_rule_id":      best_rule_id,
+            "artifacts": [
+                str(pop_path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+                str(scores_path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+            ],
+        }
 
 
 # ── Gen-1 rule regeneration ───────────────────────────────────────────────────
@@ -335,6 +461,68 @@ def reconstruct_gen2_rules(elite_fraction: float = 0.1) -> list[tuple[str, dict]
     return gen2_rules
 
 
+# ── Gen-1 reboot (iter_158) ──────────────────────────────────────────────────
+
+def run_gen1_reboot() -> int:
+    """Run a fresh Gen-1 with population_seed=43 and late_displacement fitness."""
+    search = EvolutionarySearch(
+        num_steps=2000,
+        fitness_fn_name="late_displacement",
+        population_size=100,
+        soup_seed=42,
+        soup_density=0.25,
+    )
+    output_dir = PROJECT_ROOT / "archive" / "iter_158" / "results"
+    stats      = search.run_generation(population_seed=43, output_dir=output_dir)
+
+    print("\n=== Gen-1 Reboot Summary ===")
+    print(f"  gen1_mean_fitness: {stats['gen1_mean_fitness']:.6f}")
+    print(f"  gen1_max_fitness:  {stats['gen1_max_fitness']:.6f}")
+    print(f"  num_viable_rules:  {stats['num_viable_rules']}")
+    print(f"  best_rule_id:      {stats['best_rule_id']}")
+
+    yaml_block = {
+        "status": "ok",
+        "artifacts": stats["artifacts"],
+        "metrics": {
+            "gen1_mean_fitness": stats["gen1_mean_fitness"],
+            "gen1_max_fitness":  stats["gen1_max_fitness"],
+            "num_viable_rules":  stats["num_viable_rules"],
+            "best_rule_id":      stats["best_rule_id"],
+        },
+        "log_excerpt": (
+            f"  gen1_mean_fitness: {stats['gen1_mean_fitness']:.6f}\n"
+            f"  gen1_max_fitness:  {stats['gen1_max_fitness']:.6f}\n"
+            f"  num_viable_rules:  {stats['num_viable_rules']}\n"
+            f"  best_rule_id:      {stats['best_rule_id']}\n"
+            f"  population_seed:   43\n"
+            f"  fitness_fn:        late_displacement\n"
+            f"  num_steps:         2000 (CoM t1=1200, t2=2000)\n"
+            f"  soup_seed:         42  density=0.25\n"
+        ),
+        "experimenter_view": (
+            f"Fresh Gen-1 search with population_seed=43 (previous used default seed). "
+            f"Fitness = late_displacement: Euclidean CoM shift between step 1200 and 2000. "
+            f"100 random C2-symmetric rules evaluated on 150x150 soup (seed=42, density=0.25). "
+            f"Mean fitness={stats['gen1_mean_fitness']:.4f}, "
+            f"max={stats['gen1_max_fitness']:.4f}, "
+            f"viable (>0.2)={stats['num_viable_rules']}/100. "
+            f"Best rule: {stats['best_rule_id']}."
+        ),
+        "notes": (
+            f"Gen-1 reboot iter_158; population_seed=43; "
+            f"viable={stats['num_viable_rules']}; "
+            f"max_fitness={stats['gen1_max_fitness']:.4f}"
+        ),
+    }
+
+    yaml_str = yaml.dump(yaml_block, default_flow_style=False, sort_keys=False,
+                         allow_unicode=True)
+    print("\n---\n")
+    print(yaml_str)
+    return 0
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -349,6 +537,9 @@ def main() -> int:
 
     if args.generation == 3:
         return run_gen3(args)
+
+    if args.generation == 158:
+        return run_gen1_reboot()
 
     # ── Gen-2 path (original logic) ───────────────────────────────────────────
     input_csv  = PROJECT_ROOT / args.input_population

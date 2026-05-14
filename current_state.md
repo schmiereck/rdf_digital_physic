@@ -6,11 +6,10 @@ Phase: Phase 7 - Velocity-Stable Evolution
 - A fitness metric based *only* on late-stage displacement (steps 1200-2000) **successfully** identifies transient puffers as low-fitness individuals. (iter_156)
 
 **Refuted:**
-- A random population of 100 rules contains rules with significant (>0.2) late-stage displacement. The signal is very sparse. (iter_157)
-- The small late-stage displacement observed in the top 3 rules of Gen-1 (iter_157) is not a heritable trait that can be amplified by breeding. The fitness landscape appears to be unnavigable from these starting points. (iter_157)
+- The small late-stage displacement observed in random rules is not a heritable trait that can be amplified by breeding. (iter_157)
+- The failure to find "viable" rules (fitness > 0.2) in a random population is not due to an unlucky random seed. A second, independent search yielded nearly identical, low-fitness results, suggesting the desired behavior is intrinsically rare. (iter_158)
 
 **Open Questions:**
-- Since breeding failed, could a different random seed for the initial population yield a better starting point?
-- Is the initial soup (density=0.25, seed=42) somehow hostile to the formation of late-stage movers?
-- Should the fitness metric be modified to include a penalty for population size to explicitly select against slow, expansive "creepers"?
-- Have we reached the limits of what can be found with a random soup initial condition? Should we switch to evolving on a specific, structured "object"?
+- Can a modified fitness metric that penalizes final object size distinguish compact movers from slow, expanding 'creepers'?
+- Is the initial random soup (density=0.25) inherently hostile to the formation of late-stage movers?
+- Could a different initial condition, such as a pre-formed object, provide a better substrate for evolving motion?

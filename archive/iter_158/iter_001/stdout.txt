@@ -1,0 +1,56 @@
+I'll read the existing `evolve.py` to understand its structure before modifying it.
+Let me also check for existing fitness function implementations and the iter_157 archive to understand what was done previously.
+Now I have a clear picture. I'll add the `evaluate_late_displacement` function, an `EvolutionarySearch` class, a `run_gen1_reboot` function, and wire it up in `main()`.
+Now add the `EvolutionarySearch` class after `make_soup`:
+Now add `run_gen1_reboot` after `run_gen3`:
+Now wire up `--generation 158` in `main()`:
+Now run the experiment:
+The experiment completed successfully. The results are:
+
+- **Mean fitness**: 0.017089 (very similar to the iter_157 Gen-1 mean of 0.0148)
+- **Max fitness**: 0.158514 (rule_058)
+- **Viable rules (>0.2)**: 0 out of 100
+- **Best rule**: rule_058
+
+The new seed (43) yielded a population with a slightly higher mean (0.0171 vs 0.0148) but still no rules crossing the 0.2 viability threshold. The late displacement metric confirms the same pattern: most random C2-symmetric rules either annihilate or produce only very slow drift, making breeding difficult.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_158/results/population_gen1.json
+  - archive/iter_158/results/scores_gen1.csv
+  - src/evolve.py
+metrics:
+  gen1_mean_fitness: 0.017089
+  gen1_max_fitness: 0.158514
+  num_viable_rules: 0
+  best_rule_id: rule_058
+log_excerpt: |
+  Evaluating 100 rules (2000 steps each) ...
+    rule_058: late_displacement=0.158514
+    rule_100: late_displacement=0.134274
+    rule_075: late_displacement=0.109532
+    rule_057: late_displacement=0.094750
+    rule_001: late_displacement=0.087354
+    rule_032: late_displacement=0.079496
+    rule_028: late_displacement=0.076890
+    rule_086: late_displacement=0.073813
+    rule_010: late_displacement=0.069045
+    rule_096: late_displacement=0.061505
+  Saved population: archive/iter_158/results/population_gen1.json
+  Saved scores:     archive/iter_158/results/scores_gen1.csv
+  gen1_mean_fitness: 0.017089
+  gen1_max_fitness:  0.158514
+  num_viable_rules:  0
+  best_rule_id:      rule_058
+experimenter_view: |
+  Fresh Gen-1 search with population_seed=43 produced results nearly identical to
+  the iter_157 Gen-1 (seed-42-equivalent): mean=0.0171 vs 0.0148, max=0.1585 vs
+  prior max. No rules exceeded the 0.2 viability threshold. The top three rules
+  (rule_058=0.1585, rule_100=0.1343, rule_075=0.1095) are the best candidates for
+  breeding, but their fitness is still well below the level that produced heritable
+  advantage in past experiments. This suggests the challenge is not the random seed
+  but rather the intrinsic rarity of high-displacement rules in the C2-symmetric
+  rule space under the late-displacement metric.
+notes: Gen-1 reboot with seed=43; no viable rules found; max_fitness=0.1585 (rule_058)
+```
