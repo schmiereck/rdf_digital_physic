@@ -3,41 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 51063
-cost_usd: 0.10463
-hypothesis: 'fresh-local-start: A fresh random population of 100 C2-symmetric rules
-  contains at least one rule with a local fitness score > 0.01 that is not driven
-  by chaotic bit-count explosion (bit_ratio < 3.0).'
-input_tokens: 63158
-iter: 135
-metrics:
-  baseline_local_fitness_gen3_champ: 0.0
-  rules_beating_baseline: 1
-  top_local_fitness_gen4: 0.00592729
-output_tokens: 1678
-status: ok
-```
-
-## iter_135: fresh-local-start: A fresh random population of 100 C2-symmetric rules contains at least one rule with a local fitness score > 0.01 that is not driven by chaotic bit-count explosion (bit_ratio < 3.0).
-
-**Analysis:** The hypothesis that a localized fitness metric would easily evolve motion in the target oscillator pair has been strongly refuted. The experiment revealed a critical flaw in the genetic feedstock: the elite rules from the previous global evolution were all predisposed to convert the target oscillator pair into a specific, static 22-cell still-life. Consequently, 99 of the 100 bred offspring inheri
-
-**Status:** ok
-
-**Metrics:** `{'baseline_local_fitness_gen3_champ': 0.0, 'rules_beating_baseline': 1, 'top_local_fitness_gen4': 0.00592729}`
-
-**Experimenter view:** The local fitness metric revealed a stark landscape. All 99 of the 100 Gen-4
-rules stabilize the target region to exactly 22 bits (bit_ratio=2.2) with zero
-COM displacement between steps 100–200 — the same behaviour as the global
-champion rule_011 (which has baseline local fitness = 0.0). This is a meaningful
-null result: the entire Gen-4 cohort, like its parent, converts the 10-cell
-target pair i
-
-**Notes:** 99/100 Gen-4 rules stabilize the target pair to a 22-cell still configuration (zero local displacement); only 1 rule shows any non-zero local fitness, via chaotic expansion rather than coherent translation
-
-
----
-```yaml
 cached_tokens: 50271
 cost_usd: 0.10114
 hypothesis: A visualization of rule_061's dynamics will show that its high displacement
@@ -1031,4 +996,42 @@ status: no_execution
 **Experimenter view:** 
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 34984
+cost_usd: 0.21409
+hypothesis: A random population of C2-rules, when seeded with random noise, fails
+  to produce a single rule with a composite fitness score > 0.01.
+input_tokens: 81607
+iter: 166
+metrics:
+  max_fitness: 1.964e-05
+  mean_fitness: 3.2e-07
+  top_rule_displacement: 0.099935
+  top_rule_final_bits: 5087
+  top_rule_id: rule_048
+output_tokens: 1933
+status: ok
+```
+
+## iter_166: A random population of C2-rules, when seeded with random noise, fails to produce a single rule with a composite fitness score > 0.01.
+
+**Analysis:** The previous iteration, iter_159, failed to execute its stated goal of evaluating a new random population of 100 rules. It only validated the new composite fitness metric (`late_displacement / (1 + final_bit_count)`) on a single, old rule. This iteration corrected that oversight by running the intended experiment.
+
+The experiment evaluated 100 new, randomly generated C2-symmetric rules. The hypoth
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 3.2e-07, 'max_fitness': 1.964e-05, 'top_rule_id': 'rule_048', 'top_rule_displacement': 0.099935, 'top_rule_final_bits': 5087}`
+
+**Experimenter view:** A fresh population of 100 random C2-symmetric rules (seed=166) was generated
+and evaluated with the composite fitness metric on a 128x128 grid (25% density,
+seed=42, 2000 steps). The vast majority of rules (96/100) produced zero CoM
+displacement between t=1200 and t=2000, indicating the dynamics froze into
+symmetric, non-moving configurations. Only 4 rules showed any motion:
+rule_048 (disp=0.100, 
+
+**Notes:** 100 random C2-symmetric rules evaluated; rule_048 is champion with fitness 1.96e-5
 

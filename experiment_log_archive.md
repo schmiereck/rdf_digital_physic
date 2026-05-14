@@ -7118,3 +7118,38 @@ for all 37 objects combined (ratio = 0.992). A ratio
 
 **Notes:** 4 oscillators intermingled with 33 still-lifes; one tight local oscillator pair at distance 3.46, global ratio osc/all = 0.992
 
+
+---
+```yaml
+cached_tokens: 51063
+cost_usd: 0.10463
+hypothesis: 'fresh-local-start: A fresh random population of 100 C2-symmetric rules
+  contains at least one rule with a local fitness score > 0.01 that is not driven
+  by chaotic bit-count explosion (bit_ratio < 3.0).'
+input_tokens: 63158
+iter: 135
+metrics:
+  baseline_local_fitness_gen3_champ: 0.0
+  rules_beating_baseline: 1
+  top_local_fitness_gen4: 0.00592729
+output_tokens: 1678
+status: ok
+```
+
+## iter_135: fresh-local-start: A fresh random population of 100 C2-symmetric rules contains at least one rule with a local fitness score > 0.01 that is not driven by chaotic bit-count explosion (bit_ratio < 3.0).
+
+**Analysis:** The hypothesis that a localized fitness metric would easily evolve motion in the target oscillator pair has been strongly refuted. The experiment revealed a critical flaw in the genetic feedstock: the elite rules from the previous global evolution were all predisposed to convert the target oscillator pair into a specific, static 22-cell still-life. Consequently, 99 of the 100 bred offspring inheri
+
+**Status:** ok
+
+**Metrics:** `{'baseline_local_fitness_gen3_champ': 0.0, 'rules_beating_baseline': 1, 'top_local_fitness_gen4': 0.00592729}`
+
+**Experimenter view:** The local fitness metric revealed a stark landscape. All 99 of the 100 Gen-4
+rules stabilize the target region to exactly 22 bits (bit_ratio=2.2) with zero
+COM displacement between steps 100–200 — the same behaviour as the global
+champion rule_011 (which has baseline local fitness = 0.0). This is a meaningful
+null result: the entire Gen-4 cohort, like its parent, converts the 10-cell
+target pair i
+
+**Notes:** 99/100 Gen-4 rules stabilize the target pair to a 22-cell still configuration (zero local displacement); only 1 rule shows any non-zero local fitness, via chaotic expansion rather than coherent translation
+

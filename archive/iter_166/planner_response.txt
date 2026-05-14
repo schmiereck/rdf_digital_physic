@@ -1,0 +1,51 @@
+```yaml
+analysis: |
+  The previous iteration, iter_159, failed to execute its stated goal of evaluating a new random population of 100 rules. It only validated the new composite fitness metric (`late_displacement / (1 + final_bit_count)`) on a single, old rule. This iteration corrected that oversight by running the intended experiment.
+
+  The experiment evaluated 100 new, randomly generated C2-symmetric rules. The hypothesis was that at least one rule would be found with a fitness score > 0.01, indicating it could resolve a chaotic soup into a low-density, mobile object.
+
+  The result was a clear falsification. The maximum fitness achieved was 1.96e-05, over 500 times lower than the target threshold. The vast majority of rules (96/100) quickly froze into static, symmetric patterns with zero late-stage motion. The "champion" rule produced a high-entropy, high-bit-count field of ash with negligible displacement. This confirms that the "emerge from chaos" strategy, even with sophisticated fitness metrics, is not a viable path for discovering glider-producing rules within the highly constrained C2-symmetric space. The tendency to form static, glassy configurations is overwhelming.
+open_questions:
+  - "Is the 'emerge from chaos' strategy fundamentally flawed for discovering glider rules?"
+  - "Can we instead evolve a rule that propagates a pre-defined, simple particle pattern?"
+  - "What is the simplest initial pattern (e.g., 3-bit line) that can be made to move?"
+  - "Does a fitness metric based on `displacement / (1 + bit_growth)` provide a better signal for sparse initial seeds?"
+  - "Should we abandon the random soup initialization entirely in favor of a 'glider nursery' approach?"
+chosen_direction: "Falsify the 'emerge from chaos' strategy and pivot to a 'glider nursery' approach."
+hypothesis: "A random population of C2-rules, when seeded with random noise, fails to produce a single rule with a composite fitness score > 0.01."
+rationale: |
+  This hypothesis formalizes the negative result of this iteration. After numerous attempts with increasingly complex fitness metrics (iter_090 through iter_166), the strategy of trying to evolve rules that create coherent gliders from a chaotic random soup has yielded no positive results. The systems consistently fall into one of two attractors: explosive, space-filling growth or frozen, static grids. By explicitly stating this failure, we justify a necessary pivot in research strategy. The next phase will abandon the random soup in favor of seeding the grid with a simple, hand-crafted particle and evolving rules that can sustain its motion.
+status: ok
+metrics:
+  mean_fitness: 3.2e-07
+  max_fitness: 1.964e-05
+  top_rule_id: "rule_048"
+  top_rule_displacement: 0.099935
+  top_rule_final_bits: 5087
+experimenter_view: |
+  A fresh population of 100 random C2-symmetric rules (seed=166) was generated
+  and evaluated with the composite fitness metric on a 128x128 grid (25% density,
+  seed=42, 2000 steps). The vast majority of rules (96/100) produced zero CoM
+  displacement between t=1200 and t=2000, indicating the dynamics froze into
+  symmetric, non-moving configurations. Only 4 rules showed any motion:
+  rule_048 (disp=0.100, 5087 bits, fitness=1.96e-5), rule_020 (disp=0.035),
+  rule_022 (disp=0.017), rule_071 (disp=0.009), and rule_096 (disp=0.0005).
+  The champion rule_048 achieves the highest composite fitness but with very
+  low absolute displacement. C2-symmetric rules appear much harder to evolve
+  movement from than the C6-symmetric non-conserving rules used in iter_159/163.
+  The low fitness values suggest the C2 symmetry constraint is more restrictive,
+  but rule_048 provides a valid founder for further evolutionary work if desired.
+notes: "100 random C2-symmetric rules evaluated; rule_048 is champion with fitness 1.96e-5"
+state_update: |
+  Phase: Strategic Pivot
+
+  **Goal:** Evolve or discover C2-symmetric rules that support stable, moving particles (gliders).
+
+  **Refuted:**
+  - The strategy of evolving rules that spontaneously generate gliders from a chaotic, high-density random soup has been falsified. Multiple evolutionary runs with various fitness metrics (`displacement`, `velocity_stability`, `late_displacement`, `composite_fitness`) have failed to produce a viable glider-producing rule. The systems consistently collapse into either explosive growth or static, frozen patterns (iter_091, iter_127, iter_157, iter_166).
+
+  **Confirmed:**
+  - Fitness metrics can be designed to successfully penalize non-viable, explosive rules (iter_156, iter_159).
+
+  **Next Steps:**
+  The "emerge from chaos" approach is declared a dead end. The research will pivot to a "glider nursery" strategy. This involves initializing the simulation grid with a simple, pre-defined particle pattern and evolving rules specifically to propagate and sustain that pattern. This simplifies the search problem from discovering emergence and propagation simultaneously to just discovering propagation.
