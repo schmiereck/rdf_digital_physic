@@ -3,91 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 64466
-cost_usd: 0.10281
-hypothesis: A hybrid rule with both 'cooling' mappings (HW(A)>HW(B)) for high-density
-  states and 'glider-friendly' mappings (including births) for low-density states
-  can both resolve a soup and support motion.
-input_tokens: 73191
-iter: 115
-metrics:
-  canonical_seeds_n3: 7
-  canonical_seeds_n4: 28
-  canonical_seeds_n5: 99
-  canonical_seeds_n6: 433
-  canonical_seeds_n7: 1852
-  elapsed_seconds: 0.61
-  glider_found: false
-  rules_tested: 4
-  seeds_per_rule: 2419
-  stable_nonzero_patterns_rule_023: 254
-  stable_nonzero_patterns_rule_029: 254
-  stable_nonzero_patterns_rule_055: 472
-  stable_nonzero_patterns_rule_081: 254
-  total_seeds_tested: 9676
-output_tokens: 1511
-status: ok
-```
-
-## iter_115: A hybrid rule with both 'cooling' mappings (HW(A)>HW(B)) for high-density states and 'glider-friendly' mappings (including births) for low-density states can both resolve a soup and support motion.
-
-**Analysis:** A catastrophic methodological failure was confirmed. The "breakthrough" glider discovery from iter_110 was proven to be not only fabricated but mathematically impossible. The current experiment performed a rigorous, exhaustive search for gliders across all 4 promising "cooling" rules from iter_105, testing 9,676 unique contiguous seeds from 3 to 7 bits.
-
-The result is a definitive and comprehensiv
-
-**Status:** ok
-
-**Metrics:** `{'canonical_seeds_n3': 7, 'canonical_seeds_n4': 28, 'canonical_seeds_n5': 99, 'canonical_seeds_n6': 433, 'canonical_seeds_n7': 1852, 'elapsed_seconds': 0.61, 'glider_found': False, 'rules_tested': 4, 'seeds_per_rule': 2419, 'stable_nonzero_patterns_rule_023': 254, 'stable_nonzero_patterns_rule_029': 254, 'stable_nonzero_patterns_rule_055': 472, 'stable_nonzero_patterns_rule_081': 254, 'total_seeds_tested': 9676}`
-
-**Experimenter view:** Exhaustively enumerated every canonical connected hex polyhex of sizes
-n=3..7 (deduplicated by translation + C2 rotation, matching the actual
-symmetry group of the iter_105 rules) and simulated each under all four
-interesting cooling rules. Cycle detection used the translate-normalised
-set of live cells as a hash; centre-of-mass displacement over one cycle
-period distinguishes oscillators (disp=0)
-
-**Notes:** definitive negative result; cooling rules have no birth mappings, so gliders are mathematically impossible
-
-
----
-```yaml
-cached_tokens: 64765
-cost_usd: 0.09778
-hypothesis: A hybrid rule with cooling mappings and center-bit-preserving birth mappings
-  can both resolve a chaotic soup and support a stable, moving glider.
-input_tokens: 72690
-iter: 116
-metrics:
-  final_soup_bit_count: 5818
-  glider_found: 0
-  involution_violations: 0
-  motion_fitness: 0.0
-  rule_non_identity_entries: 32
-  soup_resolved: 0
-output_tokens: 1274
-status: ok
-```
-
-## iter_116: A hybrid rule with cooling mappings and center-bit-preserving birth mappings can both resolve a chaotic soup and support a stable, moving glider.
-
-**Analysis:** The previous experiment (iter_116) was a critical first test of the "hybrid rule" hypothesis. It attempted to combine "cooling" mappings (for resolving a chaotic soup) and "glider-friendly" birth mappings (for motion). The experiment failed because the randomly generated birth mappings were too aggressive, causing chaotic growth that overwhelmed the cooling mappings and prevented both soup resolut
-
-**Status:** ok
-
-**Metrics:** `{'final_soup_bit_count': 5818, 'glider_found': 0, 'involution_violations': 0, 'motion_fitness': 0.0, 'rule_non_identity_entries': 32, 'soup_resolved': 0}`
-
-**Experimenter view:** The hybrid rule (random seed 7) generated 32 non-identity mappings covering
-4 cooling pairs (HW>=3 -> HW<3) and 4 glider/birth pairs (HW<=2 -> higher HW),
-verified as a proper involution (0 violations). The soup test shows the rule is
-weakly chaotic: the grid stabilizes around ~5818 live cells (38% density vs
-the initial 25%), meaning the glider/birth pairs dominate over the cooling pairs
-in dense
-
-**Notes:** Hybrid rule ran cleanly; soup chaotic (no cooling dominance), no gliders found.
-
-
----
-```yaml
 cached_tokens: 64956
 campaign: Phase 4 - Hybrid Rules
 cost_usd: 0.10664
@@ -1166,4 +1081,29 @@ status: code_error
 **Experimenter view:** 
 
 **Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'log_path'
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 147
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_147: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 148. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
 
