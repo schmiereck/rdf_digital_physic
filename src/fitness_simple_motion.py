@@ -66,15 +66,31 @@ class SimpleMotionFitness(BaseFitness):
 
     name = "SimpleMotionFitness"
 
+    def __init__(self, grid_size: int = 128, steps: int = 2000):
+        self.grid_size = grid_size
+        self.steps = steps
+        # Scale checkpoint and window steps proportionally to total steps
+        ratio = steps / 2000
+        scaled = [max(1, int(s * ratio)) for s in CHECKPOINT_STEPS]
+        # Ensure the last checkpoint equals total steps
+        scaled[-1] = steps
+        self._checkpoint_steps = scaled
+        self._velocity_windows = list(zip(scaled[:-1], scaled[1:]))
+        # L-tromino centred in grid: mirror LTROMINO_CELLS pattern at grid_size//2
+        c = grid_size // 2 - 1
+        self._ltromino_cells = [(c, c), (c + 1, c), (c + 1, c + 1)]
+
     def evaluate(self, rule_dict: dict) -> dict:
         lut  = rule_dict_to_lut(rule_dict)
-        grid = make_ltromino_grid()
+        grid = make_ltromino_grid(
+            grid_size=self.grid_size, cells=self._ltromino_cells
+        )
 
         step       = 0
         max_bits   = int(grid.sum())
         com_at     = {0: center_of_mass(grid)}
 
-        for target in CHECKPOINT_STEPS:
+        for target in self._checkpoint_steps:
             while step < target:
                 grid = step_grid(grid, lut)
                 step += 1
@@ -84,7 +100,7 @@ class SimpleMotionFitness(BaseFitness):
             com_at[target] = center_of_mass(grid)
 
         velocities = []
-        for t_start, t_end in _VELOCITY_WINDOWS:
+        for t_start, t_end in self._velocity_windows:
             r0, c0 = com_at[t_start]
             r1, c1 = com_at[t_end]
             velocities.append(math.sqrt((r1 - r0) ** 2 + (c1 - c0) ** 2))

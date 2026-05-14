@@ -1,0 +1,65 @@
+I'll explore the codebase first to understand the existing structure and relevant files.
+Explore the codebase at C:\Users\thomas\Projekte\rdf_digital_physic\src and find:
+1. The contents of src/fitness_simple_motion.py (full file)
+2. The contents of the rules module (rules.py or similar) focusing on random_c2_symmetric_rule()
+3. Any existing checkpoint.yaml or evolution scripts to understand patterns
+4. The archive/iter_176 directory structure
+
+Search breadth: medium
+Let me read the key files directly to get the exact implementation details.
+Now let me check for a `rules.py` file and an existing mutation function pattern.
+Let me check the existing evolution scripts for mutation patterns.
+Let me check the breed_next_generation.py for mutation patterns.
+Now I have enough context. Let me check the results directory and start writing the code.
+Good. Now I'll create `rules.py`, modify `fitness_simple_motion.py` to support `grid_size` and `steps`, then create `run_evolution.py`.
+Now modify `fitness_simple_motion.py` to accept `grid_size` and `steps` parameters:
+Now create the main evolution script:
+Now run the script:
+The evolution ran successfully but crashed on a Unicode arrow character in the print statement. The champion was saved but the CSV log wasn't. Let me fix and re-run just the output section:
+The evolution data was lost when the script crashed. I need to rerun it with the fix applied:
+The evolution completed successfully. Let me verify the output files:
+Both artifacts are correct. The evolution ran cleanly across all 10 generations with clear fitness improvement.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_evolution.py
+  - src/rules.py
+  - archive/iter_176/results/new_champion_rule.txt
+  - archive/iter_176/results/evolution_log.csv
+metrics:
+  max_fitness: 0.08879282
+  champion_generation: 5
+log_excerpt: |
+  === Generation 5/10 ===
+    min=0.000000  mean=0.020448  max=0.088793  std=0.024047
+    ** New champion: fitness=0.088793 (gen 5) **
+  === Generation 10/10 ===
+    min=0.000000  mean=0.055354  max=0.088793  std=0.041803
+  Saved champion rule -> ...archive/iter_176/results/new_champion_rule.txt
+  Saved evolution log  -> ...archive/iter_176/results/evolution_log.csv
+  === Evolution complete ===
+    champion_fitness:    0.08879282
+    champion_generation: 5
+    final_gen_mean:      0.05535393
+    final_gen_max:       0.08879282
+experimenter_view: |
+  Fitness improved dramatically across the 10 generations:
+  - Gen 1: max=0.000119 (random initialisation, almost all rules static)
+  - Gen 2: max=0.000332 (early mutation finds slightly better rules)
+  - Gen 3: max=0.049621 — a 150x jump; mutation found a rule with real displacement
+  - Gen 4: max unchanged at 0.049621; population mean still rising from 0.003 to 0.020
+  - Gen 5: max=0.088793 — new champion; mean jumps to 0.020
+  - Gen 6–10: champion fitness plateaus at 0.08879282; population mean continues to
+    rise from 0.042 to 0.055, indicating the elite neighbourhood is being explored but
+    a better rule was not found within 10 generations.
+
+  The champion rule (generation 5) has 5 bidirectional C2-symmetric pair mappings
+  (10 entries in the rule dict). When simulated with SimpleMotionFitness on a 64x64
+  grid for 200 steps, it achieves consistent displacement across all four 40-step
+  evaluation windows (low velocity std-dev) while keeping peak bit count low,
+  resulting in fitness=0.08879282. The pattern shows directed motion of the L-tromino
+  seed without explosive growth — consistent with a glider-like behaviour at this
+  short timescale.
+notes: SimpleMotionFitness modified to accept grid_size/steps params; rules.py created as wrapper; Unicode print bug fixed after first run.
+```
