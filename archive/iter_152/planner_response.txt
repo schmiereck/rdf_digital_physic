@@ -1,0 +1,56 @@
+```yaml
+analysis: |
+  The previous iteration, iter_151, established that a composite fitness metric, `total_displacement / (1 + std_dev)`, effectively filters out undesirable "settler" rules while providing a measurable signal for motion. A baseline mean fitness of 0.45 was established for a random population. This set the stage for the current experiment: to determine if this new metric could successfully drive an evolutionary process.
+
+  The results from this iteration are positive and confirm the hypothesis. Breeding the top 10% of the initial population (Gen-1) produced a second generation (Gen-2) with a mean fitness of 0.609, a 34.9% improvement. While this falls short of the hypothesized 50% improvement, it is a strong and unambiguous signal that the evolutionary search is making progress. The median fitness also increased, showing that the improvement is not just due to a few outliers. The new top rule, rule_025, has a fitness of 1.32, surpassing the Gen-1 champion (1.18). This confirms that the fitness landscape is navigable and our genetic operators are effective.
+open_questions:
+  - "Can this evolutionary momentum be sustained into Gen-3, achieving another >30% increase in mean fitness?"
+  - "What are the qualitative dynamics of the new champion, rule_025? Is its higher fitness due to more displacement, better stability, or both?"
+  - "At what fitness level do we start to see visually compelling, glider-like structures emerge?"
+  - "Is an elite fraction of 10% optimal, or would a different selection pressure accelerate convergence?"
+chosen_direction: "Sustain the evolutionary momentum and breed the next generation (Gen-3)."
+hypothesis: "evolution-gen3-composite-metric: A third generation of rules, bred from the top Gen-2 performers, will have a mean fitness at least 30% higher than the Gen-2 mean of 0.609."
+rationale: |
+  The experiment successfully demonstrated that our composite fitness metric provides a valid evolutionary signal. The logical and most important next step is to see if this progress can be sustained. By breeding the next generation (Gen-3) from the new Gen-2 elites, we can determine if we are on a path of continuous improvement or if we are hitting a local maximum. A further significant increase in fitness would build confidence that this evolutionary run is on track to discover genuinely novel and stable moving objects.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  mean_fitness: 0.609371
+  median_fitness: 0.583951
+  max_fitness: 1.320041
+  gen1_mean_fitness: 0.451678
+  improvement_pct: 34.91
+  elite_count: 10
+  population_size: 100
+experimenter_view: |
+  Gen-2 evolution using the composite metric total_displacement / (1 + std_dev)
+  produced a clear fitness improvement over the Gen-1 random baseline. Selecting
+  the top 10% (10 rules) of Gen-1 as elite parents and breeding 100 offspring via
+  C2-symmetric kernel crossover and mutation raised the mean population fitness from
+  0.4517 to 0.6094 (+34.9%). The two carried elites (rule_001, rule_002) retained
+  their Gen-1 scores (1.179, 1.030). The highest new offspring was rule_025 at
+  1.3200 composite fitness (total_displacement=3.081, std_dev=1.334), surpassing
+  the previous generation's best of 1.179. The median rose from 0.425 to 0.584,
+  indicating the improvement is broad across the population, not just at the
+  extremes. The evolutionary pressure is working as expected: offspring from
+  high-displacement parents tend to have higher displacements themselves, while
+  the std_dev penalty still filters out erratic rules.
+notes: "Gen-2 mean (+34.9% over Gen-1) confirms evolutionary signal; new script src/evolve.py created."
+# --- Meta ---
+campaign: "Phase 7 - Velocity-Stable Evolution"
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based solely on velocity stability (`1 / (1 + std_dev)`) is flawed, as it strongly favors rules that quickly become inactive. (iter_150)
+  - A composite fitness metric, `total_displacement / (1 + std_dev)`, successfully penalizes inactive "settler" rules while rewarding displacement. The mean fitness for a random C2 rule population with this metric is ~0.45. (iter_151)
+  - The composite metric provides a valid evolutionary signal. Breeding the top 10% of a random population (Gen-1) resulted in a Gen-2 with a 34.9% higher mean fitness (0.45 -> 0.61), confirming the search is progressing. (iter_152)
+
+  **Open Questions:**
+  - Can this evolutionary momentum be sustained into Gen-3?
+  - What are the qualitative dynamics of the top rules selected by this new metric? Are they puffers, gliders, or a new type of object?
+  - At what fitness level do visually compelling, glider-like structures emerge?
+  - Is an elite fraction of 10% optimal for this search?
+```

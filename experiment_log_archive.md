@@ -6595,3 +6595,43 @@ connected compon
 
 **Notes:** Fitness metric validated; inert rule scores 320x higher than chaotic rule on ash pattern.
 
+
+---
+```yaml
+cached_tokens: 60830
+cost_usd: 0.1002
+hypothesis: 'evolution-ash-gen2: A second generation of rules, bred from the top 11
+  rules of Gen-1, will have a mean fitness at least 50% higher than the Gen-1 mean.'
+input_tokens: 70273
+iter: 121
+metrics:
+  inert_baseline_fitness: 0.052432
+  population_size: 100
+  rules_beating_baseline: 11
+  top_fitness_score: 0.09386233
+  top_rule_displacement: 0.187725
+  top_rule_final_bits: 326
+  top_rule_final_objects: 72
+output_tokens: 1326
+status: ok
+```
+
+## iter_121: evolution-ash-gen2: A second generation of rules, bred from the top 11 rules of Gen-1, will have a mean fitness at least 50% higher than the Gen-1 mean.
+
+**Analysis:** The research was previously blocked, having failed to find any rule that could produce motion. A new strategy was developed: evolve a rule to animate a pre-existing field of stable objects ("ash"). Iteration 120 established the environment and a new fitness metric. This iteration, 121, was the critical first test of that strategy.
+
+The experiment was a success. A random population of 100 C2-symmet
+
+**Status:** ok
+
+**Metrics:** `{'population_size': 100, 'rules_beating_baseline': 11, 'top_fitness_score': 0.09386233, 'inert_baseline_fitness': 0.052432, 'top_rule_displacement': 0.187725, 'top_rule_final_bits': 326, 'top_rule_final_objects': 72}`
+
+**Experimenter view:** 11 of 100 randomly-generated C2-symmetric rules beat the inert baseline
+(0.0524) on the ash-based fitness metric. The top rule (rule_030) achieved
+fitness 0.0939, nearly 1.8x the baseline, while changing only 1 bit from
+the initial 325 (final_bits=326) and maintaining the same 72 objects. This
+suggests the displacement-fitness metric is working as intended: it rewards
+net center-of-mass motion whi
+
+**Notes:** 11/100 rules beat baseline; top rule_030 fitness=0.0939 (1.79x baseline)
+

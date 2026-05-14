@@ -3,46 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 60830
-cost_usd: 0.1002
-hypothesis: 'evolution-ash-gen2: A second generation of rules, bred from the top 11
-  rules of Gen-1, will have a mean fitness at least 50% higher than the Gen-1 mean.'
-input_tokens: 70273
-iter: 121
-metrics:
-  inert_baseline_fitness: 0.052432
-  population_size: 100
-  rules_beating_baseline: 11
-  top_fitness_score: 0.09386233
-  top_rule_displacement: 0.187725
-  top_rule_final_bits: 326
-  top_rule_final_objects: 72
-output_tokens: 1326
-status: ok
-```
-
-## iter_121: evolution-ash-gen2: A second generation of rules, bred from the top 11 rules of Gen-1, will have a mean fitness at least 50% higher than the Gen-1 mean.
-
-**Analysis:** The research was previously blocked, having failed to find any rule that could produce motion. A new strategy was developed: evolve a rule to animate a pre-existing field of stable objects ("ash"). Iteration 120 established the environment and a new fitness metric. This iteration, 121, was the critical first test of that strategy.
-
-The experiment was a success. A random population of 100 C2-symmet
-
-**Status:** ok
-
-**Metrics:** `{'population_size': 100, 'rules_beating_baseline': 11, 'top_fitness_score': 0.09386233, 'inert_baseline_fitness': 0.052432, 'top_rule_displacement': 0.187725, 'top_rule_final_bits': 326, 'top_rule_final_objects': 72}`
-
-**Experimenter view:** 11 of 100 randomly-generated C2-symmetric rules beat the inert baseline
-(0.0524) on the ash-based fitness metric. The top rule (rule_030) achieved
-fitness 0.0939, nearly 1.8x the baseline, while changing only 1 bit from
-the initial 325 (final_bits=326) and maintaining the same 72 objects. This
-suggests the displacement-fitness metric is working as intended: it rewards
-net center-of-mass motion whi
-
-**Notes:** 11/100 rules beat baseline; top rule_030 fitness=0.0939 (1.79x baseline)
-
-
----
-```yaml
 cached_tokens: 59947
 cost_usd: 0.10217
 hypothesis: 'evolution-ash-gen3: A third generation of rules, bred from the top performers
@@ -1083,4 +1043,44 @@ The experiment successfully re-evaluated the 100 random rules from the previ
 Key finding: rule_086, which had the highest original fitness (0.98104101), receives a dramatically lower new fitness score of 0.04378386. This reveals rule_086 as a "settler" rule—it appears fit in the original metric but has virtually no motion (total_displacemen
 
 **Notes:** New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.14295
+hypothesis: 'evolution-gen3-composite-metric: A third generation of rules, bred from
+  the top Gen-2 performers, will have a mean fitness at least 30% higher than the
+  Gen-2 mean of 0.609.'
+input_tokens: 34566
+iter: 152
+metrics:
+  elite_count: 10
+  gen1_mean_fitness: 0.451678
+  improvement_pct: 34.91
+  max_fitness: 1.320041
+  mean_fitness: 0.609371
+  median_fitness: 0.583951
+  population_size: 100
+output_tokens: 2092
+status: ok
+```
+
+## iter_152: evolution-gen3-composite-metric: A third generation of rules, bred from the top Gen-2 performers, will have a mean fitness at least 30% higher than the Gen-2 mean of 0.609.
+
+**Analysis:** The previous iteration, iter_151, established that a composite fitness metric, `total_displacement / (1 + std_dev)`, effectively filters out undesirable "settler" rules while providing a measurable signal for motion. A baseline mean fitness of 0.45 was established for a random population. This set the stage for the current experiment: to determine if this new metric could successfully drive an evo
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 0.609371, 'median_fitness': 0.583951, 'max_fitness': 1.320041, 'gen1_mean_fitness': 0.451678, 'improvement_pct': 34.91, 'elite_count': 10, 'population_size': 100}`
+
+**Experimenter view:** Gen-2 evolution using the composite metric total_displacement / (1 + std_dev)
+produced a clear fitness improvement over the Gen-1 random baseline. Selecting
+the top 10% (10 rules) of Gen-1 as elite parents and breeding 100 offspring via
+C2-symmetric kernel crossover and mutation raised the mean population fitness from
+0.4517 to 0.6094 (+34.9%). The two carried elites (rule_001, rule_002) retained
+
+
+**Notes:** Gen-2 mean (+34.9% over Gen-1) confirms evolutionary signal; new script src/evolve.py created.
 
