@@ -1,0 +1,53 @@
+I'll start by exploring the project structure to locate the relevant files.
+Now let me look at the results from iter_170 and iter_171 to find the champion rules.
+Now I understand the data. Let me look at the iter_171 champion and then run the evaluations.
+Now let me run the evaluation with `StableVelocityFitness` on both rules:
+Both rules score 0.0, well below the 0.1 threshold. Now creating the CSV:
+Both pathological rules correctly score 0.0 under `StableVelocityFitness`:
+- **iter_170 annihilator**: destroys the seed entirely (final_bits=0) → `final_bit_count=0` branch returns 0.0 directly
+- **iter_171 puffer**: grows explosively but stays stationary (COM frozen at ~(54.88, 42.93)) → mean_velocity=0, so fitness=0 regardless of the bit-count penalty
+
+The `StableVelocityFitness` metric correctly rejects both pathological behaviors. The CSV is at `archive/iter_173/results/validation_scores.csv`.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_173/results/iter170_champion_rule.json
+  - archive/iter_173/results/iter171_champion_rule.json
+  - archive/iter_173/results/validation_scores.csv
+metrics:
+  iter170_annihilator_fitness: 0.0
+  iter170_annihilator_final_bits: 0
+  iter171_puffer_fitness: 0.0
+  iter171_puffer_final_bits: 5279
+  both_below_threshold: 1
+log_excerpt: |
+  Fitness metric: StableVelocityFitness
+
+  iter170_champion_rule.json:
+    fitness = 0.000000
+    mean_velocity = 0.000000
+    std_dev_velocity = 0.000000
+    initial_bit_count = 3
+    final_bit_count = 0
+    velocities = [0.0, 0.0, 0.0, 0.0]
+    com_checkpoints = {400: [0.0, 0.0], 800: [0.0, 0.0], 1200: [0.0, 0.0], 1600: [0.0, 0.0], 2000: [0.0, 0.0]}
+
+  iter171_champion_rule.json:
+    fitness = 0.000000
+    mean_velocity = 0.000000
+    std_dev_velocity = 0.000000
+    initial_bit_count = 3
+    final_bit_count = 5279
+    velocities = [0.0, 0.0, 0.0, 0.0]
+    com_checkpoints = {400: [54.880..., 42.933...], 800: [54.880..., 42.933...], ...}
+experimenter_view: |
+  StableVelocityFitness successfully discriminates against both pathological
+  strategies. The iter_170 annihilator (fitness=89.8 under old metric) scores 0.0
+  because it destroys all bits: the metric's final_bit_count==0 guard returns 0
+  immediately. The iter_171 puffer (fitness=39084 under old metric) also scores
+  0.0 because despite growing to 5279 bits by step 2000, the COM is completely
+  stationary throughout all four 400-step windows (mean_velocity=0.0). The metric
+  correctly requires simultaneous coherent motion AND bit-count conservation.
+notes: Both pathological champions score exactly 0.0, well below the 0.1 threshold — validation passed.
+```
