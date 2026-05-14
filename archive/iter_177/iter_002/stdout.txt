@@ -1,0 +1,52 @@
+I'll start by loading and examining the relevant files to understand their structure.
+Now let me look at the simulation engine code to understand how to run a simulation.
+Let me look at the existing visualization scripts for patterns.
+Now I have all the context I need. Let me write the visualization script.
+The script ran successfully. The simulation confirms the bloom-and-oscillate behavior: starting from 3 bits, it blooms to 88 bits and then oscillates chaotically between 10 and 88 bits throughout all 500 steps.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_177/results/failure_visualization.gif
+  - src/visualize_iter177_failure.py
+metrics:
+  steps_simulated: 500
+  initial_bit_count: 3
+  peak_bit_count: 88
+  min_bit_count: 3
+  bloom_step: 21
+  gif_size_mb: 0.73
+  frames: 501
+log_excerpt: |
+  Loading rule...
+    Rule: iter_176_gen5_019  fitness=0.08879282
+  Loading seed...
+    Seed: 3 cells at [(63, 63), (64, 63), (64, 64)]
+    t=   0: bit_count=3
+    t=  50: bit_count=21
+    t= 100: bit_count=20
+    t= 150: bit_count=68
+    t= 200: bit_count=20
+    t= 250: bit_count=48
+    t= 300: bit_count=60
+    t= 350: bit_count=54
+    t= 400: bit_count=38
+    t= 450: bit_count=10
+    t= 500: bit_count=62
+  Rendered 501 frames.
+  Bit count range: 3 – 88
+  Bloom detected at step ~21
+  Saved: failure_visualization.gif  (0.73 MB)
+experimenter_view: |
+  The 'bloom-and-oscillate' failure mode is clearly visible in the GIF. The
+  L-tromino seed (3 cells, shown with red markers) begins expanding around step 21
+  and grows to a peak of 88 live cells. Thereafter the population oscillates
+  chaotically — contracting back to ~10 cells, then re-expanding — with no
+  convergent motion or stable glider-like structure. The bit count never stabilizes:
+  it swings between 10 and 88 across the full 500 steps, confirming the analysis
+  from iter_177.1. The GIF window tracks the center of mass with a smoothed anchor
+  so the spreading structure stays centred throughout. Frames are rendered at
+  60 ms each in the seed/early-bloom phase and 40 ms thereafter, making both the
+  initial growth event and the sustained chaotic oscillation readable.
+notes: 501-frame animated GIF (0.73 MB) clearly depicts bloom-and-oscillate failure; bloom onset at step 21, peak 88 bits, sustained chaos through step 500.
+```
