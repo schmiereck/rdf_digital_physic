@@ -3,44 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 50271
-cost_usd: 0.10114
-hypothesis: A visualization of rule_061's dynamics will show that its high displacement
-  score is caused by explosive, asymmetric growth, not by any coherent, glider-like
-  structures.
-input_tokens: 61935
-iter: 136
-metrics:
-  best_rule_bit_ratio: 5.5
-  best_rule_displacement: 6.811757
-  best_rule_quadratic_fitness: 0.32055327
-  viable_founder_found: 0
-output_tokens: 1555
-status: ok
-```
-
-## iter_136: A visualization of rule_061's dynamics will show that its high displacement score is caused by explosive, asymmetric growth, not by any coherent, glider-like structures.
-
-**Analysis:** The hypothesis that a quadratic penalty would reveal a viable founder has been conclusively refuted. The re-evaluation of the 100 medium-density rules from iter_136 showed that while the new fitness function successfully identified rules with very high displacement, this displacement is inextricably linked to chaotic, bit-count-exploding behavior.
-
-The top-scoring rule under the new metric, `rule_
-
-**Status:** ok
-
-**Metrics:** `{'best_rule_bit_ratio': 5.5, 'best_rule_displacement': 6.811757, 'best_rule_quadratic_fitness': 0.32055327, 'viable_founder_found': 0}`
-
-**Experimenter view:** The quadratic penalty (dividing by 1 + (bit_ratio-1)^2) heavily suppresses rules
-with high bit-ratios compared to the original linear penalty, reshuffling the
-leaderboard dramatically. The top two rules (rule_061, rule_012) both have large
-displacement (6.8 and 6.9) but bit_ratios of 5.5 and 6.0 respectively — they
-survive as top scorers because their displacements are so large that even the
-quadr
-
-**Notes:** No viable founder found; all high-displacement rules have bit_ratio >> 3.0
-
-
----
-```yaml
 cached_tokens: 49353
 campaign: Phase 6 - Parity-Constrained Evolution
 cost_usd: 0.09857
@@ -1034,4 +996,44 @@ symmetric, non-moving configurations. Only 4 rules showed any motion:
 rule_048 (disp=0.100, 
 
 **Notes:** 100 random C2-symmetric rules evaluated; rule_048 is champion with fitness 1.96e-5
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.15883
+hypothesis: A random population of C2-rules, when evaluated with a fitness metric
+  rewarding displacement of a pre-defined 3-bit 'L-tromino' particle, will contain
+  at least one rule with a fitness score > 0.1.
+input_tokens: 38153
+iter: 167
+metrics:
+  initial_bits: 4
+  max_fitness: 0.0
+  mean_fitness: 0.0
+  top_rule_displacement: 0.0
+  top_rule_final_bits: 4
+  top_rule_id: rule_002
+output_tokens: 2409
+status: experiment_failed
+```
+
+## iter_167: A random population of C2-rules, when evaluated with a fitness metric rewarding displacement of a pre-defined 3-bit 'L-tromino' particle, will contain at least one rule with a fitness score > 0.1.
+
+**Analysis:** The first attempt to implement the "glider nursery" strategy has failed, but in a highly informative way. The hypothesis was that a fitness metric rewarding displacement could evolve rules to propagate a 4-bit square particle. This was falsified, with every rule in the population yielding a fitness score of exactly zero.
+
+The root cause was not a failure of the evolutionary process, but a fundamen
+
+**Status:** experiment_failed
+
+**Metrics:** `{'mean_fitness': 0.0, 'max_fitness': 0.0, 'top_rule_id': 'rule_002', 'top_rule_displacement': 0.0, 'top_rule_final_bits': 4, 'initial_bits': 4}`
+
+**Experimenter view:** Every rule in the population scored exactly fitness=0.0 with displacement=0.0.
+This is not a sampling failure — it is a mathematical certainty caused by a
+symmetry invariant: the 2x2 seed block at grid center is invariant under the
+180° rotation (r,c)→(127-r,127-c), i.e., it is C2-symmetric. Any C2-symmetric
+rule preserves C2-symmetric patterns, so the center of mass is permanently
+fixed at (63.5,
+
+**Notes:** C2-symmetric seed + C2-symmetric rule => CoM invariant; displacement is always 0. Use asymmetric seed in next iteration.
 

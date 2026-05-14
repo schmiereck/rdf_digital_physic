@@ -1,0 +1,58 @@
+I'll explore the project structure first to understand the codebase before implementing the changes.
+Explore the project at C:\Users\thomas\Projekte\rdf_digital_physic\src. I need to understand:
+1. The directory structure (top-level and src/)
+2. The contents of evolution.py (full file)
+3. Any existing fitness functions or initialization functions
+4. How C2-symmetric rules are generated
+5. The archive directory structure (look at a recent iter like iter_166)
+
+Please read all relevant files completely. Search breadth: very thorough.
+Now let me read the key files before implementing.
+Now I have everything I need. Let me write the experiment script for iter_167.
+Now run the experiment.
+The experiment ran successfully. Let me verify the output file and analyze the results.
+The results are clear. All 100 rules scored exactly 0.0 fitness with 0.0 displacement. This reveals a fundamental structural issue: the 2x2 block at the grid center is **C2-symmetric** (it maps to itself under 180° rotation about center (63.5, 63.5)), so a C2-symmetric rule will always preserve that symmetry. The center of mass is invariant at (63.5, 63.5) for all time, making displacement permanently zero regardless of the rule.
+
+Concretely: cells (63,63), (63,64), (64,63), (64,64) form a set closed under the 180° map (r,c)→(127-r, 127-c), so the CoM is structurally locked. No C2-symmetric rule can ever move it.
+
+The fix for the next iteration: use an **asymmetric seed particle**, e.g., an L-tromino at an off-center position, so the symmetry invariant no longer applies.
+
+```yaml
+status: experiment_failed
+artifacts:
+  - archive/iter_167/results/summary.json
+metrics:
+  mean_fitness: 0.0
+  max_fitness: 0.0
+  top_rule_id: rule_002
+  top_rule_displacement: 0.0
+  top_rule_final_bits: 4
+  initial_bits: 4
+log_excerpt: |
+  === Summary ===
+    mean_fitness:          0.00000000
+    max_fitness:           0.00000000
+    top_rule_id:           rule_002
+    top_rule_displacement: 0.000000
+    top_rule_final_bits:   4
+    initial_bits:          4
+
+  Saved: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_167\results\summary.json
+experimenter_view: |
+  Every rule in the population scored exactly fitness=0.0 with displacement=0.0.
+  This is not a sampling failure — it is a mathematical certainty caused by a
+  symmetry invariant: the 2x2 seed block at grid center is invariant under the
+  180° rotation (r,c)→(127-r,127-c), i.e., it is C2-symmetric. Any C2-symmetric
+  rule preserves C2-symmetric patterns, so the center of mass is permanently
+  fixed at (63.5, 63.5). Displacement is identically zero for ALL rules, making
+  the fitness landscape perfectly flat.
+
+  Bit counts varied widely (some rules left bits=4, others grew to 130 or 1538,
+  others shrank to 2), confirming the rules are active — but CoM never moved.
+
+  No rule successfully propagated the particle. The experiment design must be
+  revised: the seed particle must be asymmetric (not C2-symmetric) so that
+  displacement is not structurally zero. A recommended fix: use an L-tromino
+  or single off-center cell as the seed for iter_168.
+notes: "C2-symmetric seed + C2-symmetric rule => CoM invariant; displacement is always 0. Use asymmetric seed in next iteration."
+```

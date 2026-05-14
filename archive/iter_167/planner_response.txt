@@ -1,0 +1,54 @@
+```yaml
+analysis: |
+  The first attempt to implement the "glider nursery" strategy has failed, but in a highly informative way. The hypothesis was that a fitness metric rewarding displacement could evolve rules to propagate a 4-bit square particle. This was falsified, with every rule in the population yielding a fitness score of exactly zero.
+
+  The root cause was not a failure of the evolutionary process, but a fundamental mathematical flaw in the experimental design, as correctly identified by the executor. The combination of a C2-symmetric initial particle (a 2x2 square at the grid's center) with C2-symmetric rules guarantees that the Center of Mass will remain fixed for all time. Displacement is structurally impossible under these conditions.
+
+  This is a critical lesson: to measure motion, the initial state must not possess the same symmetry as the rules being tested. The next logical step is to correct this design flaw and rerun the experiment with an asymmetric particle.
+open_questions:
+  - "Can the 'glider nursery' strategy succeed with an asymmetric seed particle (e.g., L-tromino)?"
+  - "What is the simplest particle (e.g., 2x2 square, 3-bit line) that can be propagated?"
+  - "Will the evolved rules generalize to propagate other simple particles?"
+  - "Do the best 'nursery' rules also perform well on the old 'emerge from chaos' task?"
+  - "How does the initial placement of the particle (center vs. off-center) affect rule evolution?"
+chosen_direction: "Correct the symmetry flaw and re-run the 'glider nursery' baseline experiment."
+hypothesis: "A random population of C2-rules, when evaluated with a fitness metric rewarding displacement of a pre-defined 3-bit 'L-tromino' particle, will contain at least one rule with a fitness score > 0.1."
+rationale: |
+  Iteration 167 showed that a C2-symmetric seed particle prevents any C2-symmetric rule from generating motion. By switching to an asymmetric seed (an 'L-tromino'), we break this symmetry constraint and allow for displacement. This revised experiment properly tests the core idea of the "glider nursery" strategy: that a fitness landscape rewarding the propagation of a pre-defined object is searchable. A non-zero result will validate this entire research direction.
+status: experiment_failed
+metrics:
+  mean_fitness: 0.0
+  max_fitness: 0.0
+  top_rule_id: rule_002
+  top_rule_displacement: 0.0
+  top_rule_final_bits: 4
+  initial_bits: 4
+experimenter_view: |
+  Every rule in the population scored exactly fitness=0.0 with displacement=0.0.
+  This is not a sampling failure — it is a mathematical certainty caused by a
+  symmetry invariant: the 2x2 seed block at grid center is invariant under the
+  180° rotation (r,c)→(127-r,127-c), i.e., it is C2-symmetric. Any C2-symmetric
+  rule preserves C2-symmetric patterns, so the center of mass is permanently
+  fixed at (63.5, 63.5). Displacement is identically zero for ALL rules, making
+  the fitness landscape perfectly flat.
+
+  Bit counts varied widely (some rules left bits=4, others grew to 130 or 1538,
+  others shrank to 2), confirming the rules are active — but CoM never moved.
+
+  No rule successfully propagated the particle. The experiment design must be
+  revised: the seed particle must be asymmetric (not C2-symmetric) so that
+  displacement is not structurally zero. A recommended fix: use an L-tromino
+  or single off-center cell as the seed for iter_168.
+notes: "C2-symmetric seed + C2-symmetric rule => CoM invariant; displacement is always 0. Use asymmetric seed in next iteration."
+state_update: |
+  Phase: Strategic Pivot
+
+  **Goal:** Evolve or discover C2-symmetric rules that support stable, moving particles (gliders).
+
+  **Refuted:**
+  - The "emerge from chaos" strategy, evolving rules from a random soup, has been falsified (iter_166).
+  - Using a C2-symmetric seed particle (e.g., a centered 2x2 block) with C2-symmetric rules makes glider discovery via displacement impossible, as the center of mass is mathematically invariant (iter_167).
+
+  **Next Steps:**
+  The research continues with the "glider nursery" strategy, which was correctly formulated but incorrectly implemented in iter_167. The immediate next step is to re-run the baseline experiment using an **asymmetric** seed particle to break the symmetry lock and create a searchable fitness landscape based on displacement.
+```

@@ -3,10 +3,8 @@ Phase: Strategic Pivot
 **Goal:** Evolve or discover C2-symmetric rules that support stable, moving particles (gliders).
 
 **Refuted:**
-- The strategy of evolving rules that spontaneously generate gliders from a chaotic, high-density random soup has been falsified. Multiple evolutionary runs with various fitness metrics (`displacement`, `velocity_stability`, `late_displacement`, `composite_fitness`) have failed to produce a viable glider-producing rule. The systems consistently collapse into either explosive growth or static, frozen patterns (iter_091, iter_127, iter_157, iter_166).
-
-**Confirmed:**
-- Fitness metrics can be designed to successfully penalize non-viable, explosive rules (iter_156, iter_159).
+- The "emerge from chaos" strategy, evolving rules from a random soup, has been falsified (iter_166).
+- Using a C2-symmetric seed particle (e.g., a centered 2x2 block) with C2-symmetric rules makes glider discovery via displacement impossible, as the center of mass is mathematically invariant (iter_167).
 
 **Next Steps:**
-The "emerge from chaos" approach is declared a dead end. The research will pivot to a "glider nursery" strategy. This involves initializing the simulation grid with a simple, pre-defined particle pattern and evolving rules specifically to propagate and sustain that pattern. This simplifies the search problem from discovering emergence and propagation simultaneously to just discovering propagation.
+The research continues with the "glider nursery" strategy, which was correctly formulated but incorrectly implemented in iter_167. The immediate next step is to re-run the baseline experiment using an **asymmetric** seed particle to break the symmetry lock and create a searchable fitness landscape based on displacement.

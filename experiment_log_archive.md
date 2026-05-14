@@ -7153,3 +7153,41 @@ target pair i
 
 **Notes:** 99/100 Gen-4 rules stabilize the target pair to a 22-cell still configuration (zero local displacement); only 1 rule shows any non-zero local fitness, via chaotic expansion rather than coherent translation
 
+
+---
+```yaml
+cached_tokens: 50271
+cost_usd: 0.10114
+hypothesis: A visualization of rule_061's dynamics will show that its high displacement
+  score is caused by explosive, asymmetric growth, not by any coherent, glider-like
+  structures.
+input_tokens: 61935
+iter: 136
+metrics:
+  best_rule_bit_ratio: 5.5
+  best_rule_displacement: 6.811757
+  best_rule_quadratic_fitness: 0.32055327
+  viable_founder_found: 0
+output_tokens: 1555
+status: ok
+```
+
+## iter_136: A visualization of rule_061's dynamics will show that its high displacement score is caused by explosive, asymmetric growth, not by any coherent, glider-like structures.
+
+**Analysis:** The hypothesis that a quadratic penalty would reveal a viable founder has been conclusively refuted. The re-evaluation of the 100 medium-density rules from iter_136 showed that while the new fitness function successfully identified rules with very high displacement, this displacement is inextricably linked to chaotic, bit-count-exploding behavior.
+
+The top-scoring rule under the new metric, `rule_
+
+**Status:** ok
+
+**Metrics:** `{'best_rule_bit_ratio': 5.5, 'best_rule_displacement': 6.811757, 'best_rule_quadratic_fitness': 0.32055327, 'viable_founder_found': 0}`
+
+**Experimenter view:** The quadratic penalty (dividing by 1 + (bit_ratio-1)^2) heavily suppresses rules
+with high bit-ratios compared to the original linear penalty, reshuffling the
+leaderboard dramatically. The top two rules (rule_061, rule_012) both have large
+displacement (6.8 and 6.9) but bit_ratios of 5.5 and 6.0 respectively — they
+survive as top scorers because their displacements are so large that even the
+quadr
+
+**Notes:** No viable founder found; all high-displacement rules have bit_ratio >> 3.0
+
