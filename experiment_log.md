@@ -3,46 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 54916
-cost_usd: 0.09825
-hypothesis: 'evolution-from-density: A second generation of rules, bred from the two
-  viable medium-density rules, will produce at least one rule with a fitness score
-  greater than the Gen-1 top score of 0.0277.'
-input_tokens: 64617
-iter: 129
-metrics:
-  high_density_top_fitness: 0.01238769
-  high_density_viable_rules: 1
-  low_density_top_fitness: 0.00121878
-  low_density_viable_rules: 0
-  medium_density_top_fitness: 0.02771506
-  medium_density_viable_rules: 2
-output_tokens: 1547
-status: ok
-```
-
-## iter_129: evolution-from-density: A second generation of rules, bred from the two viable medium-density rules, will produce at least one rule with a fitness score greater than the Gen-1 top score of 0.0277.
-
-**Analysis:** The research was blocked because the initial random populations for our evolutionary algorithm were barren of viable individuals. Iteration 127, using a low rule density (4 kernel pairs), produced 99% static or chaotic rules and zero viable candidates. This suggested that rule density is a critical parameter.
-
-This iteration executed a density scan, testing populations at low (4 pairs), medium (8 
-
-**Status:** ok
-
-**Metrics:** `{'low_density_viable_rules': 0, 'low_density_top_fitness': 0.00121878, 'medium_density_viable_rules': 2, 'medium_density_top_fitness': 0.02771506, 'high_density_viable_rules': 1, 'high_density_top_fitness': 0.01238769}`
-
-**Experimenter view:** The density scan confirms a clear non-linear relationship between rule density
-and viability. Medium density (8 pairs, 32 non-identity mappings) is the
-optimal regime: it yields the most viable rules (2) and the highest top fitness
-(0.0277), roughly 22x better than low density's top score. Low density (4 pairs)
-produced zero viable rules — the rules are too sparse to sustain motion even
-transientl
-
-**Notes:** Medium density (8 pairs) maximises viable rules and top fitness; density scan confirms an optimal regime between order and chaos.
-
-
----
-```yaml
 cached_tokens: 54082
 cost_usd: 0.09847
 hypothesis: 'evolution-reboot-gen3: A third generation of rules, bred from the top
@@ -1122,4 +1082,29 @@ grid units between t=1200 and t=2000, indicating the rule has settled into a
 spatially-frozen r
 
 **Notes:** Implemented main.py with calculate_composite_fitness; rule_058 confirmed as diffuse ash with composite_fitness=0.0000155.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 160
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_160: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 161. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
 
