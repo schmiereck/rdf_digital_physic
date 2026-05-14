@@ -1,0 +1,71 @@
+```yaml
+analysis: |
+  The previous iteration (153) produced an exceptional rule, `rule_021`, with a fitness score of 3.465, an outlier suggesting a major breakthrough. This iteration's goal was to visually verify the dynamics causing this high score.
+
+  The visualization was successful and revealed that `rule_021` is not a true glider but a "transient puffer". It exhibits high-velocity, coherent motion for approximately 500 steps while leaving a growing trail of debris. After this initial phase, its motion decays significantly as the debris field expands and dominates the center-of-mass calculation.
+
+  This refutes the hypothesis that the high score was due to a stable, high-velocity object. The score is an artifact of the fitness evaluation window (likely 800-1000 steps), which was long enough to capture the initial high-speed phase but too short to be penalized by the subsequent deceleration. This is a critical finding, as it exposes a recurring weakness in our discovery process: the evaluation period is insufficient to guarantee *sustained* motion.
+open_questions:
+  - "Can a longer fitness evaluation period (e.g., 2000 steps) effectively filter out transient puffers like rule_021?"
+  - "Will re-running the Gen-3 evolution with a longer evaluation window produce a champion with more persistent motion?"
+  - "Is there an alternative fitness metric that is less susceptible to being fooled by transient puffers?"
+  - "What are the structural properties of `rule_021` that lead to this puffer-like behavior?"
+chosen_direction: "Address the flawed evaluation by testing if a longer evaluation window correctly identifies `rule_021` as a low-fitness rule."
+hypothesis: "visualization: The champion rule_021's high fitness score (3.465) is caused by a coherent, high-velocity object, not by explosive growth or other artifacts."
+rationale: |
+  A fitness score of 3.465 is a significant outlier, more than 2.6x the previous generation's maximum. Before proceeding with further evolution, we must visually verify that this score corresponds to the desired behavior (a stable, moving glider) and is not an artifact of the fitness function rewarding some unexpected or explosive pattern. This experiment is a direct and necessary validation of our primary selection signal.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  initial_bits: 5508
+  final_bits: 10099
+  bit_ratio: 1.834
+  total_com_displacement: 64.67
+  window1_disp_steps_0_250: 2.4
+  window2_disp_steps_250_500: 2.62
+  window3_disp_steps_500_750: 0.85
+  window4_disp_steps_750_1000: 0.21
+  gif_frames: 201
+  gif_size_kb: 1811
+  composite_fitness_iter153: 3.465
+experimenter_view: |
+  rule_021 exhibits PUFFER dynamics. Starting from a 150x150 random soup (density=0.25,
+  seed=21) with 5508 live cells, the automaton undergoes rapid initial expansion (reaching
+  ~8800 bits by step 100) while its center-of-mass drifts coherently — ~2.4–2.6 cells per
+  250-step window in the first half of the run. This combination of net translation and
+  growing cell count is the hallmark of a puffer: the evolving pattern has a "head" that
+  moves forward and a growing "tail" of debris left behind.
+
+  In the second half (steps 500–1000) the COM motion decelerates sharply to 0.85 then
+  0.21 per window, while the live-cell count stabilises near 10000 (1.83× the initial).
+  This deceleration is consistent with the fitness profile velocities=2.33;2.30;1.20;0.41
+  recorded during the iter_153 evolutionary evaluation on the SOUP_SEED=42 grid. The
+  pattern is not a clean glider (bit count is not conserved) nor is it explosively growing
+  (3× threshold not reached); it is a transient puffer whose coherent motion persists for
+  roughly 500 steps before being dominated by the expanding debris field.
+
+  The exceptionally high composite fitness (3.465, vs. a Gen-3 mean of ~0.78) arises
+  because the first two 400-step windows of the standard evaluation captured the high-
+  velocity phase (~2.3 displacement/window), giving a large total_displacement (6.25)
+  with only moderate std_dev (0.80), yielding 6.25 / 1.80 ≈ 3.47.
+notes: "rule_021 is a transient puffer — high-velocity coherent motion for ~500 steps,\
+  \ then debris-dominated deceleration"
+# --- Meta ---
+campaign: "Phase 7 - Velocity-Stable Evolution"
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A composite fitness metric, `total_displacement / (1 + std_dev)`, effectively penalizes inactive "settler" rules while rewarding displacement. (iter_151)
+  - The composite metric provides a valid evolutionary signal, driving mean population fitness up for three consecutive generations. (iter_151, 152, 153)
+
+  **Refuted:**
+  - The champion rule from Gen-3, `rule_021`, is not a stable glider. It is a "transient puffer" that exhibits high velocity for ~500 steps before decelerating significantly. Its high fitness score (3.465) was an artifact of an evaluation period that was too short to capture this decay in motion. (iter_154)
+
+  **Open Questions:**
+  - Can a longer fitness evaluation period (e.g., 2000 steps) effectively filter out transient puffers like `rule_021`?
+  - Will re-running the Gen-3 evolution with a longer evaluation window produce a champion with more persistent motion?
+  - Is there an alternative fitness metric that is less susceptible to being fooled by transient puffers?
+```

@@ -3,44 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 59316
-cost_usd: 0.10726
-hypothesis: 'visualization: Visualizing the top 5 Gen-3 rules will reveal that their
-  dynamics are qualitatively similar, explaining the convergence of their fitness
-  scores.'
-input_tokens: 70818
-iter: 123
-metrics:
-  fitness_improvement_pct: 41.8529
-  gen2_mean_fitness: 0.04440407
-  gen3_mean_fitness: 0.06298845
-  gen3_rules_beating_gen2_top: 0
-  gen3_top_fitness: 0.23962495
-output_tokens: 1438
-status: ok
-```
-
-## iter_123: visualization: Visualizing the top 5 Gen-3 rules will reveal that their dynamics are qualitatively similar, explaining the convergence of their fitness scores.
-
-**Analysis:** The experiment was a success, confirming the hypothesis. Breeding a third generation (Gen-3) from the Gen-2 elites resulted in a 41.85% improvement in mean fitness, comfortably exceeding the 30% target. This demonstrates that the evolutionary process is still effectively enriching the population with the desired "animation" trait.
-
-However, the `experimenter_view` provides a crucial insight: while
-
-**Status:** ok
-
-**Metrics:** `{'fitness_improvement_pct': 41.8529, 'gen2_mean_fitness': 0.04440407, 'gen3_mean_fitness': 0.06298845, 'gen3_rules_beating_gen2_top': 0, 'gen3_top_fitness': 0.23962495}`
-
-**Experimenter view:** Gen-3 achieved a 41.85% improvement in mean fitness over Gen-2 (0.0630 vs 0.0444),
-exceeding the 30% target. The top fitness score is 0.23962495, matching (but not
-exceeding) the Gen-2 peak. Five rules (001, 002, 007, 062, 076) hit this maximum
-value — two are direct carry-overs of the Gen-2 top rules, and three are bred
-offspring that independently rediscovered the same attractor. The 12 Gen-2 el
-
-**Notes:** Gen-3 mean fitness improved 41.85% over Gen-2; top score matched but did not exceed Gen-2's 0.23962495 ceiling.
-
-
----
-```yaml
 cached_tokens: 58621
 cost_usd: 0.08867
 hypothesis: 'long-run: The displacement of the ash under the top Gen-3 rule increases
@@ -1086,4 +1048,48 @@ selected; top-2 (rule_025, rule_073) carried unchanged into Gen-3. The remaining
 98 rules bred via crossover + mutation of C2-symmetric kernel pairs (breed seed=153).
 
 **Notes:** Gen-3 evolution +25.84% over Gen-2 mean; rule_021 is an exceptional outlier at 3.465 (2.6x Gen-2 max)
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.08617
+hypothesis: 'visualization: The champion rule_021''s high fitness score (3.465) is
+  caused by a coherent, high-velocity object, not by explosive growth or other artifacts.'
+input_tokens: 20052
+iter: 154
+metrics:
+  bit_ratio: 1.834
+  composite_fitness_iter153: 3.465
+  final_bits: 10099
+  gif_frames: 201
+  gif_size_kb: 1811
+  initial_bits: 5508
+  total_com_displacement: 64.67
+  window1_disp_steps_0_250: 2.4
+  window2_disp_steps_250_500: 2.62
+  window3_disp_steps_500_750: 0.85
+  window4_disp_steps_750_1000: 0.21
+output_tokens: 1523
+status: ok
+```
+
+## iter_154: visualization: The champion rule_021's high fitness score (3.465) is caused by a coherent, high-velocity object, not by explosive growth or other artifacts.
+
+**Analysis:** The previous iteration (153) produced an exceptional rule, `rule_021`, with a fitness score of 3.465, an outlier suggesting a major breakthrough. This iteration's goal was to visually verify the dynamics causing this high score.
+
+The visualization was successful and revealed that `rule_021` is not a true glider but a "transient puffer". It exhibits high-velocity, coherent motion for approximately 
+
+**Status:** ok
+
+**Metrics:** `{'initial_bits': 5508, 'final_bits': 10099, 'bit_ratio': 1.834, 'total_com_displacement': 64.67, 'window1_disp_steps_0_250': 2.4, 'window2_disp_steps_250_500': 2.62, 'window3_disp_steps_500_750': 0.85, 'window4_disp_steps_750_1000': 0.21, 'gif_frames': 201, 'gif_size_kb': 1811, 'composite_fitness_iter153': 3.465}`
+
+**Experimenter view:** rule_021 exhibits PUFFER dynamics. Starting from a 150x150 random soup (density=0.25,
+seed=21) with 5508 live cells, the automaton undergoes rapid initial expansion (reaching
+~8800 bits by step 100) while its center-of-mass drifts coherently — ~2.4–2.6 cells per
+250-step window in the first half of the run. This combination of net translation and
+growing cell count is the hallmark of a puffer: the
+
+**Notes:** rule_021 is a transient puffer — high-velocity coherent motion for ~500 steps, then debris-dominated deceleration
 
