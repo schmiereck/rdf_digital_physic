@@ -1,0 +1,49 @@
+```yaml
+analysis: |
+  The previous evolutionary metric, `total_displacement / (1 + std_dev)`, was proven to be flawed in iter_155. It failed to penalize "transient puffers" like rule_021, which exhibit a brief burst of motion followed by stagnation. The initial high displacement completely dominated the metric, rendering it useless for selecting for *sustained* motion.
+
+  This iteration directly addressed the primary open question: can a simpler metric, based purely on late-stage displacement, correctly identify rule_021 as a low-fitness individual? The experiment successfully implemented this new metric and applied it to rule_021. The resulting fitness score of 0.133 is decisively below the 0.5 threshold, confirming the hypothesis. This result validates the new metric as a tool capable of distinguishing between transient and sustained motion.
+open_questions:
+  - "Is the late-stage displacement signal strong enough to drive a new evolutionary search to find true gliders?"
+  - "Will a simple late-displacement metric select for 'creepers' that expand slowly and steadily, rather than compact gliders?"
+  - "Should a penalty for population growth be reintroduced to the fitness function to ensure compact objects are favoured?"
+  - "How does the performance of this new metric vary with different random seeds for the initial soup?"
+chosen_direction: "Validate a new, simpler fitness metric against the known failure case (rule_021)."
+hypothesis: "late-displacement-metric: A fitness metric based purely on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021."
+rationale: |
+  Before we can trust a new fitness metric to guide a multi-generation evolutionary search, we must first verify that it correctly identifies our most recent, well-characterized failure case (the "transient puffer" rule_021) as unfit. This is a critical validation step. A low score for rule_021 would confirm that this metric is not fooled by initial high-velocity bursts and can select for genuine sustained motion.
+status: ok
+metrics:
+  com_at_t1200_x: 74.0099
+  com_at_t1200_y: 73.6141
+  com_at_t2000_x: 74.1234
+  com_at_t2000_y: 73.5442
+  late_displacement_fitness: 0.133237
+experimenter_view: |
+  The late-displacement metric scores rule_021 at 0.133, far below the 0.5 threshold.
+  The CoM barely moves between t=1200 and t=2000 (delta ~0.13 grid units over 800 steps),
+  confirming the rule has essentially halted by step 1200. This is consistent with iter_155's
+  window data showing window_1250_1500=0.134 and window_1500_2000 velocities near 0.2.
+  The rule is correctly classified as a transient puffer: high early velocity, stationary late.
+  The metric file path used is archive/iter_153/results/population_gen3.json (not elite_rules.json
+  as the task stated — that file does not exist; population_gen3.json is the correct source).
+notes: Script loads rule_021 by key name from population_gen3.json; late_displacement=0.133
+  confirms transient puffer classification.
+campaign: Phase 7 - Velocity-Stable Evolution
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based *only* on late-stage displacement (steps 1200-2000) **successfully** identifies the transient puffer `rule_021` as a low-fitness individual (score=0.133). (iter_156)
+  - The champion rule from the previous evolution, `rule_021`, is a "transient puffer" that decelerates significantly after ~500 steps. (iter_154)
+
+  **Refuted:**
+  - The composite fitness metric, `total_displacement / (1 + std_dev)`, is a flawed measure of sustained motion because it is dominated by initial high-velocity bursts. (iter_155)
+
+  **Open Questions:**
+  - Is the late-stage displacement signal strong enough to drive a new evolutionary search to find true gliders?
+  - Will a simple late-displacement metric select for 'creepers' that expand slowly and steadily, rather than compact gliders?
+  - Should a penalty for population growth be reintroduced to the fitness function to ensure compact objects are favoured?
+```

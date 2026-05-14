@@ -6739,3 +6739,42 @@ The critical ambiguity is whether the "motion" rewarded by our fitness function 
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 57805
+campaign: Phase 5 - Sustained Motion Evolution
+cost_usd: 0.09739
+hypothesis: A 'late-displacement' fitness metric, calculated between steps 100 and
+  200, will correctly assign near-zero fitness to the current top-evolved rule.
+input_tokens: 67318
+iter: 125
+metrics:
+  displacement_at_100_steps: 0.47924991
+  displacement_at_500_steps: 0.47924991
+  final_bit_count: 325
+  final_object_count: 71
+  motion_sustained: false
+output_tokens: 1287
+status: ok
+```
+
+## iter_125: A 'late-displacement' fitness metric, calculated between steps 100 and 200, will correctly assign near-zero fitness to the current top-evolved rule.
+
+**Analysis:** The research was critically blocked by a fitness plateau in our evolutionary search. We hypothesized that the "motion" being rewarded was a sustained drift. This experiment was designed to test that by running the top-evolved rule for 500 steps, far longer than the 100-step fitness evaluation window.
+
+The result conclusively refutes the hypothesis. The `experimenter_view` shows that all motion cea
+
+**Status:** ok
+
+**Metrics:** `{'displacement_at_100_steps': 0.47924991, 'displacement_at_500_steps': 0.47924991, 'final_bit_count': 325, 'final_object_count': 71, 'motion_sustained': False}`
+
+**Experimenter view:** The top Gen-3 rule (rule_001) reaches a fixed point within the first 10 steps
+on the canonical ash pattern. The COM displacement jumps from 0 to 0.4792 by
+step 10 (one connected component merges, dropping objects from 72 to 71) and
+then locks — displacement, bit count, and object count are all constant for
+steps 10 through 500. The displacement ratio (500 vs 100 steps) is exactly
+1.0x, well below 
+
+**Notes:** Fixed point reached at step 10; no sustained motion observed over 500 steps.
+
