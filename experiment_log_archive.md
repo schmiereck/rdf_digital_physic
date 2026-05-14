@@ -6432,3 +6432,41 @@ in dense
 
 **Notes:** Hybrid rule ran cleanly; soup chaotic (no cooling dominance), no gliders found.
 
+
+---
+```yaml
+cached_tokens: 64956
+campaign: Phase 4 - Hybrid Rules
+cost_usd: 0.10664
+hypothesis: A batch of 100 hybrid rules with a 6:2 cooling-to-birth bias will contain
+  at least one rule that both resolves a soup AND has non-zero motion fitness.
+input_tokens: 75379
+iter: 117
+metrics:
+  birth_pairs: 2
+  cooling_pairs: 6
+  final_soup_bit_count: 9803
+  glider_found: 0
+  motion_fitness: 0.0
+  soup_resolved: 0
+output_tokens: 1269
+status: ok
+```
+
+## iter_117: A batch of 100 hybrid rules with a 6:2 cooling-to-birth bias will contain at least one rule that both resolves a soup AND has non-zero motion fitness.
+
+**Analysis:** The previous experiment (iter_116) with a balanced 4:4 cooling-to-birth ratio failed because the birth mappings were too chaotic. This iteration tested the hypothesis that a stronger cooling bias (6:2 ratio) could tame the chaos. The experiment failed conclusively. The generated rule, despite being heavily biased towards "cooling," was still overwhelmingly chaotic. The two "birth" pairs completely
+
+**Status:** ok
+
+**Metrics:** `{'birth_pairs': 2, 'cooling_pairs': 6, 'final_soup_bit_count': 9803, 'glider_found': 0, 'motion_fitness': 0.0, 'soup_resolved': 0}`
+
+**Experimenter view:** The biased hybrid rule (seed=117, 6 cooling + 2 birth pairs, 32 non-identity
+entries, 0 involution violations) is strongly expansive. The soup stabilised
+at ~9800 live cells (well above the 1000-cell resolved threshold), indicating
+the 2 birth pairs dominate even though they are outnumbered 3:1 by cooling
+pairs. All 21 motion seeds exploded past the MAX_CELLS=500 limit, so no
+glider or oscillator 
+
+**Notes:** Biased hybrid rule generation and evaluation complete.
+

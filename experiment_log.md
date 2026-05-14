@@ -3,44 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 64956
-campaign: Phase 4 - Hybrid Rules
-cost_usd: 0.10664
-hypothesis: A batch of 100 hybrid rules with a 6:2 cooling-to-birth bias will contain
-  at least one rule that both resolves a soup AND has non-zero motion fitness.
-input_tokens: 75379
-iter: 117
-metrics:
-  birth_pairs: 2
-  cooling_pairs: 6
-  final_soup_bit_count: 9803
-  glider_found: 0
-  motion_fitness: 0.0
-  soup_resolved: 0
-output_tokens: 1269
-status: ok
-```
-
-## iter_117: A batch of 100 hybrid rules with a 6:2 cooling-to-birth bias will contain at least one rule that both resolves a soup AND has non-zero motion fitness.
-
-**Analysis:** The previous experiment (iter_116) with a balanced 4:4 cooling-to-birth ratio failed because the birth mappings were too chaotic. This iteration tested the hypothesis that a stronger cooling bias (6:2 ratio) could tame the chaos. The experiment failed conclusively. The generated rule, despite being heavily biased towards "cooling," was still overwhelmingly chaotic. The two "birth" pairs completely
-
-**Status:** ok
-
-**Metrics:** `{'birth_pairs': 2, 'cooling_pairs': 6, 'final_soup_bit_count': 9803, 'glider_found': 0, 'motion_fitness': 0.0, 'soup_resolved': 0}`
-
-**Experimenter view:** The biased hybrid rule (seed=117, 6 cooling + 2 birth pairs, 32 non-identity
-entries, 0 involution violations) is strongly expansive. The soup stabilised
-at ~9800 live cells (well above the 1000-cell resolved threshold), indicating
-the 2 birth pairs dominate even though they are outnumbered 3:1 by cooling
-pairs. All 21 motion seeds exploded past the MAX_CELLS=500 limit, so no
-glider or oscillator 
-
-**Notes:** Biased hybrid rule generation and evaluation complete.
-
-
----
-```yaml
 cached_tokens: 63923
 campaign: Phase 4 - Two-Stage Simulation
 cost_usd: 0.10711
@@ -1098,6 +1060,31 @@ status: no_execution
 ## iter_147: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 148. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 148
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_148: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 149. All systems nominal.
 
 **Status:** no_execution
 
