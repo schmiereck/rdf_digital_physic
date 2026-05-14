@@ -6470,3 +6470,41 @@ glider or oscillator
 
 **Notes:** Biased hybrid rule generation and evaluation complete.
 
+
+---
+```yaml
+cached_tokens: 63923
+campaign: Phase 4 - Two-Stage Simulation
+cost_usd: 0.10711
+hypothesis: 'two-stage-chaotic: Applying a ''cooling'' rule, then switching to a known
+  chaotic ''motion'' rule (from iter_084), will produce at least one stable, moving
+  particle.'
+input_tokens: 74380
+iter: 118
+metrics:
+  ash_bit_count: 325
+  final_bit_count: 328
+  glider_count: 0
+  oscillator_count: 0
+  still_life_count: 72
+output_tokens: 1388
+status: experiment_failed
+```
+
+## iter_118: two-stage-chaotic: Applying a 'cooling' rule, then switching to a known chaotic 'motion' rule (from iter_084), will produce at least one stable, moving particle.
+
+**Analysis:** The experiment to test the "two-stage simulation" hypothesis has failed. The core idea was that a pure "cooling" rule would create a structured, low-density "ash" from a chaotic soup, and a second "glider-friendly" rule would then animate this ash, producing motion. The experiment showed that the first stage worked as expected, resolving a 25% density soup into a stable field of 72 small objects. 
+
+**Status:** experiment_failed
+
+**Metrics:** `{'ash_bit_count': 325, 'final_bit_count': 328, 'glider_count': 0, 'oscillator_count': 0, 'still_life_count': 72}`
+
+**Experimenter view:** The two-stage pipeline produced no gliders or oscillators. Stage 1 (rule_023)
+resolved the 25%-density soup to a stable ash of 325 live cells (72 connected
+components) in under 200 steps. Stage 2 (symmetric_rule_nonconserving_A3_B14)
+caused only 3 births and no deaths, then froze: the ash shapes are
+simultaneously still-lifes under both rules, so switching rules did not trigger
+any dynamic behavio
+
+**Notes:** Both rules stabilize the same ash shapes; zero dynamic objects produced by the two-stage pipeline.
+
