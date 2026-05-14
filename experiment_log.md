@@ -3,50 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 51563
-campaign: Phase 6 - Local Animation
-cost_usd: 0.10048
-hypothesis: 'evolution-local-pair: A rule evolved with a fitness metric rewarding
-  the displacement of only the two closest oscillators (obj2/obj3) will achieve a
-  higher sustained motion score than a rule evolved on the entire remnant.'
-input_tokens: 62373
-iter: 134
-metrics:
-  avg_pairwise_dist_all_objects: 70.68
-  avg_pairwise_dist_oscillators: 70.1
-  closest_oscillator_pair_dist: 3.46
-  osc_vs_all_dist_ratio: 0.992
-  oscillator_count: 4
-  remnant_live_cells: 78
-  still_life_count: 33
-  total_objects: 37
-output_tokens: 1669
-status: ok
-```
-
-## iter_134: evolution-local-pair: A rule evolved with a fitness metric rewarding the displacement of only the two closest oscillators (obj2/obj3) will achieve a higher sustained motion score than a rule evolved on the entire remnant.
-
-**Analysis:** The research has successfully characterized the stable "remnant" produced by `rule_011`. Iteration 133 identified the 8 unique object types within the remnant, and this iteration (134) has mapped their spatial distribution. The key finding is that while the four oscillators are globally spread out, one pair is located extremely close together (distance 3.46 units), suggesting they might be suscept
-
-**Status:** ok
-
-**Metrics:** `{'total_objects': 37, 'still_life_count': 33, 'oscillator_count': 4, 'remnant_live_cells': 78, 'avg_pairwise_dist_oscillators': 70.1, 'avg_pairwise_dist_all_objects': 70.68, 'osc_vs_all_dist_ratio': 0.992, 'closest_oscillator_pair_dist': 3.46}`
-
-**Experimenter view:** The remnant contains 37 objects: 33 still-lifes and 4 oscillators (2× period-3,
-2× period-4). The core research question is whether the oscillators are spatially
-clustered.
-
-**Answer: No — the oscillators are NOT globally clustered, but one tight local
-pair exists.**
-
-The mean pairwise distance among the 4 oscillators is 70.10, compared to 70.68
-for all 37 objects combined (ratio = 0.992). A ratio
-
-**Notes:** 4 oscillators intermingled with 33 still-lifes; one tight local oscillator pair at distance 3.46, global ratio osc/all = 0.992
-
-
----
-```yaml
 cached_tokens: 51063
 cost_usd: 0.10463
 hypothesis: 'fresh-local-start: A fresh random population of 100 C2-symmetric rules
@@ -1042,6 +998,31 @@ status: no_execution
 ## iter_164: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 165. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 165
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_165: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 166. All systems nominal.
 
 **Status:** no_execution
 
