@@ -3,46 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 61643
-cost_usd: 0.10175
-hypothesis: 'evolution-for-animation: A population of rules evolved with the ash-based
-  fitness metric will produce at least one rule with a fitness score greater than
-  the inert baseline (0.0524).'
-input_tokens: 71525
-iter: 120
-metrics:
-  chaotic_rule_final_bits: 20742
-  chaotic_rule_fitness: 0.000164
-  inert_rule_final_bits: 328
-  inert_rule_fitness: 0.052432
-  initial_ash_bits: 325
-  initial_ash_objects: 72
-output_tokens: 1260
-status: ok
-```
-
-## iter_120: evolution-for-animation: A population of rules evolved with the ash-based fitness metric will produce at least one rule with a fitness score greater than the inert baseline (0.0524).
-
-**Analysis:** The research was critically blocked, having exhausted all rule-finding strategies. This iteration successfully unblocks the project by establishing a new, promising research direction.
-
-A canonical, low-density "ash" pattern of 72 stable objects was generated from a primordial soup and saved as a reusable asset (`src/ash_pattern.json`). This provides a standard environment for a new class of exper
-
-**Status:** ok
-
-**Metrics:** `{'chaotic_rule_final_bits': 20742, 'chaotic_rule_fitness': 0.000164, 'initial_ash_bits': 325, 'initial_ash_objects': 72, 'inert_rule_final_bits': 328, 'inert_rule_fitness': 0.052432}`
-
-**Experimenter view:** The canonical ash (325 bits, 72 objects) is reproducible and stable under the
-cooling rule. The inert rule (A3_B14) preserves the ash almost perfectly —
-only 3 extra bits appear (325→328), all 72 objects survive, and the center of
-mass barely shifts (0.21 cells), yielding fitness=0.0524. The chaotic rule
-explodes the ash from 325 to 20,742 bits, merging all 72 objects into 1 giant
-connected compon
-
-**Notes:** Fitness metric validated; inert rule scores 320x higher than chaotic rule on ash pattern.
-
-
----
-```yaml
 cached_tokens: 60830
 cost_usd: 0.1002
 hypothesis: 'evolution-ash-gen2: A second generation of rules, bred from the top 11
@@ -1087,4 +1047,40 @@ Dominant pattern is a large window-1 burst that decays to near-zero by window-2 
 which the std_dev term penalizes. The metric correctly scores these low-to
 
 **Notes:** Baseline measurement for velocity-stability metric.
+
+
+---
+```yaml
+cached_tokens: 31082
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.21742
+hypothesis: 'evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement
+  / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness
+  at least 50% greater than the random baseline of 0.45.'
+input_tokens: 80212
+iter: 151
+metrics:
+  max_fitness: 1.17941518
+  mean_fitness: 0.45167814
+  median_fitness: 0.42504039
+  new_fitness_for_rule_086: 0.04378386
+output_tokens: 1740
+status: ok
+```
+
+## iter_151: evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness at least 50% greater than the random baseline of 0.45.
+
+**Analysis:** In iter_150, we discovered a critical flaw in our velocity-stability fitness metric: it assigned the highest scores to rules that quickly became inactive ("settlers"), as zero motion has zero standard deviation. This iteration's goal was to fix this by introducing a composite metric: `total_displacement / (1 + std_dev)`.
+
+The experiment successfully re-evaluated the 100 random rules from the previ
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 0.45167814, 'max_fitness': 1.17941518, 'median_fitness': 0.42504039, 'new_fitness_for_rule_086': 0.04378386}`
+
+**Experimenter view:** Re-evaluated 100 random rules from iter_150 using the new composite fitness metric: new_fitness = total_displacement / (1 + std_dev).
+
+Key finding: rule_086, which had the highest original fitness (0.98104101), receives a dramatically lower new fitness score of 0.04378386. This reveals rule_086 as a "settler" rule—it appears fit in the original metric but has virtually no motion (total_displacemen
+
+**Notes:** New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
 

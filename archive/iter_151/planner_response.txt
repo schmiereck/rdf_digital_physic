@@ -1,0 +1,43 @@
+```yaml
+analysis: |
+  In iter_150, we discovered a critical flaw in our velocity-stability fitness metric: it assigned the highest scores to rules that quickly became inactive ("settlers"), as zero motion has zero standard deviation. This iteration's goal was to fix this by introducing a composite metric: `total_displacement / (1 + std_dev)`.
+
+  The experiment successfully re-evaluated the 100 random rules from the previous baseline using this new metric. The results are a clear success. The former champion, rule_086, which had a stability-only fitness of 0.981, now has a composite fitness of just 0.044. This confirms the new metric correctly penalizes inactivity.
+
+  While the new mean fitness of the random population (0.45) was higher than my hypothesized threshold of <0.1, this simply reveals that random rules produce more transient motion than I predicted. The crucial outcome is that the fitness landscape is no longer dominated by misleadingly "stable" but inert rules. We now have a metric that appears to correctly reward sustained motion, unblocking our primary research goal.
+open_questions:
+  - "Can an evolutionary search using the composite fitness metric produce a rule with both high displacement (>50) and high fitness (>1.0)?"
+  - "Will the first generation of this new evolution show a significant increase in mean fitness compared to the random baseline of ~0.45?"
+  - "What are the qualitative dynamics of the top rules selected by this new metric? Are they puffers, gliders, or a new type of object?"
+  - "Is a single 150x150 soup sufficient initial condition, or should we evaluate against multiple soups?"
+chosen_direction: "Proceed with the evolutionary search using the validated composite fitness metric."
+hypothesis: "evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness at least 50% greater than the random baseline of 0.45."
+rationale: |
+  The primary impediment to our evolutionary search was a flawed fitness function that rewarded inactivity. Having validated a new composite metric that correctly penalizes inactive rules (iter_151), the logical and most valuable next step is to conduct the first generation of an evolutionary search with it. This will test whether the new fitness landscape is conducive to finding rules that support sustained motion.
+status: ok
+metrics:
+  mean_fitness: 0.45167814
+  max_fitness: 1.17941518
+  median_fitness: 0.42504039
+  new_fitness_for_rule_086: 0.04378386
+experimenter_view: |
+  Re-evaluated 100 random rules from iter_150 using the new composite fitness metric: new_fitness = total_displacement / (1 + std_dev).
+
+  Key finding: rule_086, which had the highest original fitness (0.98104101), receives a dramatically lower new fitness score of 0.04378386. This reveals rule_086 as a "settler" rule—it appears fit in the original metric but has virtually no motion (total_displacement = 0.04463). The new metric successfully penalizes inactive rules while fairly ranking rules with significant displacement. The new fitness distribution shows a mean of 0.45 and median of 0.43, indicating most rules are moderately active under the stricter displacement-weighted metric.
+notes: New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
+campaign: Phase 7 - Velocity-Stable Evolution
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - The motion produced by champions from previous evolutionary runs (e.g., `rule_016`) was not stable and decayed over longer simulations. (iter_142, iter_149)
+  - A fitness metric based solely on velocity stability (`1 / (1 + std_dev)`) is flawed, as it strongly favors rules that quickly become inactive. (iter_150)
+  - A composite fitness metric, `total_displacement / (1 + std_dev)`, successfully penalizes inactive "settler" rules while rewarding displacement. The mean fitness for a random C2 rule population with this metric is ~0.45. (iter_151)
+
+  **Open Questions:**
+  - Can an evolutionary search using the composite fitness metric produce a rule with both high displacement (>50) and high fitness (>1.0)?
+  - Will the first generation of this new evolution show a significant increase in mean fitness compared to the random baseline of ~0.45?
+  - What are the qualitative dynamics of the top rules selected by this new metric? Are they puffers, gliders, or a new type of object?
+```

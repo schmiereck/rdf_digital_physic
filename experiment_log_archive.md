@@ -6555,3 +6555,43 @@ to 20,742 live cells and locked into
 
 **Notes:** Chaotic rule from iter_084 is space-filling on sparse ash; produces CHAOTIC_EXPLOSION fixed point at ~20k live cells, not object animation
 
+
+---
+```yaml
+cached_tokens: 61643
+cost_usd: 0.10175
+hypothesis: 'evolution-for-animation: A population of rules evolved with the ash-based
+  fitness metric will produce at least one rule with a fitness score greater than
+  the inert baseline (0.0524).'
+input_tokens: 71525
+iter: 120
+metrics:
+  chaotic_rule_final_bits: 20742
+  chaotic_rule_fitness: 0.000164
+  inert_rule_final_bits: 328
+  inert_rule_fitness: 0.052432
+  initial_ash_bits: 325
+  initial_ash_objects: 72
+output_tokens: 1260
+status: ok
+```
+
+## iter_120: evolution-for-animation: A population of rules evolved with the ash-based fitness metric will produce at least one rule with a fitness score greater than the inert baseline (0.0524).
+
+**Analysis:** The research was critically blocked, having exhausted all rule-finding strategies. This iteration successfully unblocks the project by establishing a new, promising research direction.
+
+A canonical, low-density "ash" pattern of 72 stable objects was generated from a primordial soup and saved as a reusable asset (`src/ash_pattern.json`). This provides a standard environment for a new class of exper
+
+**Status:** ok
+
+**Metrics:** `{'chaotic_rule_final_bits': 20742, 'chaotic_rule_fitness': 0.000164, 'initial_ash_bits': 325, 'initial_ash_objects': 72, 'inert_rule_final_bits': 328, 'inert_rule_fitness': 0.052432}`
+
+**Experimenter view:** The canonical ash (325 bits, 72 objects) is reproducible and stable under the
+cooling rule. The inert rule (A3_B14) preserves the ash almost perfectly —
+only 3 extra bits appear (325→328), all 72 objects survive, and the center of
+mass barely shifts (0.21 cells), yielding fitness=0.0524. The chaotic rule
+explodes the ash from 325 to 20,742 bits, merging all 72 objects into 1 giant
+connected compon
+
+**Notes:** Fitness metric validated; inert rule scores 320x higher than chaotic rule on ash pattern.
+
