@@ -3,47 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 47721
-campaign: Phase 6 - Parity-Constrained Evolution
-cost_usd: 0.1031
-hypothesis: 'late-metric-validation: A ''late-late-displacement'' fitness metric,
-  calculated between steps 400-800, will assign a near-zero fitness score (<0.01)
-  to the top 5 rules from Gen-3 (iter_140).'
-input_tokens: 60311
-iter: 141
-metrics:
-  final_bit_count: 935
-  final_displacement: 10.9167
-  initial_bit_count: 325
-  sustained_motion: false
-  velocity_decay_ratio: 0.001319
-  velocity_early: 0.02545116
-  velocity_late: 3.356e-05
-output_tokens: 1646
-status: ok
-```
-
-## iter_141: late-metric-validation: A 'late-late-displacement' fitness metric, calculated between steps 400-800, will assign a near-zero fitness score (<0.01) to the top 5 rules from Gen-3 (iter_140).
-
-**Analysis:** The research was critically blocked. The previous champion rule (`rule_049` from iter_140), which had an extremely high fitness score of 6.55, was revealed to be a "false positive" in iter_141. A long-run analysis proved that the high score was an artifact of a one-time, transient expansion that occurred in the first ~400 steps. After this initial expansion, all net motion ceased, and the system s
-
-**Status:** ok
-
-**Metrics:** `{'final_bit_count': 935, 'final_displacement': 10.9167, 'initial_bit_count': 325, 'sustained_motion': False, 'velocity_decay_ratio': 0.001319, 'velocity_early': 0.02545116, 'velocity_late': 3.356e-05}`
-
-**Experimenter view:** The motion of rule_049 is NOT coherent glider-like motion — it is a
-transient expansion into a large stable periodic attractor.
-
-During steps 0-400, the bit count grows explosively from 325 to a peak of
-~1092 (step 300), then contracts to a stable value of ~934-935. During this
-transient, the global COM drifts by ~26 units from its initial position,
-accounting for the high fitness scores measured 
-
-**Notes:** rule_049 fitness=6.55 is a transient-growth artifact; motion halts by step ~400 into a stable periodic attractor
-
-
----
-```yaml
 cached_tokens: 47725
 cost_usd: 0.09819
 hypothesis: 'long-run-verification: The new champion (rule_016) will exhibit a non-decaying
@@ -1003,4 +962,38 @@ Sub-goal 170.1 replaced the symmetric 2x2 block with an asymmetric 3-bit "L-trom
 **Sub-agent 170.2:** The evolution of a second generation demonst
 
 **Notes:** The 'glider nursery' concept is validated. The immediate next step is to fix the fitness function to prevent annihilation strategies.
+
+
+---
+```yaml
+cached_tokens: 33426
+cost_usd: 0.22902
+hypothesis: 'phase-171: A conservation-aware fitness metric can prevent annihilation
+  but unintentionally selects for explosive, non-glider growth.'
+input_tokens: 83315
+iter: 171
+metrics:
+  champion_rule_displacement: 22.21
+  champion_rule_final_bits: 5279
+  fitness_gain_gen0_to_gen3: 41.1
+  sustained_motion_observed: false
+output_tokens: 2396
+status: ok
+```
+
+## iter_171: phase-171: A conservation-aware fitness metric can prevent annihilation but unintentionally selects for explosive, non-glider growth.
+
+**Analysis:** This phase successfully addressed the "annihilation exploit" discovered in `iter_170` by introducing a new fitness function.
+
+1.  **Sub-goal 171.1:** The fitness function was modified from `displacement / (1 + final_bit_count)` to `displacement * (final_bit_count / initial_bit_count)`. This new metric was validated on a random population and proven to correctly filter out annihilating rules while 
+
+**Status:** ok
+
+**Metrics:** `{'fitness_gain_gen0_to_gen3': 41.1, 'champion_rule_final_bits': 5279, 'champion_rule_displacement': 22.21, 'sustained_motion_observed': False}`
+
+**Experimenter view:** **Sub-agent 171.1:** The new fitness metric, `displacement * (final_bit_count / initial_bit_count)`, successfully addressed the annihilation exploit. A validation run on a new population of 100 rules showed that 30 had non-zero fitness, providing a good starting point for evolution.
+
+**Sub-agent 171.2:** The 3-generation evolutionary run showed powerful selection, with fitness increasing 41-fold. 
+
+**Notes:** The project is successfully debugging the evolutionary process itself. We have traded an 'annihilation' exploit for a 'puffer' exploit. The next step requires a fitness function that measures *velocity*, not just displacement.
 

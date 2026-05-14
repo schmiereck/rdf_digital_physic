@@ -1,0 +1,60 @@
+I'll read the relevant files to understand the current code structure before making changes.
+The `evolution.py` file doesn't exist yet. Let me check iter_170 and other relevant files.
+I can see there's a `fitness.py` file. Let me read it along with `run_iter_170.py` to understand the existing structure.
+The mentioned fitness function isn't in `fitness.py`. Let me check `evaluate_rule_fitness.py` and look for the specific formula.
+Let me check `evolve.py` and search for the specific fitness formula mentioned in the task.
+Now I understand the structure. The fitness function `displacement / (1 + final_bit_count)` is in `evolve.py`. The task asks to create `src/evolution.py` with the new metric and run iter_171. Let me check how C2 rules are generated.
+Now I have everything I need. Let me create `src/evolution.py` with the new fitness function and `src/run_iter_171.py` to run the experiment.
+Now create the runner script for iter_171:
+Now run the experiment:
+The experiment completed successfully. Here are the key results:
+
+- **Max fitness: 950.35** (rule_048, displacement=14.85, 192 final bits)
+- **30 rules with fitness > 0.01** out of 100
+- **0 annihilating rules** (final_bit_count=0) in this population - the new metric would penalize those with fitness≈0 since the ratio becomes 0/(3+ε)
+- The fitness distribution is clearly non-degenerate with scores ranging from 0 to 950
+
+The new metric correctly rewards rules that both **displace** and **preserve/grow** the particle, while giving 0 to static rules (no displacement). The top rules have high displacement *and* large bit counts (growing from 3 to 129-192 bits) — which is actually a different selection pressure than pure glider preservation, but it's a valid alternative to the old formula.
+
+```yaml
+status: ok
+artifacts:
+  - src/evolution.py
+  - src/run_iter_171.py
+metrics:
+  max_fitness: 950.351197
+  mean_fitness: 29.260966
+  min_fitness: 0.0
+  rules_above_0_01: 30
+  annihilating_rules: 0
+  max_annihilated_fitness: 0.0
+  population_size: 100
+  top_rule_displacement: 14.8492
+  top_rule_final_bits: 192
+log_excerpt: |
+  === Summary ===
+    max_fitness:            950.35119713
+    mean_fitness:           29.26096636
+    min_fitness:            0.00000000
+    rules_above_0.01: 30
+    annihilating_rules:     0
+    max_fitness_annihilat.: 0.00000000
+    top_rule:               rule_048
+    top_displacement:       14.849242
+    top_final_bits:         192
+
+  Saved: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_171\results\gen_0_results.json
+experimenter_view: |
+  The conservation-aware fitness metric (displacement * final_bit_count /
+  initial_bit_count) produces a well-distributed, non-degenerate population.
+  30 of 100 random C2-symmetric rules score above 0.01. The metric cleanly
+  gives 0 to the ~70 rules whose L-tromino stays frozen (displacement=0). No
+  annihilating rules (final_bit_count=0) appeared in this sample; if they had,
+  the ratio term would collapse their fitness to ≈0 regardless of displacement.
+  The top rules (rule_048, rule_056, rule_093) score ~950 by combining
+  large displacement (≈15 cells) with significant bit growth (191-192 bits),
+  indicating they expand the seed. This is a different selection pressure than
+  a "clean glider" metric but it correctly filters out the annihilation exploit
+  that rewarded the old formula's (1 + final_bit_count) denominator.
+notes: New fitness metric penalises annihilation; 30/100 rules score >0.01; max_fitness=950.35
+```

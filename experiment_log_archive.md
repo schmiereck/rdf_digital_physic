@@ -7308,3 +7308,44 @@ chaotic rule. rule_089
 
 **Notes:** Gen-3 top fitness 6.55 far exceeds the Gen-2 top of 0.731; hypothesis confirmed.
 
+
+---
+```yaml
+cached_tokens: 47721
+campaign: Phase 6 - Parity-Constrained Evolution
+cost_usd: 0.1031
+hypothesis: 'late-metric-validation: A ''late-late-displacement'' fitness metric,
+  calculated between steps 400-800, will assign a near-zero fitness score (<0.01)
+  to the top 5 rules from Gen-3 (iter_140).'
+input_tokens: 60311
+iter: 141
+metrics:
+  final_bit_count: 935
+  final_displacement: 10.9167
+  initial_bit_count: 325
+  sustained_motion: false
+  velocity_decay_ratio: 0.001319
+  velocity_early: 0.02545116
+  velocity_late: 3.356e-05
+output_tokens: 1646
+status: ok
+```
+
+## iter_141: late-metric-validation: A 'late-late-displacement' fitness metric, calculated between steps 400-800, will assign a near-zero fitness score (<0.01) to the top 5 rules from Gen-3 (iter_140).
+
+**Analysis:** The research was critically blocked. The previous champion rule (`rule_049` from iter_140), which had an extremely high fitness score of 6.55, was revealed to be a "false positive" in iter_141. A long-run analysis proved that the high score was an artifact of a one-time, transient expansion that occurred in the first ~400 steps. After this initial expansion, all net motion ceased, and the system s
+
+**Status:** ok
+
+**Metrics:** `{'final_bit_count': 935, 'final_displacement': 10.9167, 'initial_bit_count': 325, 'sustained_motion': False, 'velocity_decay_ratio': 0.001319, 'velocity_early': 0.02545116, 'velocity_late': 3.356e-05}`
+
+**Experimenter view:** The motion of rule_049 is NOT coherent glider-like motion — it is a
+transient expansion into a large stable periodic attractor.
+
+During steps 0-400, the bit count grows explosively from 325 to a peak of
+~1092 (step 300), then contracts to a stable value of ~934-935. During this
+transient, the global COM drifts by ~26 units from its initial position,
+accounting for the high fitness scores measured 
+
+**Notes:** rule_049 fitness=6.55 is a transient-growth artifact; motion halts by step ~400 into a stable periodic attractor
+

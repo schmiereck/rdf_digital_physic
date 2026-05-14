@@ -1,0 +1,64 @@
+I'll start by reading the memory index and the relevant files for this task.
+Now let me look at the existing simulation code from iter_171 and related iterations to understand the setup.
+Now let me look at evolution.py to understand the simulation core.
+Now I have all the context I need. Let me write the visualization script.
+The simulation completed successfully. Let me verify the output files and check the summary.
+All three artifacts are saved. Here is the analysis of what the 1000-step simulation reveals:
+
+**Behavior summary:**
+- The 3-bit L-tromino seed rapidly **explodes** in bit count, growing from 3 to 5,279 bits within roughly the first 200 steps — matching the 200-step evaluation window used during evolution.
+- The center-of-mass **shifts ~22 cells** (from ≈[63.67, 63.33] to ≈[54.88, 42.93]), which is the displacement the fitness metric rewards.
+- After the initial explosive phase the pattern **freezes completely**: in the last 100 steps (900–1000) the displacement range is only 0.0046 and the bit count is exactly 5279 with zero standard deviation.
+- The pattern never decays; it reaches a **static fixed-point** and stays there indefinitely.
+
+**Interpretation:** This is not a glider. The rule triggers an asymmetric growth explosion that expands the particle from 3 to ~5k bits and simultaneously shifts the center of mass off-center, then locks into a frozen attractor. The fitness function (displacement × bit_ratio) rewards exactly this: large surviving structures that are laterally offset. Evolution has found a "big-bang" regime rule rather than a compact travelling-wave particle.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_iter_171_viz.py
+  - archive/iter_171/results/visualization/simulation.gif
+  - archive/iter_171/results/visualization/timeseries.png
+  - archive/iter_171/results/visualization/summary.json
+metrics:
+  initial_bits: 3
+  final_bits: 5279
+  max_bits: 5279
+  final_displacement: 22.2112
+  max_displacement: 22.2158
+  late_disp_range: 0.0046
+  late_bits_std: 0.0
+  fitness_200step: 39084.3154
+log_excerpt: |
+  Running 1000-step simulation on 128x128 grid ...
+    Done. Frames recorded: 201
+    Initial COM:   (63.67, 63.33)
+    Final COM:     (54.88, 42.93)
+    Final bits:    5279
+    Max disp:      22.2158
+    Final disp:    22.2112
+    Min bit count: 3
+    Max bit count: 5279
+    Steps 900-1000 disp range: 0.0046
+    Steps 900-1000 bits mean:  5279.0 ± 0.0
+  Generating GIF (201 frames @ 15 fps) ...
+    Saved GIF: ...visualization/simulation.gif
+  Generating time-series plot ...
+    Saved plot: ...visualization/timeseries.png
+    Saved summary: ...visualization/summary.json
+  === Done ===
+experimenter_view: |
+  The Gen-3 top rule (g3_rule_021, fitness=39084) does NOT produce a glider.
+  Instead, it triggers an asymmetric explosive growth: the 3-bit L-tromino
+  expands to 5279 bits within ~200 steps, shifting the center-of-mass ~22 cells
+  off the starting position. After this transient, the pattern reaches a static
+  fixed-point and is completely frozen for the remaining 800 steps (bit count
+  constant at 5279, displacement change < 0.005). The motion is a one-time
+  displacement event, not sustained travel. The fitness metric rewards
+  displacement × bit_ratio, so evolution found a "big-bang" rule — maximum
+  surviving structure + maximum asymmetric expansion — rather than a compact
+  travelling particle. For future iterations, a velocity-based fitness
+  (sustained COM drift over time) would be needed to select for true glider
+  behaviour.
+notes: Top rule produces a static frozen attractor after explosive asymmetric growth; no sustained motion observed.
+```
