@@ -1,0 +1,83 @@
+I'll load the rule and particle files, then set up and run the simulation.
+Let me explore the archive structure first.
+Let me find the archive directory and look at similar simulation scripts to understand the code structure.
+Now I understand the structure. The rule and seed don't exist as JSON files — I need to build the simulation using the champion rule from `new_champion_rule.txt` and the L-tromino seed used in iter_176. Let me examine the existing simulation code to match conventions.
+Now I have full context. Let me create the required JSON files, write the simulation script, and run it.
+I have everything I need. Now I'll create the JSON files and write the simulation script.
+The simulation completed. Let me examine the CSV to better characterize the behavior.
+The simulation is complete. The rule fails the success criterion definitively. Let me verify the output CSV is correct and compile the analysis.
+The results are clear. The CSV has 2001 rows (steps 0–2000) with the required columns. Now I'll compile the full analysis.
+
+**Summary of findings:**
+
+- **Bit count stability**: FAILED. Initial=3, Final=44, max=88 at step 126. The bit count never returns to 3 after step 0. The pattern grows chaotically over 2000 steps with a mean of ~32 cells.
+- **Linear displacement**: FAILED. CoM_x is essentially stationary (total drift ≈ 0.44 cells over 2000 steps, R²≈0). CoM_y oscillates erratically between ~44 and ~89 with no linear trend (R²≈0).
+- **Conclusion**: The iter_176.3 champion rule does NOT produce a stable glider. It generates a growing, oscillatory blob that expands from 3 to 44+ cells with chaotic CoM motion.
+
+```yaml
+status: experiment_failed
+artifacts:
+  - archive/iter_176/results/gen_5/rule_019.json
+  - archive/iter_176/results/best_particle.json
+  - src/simulate_iter177_long_run.py
+  - archive/iter_177/results/long_run_metrics.csv
+metrics:
+  initial_bit_count: 3
+  final_bit_count: 44
+  max_bit_count: 88
+  max_bit_count_step: 126
+  mean_bit_count: 32.44
+  total_com_displacement: 17.41
+  com_x_r2: 0.000067
+  com_y_r2: 0.000034
+  com_x_velocity: 0.000003
+  com_y_velocity: 0.000136
+  steps: 2000
+log_excerpt: |
+  Loaded rule: iter_176_gen5_019  (10 transitions, fitness=0.08879282)
+  Loaded seed: 3 cells at [[63, 63], [64, 63], [64, 64]]
+  Running 2000 steps on 128x128 toroidal grid...
+  Step    0: bit_count=3,  com=(63.333, 63.667)
+  Step  200: bit_count=20, com=(63.500, 63.750)
+  Step  400: bit_count=38, com=(63.737, 78.789)
+  Step  600: bit_count=20, com=(63.200, 44.700)
+  Step  800: bit_count=38, com=(63.895, 88.816)
+  Step 1000: bit_count=36, com=(63.722, 77.861)
+  Step 1200: bit_count=14, com=(63.286, 50.143)
+  Step 1400: bit_count=32, com=(63.500, 63.750)
+  Step 1600: bit_count=10, com=(63.600, 70.100)
+  Step 1800: bit_count=22, com=(63.545, 66.636)
+  Step 2000: bit_count=44, com=(63.773, 81.068)
+  Initial bit_count: 3 | Final bit_count: 44 | Stable: False
+  Linearity R² com_x: 0.000067  (vx=0.000003 cells/step)
+  Linearity R² com_y: 0.000034  (vy=0.000136 cells/step)
+  Saved CSV: archive/iter_177/results/long_run_metrics.csv (2001 rows)
+experimenter_view: |
+  The iter_176.3 champion rule (gen_5 rule_019, fitness=0.08879282, 10 C2-symmetric
+  transitions) does NOT produce a stable glider over 2000 steps. Both success
+  criteria failed:
+
+  1. BIT COUNT STABILITY — FAILED:
+     The particle immediately grows from 3 cells and never returns to 3.
+     The bit count hits a maximum of 88 at step 126, then oscillates erratically
+     between ~10 and ~62 for the remainder of the run, ending at 44 at step 2000.
+     Mean bit count over the full 2000 steps is 32.4. This is a growing,
+     amorphous blob, not a compact glider.
+
+  2. LINEAR DISPLACEMENT — FAILED:
+     The CoM x-coordinate is essentially stationary (total drift ≈ 0.44 cells,
+     velocity ≈ 0.000003 cells/step, R²≈0.00007). The CoM y-coordinate shows
+     large-amplitude erratic oscillations (between ~44 and ~89 cells) with no
+     linear trend (R²≈0.00003). There is no consistent directed motion.
+
+  INTERPRETATION:
+  The rule achieved fitness=0.088 in the 200-step evolutionary evaluation by
+  showing brief transient motion in the first ~200 steps before the structural
+  instability manifests. On this short evaluation horizon the particle appeared
+  to move slightly; on the 2000-step long run the pattern explodes to 88 bits
+  by step 126 then collapses partially — a transient 'bloom' that the fitness
+  metric misidentified as directed motion. The rule is a bloom-and-oscillate
+  instability, not a glider. Evolution found a rule that games the short-horizon
+  fitness metric without achieving true long-term glider stability.
+notes: Rule iter_176_gen5_019 is a transient bloomer, not a glider; games the 200-step fitness metric but fails long-run stability by a wide margin.
+```
