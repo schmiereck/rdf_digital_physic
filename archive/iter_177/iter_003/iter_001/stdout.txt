@@ -1,0 +1,51 @@
+I'll explore the existing codebase structure first, then implement the required files.
+Let me look at the archive directory structure for iter_176 and existing iter_177 files.
+Now I have enough context. Let me check the iter_177 checkpoint file mentioned in the git status.
+Now I have a complete understanding. I need to create `rule.py`, `simulator.py`, add `CheckpointFitness` to `fitness.py`, and create `validate_fitness.py`. Let me implement all four in parallel.
+Now add `CheckpointFitness` to the existing `fitness.py`:
+Now run the validation script:
+The script ran successfully. The `CheckpointFitness` metric correctly assigns **0.0** to the transient bloomer rule. Let me do a quick sanity check to confirm the bloom is actually detected (not just a silent failure):
+The rule blooms dramatically: 3 bits → 17 bits by step 50. The old fitness metric only checked the final count (which was 17, not 3) but the `displacement * (final_bits/initial_bits)` formula still gave it a positive score. The new `CheckpointFitness` correctly catches the mismatch at step 50 and returns 0.0 immediately.
+
+---
+
+```yaml
+status: ok
+artifacts:
+  - "src/rule.py"
+  - "src/simulator.py"
+  - "src/fitness.py"
+  - "src/validate_fitness.py"
+metrics:
+  fitness_score_for_pathological_rule: 0.0
+log_excerpt: |
+  Rule ID       : iter_176_gen5_019
+  Old fitness   : 0.08879282
+  CheckpointFitness score: 0.0
+  ---
+  Sanity check (bit counts at checkpoints):
+  step 0: 3 bits
+  step 50: 17 bits
+  step 100: 17 bits
+  step 150: 35 bits
+  step 200: 17 bits
+experimenter_view: |
+  Created three new supporting modules: rule.py (Rule wrapper), simulator.py
+  (Particle + Simulator classes), and validate_fitness.py. Added CheckpointFitness
+  to the existing fitness.py.
+
+  The CheckpointFitness metric evaluates a rule by running the simulation and
+  checking bit-count stability at each specified checkpoint. If the count ever
+  differs from the initial seed count, it returns 0.0 immediately.
+
+  For the pathological iter_176 gen-5 rule_019 ("transient bloomer"), the
+  particle blooms from 3 bits to 17 bits by step 50 and keeps growing. The
+  metric correctly detects this at the first checkpoint (step 50) and returns
+  0.0, despite the old fitness metric having awarded it a score of 0.08879282
+  based on displacement and a partial bit-count ratio.
+
+  The new metric behaved exactly as expected: it successfully assigns 0.0 to
+  the unstable rule and would only reward rules where the particle maintains
+  a constant bit count at all four checkpoints (50, 100, 150, 200).
+notes: "Validation of CheckpointFitness complete."
+```

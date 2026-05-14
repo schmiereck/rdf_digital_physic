@@ -2,14 +2,19 @@
 """
 fitness.py
 
-Velocity-stability fitness metric for hexagonal CA rules.
-A rule with sustained, constant-velocity motion scores near 1.0.
-A rule with decaying or erratic motion scores near 0.0.
+Fitness metrics for hexagonal CA rules.
+  - calculate_velocity_stability: rewards sustained, constant-velocity motion.
+  - CheckpointFitness: rewards stable bit-count throughout the simulation.
 """
 
 import math
+import sys
+from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).parent))
+from simulator import Particle, Simulator
 
 
 HEX_DIRS = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
@@ -91,3 +96,54 @@ def calculate_velocity_stability(
     fitness  = 1.0 / (1.0 + std_dev)
 
     return fitness, velocities, std_dev
+
+
+class CheckpointFitness:
+    """Fitness metric that requires bit-count stability at regular checkpoints.
+
+    A rule scores > 0 only if the particle's bit count equals the initial
+    seed bit count at every checkpoint step.  The score itself is the
+    Euclidean distance travelled by the centre of mass.  Any bit-count
+    change at a checkpoint immediately returns 0.0 (early exit).
+    """
+
+    def __init__(self, checkpoints: list, simulation_steps: int):
+        self.checkpoints = set(checkpoints)
+        self.simulation_steps = simulation_steps
+
+    def evaluate(self, rule, seed_bits: list) -> float:
+        """Evaluate *rule* starting from *seed_bits* coordinates.
+
+        Parameters
+        ----------
+        rule:
+            A Rule instance (has .rule_dict).
+        seed_bits:
+            List of [row, col] pairs defining the initial live cells.
+
+        Returns
+        -------
+        float
+            Euclidean displacement of centre of mass, or 0.0 if any
+            checkpoint reveals a bit-count mismatch.
+        """
+        grid = np.zeros((128, 128), dtype=np.uint8)
+        for r, c in seed_bits:
+            grid[r][c] = 1
+
+        particle = Particle(grid)
+        simulator = Simulator(rule)
+
+        initial_bits = particle.bit_count
+        initial_com = particle.center_of_mass()
+
+        for step in range(1, self.simulation_steps + 1):
+            simulator.step(particle)
+            if step in self.checkpoints:
+                if particle.bit_count != initial_bits:
+                    return 0.0
+
+        final_com = particle.center_of_mass()
+        dx = final_com[0] - initial_com[0]
+        dy = final_com[1] - initial_com[1]
+        return math.sqrt(dx * dx + dy * dy)
