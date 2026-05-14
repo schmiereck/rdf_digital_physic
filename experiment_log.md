@@ -3,51 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 53403
-cost_usd: 0.1044
-hypothesis: 'long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over
-  1000 steps, with its 78-bit remnant moving at a constant velocity.
-
-  '
-input_tokens: 64978
-iter: 131
-metrics:
-  chaotic_rules: 2
-  dead_rules: 0
-  fitness_improvement_pct: 3401.1445
-  gen2_top_fitness: 0.03804293
-  gen3_mean_fitness: 0.24450913
-  gen3_top_fitness: 1.33193795
-  rules_beating_gen2_top: 57
-  viable_rules: 98
-output_tokens: 1634
-status: ok
-```
-
-## iter_131: long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over 1000 steps, with its 78-bit remnant moving at a constant velocity.
-
-
-**Analysis:** The experiment was a resounding success, far exceeding the hypothesis's prediction. Breeding a third generation of rules from the top 5 Gen-2 elites resulted in a massive leap in performance. The top fitness score jumped from 0.0380 in Gen-2 to 1.33 in Gen-3, an improvement of over 3400%. 57 of the 100 new rules surpassed the previous generation's champion.
-
-However, the `experimenter_view` provid
-
-**Status:** ok
-
-**Metrics:** `{'chaotic_rules': 2, 'dead_rules': 0, 'fitness_improvement_pct': 3401.1445, 'gen2_top_fitness': 0.03804293, 'gen3_mean_fitness': 0.24450913, 'gen3_top_fitness': 1.33193795, 'rules_beating_gen2_top': 57, 'viable_rules': 98}`
-
-**Experimenter view:** Gen-3 massively outperforms Gen-2, though the comparison requires a caveat:
-the fitness formula changed between generations. Gen-2 used
-`displacement / (1 + |Δbits| + |Δobjects|)` which penalized deviation from
-initial population. Gen-3 uses `displacement / (1 + bits/initial_bits)`,
-which rewards rules that reduce their bit count while still moving.
-
-The standout rule is rule_011 (fitness=1.33): i
-
-**Notes:** Gen-3 top fitness 1.33 vs Gen-2 top 0.038 — largely driven by new fitness formula rewarding bit-count reduction; 57/100 rules beat Gen-2 champion.
-
-
----
-```yaml
 cached_tokens: 52517
 cost_usd: 0.10279
 hypothesis: 'remnant-characterization: The 80-bit remnant from rule_011 consists of
@@ -1085,6 +1040,31 @@ status: no_execution
 ## iter_161: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 162. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 162
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_162: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 163. All systems nominal.
 
 **Status:** no_execution
 

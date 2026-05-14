@@ -6953,3 +6953,48 @@ to be near-clones of elite1 (
 
 **Notes:** Gen-2 top fitness 0.03804 beats Gen-1 top 0.02771 by +37.3%; 2 rules beat Gen-1 top.
 
+
+---
+```yaml
+cached_tokens: 53403
+cost_usd: 0.1044
+hypothesis: 'long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over
+  1000 steps, with its 78-bit remnant moving at a constant velocity.
+
+  '
+input_tokens: 64978
+iter: 131
+metrics:
+  chaotic_rules: 2
+  dead_rules: 0
+  fitness_improvement_pct: 3401.1445
+  gen2_top_fitness: 0.03804293
+  gen3_mean_fitness: 0.24450913
+  gen3_top_fitness: 1.33193795
+  rules_beating_gen2_top: 57
+  viable_rules: 98
+output_tokens: 1634
+status: ok
+```
+
+## iter_131: long-run-evaporation: The top Gen-3 rule (rule_011) sustains motion over 1000 steps, with its 78-bit remnant moving at a constant velocity.
+
+
+**Analysis:** The experiment was a resounding success, far exceeding the hypothesis's prediction. Breeding a third generation of rules from the top 5 Gen-2 elites resulted in a massive leap in performance. The top fitness score jumped from 0.0380 in Gen-2 to 1.33 in Gen-3, an improvement of over 3400%. 57 of the 100 new rules surpassed the previous generation's champion.
+
+However, the `experimenter_view` provid
+
+**Status:** ok
+
+**Metrics:** `{'chaotic_rules': 2, 'dead_rules': 0, 'fitness_improvement_pct': 3401.1445, 'gen2_top_fitness': 0.03804293, 'gen3_mean_fitness': 0.24450913, 'gen3_top_fitness': 1.33193795, 'rules_beating_gen2_top': 57, 'viable_rules': 98}`
+
+**Experimenter view:** Gen-3 massively outperforms Gen-2, though the comparison requires a caveat:
+the fitness formula changed between generations. Gen-2 used
+`displacement / (1 + |Δbits| + |Δobjects|)` which penalized deviation from
+initial population. Gen-3 uses `displacement / (1 + bits/initial_bits)`,
+which rewards rules that reduce their bit count while still moving.
+
+The standout rule is rule_011 (fitness=1.33): i
+
+**Notes:** Gen-3 top fitness 1.33 vs Gen-2 top 0.038 — largely driven by new fitness formula rewarding bit-count reduction; 57/100 rules beat Gen-2 champion.
+
