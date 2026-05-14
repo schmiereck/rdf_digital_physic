@@ -1,0 +1,60 @@
+Let me start by reading the current `main.py` and the population file to understand the existing structure.
+Now let me look at the late displacement metric scripts and the population file format.
+Now I have a clear picture of the codebase. Let me check what Python packages are available and look at a recent evolution run script for more context.
+Good. Now let me check the population file format:
+Let me check if there's an existing visualization pattern in recent scripts:
+Now I have everything I need. Let me write `main.py`:
+Now let's run the simulation:
+The simulation ran successfully. Let me examine the final grid image:
+The simulation is complete. The final grid at t=2000 shows a completely diffuse "salt-and-pepper" pattern — no coherent objects, just chaotic ash spread uniformly across the entire 128×128 domain.
+
+Key findings:
+- `late_displacement` of 0.066 is very small: the center of mass barely moved between t=1200 and t=2000
+- `final_bit_count` of 4265 is huge: ~26% of all cells are alive, scattered randomly
+- `composite_fitness` = 0.066 / 4266 = **0.0000155** — the high cell count correctly penalizes this rule's non-compact nature
+
+The composite metric successfully distinguishes between a true glider (small, compact, fast-moving) and this rule's chaotic ash behavior.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_159/results/final_grid_rule_058.png
+  - archive/iter_159/results/results_rule_058.yaml
+  - src/main.py
+metrics:
+  late_displacement: 0.066187
+  final_bit_count: 4265
+  composite_fitness: 0.00001551
+  late_displacement_fitness: 0.066187
+log_excerpt: |
+  Loading population from .../archive/iter_158/results/population_gen1.json
+  Rule rule_058: 32 entries
+  Grid: 128x128, density=0.25, seed=42
+  Running 2000 steps, recording CoM at t=1200 and t=2000 ...
+    t=1200: CoM = (63.3589, 64.5866)
+    t=2000: CoM = (63.3524, 64.5208)
+  Saved: .../archive/iter_159/results/final_grid_rule_058.png
+  === Results for rule_058 ===
+    late_displacement:        0.066187
+    final_bit_count:          4265
+    composite_fitness:        0.00001551
+    late_displacement_fitness:0.066187
+  Saved: .../archive/iter_159/results/results_rule_058.yaml
+experimenter_view: |
+  The final grid at t=2000 is a completely diffuse, salt-and-pepper pattern of
+  roughly 4265 live cells scattered quasi-randomly across the entire 128x128
+  domain. There is no compact object, no moving structure, no coherent region
+  of activity — only uniform chaotic ash. The center of mass moved only ~0.066
+  grid units between t=1200 and t=2000, indicating the rule has settled into a
+  spatially-frozen random steady state with no net drift.
+
+  The composite metric (late_displacement / (1 + final_bit_count)) correctly
+  penalizes this behavior: the denominator 4266 reduces the already-tiny
+  displacement score by three orders of magnitude, yielding composite_fitness =
+  0.0000155. A genuine glider would have a small final_bit_count (e.g., <20)
+  and a large displacement, giving a score orders of magnitude higher.
+
+  Conclusion: the composite metric successfully identifies rule_058 as a
+  non-compact, non-moving rule and assigns it a near-zero fitness score.
+notes: "Implemented main.py with calculate_composite_fitness; rule_058 confirmed as diffuse ash with composite_fitness=0.0000155."
+```

@@ -1,0 +1,55 @@
+```yaml
+analysis: |
+  The experiment successfully validated the new composite fitness metric. The previous best rule from a random search, `rule_058` from iter_158, was shown to produce a diffuse, high-entropy field of ash with over 4000 live cells. Its `late_displacement` score of ~0.066 was already low, but the new metric, `late_displacement / (1 + final_bit_count)`, correctly crushed its fitness score to a near-zero value of `0.0000155`.
+
+  This confirms the hypothesis that the previous metric was susceptible to rewarding non-compact, expanding structures. The new metric is far more discerning and provides a much stronger basis for a new evolutionary search. We can now proceed with confidence that any high-fitness individuals discovered using this new metric are much more likely to be the compact, coherent movers we are looking for.
+open_questions:
+  - "Will a new evolutionary search using the composite fitness metric find any rules with fitness > 0.1?"
+  - "Is the initial random soup (density=0.25) inherently hostile to the formation of late-stage movers?"
+  - "Could a different initial condition, such as a pre-formed object, provide a better substrate for evolving motion?"
+  - "How does the performance of the composite metric vary with different penalties (e.g., `1 + final_bit_count^2`)?"
+chosen_direction: "Now that the composite metric is validated, the next logical step is to deploy it in a full-scale evolutionary search to see if it can discover a rule that produces a compact glider."
+hypothesis: "evolution-composite-metric: A new random population of 100 rules, when evaluated with the `late_displacement / (1 + final_bit_count)` metric, will contain at least one rule with a fitness score > 0.01."
+rationale: |
+  The previous evolutionary searches failed because the fitness metric was flawed, rewarding slow expansion. The new composite metric, validated in this iteration, correctly penalizes this behavior. By launching a new search with this improved metric, we are testing whether a meaningful fitness gradient exists in the search space that can lead towards compact, mobile objects. A threshold of 0.01 is conservative but would represent a signal a thousand times stronger than the noise floor established by rule_058, indicating a promising candidate for breeding.
+status: ok
+metrics:
+  late_displacement: 0.066187
+  final_bit_count: 4265
+  composite_fitness: 1.551e-05
+  late_displacement_fitness: 0.066187
+experimenter_view: |
+  The final grid at t=2000 is a completely diffuse, salt-and-pepper pattern of
+  roughly 4265 live cells scattered quasi-randomly across the entire 128x128
+  domain. There is no compact object, no moving structure, no coherent region
+  of activity — only uniform chaotic ash. The center of mass moved only ~0.066
+  grid units between t=1200 and t=2000, indicating the rule has settled into a
+  spatially-frozen random steady state with no net drift.
+
+  The composite metric (late_displacement / (1 + final_bit_count)) correctly
+  penalizes this behavior: the denominator 4266 reduces the already-tiny
+  displacement score by three orders of magnitude, yielding composite_fitness =
+  0.0000155. A genuine glider would have a small final_bit_count (e.g., <20)
+  and a large displacement, giving a score orders of magnitude higher.
+
+  Conclusion: the composite metric successfully identifies rule_058 as a
+  non-compact, non-moving rule and assigns it a near-zero fitness score.
+notes: "Implemented main.py with calculate_composite_fitness; rule_058 confirmed as diffuse ash with composite_fitness=0.0000155."
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based *only* on late-stage displacement (steps 1200-2000) **successfully** identifies transient puffers as low-fitness individuals. (iter_156)
+  - A composite fitness metric, `late_displacement / (1 + final_bit_count)`, **successfully** penalizes rules that result in diffuse, non-compact, high-entropy states, correctly assigning a near-zero score to a previously high-scoring but undesirable rule. (iter_159)
+
+  **Refuted:**
+  - The small late-stage displacement observed in random rules is not a heritable trait that can be amplified by breeding with a simple displacement metric. (iter_157)
+  - The failure to find "viable" rules (fitness > 0.2) in a random population is not due to an unlucky random seed. A second, independent search yielded nearly identical, low-fitness results, suggesting the desired behavior is intrinsically rare. (iter_158)
+
+  **Open Questions:**
+  - Will an evolutionary search using the validated composite fitness metric find any viable rules?
+  - Is the initial random soup (density=0.25) hostile to the formation of late-stage movers?
+  - Could a different initial condition provide a better substrate for evolving motion?
+```
