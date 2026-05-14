@@ -3,41 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 49353
-campaign: Phase 6 - Parity-Constrained Evolution
-cost_usd: 0.09857
-hypothesis: A new generation of rules (Gen-2), bred from the three viable parity-conserving
-  founders, will have a mean fitness at least 100% higher than the Gen-1 mean.
-input_tokens: 61007
-iter: 138
-metrics:
-  top_fitness_bit_ratio: 1.0031
-  top_fitness_rule_id: rule_002.json
-  top_fitness_score: 0.36059001
-  viable_founder_count: 3
-output_tokens: 1390
-status: ok
-```
-
-## iter_138: A new generation of rules (Gen-2), bred from the three viable parity-conserving founders, will have a mean fitness at least 100% higher than the Gen-1 mean.
-
-**Analysis:** The research has achieved a major breakthrough. The hypothesis that a parity-conservation constraint would make the rule search space more fertile was decisively confirmed. For the first time, a random population has yielded not just one, but three "viable founders" — rules that produce sustained motion with controlled, non-chaotic bit counts. The top-scoring rule (`rule_002`) is particularly prom
-
-**Status:** ok
-
-**Metrics:** `{'top_fitness_bit_ratio': 1.0031, 'top_fitness_rule_id': 'rule_002.json', 'top_fitness_score': 0.36059001, 'viable_founder_count': 3}`
-
-**Experimenter view:** The parity-conservation constraint (HammingWeight(A) % 2 == HammingWeight(B) % 2)
-yields 3 viable founders in 100 rules — a 3% hit rate with the quadratic penalty
-(fitness > 0.01 AND bit_ratio < 3.0). This is notably higher than the typical
-chaotic-explosion trap: all three viable rules have bit_ratios well below 1.0 or
-very close to 1.0 (0.575, 0.877, 1.003), consistent with the parity constraint
-
-**Notes:** Parity constraint successfully biases search toward low-bit-ratio rules; 3 viable founders found.
-
-
----
-```yaml
 cached_tokens: 49086
 campaign: Phase 6 - Parity-Constrained Evolution
 cost_usd: 0.11106
@@ -1036,4 +1001,29 @@ rule preserves C2-symmetric patterns, so the center of mass is permanently
 fixed at (63.5,
 
 **Notes:** C2-symmetric seed + C2-symmetric rule => CoM invariant; displacement is always 0. Use asymmetric seed in next iteration.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 168
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_168: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 169. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
 
