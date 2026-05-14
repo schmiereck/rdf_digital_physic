@@ -3,47 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 47725
-cost_usd: 0.09819
-hypothesis: 'long-run-verification: The new champion (rule_016) will exhibit a non-decaying
-  velocity, with displacement between steps 1200-1600 being at least 90% of the displacement
-  between steps 400-800.'
-input_tokens: 59536
-iter: 142
-metrics:
-  chaotic_rules: 5
-  dead_rules: 18
-  gen3_top_fitness_200step: 6.54976991
-  gen4_mean_fitness: 1.0409175
-  gen4_top_fitness_400_800: 6.4793321
-  population_size: 100
-  top_rule_id_rule_016_displacement_400_800: 8.693807
-  viable_rules: 80
-output_tokens: 1437
-status: ok
-```
-
-## iter_142: long-run-verification: The new champion (rule_016) will exhibit a non-decaying velocity, with displacement between steps 1200-1600 being at least 90% of the displacement between steps 400-800.
-
-**Analysis:** A critical research impasse has been overcome. Iteration 141 proved that our previous evolutionary champion (`rule_049`, fitness=6.55) was a "false positive," exhibiting only transient motion that ceased after ~400 steps. The "late-displacement" fitness metric was flawed.
-
-This experiment directly addressed the flaw by evolving a new generation (Gen-4) with a much more stringent "late-late-displac
-
-**Status:** ok
-
-**Metrics:** `{'chaotic_rules': 5, 'dead_rules': 18, 'gen3_top_fitness_200step': 6.54976991, 'gen4_mean_fitness': 1.0409175, 'gen4_top_fitness_400_800': 6.4793321, 'population_size': 100, 'top_rule_id_rule_016_displacement_400_800': 8.693807, 'viable_rules': 80}`
-
-**Experimenter view:** The Gen-4 evolution under the stringent 400-800 step metric yielded surprising results.
-The top Gen-4 rule (rule_016) achieves fitness=6.479 with displacement=8.694 over steps
-400-800 and bit_ratio=1.585 — nearly as high as the Gen-3 champion's 200-step fitness
-(6.55). This is remarkable given that iter_141 showed Gen-3 parents score near-zero on
-this same metric. The breeding process successfully
-
-**Notes:** Gen-4 evolved with 400-800 step metric; top rule achieves fitness=6.479, 80/100 viable rules
-
-
----
-```yaml
 cached_tokens: 48228
 campaign: Phase 6 - Parity-Constrained Evolution
 cost_usd: 0.0979
@@ -996,4 +955,29 @@ status: ok
 **Sub-agent 171.2:** The 3-generation evolutionary run showed powerful selection, with fitness increasing 41-fold. 
 
 **Notes:** The project is successfully debugging the evolutionary process itself. We have traded an 'annihilation' exploit for a 'puffer' exploit. The next step requires a fitness function that measures *velocity*, not just displacement.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 172
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_172: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 173. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
 
