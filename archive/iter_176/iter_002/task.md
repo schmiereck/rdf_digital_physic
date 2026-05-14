@@ -1,0 +1,4 @@
+1. Create a new fitness function class `SimpleMotionFitness` in `src/fitness_simple_motion.py`. It should inherit from the base fitness class and implement the standard API.
+2. The core calculation for the fitness score must be: `fitness = total_displacement / ((1 + std_dev_velocity) * (1 + max_bit_count))`. Use the same methods for calculating `total_displacement` and `std_dev_velocity` as in `StableVelocityFitness`. `max_bit_count` is the maximum number of active cells observed at any point during the simulation.
+3. Validate the new metric by calculating the fitness for the champion rule from iter_174 (`g7_rule_076`, whose rule string is in `archive/iter_174/results/champion_rule_g7_r76.txt`).
+4. Report the `new_fitness_score` for this rule as a key metric. Confirm in the `experimenter_view` that this score is significantly lower than its original score of 0.674, thereby validating that the complexity penalty is working as intended.
