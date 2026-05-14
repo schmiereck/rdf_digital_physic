@@ -1,0 +1,64 @@
+I'll start by loading the memory index and exploring the project structure to understand what we're working with.
+Let me look at recent characterize scripts and the iter_174 archive to understand the existing framework.
+Let me look at the most recent scripts related to iter_174 and the motion evaluation framework.
+Now let me look at the `fitness_stable_velocity.py` and `evolution.py` modules to understand the simulation mechanics.
+Now I have a clear picture of the framework. Let me write the characterization script.
+All artifacts generated. Let me read the analysis file to include in the YAML.
+All four artifacts written successfully. The champion rule `g7_rule_076` shows a complex but periodic dynamics: it explodes to a maximum of 129 live cells mid-run, then settles into a **period-64 oscillation** in the tail phase (steps 1600–2000) with a mean bit count of ~32, stabilizing at 6 cells at step 2000. Net displacement over 2000 steps is only ~3.8 cells, but the per-window velocity is highly variable (CV ≈ 0.58), indicating the particle cycles through compact and expanded phases rather than moving as a clean glider.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_174/results/champion_dynamics.mp4
+  - archive/iter_174/results/bit_count.png
+  - archive/iter_174/results/analysis.txt
+  - src/characterize_champion_174.py
+metrics:
+  fitness: 0.6736781151420963
+  mean_velocity_cells_per_400_steps: 6.285394
+  std_dev_velocity: 3.664983
+  cv_velocity: 0.5831
+  initial_bit_count: 3
+  final_bit_count: 6
+  max_bit_count: 129
+  min_bit_count: 3
+  tail_bit_count_mean: 32.15
+  tail_bit_count_std: 26.0421
+  tail_bit_count_period: 64
+  total_net_displacement: 3.77
+  window_400_800_disp: 3.7712
+  window_800_1200_disp: 5.0283
+  window_1200_1600_disp: 12.5708
+  window_1600_2000_disp: 3.7712
+log_excerpt: |
+  Loaded rule  : g7_rule_076
+    fitness=0.673678  mean_v=6.2854  std_v=3.6650
+  Simulating 2000 steps
+    Initial bits : 3
+    Final bits   : 6
+    Max bits     : 129
+    Min bits     : 3
+  Generating bit-count plot
+    Saved bit-count plot: .../archive/iter_174/results/bit_count.png
+  Generating animation
+    Saved animation: .../archive/iter_174/results/champion_dynamics.mp4
+  Writing analysis
+    Saved analysis: .../archive/iter_174/results/analysis.txt
+  Done.
+experimenter_view: |
+  Champion rule g7_rule_076 (fitness=0.674) starts as a 3-cell L-tromino and
+  undergoes a dramatic transient expansion to 129 live cells, before settling
+  into a period-64 oscillation in the tail (steps 1600-2000, mean ~32 cells,
+  std ~26). The net displacement over 2000 steps is only ~3.8 cells, but the
+  per-window velocity is highly variable (CV=0.58): the 1200→1600 window sees
+  12.6 cells of displacement while the flanking windows see only 3.8 cells.
+  This pattern is consistent with an intermittent or phase-shifting glider
+  rather than a stable periodic glider — the particle alternates between
+  compact, fast-moving phases and diffuse, slow phases. The period-64 bit-count
+  oscillation in the tail confirms the system reaches a periodic attractor,
+  but the attractor is large and irregular. The fitness formula penalises the
+  bit-count growth (initial 3 → final 6, factor ×0.5), so the true glider
+  speed is higher; the rule is among the most mobile in the population despite
+  the instability penalty.
+notes: Champion g7_rule_076 shows intermittent glider-like motion with a period-64 tail oscillation; not a clean periodic glider but a dynamic, expanding-contracting attractor.
+```
