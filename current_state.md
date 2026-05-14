@@ -13,7 +13,7 @@
 - There are currently **no known** rules that produce stable, moving gliders. The best result of this phase is the `CheckpointFitness` metric itself, which is a methodological advance.
 
 **In Progress:**
-- The search for a stable glider has been reset. The immediate next step is to deploy the new, more robust fitness metric.
+- The search for a stable glider has been reset. The immediate next step is to deploy the new, more robust fitness metric. **This was blocked in phase 178 by a persistent technical error.**
 
 **Open Questions:**
 - Will an evolutionary search using the new `CheckpointFitness` metric discover a true, long-range stable glider?

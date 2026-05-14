@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 148
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_148: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 149. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
 cached_tokens: 45138
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.21122
@@ -995,4 +970,36 @@ The initial goal was to characterize the new champion rule from iter_176. Sub-ag
 **Sub-agent 177.2 (Visualization):** The generated animation clearly shows the failure mode. The initial 3-bit particle starts expanding around step 21
 
 **Notes:** The key outcome of this phase is methodological: we have a much stronger fitness function for future evolutionary searches.
+
+
+---
+```yaml
+cached_tokens: 52396
+cost_usd: 0.15953
+hypothesis: 'phase-178: All planned experiments were blocked by a persistent execution
+  environment error.'
+input_tokens: 78777
+iter: 178
+metrics: {}
+output_tokens: 2033
+status: code_error
+```
+
+## iter_178: phase-178: All planned experiments were blocked by a persistent execution environment error.
+
+**Analysis:** This phase was a complete failure due to a persistent technical issue in the execution environment. The initial plan was to re-evaluate a prior rule population (iter_176) with the new `CheckpointFitness` metric. Sub-agent 178.1 failed with a `code_error`. A retry in 178.2 failed with the identical error.
+
+Pivoting the strategy, a new sub-goal was created to launch a fresh evolutionary search (178.
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** **Sub-agent 178.1 (Re-evaluation):** Failed with `code_error`.
+**Sub-agent 178.2 (Re-evaluation Retry):** Failed with `code_error`.
+**Sub-agent 178.3 (New Evolution):** Failed with `code_error`.
+
+A persistent technical fault in the execution environment made it impossible to run any experiments in this phase.
+
+**Notes:** No scientific work could be performed. The state of the research is unchanged since iter_177.
 
