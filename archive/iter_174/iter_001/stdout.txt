@@ -1,0 +1,75 @@
+Now I understand the layout. I'll write a continuation script that loads gen2 from iter_173, then breeds 11 new generations (3..13). Let me also confirm `LTROMINO_CELLS` is the "asymmetric_tromino".
+Good — "asymmetric_tromino" only appears in the task file. The L-tromino at `LTROMINO_CELLS` is the asymmetric tromino. Let me check the output dir exists and write the continuation script.
+Now let me run the evolution. This will take a while (11 generations × 100 rules × 2000 steps). I'll launch in background and monitor.
+Output is fully buffered (no TTY). Let me restart with `PYTHONUNBUFFERED=1` so we can monitor progress.
+Since the task is running in the background, I'll be notified when it completes. Let me check its current progress once.
+Good — gen 3 completed, gen 4 in progress. The script is working. I'll wait for the background task to complete.
+Waiting for the background task to complete.
+Evolution completed successfully. Let me verify all output files exist.
+All outputs are in place. The run achieved a 2.46× fitness improvement (0.274 → 0.674) at gen 7, with the discovery becoming dominant in the mean by gen 10.
+
+**Key findings:**
+- **Best rule:** `g7_rule_076` with fitness `0.6737` (vs gen-2 max `0.2743`)
+- **Best rule characteristics:** mean_velocity=6.29 cells/window, std_dev=3.66, final_bit_count=6 (only 2× growth from 3-bit seed — much tighter than the gen-2 champion's 13 bits)
+- **Mean fitness lifts dramatically** at gen 10 (0.168 → 0.432), meaning the new champion saturated the elite pool, then was carried into most children
+- **Fitness plateau** through gens 3-6 at 0.274, then breakthrough at gen 7 — typical evolutionary saltatory pattern
+- The fitness 0.674 still falls below 1.0, indicating the discovered particle moves but is not yet a stable glider (its std_v/mean_v ratio ≈ 0.58 shows residual velocity oscillation)
+
+```yaml
+status: ok
+artifacts:
+  - src/run_iter_174_evo.py
+  - archive/iter_174/results/gen_13_population.json
+  - archive/iter_174/results/best_rule.json
+  - archive/iter_174/results/evolution_log.csv
+  - archive/iter_174/results/run.log
+  - archive/iter_174/results/populations/gen3_population.json
+  - archive/iter_174/results/populations/gen4_population.json
+  - archive/iter_174/results/populations/gen5_population.json
+  - archive/iter_174/results/populations/gen6_population.json
+  - archive/iter_174/results/populations/gen7_population.json
+  - archive/iter_174/results/populations/gen8_population.json
+  - archive/iter_174/results/populations/gen9_population.json
+  - archive/iter_174/results/populations/gen10_population.json
+  - archive/iter_174/results/populations/gen11_population.json
+  - archive/iter_174/results/populations/gen12_population.json
+  - archive/iter_174/results/populations/gen13_population.json
+metrics:
+  starting_max_fitness: 0.2742574571
+  final_max_fitness: 0.6736781151
+  fitness_improvement_factor: 2.456
+  best_mean_velocity: 6.285393610547089
+  best_std_dev_velocity: 3.66498277832681
+  best_final_bit_count: 6
+  best_initial_bit_count: 3
+  generations_run: 11
+  population_size: 100
+  breakthrough_generation: 7
+log_excerpt: |
+  Gen  2: max=0.27425746  mean=0.10196936  top=g2_rule_001
+  Gen  3: max=0.27425746  mean=0.18885747  top=g3_rule_001
+  Gen  4: max=0.27425746  mean=0.19593529  top=g4_rule_003
+  Gen  5: max=0.27425746  mean=0.20720208  top=g5_rule_002
+  Gen  6: max=0.27425746  mean=0.16846705  top=g6_rule_001
+  Gen  7: max=0.67367812  mean=0.20002585  top=g7_rule_076
+  Gen  8: max=0.67367812  mean=0.18466757  top=g8_rule_001
+  Gen  9: max=0.67367812  mean=0.20160105  top=g9_rule_002
+  Gen 10: max=0.67367812  mean=0.43216753  top=g10_rule_003
+  Gen 11: max=0.67367812  mean=0.44044343  top=g11_rule_001
+  Gen 12: max=0.67367812  mean=0.44353872  top=g12_rule_002
+  Gen 13: max=0.67367812  mean=0.40244928  top=g13_rule_001
+  Best overall: g7_rule_076  fitness=0.67367812  mean_v=6.285394  std_v=3.664983  bits=6
+experimenter_view: |
+  Continued iter_173's evolution for 11 more generations (3..13) on the asymmetric
+  L-tromino seed with StableVelocityFitness. The run shows a clear evolutionary
+  breakthrough at gen 7: max fitness jumped from 0.274 (held since gen 2) to 0.674,
+  a 2.46x improvement. The new champion (g7_rule_076) produces a particle with
+  mean_velocity 6.29 and final_bit_count 6 — only 2x growth from the 3-bit seed,
+  notably tighter than the gen-2 champion's 13-bit residual. After breakthrough,
+  the elite quickly saturates: mean fitness lifts from ~0.20 to ~0.44 by gen 10
+  as copies of the new champion fill the elite slate. The std_dev/mean velocity
+  ratio of 0.58 indicates the particle still wobbles — coherent motion but not a
+  pure glider yet. The mutation+crossover scheme inherited from iter_173 was able
+  to find a meaningfully better optimum in 7 additional generations.
+notes: 2.46x fitness lift via gen-7 breakthrough; champion is a 6-bit moving particle, not yet a stable glider.
+```
