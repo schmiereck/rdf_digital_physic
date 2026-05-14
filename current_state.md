@@ -3,12 +3,12 @@ Phase: Phase 7 - Velocity-Stable Evolution
 **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
 
 **Confirmed:**
-- A fitness metric based solely on velocity stability (`1 / (1 + std_dev)`) is flawed, as it strongly favors rules that quickly become inactive. (iter_150)
-- A composite fitness metric, `total_displacement / (1 + std_dev)`, successfully penalizes inactive "settler" rules while rewarding displacement. The mean fitness for a random C2 rule population with this metric is ~0.45. (iter_151)
-- The composite metric provides a valid evolutionary signal. Breeding the top 10% of a random population (Gen-1) resulted in a Gen-2 with a 34.9% higher mean fitness (0.45 -> 0.61), confirming the search is progressing. (iter_152)
+- A composite fitness metric, `total_displacement / (1 + std_dev)`, effectively penalizes inactive "settler" rules while rewarding displacement. The mean fitness for a random C2 rule population is ~0.45. (iter_151)
+- The composite metric provides a valid evolutionary signal. Gen-2 mean fitness improved by 34.9% over Gen-1 (0.45 -> 0.61). (iter_152)
+- Evolutionary momentum is sustained. Gen-3 mean fitness improved by 25.8% over Gen-2 (0.61 -> 0.77). (iter_153)
+- A new champion rule, `rule_021`, has emerged with a fitness score of 3.465, an outlier that is 2.6x higher than the previous generation's maximum. (iter_153)
 
 **Open Questions:**
-- Can this evolutionary momentum be sustained into Gen-3?
-- What are the qualitative dynamics of the top rules selected by this new metric? Are they puffers, gliders, or a new type of object?
-- At what fitness level do visually compelling, glider-like structures emerge?
-- Is an elite fraction of 10% optimal for this search?
+- What are the qualitative dynamics of the new champion, `rule_021`? Does it produce a true glider?
+- Is the high fitness of `rule_021` robust to different initial random seeds?
+- Can `rule_021` be used as a parent to create an even more fit Gen-4?

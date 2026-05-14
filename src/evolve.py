@@ -5,19 +5,21 @@ evolve.py
 Evolutionary algorithm driver for C2-symmetric CA rules with the composite
 fitness metric: total_displacement / (1 + std_dev).
 
-Usage:
+Usage (Gen-2):
   python src/evolve.py --generation 2 \
       --input_population archive/iter_151/results/rules_and_fitness.csv \
       --output_dir archive/iter_152/results/ \
       --elite_fraction 0.1
 
-The script re-derives the Gen-1 rule dictionaries by re-running the same
-deterministic rule generator (seed=150) that measure_baseline.py used,
-then matches each rule to its CSV row by rule_id.
+Usage (Gen-3):
+  python src/evolve.py --generation 3 \
+      --output_dir archive/iter_153/results/ \
+      --elite_fraction 0.1
 """
 
 import argparse
 import csv
+import json
 import math
 import random
 import sys
@@ -285,6 +287,54 @@ def regenerate_gen1_rules() -> dict[str, dict]:
     return rules
 
 
+# ── Gen-2 rule reconstruction (replay iter_152 breeding) ─────────────────────
+
+def reconstruct_gen2_rules(elite_fraction: float = 0.1) -> list[tuple[str, dict]]:
+    """Reproduce the Gen-2 rule dicts by replaying the iter_152 breeding (seed=152)."""
+    gen1_csv = PROJECT_ROOT / "archive" / "iter_150" / "results" / "fitness_scores.csv"
+    gen1_rows = []
+    with open(gen1_csv) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            td  = float(row.get("total_displacement", 0.0))
+            sd  = float(row.get("std_dev", 0.0))
+            fit = td / (1.0 + sd) if td > 1e-9 else 0.0
+            gen1_rows.append({"rule_id": row["rule_id"], "composite_fitness": fit})
+
+    elite_count = max(1, int(len(gen1_rows) * elite_fraction))
+    gen1_sorted = sorted(gen1_rows, key=lambda r: r["composite_fitness"], reverse=True)
+    elites = gen1_sorted[:elite_count]
+
+    all_gen1_dicts = regenerate_gen1_rules()
+    elite_info = []
+    for e in elites:
+        rule_dict = all_gen1_dicts[e["rule_id"]]
+        pairs = extract_kernel_pairs(rule_dict)
+        elite_info.append({
+            "rule_id": e["rule_id"],
+            "rule_dict": rule_dict,
+            "pairs": pairs,
+            "fitness": e["composite_fitness"],
+        })
+
+    breed_rng = random.Random(152)
+    gen2_rules: list[tuple[str, dict]] = []
+
+    for rank, info in enumerate(elite_info[:2]):
+        rule_id = f"rule_{rank + 1:03d}"
+        gen2_rules.append((rule_id, info["rule_dict"]))
+
+    while len(gen2_rules) < POPULATION_SIZE:
+        p1, p2 = breed_rng.sample(elite_info, 2)
+        child = breed_child(p1["pairs"], p2["pairs"], breed_rng)
+        if child is None:
+            continue
+        rule_id = f"rule_{len(gen2_rules) + 1:03d}"
+        gen2_rules.append((rule_id, child))
+
+    return gen2_rules
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -297,12 +347,14 @@ def main() -> int:
     parser.add_argument("--elite_fraction",    type=float, default=0.1)
     args = parser.parse_args()
 
+    if args.generation == 3:
+        return run_gen3(args)
+
+    # ── Gen-2 path (original logic) ───────────────────────────────────────────
     input_csv  = PROJECT_ROOT / args.input_population
     output_dir = PROJECT_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # ── Step 1: Load Gen-1 CSV ────────────────────────────────────────────────
-    # The iter_151 CSV may not exist yet; fall back to iter_150 fitness_scores.
     fallback_csv = PROJECT_ROOT / "archive" / "iter_150" / "results" / "fitness_scores.csv"
 
     if not input_csv.exists():
@@ -328,7 +380,6 @@ def main() -> int:
                 "annihilated":        int(row.get("annihilated", 0)),
             })
 
-    # Write rules_and_fitness.csv to iter_151/results/ if it didn't exist
     if not input_csv.exists():
         input_csv.parent.mkdir(parents=True, exist_ok=True)
         fieldnames = ["rule_id", "composite_fitness", "total_displacement",
@@ -344,7 +395,6 @@ def main() -> int:
     print(f"  Gen-1 composite fitness — mean: {np.mean(scores):.6f}  "
           f"median: {np.median(scores):.6f}  max: {np.max(scores):.6f}")
 
-    # ── Step 2: Select elites ─────────────────────────────────────────────────
     elite_count = max(1, int(len(gen1_rows) * args.elite_fraction))
     gen1_sorted = sorted(gen1_rows, key=lambda r: r["composite_fitness"], reverse=True)
     elites      = gen1_sorted[:elite_count]
@@ -353,12 +403,10 @@ def main() -> int:
         print(f"  {e['rule_id']}: composite_fitness={e['composite_fitness']:.6f}  "
               f"total_displacement={e['total_displacement']:.6f}  std_dev={e['std_dev']:.6f}")
 
-    # ── Step 3: Regenerate Gen-1 rule dicts (deterministic, seed=150) ─────────
     print("\nRegenerating Gen-1 rule dictionaries (seed=150) ...")
     all_gen1_rule_dicts = regenerate_gen1_rules()
     elite_rule_dicts = {e["rule_id"]: all_gen1_rule_dicts[e["rule_id"]] for e in elites}
 
-    # Extract kernel pairs
     elite_info = []
     for e in elites:
         rule_dict = elite_rule_dicts[e["rule_id"]]
@@ -371,7 +419,6 @@ def main() -> int:
         })
         print(f"  {e['rule_id']}: {len(pairs)} kernel pairs")
 
-    # ── Step 4: Breed Gen-2 population ────────────────────────────────────────
     breed_rng = random.Random(152)
     print(f"\nBreeding {POPULATION_SIZE} Gen-2 rules ...")
 
@@ -379,7 +426,6 @@ def main() -> int:
     failed = 0
     carried = 0
 
-    # Carry top-2 elites directly
     for rank, info in enumerate(elite_info[:2]):
         rule_id = f"rule_{rank + 1:03d}"
         gen2_rules.append((rule_id, info["rule_dict"]))
@@ -387,7 +433,6 @@ def main() -> int:
               f"(fitness={info['fitness']:.6f})")
         carried += 1
 
-    # Breed remaining
     while len(gen2_rules) < POPULATION_SIZE:
         p1, p2 = breed_rng.sample(elite_info, 2)
         child  = breed_child(p1["pairs"], p2["pairs"], breed_rng)
@@ -401,7 +446,6 @@ def main() -> int:
 
     print(f"  Carried: {carried}  Bred: {len(gen2_rules)-carried}  Failed attempts: {failed}")
 
-    # ── Step 5: Evaluate Gen-2 ────────────────────────────────────────────────
     soup = make_soup()
     print(f"\nEvaluating {len(gen2_rules)} Gen-2 rules "
           f"({NUM_WINDOWS} windows × {STEPS_PER_WINDOW} steps = "
@@ -416,7 +460,6 @@ def main() -> int:
               f"std={metrics['std_dev']:.4f}")
         gen2_rows.append({"rule_id": rule_id, **metrics})
 
-    # ── Step 6: Save CSV ──────────────────────────────────────────────────────
     out_csv = output_dir / "gen_2_rules_and_fitness.csv"
     fieldnames = ["rule_id", "composite_fitness", "total_displacement",
                   "std_dev", "velocities", "annihilated"]
@@ -426,7 +469,6 @@ def main() -> int:
         writer.writerows([{k: r[k] for k in fieldnames} for r in gen2_rows])
     print(f"\nSaved: {out_csv}")
 
-    # ── Step 7: Summary statistics ────────────────────────────────────────────
     gen2_scores  = np.array([r["composite_fitness"] for r in gen2_rows])
     gen2_mean    = float(np.mean(gen2_scores))
     gen2_median  = float(np.median(gen2_scores))
@@ -476,6 +518,226 @@ def main() -> int:
             f"Max Gen-2 fitness={gen2_max:.4f}."
         ),
         "notes": f"Gen-2 evolution with composite fitness; improvement={pct_change:+.2f}%",
+    }
+
+    yaml_str = yaml.dump(yaml_block, default_flow_style=False, sort_keys=False,
+                         allow_unicode=True)
+    print("\n---\n")
+    print(yaml_str)
+
+    return 0
+
+
+def run_gen3(args) -> int:
+    """Run the Gen-3 evolutionary step using Gen-2 elites as parents."""
+    output_dir = PROJECT_ROOT / args.output_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    iter152_dir = PROJECT_ROOT / "archive" / "iter_152" / "results"
+    gen2_json   = iter152_dir / "population_gen2.json"
+    gen2_src_csv = iter152_dir / "gen_2_rules_and_fitness.csv"
+
+    # ── Step 1: Load or reconstruct Gen-2 rule dicts ──────────────────────────
+    if gen2_json.exists():
+        print(f"Loading Gen-2 population from {gen2_json} ...")
+        with open(gen2_json) as f:
+            gen2_pop_data = json.load(f)
+        gen2_rules = [(rid, rdict) for rid, rdict in gen2_pop_data.items()]
+    else:
+        print("Reconstructing Gen-2 rule dicts (replaying iter_152 breeding, seed=152)...")
+        gen2_rules = reconstruct_gen2_rules(elite_fraction=args.elite_fraction)
+        # Save for future use
+        gen2_pop_data = {rid: rdict for rid, rdict in gen2_rules}
+        iter152_dir.mkdir(parents=True, exist_ok=True)
+        with open(gen2_json, "w") as f:
+            json.dump(gen2_pop_data, f, indent=2)
+        print(f"  Saved: {gen2_json}")
+
+    print(f"  Loaded {len(gen2_rules)} Gen-2 rule dicts.")
+
+    # ── Step 2: Load Gen-2 fitness scores ────────────────────────────────────
+    print(f"Loading Gen-2 scores from {gen2_src_csv} ...")
+    gen2_score_rows = []
+    gen2_score_map  = {}
+    with open(gen2_src_csv) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            row_data = {
+                "rule_id":            row["rule_id"],
+                "composite_fitness":  float(row["composite_fitness"]),
+                "total_displacement": float(row["total_displacement"]),
+                "std_dev":            float(row["std_dev"]),
+                "velocities":         row.get("velocities", ""),
+                "annihilated":        int(row.get("annihilated", 0)),
+            }
+            gen2_score_rows.append(row_data)
+            gen2_score_map[row["rule_id"]] = row_data
+
+    # Save as scores_gen2.csv in iter_152/results/
+    scores_gen2_path = iter152_dir / "scores_gen2.csv"
+    fieldnames_scores = ["rule_id", "composite_fitness", "total_displacement",
+                         "std_dev", "velocities", "annihilated"]
+    with open(scores_gen2_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames_scores)
+        writer.writeheader()
+        writer.writerows([{k: r[k] for k in fieldnames_scores} for r in gen2_score_rows])
+    print(f"  Saved: {scores_gen2_path}")
+
+    gen2_fitnesses = [r["composite_fitness"] for r in gen2_score_rows]
+    gen2_mean_ref  = float(np.mean(gen2_fitnesses))
+    print(f"  Gen-2 composite fitness — mean: {gen2_mean_ref:.6f}  "
+          f"median: {np.median(gen2_fitnesses):.6f}  max: {np.max(gen2_fitnesses):.6f}")
+
+    # ── Step 3: Select Gen-2 elites ───────────────────────────────────────────
+    elite_count  = max(1, int(len(gen2_score_rows) * args.elite_fraction))
+    gen2_sorted  = sorted(gen2_score_rows, key=lambda r: r["composite_fitness"], reverse=True)
+    elite_rows   = gen2_sorted[:elite_count]
+    print(f"\nSelected top {elite_count} Gen-2 elites (elite_fraction={args.elite_fraction}):")
+
+    gen2_rules_dict = {rid: rdict for rid, rdict in gen2_rules}
+    elite_info = []
+    for e in elite_rows:
+        rid = e["rule_id"]
+        if rid not in gen2_rules_dict:
+            print(f"  [warn] {rid} not found in reconstructed population — skipping")
+            continue
+        rule_dict = gen2_rules_dict[rid]
+        pairs = extract_kernel_pairs(rule_dict)
+        elite_info.append({
+            "rule_id":   rid,
+            "rule_dict": rule_dict,
+            "pairs":     pairs,
+            "fitness":   e["composite_fitness"],
+        })
+        print(f"  {rid}: composite_fitness={e['composite_fitness']:.6f}  "
+              f"total_displacement={e['total_displacement']:.6f}  "
+              f"std_dev={e['std_dev']:.6f}  kernel_pairs={len(pairs)}")
+
+    if not elite_info:
+        print("[error] No elite rules available — aborting.")
+        return 1
+
+    # ── Step 4: Breed Gen-3 ───────────────────────────────────────────────────
+    breed_rng = random.Random(153)
+    print(f"\nBreeding {POPULATION_SIZE} Gen-3 rules (seed=153) ...")
+
+    gen3_rules: list[tuple[str, dict]] = []
+    failed  = 0
+    carried = 0
+
+    for rank, info in enumerate(elite_info[:2]):
+        rule_id = f"rule_{rank + 1:03d}"
+        gen3_rules.append((rule_id, info["rule_dict"]))
+        print(f"  [carry] {rule_id} from {info['rule_id']} "
+              f"(fitness={info['fitness']:.6f})")
+        carried += 1
+
+    while len(gen3_rules) < POPULATION_SIZE:
+        p1, p2 = breed_rng.sample(elite_info, 2)
+        child  = breed_child(p1["pairs"], p2["pairs"], breed_rng)
+        if child is None:
+            failed += 1
+            continue
+        rule_id = f"rule_{len(gen3_rules) + 1:03d}"
+        gen3_rules.append((rule_id, child))
+        if len(gen3_rules) % 10 == 0:
+            print(f"  Bred {len(gen3_rules)}/{POPULATION_SIZE} ...")
+
+    print(f"  Carried: {carried}  Bred: {len(gen3_rules)-carried}  "
+          f"Failed attempts: {failed}")
+
+    # ── Step 5: Evaluate Gen-3 ────────────────────────────────────────────────
+    soup = make_soup()
+    print(f"\nEvaluating {len(gen3_rules)} Gen-3 rules "
+          f"({NUM_WINDOWS} windows × {STEPS_PER_WINDOW} steps = "
+          f"{NUM_WINDOWS * STEPS_PER_WINDOW} total steps on "
+          f"{GRID_SIZE}×{GRID_SIZE} soup) ...")
+
+    gen3_rows = []
+    for rule_id, rule_dict in gen3_rules:
+        metrics = evaluate_composite(rule_dict, soup)
+        print(f"  {rule_id}: composite={metrics['composite_fitness']:.6f}  "
+              f"total_disp={metrics['total_displacement']:.4f}  "
+              f"std={metrics['std_dev']:.4f}")
+        gen3_rows.append({"rule_id": rule_id, **metrics})
+
+    # ── Step 6: Save outputs ──────────────────────────────────────────────────
+    # Save population_gen3.json
+    pop_gen3_json = output_dir / "population_gen3.json"
+    gen3_pop_data = {rid: rdict for rid, rdict in gen3_rules}
+    with open(pop_gen3_json, "w") as f:
+        json.dump(gen3_pop_data, f, indent=2)
+    print(f"\nSaved: {pop_gen3_json}")
+
+    # Save scores_gen3.csv
+    scores_gen3_csv = output_dir / "scores_gen3.csv"
+    fieldnames = ["rule_id", "composite_fitness", "total_displacement",
+                  "std_dev", "velocities", "annihilated"]
+    with open(scores_gen3_csv, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows([{k: r[k] for k in fieldnames} for r in gen3_rows])
+    print(f"Saved: {scores_gen3_csv}")
+
+    # ── Step 7: Summary statistics ────────────────────────────────────────────
+    gen3_scores  = np.array([r["composite_fitness"] for r in gen3_rows])
+    gen3_mean    = float(np.mean(gen3_scores))
+    gen3_median  = float(np.median(gen3_scores))
+    gen3_max     = float(np.max(gen3_scores))
+    pct_change   = (gen3_mean - gen2_mean_ref) / gen2_mean_ref * 100.0 \
+                   if gen2_mean_ref > 0 else 0.0
+
+    print("\n=== Gen-3 Summary ===")
+    print(f"  gen2_mean_fitness:  {gen2_mean_ref:.6f}")
+    print(f"  gen3_mean_fitness:  {gen3_mean:.6f}")
+    print(f"  gen3_median_fitness:{gen3_median:.6f}")
+    print(f"  gen3_max_fitness:   {gen3_max:.6f}")
+    print(f"  improvement:        {pct_change:+.2f}%")
+    print(f"  elite_count:        {elite_count}")
+    print(f"  population_size:    {POPULATION_SIZE}")
+
+    yaml_block = {
+        "status": "ok",
+        "artifacts": [
+            str(gen2_json.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+            str(scores_gen2_path.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+            str(pop_gen3_json.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+            str(scores_gen3_csv.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+        ],
+        "metrics": {
+            "mean_fitness":     round(gen3_mean,    6),
+            "max_fitness":      round(gen3_max,     6),
+            "median_fitness":   round(gen3_median,  6),
+            "gen2_mean_fitness": round(gen2_mean_ref, 6),
+            "improvement_pct":  round(pct_change,   2),
+            "elite_count":      elite_count,
+            "population_size":  POPULATION_SIZE,
+        },
+        "log_excerpt": (
+            f"  Gen-2 mean composite fitness:  {gen2_mean_ref:.6f}\n"
+            f"  Gen-3 mean composite fitness:  {gen3_mean:.6f}\n"
+            f"  Gen-3 median composite fitness:{gen3_median:.6f}\n"
+            f"  Gen-3 max composite fitness:   {gen3_max:.6f}\n"
+            f"  Improvement over Gen-2:        {pct_change:+.2f}%\n"
+            f"  Failed breed attempts:          {failed}\n"
+            f"  Elite count:                    {elite_count}\n"
+            f"  Saved pop:  {pop_gen3_json}\n"
+            f"  Saved csv:  {scores_gen3_csv}\n"
+        ),
+        "experimenter_view": (
+            f"Gen-3 evolution using composite metric total_displacement / (1 + std_dev). "
+            f"Gen-2 rule dicts reconstructed deterministically (seed=152) from the "
+            f"iter_152 breeding run. Selected top {elite_count}/{POPULATION_SIZE} Gen-2 "
+            f"rules as elite parents. Bred {POPULATION_SIZE} offspring via crossover + "
+            f"mutation of C2-symmetric kernel pairs (breed seed=153). Evaluated on "
+            f"150x150 soup (25% density, seed=42), 4 windows x 400 steps. "
+            f"Gen-2 mean={gen2_mean_ref:.4f}, Gen-3 mean={gen3_mean:.4f} "
+            f"({pct_change:+.1f}% change). Max Gen-3 fitness={gen3_max:.4f}."
+        ),
+        "notes": (
+            f"Gen-3 evolution with composite fitness; "
+            f"improvement over Gen-2={pct_change:+.2f}%"
+        ),
     }
 
     yaml_str = yaml.dump(yaml_block, default_flow_style=False, sort_keys=False,

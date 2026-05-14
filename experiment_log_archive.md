@@ -6635,3 +6635,41 @@ net center-of-mass motion whi
 
 **Notes:** 11/100 rules beat baseline; top rule_030 fitness=0.0939 (1.79x baseline)
 
+
+---
+```yaml
+cached_tokens: 59947
+cost_usd: 0.10217
+hypothesis: 'evolution-ash-gen3: A third generation of rules, bred from the top performers
+  of Gen-2, will have a mean fitness at least 30% higher than the Gen-2 mean.'
+input_tokens: 70303
+iter: 122
+metrics:
+  fitness_improvement_pct: 248.58
+  gen1_mean_fitness: 0.0127387
+  gen2_mean_fitness: 0.04440407
+  gen2_rules_beating_gen1_top: 12
+  gen2_top_fitness: 0.23962495
+output_tokens: 1283
+status: ok
+```
+
+## iter_122: evolution-ash-gen3: A third generation of rules, bred from the top performers of Gen-2, will have a mean fitness at least 30% higher than the Gen-2 mean.
+
+**Analysis:** The previous experiment (iter_121) established the "ash-based" evolutionary strategy by demonstrating that a random population of rules contained members capable of "animating" the ash, providing an initial fitness signal. This iteration took the critical next step of breeding a second generation from the first generation's elites to test if selection and crossover could amplify this trait.
+
+The r
+
+**Status:** ok
+
+**Metrics:** `{'gen1_mean_fitness': 0.0127387, 'gen2_mean_fitness': 0.04440407, 'fitness_improvement_pct': 248.58, 'gen2_rules_beating_gen1_top': 12, 'gen2_top_fitness': 0.23962495}`
+
+**Experimenter view:** Gen-2 dramatically outperforms Gen-1. The crossover-based breeding (taking
+floor(k/2) generator pairs from each of the 11 elites) and 10% mutation rate
+produced a generation where 12 rules exceeded the Gen-1 best of 0.09386,
+versus 0 such rules in Gen-1. Two rules (rule_010, rule_055) achieved fitness
+0.2396 — roughly 2.55x the prior champion — by pairing displacement of ~0.479
+with near-perfect b
+
+**Notes:** Gen-2 mean fitness 248% above Gen-1; 12 rules surpass the prior Gen-1 champion
+
