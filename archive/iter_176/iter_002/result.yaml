@@ -1,0 +1,86 @@
+artifacts:
+- src/fitness_simple_motion.py
+experimenter_view: 'Implemented SimpleMotionFitness as a class (with a minimal BaseFitness
+
+  parent that defines the standard evaluate(rule_dict)->dict API; a
+
+  module-level evaluate() wrapper is also exposed so it slots cleanly
+
+  into the existing fitness registry in evaluate.py).
+
+
+  Per-window displacements and std_dev_velocity reuse the exact same
+
+  procedure as StableVelocityFitness (2000 steps on the L-tromino seed,
+
+  four 400-step post-settling windows: 400-800, 800-1200, 1200-1600,
+
+  1600-2000). total_displacement is the sum of those four per-window
+
+  displacements. max_bit_count is tracked over EVERY step of the
+
+  2000-step simulation (not just the checkpoints).
+
+
+  All non-fitness numbers reproduce iter_174''s analysis.txt exactly
+
+  (mean_vel 6.285, std 3.665, max bits 129, final bits 6), confirming
+
+  the motion-side calculation is faithful.
+
+
+  The new fitness score for the iter_174 champion is 0.041457 — about
+
+  6.15% of its original 0.674. This is a dramatic, ~16x drop, driven
+
+  almost entirely by the (1 + max_bit_count) = 130 factor in the
+
+  denominator. The complexity penalty is clearly active and aggressive:
+
+  this rule grew from 3 cells to a peak of 129, so the new metric
+
+  treats it as a high-complexity bloater rather than a clean glider,
+
+  exactly as intended. Any future champion under this metric will need
+
+  to either dramatically suppress peak bit count or compensate with
+
+  much larger displacement.
+
+  '
+log_excerpt: 'fitness = 0.041457
+
+  total_displacement = 25.141574
+
+  mean_velocity = 6.285394
+
+  std_dev_velocity = 3.664983
+
+  max_bit_count = 129
+
+  initial_bit_count = 3
+
+  final_bit_count = 6
+
+  velocities = [3.7712, 5.0283, 12.5708, 3.7712]
+
+  new_fitness_score = 0.041457
+
+  original_fitness  = 0.674000
+
+  ratio (new/old)   = 0.0615
+
+  '
+metrics:
+  final_bit_count: 6
+  initial_bit_count: 3
+  max_bit_count: 129
+  mean_velocity: 6.285394
+  new_fitness_score: 0.041457
+  original_fitness: 0.673678
+  ratio_new_over_old: 0.0615
+  std_dev_velocity: 3.664983
+  total_displacement: 25.141574
+notes: SimpleMotionFitness implemented; champion rule penalised from 0.674 to 0.041
+  as intended.
+status: ok
