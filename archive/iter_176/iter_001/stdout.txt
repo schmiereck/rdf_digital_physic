@@ -1,0 +1,57 @@
+I'll start by reading the champion rule file and exploring the codebase structure to understand how to run the simulation.
+The expected file isn't there. Let me check what's available in the results directory.
+Now let me check the iter_176 structure and look at the evolve_rules.py to understand the simulation setup.
+Let me check how the rule is stored in best_rule.json and look at existing iter_174 simulation scripts.
+I have everything I need. Now I'll write and run the simulation script.
+The simulation completed. Let me get more detail on the bit count profile to describe its behavior.
+The pattern is very clear: a strict period-64 oscillator that spikes to 129 bits every 64 steps. Let me verify the CSV was saved correctly and compile the final report.
+The simulation ran successfully. The CSV has 2001 rows (steps 0–2000), `max_bit_count = 129` (reached at step 63 and then every 64 steps thereafter), and `final_bit_count = 6` at step 2000.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_176/results/bit_count_profile.csv
+  - archive/iter_174/results/champion_rule_g7_r76.txt
+  - src/simulate_iter176_bit_count.py
+metrics:
+  max_bit_count: 129
+  final_bit_count: 6
+  max_bit_count_step: 63
+  initial_bit_count: 3
+  oscillation_period: 64
+  tail_mean_bit_count: 32.2
+log_excerpt: |
+  Loaded rule: g7_rule_076  (20 non-identity mappings)
+  Saved rule string to: .../archive/iter_174/results/champion_rule_g7_r76.txt
+  Running 2000 steps on 128x128 toroidal grid...
+  Seed: L-tromino, 3 bits at [(63, 63), (64, 63), (64, 64)]
+  Step    0: bit_count = 3
+  Step  200: bit_count = 6
+  Step  400: bit_count = 6
+  Step  600: bit_count = 9
+  Step  800: bit_count = 6
+  Step 1000: bit_count = 15
+  Step 1200: bit_count = 9
+  Step 1400: bit_count = 18
+  Step 1600: bit_count = 3
+  Step 1800: bit_count = 6
+  Step 2000: bit_count = 6
+  === Simulation Complete ===
+  max_bit_count:   129  (at step 63)
+  final_bit_count: 6  (step 2000)
+  Saved per-step CSV: .../archive/iter_176/results/bit_count_profile.csv
+  Rows: 2001 (steps 0 to 2000)
+experimenter_view: |
+  The champion rule g7_rule_076 produces a striking period-64 oscillator from the
+  L-tromino seed. Starting at 3 bits, the pattern explodes to a maximum of 129 bits
+  at step 63, then collapses back to 6 bits at step 64. This explosion-collapse cycle
+  repeats with almost machine-like regularity every 64 steps throughout all 2000 steps:
+  the bit count hits 129 at steps 63, 127, 191, 255, ..., 1983 (31 total peaks).
+  Between peaks the bit count cycles through values drawn from a fixed set
+  [3, 6, 9, 15, 18, 24, 33, 39, 42, 51, 66, 69, 84, 96, 129], giving a tail
+  mean of 32.2 bits. The behavior is best described as a rapid initial explosion
+  to 129 bits followed by a persistent, deeply intermittent period-64 oscillation
+  that alternates between near-seed states (3-6 bits) and the full 129-bit expansion,
+  consistent with the period-64 attractor noted in the iter_174 analysis.
+notes: Rule g7_rule_076 is a strict period-64 oscillator peaking at 129 bits every 64 steps from the L-tromino seed.
+```
