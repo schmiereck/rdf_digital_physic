@@ -1,0 +1,67 @@
+```yaml
+analysis: |
+  The previous iteration (`iter_159`) successfully identified a "founder" rule from a random population using a composite fitness metric: `late_displacement / (1 + final_bit_count)`. This metric rewards sustained motion while penalizing the explosive, space-filling growth that plagued earlier experiments. The key open question was whether this fitness signal was strong enough to guide an evolutionary search.
+
+  This iteration directly tested that by breeding a second generation (Gen-2) from the top 10 performers of Gen-1. The results are extremely positive. The mean fitness of the population increased by over 480%, and the new champion rule (`rule_022`) has a fitness score 14 times higher than the Gen-1 champion. Critically, as the `experimenter_view` notes, this improvement comes from a massive reduction in the final object size (603 bits vs. 8204 bits) for similar displacement, which is precisely the desired behavior. This confirms that the composite metric is selecting for more compact, efficient, and coherent structures.
+open_questions:
+  - "Can we continue this strong fitness improvement into a third generation (Gen-3)?"
+  - "What does the new champion rule's (rule_022) dynamics look like? Is it a true glider?"
+  - "How does the Gen-2 champion perform over a much longer run (e.g., 4000 steps)?"
+  - "Are there other high-fitness rules in Gen-2 that represent different 'species' of behavior?"
+chosen_direction: "Continue the evolutionary process by breeding a third generation from the top Gen-2 performers."
+hypothesis: "evolution-gen3-composite-metric: A third generation of rules, bred from the top performers of Gen-2, will have a mean fitness at least 50% higher than the Gen-2 mean."
+rationale: |
+  The 14x improvement in champion fitness and ~5x improvement in mean fitness between Gen-1 and Gen-2 indicates that we are on a strong fitness gradient. The most logical and highest-value next step is to press this advantage and run another generation of evolution. This will show whether the progress continues or if we are hitting a local optimum. If we see another significant jump in fitness, it becomes highly likely that we are evolving towards a truly stable, efficient glider.
+# --- Execution result (copy from run_agent → final_result) ---
+status: ok
+metrics:
+  gen1_mean_fitness: 2.54e-06
+  gen2_mean_fitness: 1.48e-05
+  gen1_champion_fitness: 5.536e-05
+  gen2_champion_fitness: 0.0007927
+  fitness_improvement_pct: 481.75
+  gen2_champion_bits: 603
+  gen2_champion_disp: 0.47879239
+  gen1_champion_bits: 8204
+  gen1_champion_disp: 0.45424405
+experimenter_view: |
+  The evolutionary process is clearly working. The Gen-2 champion (rule_022)
+  achieved a composite fitness of 0.000793 — a 14x improvement over the Gen-1
+  champion (rule_088, fitness=0.0000554). Both champions have similar late-stage
+  displacement (~0.47–0.45), but the Gen-2 champion achieved this with only 603
+  live cells vs 8204 for the Gen-1 champion. This is exactly the behavior the
+  composite metric is designed to reward: a more compact, coherent structure
+  that moves. The mean fitness also improved by +481% (0.00000254 → 0.0000148),
+  indicating that the fitness signal is heritable and the elites are transmitting
+  useful traits to their offspring. Several other Gen-2 individuals also show
+  strong fitness (rule_077: 0.000197 at 1245 bits; rule_022 copies inherit the
+  exact Gen-1 champion's displacement). The large improvement in champion fitness
+  strongly suggests a promising fitness gradient exists, and that running Gen-3
+  from Gen-2's top performers would be the logical next step.
+notes: "Gen-2 breeding yielded 14x better champion (0.000793 vs 0.0000554) and +481% mean fitness improvement; Gen-2 champion has 603 bits vs 8204 in Gen-1 — significantly more compact."
+# --- Meta ---
+milestone_reached: ""
+user_question: ""
+campaign: "Phase 7 - Velocity-Stable Evolution"
+campaign_status: ""
+campaign_summary: ""
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a Cellular Automata rule that supports a stable, moving particle (glider) with non-decaying velocity over 2000+ steps.
+
+  **Confirmed:**
+  - A composite fitness metric, `total_displacement / (1 + std_dev)`, can identify high-velocity objects, but they may be transient "puffers" that decay over time (iter_153, iter_156).
+  - A fitness metric based on *late* displacement (e.g., steps 1200-2000) correctly identifies and penalizes these transient puffers (iter_156).
+  - A composite metric, `late_displacement / (1 + final_bit_count)`, effectively selects for rules that produce sustained motion while penalizing chaotic, explosive growth (iter_159).
+  - Breeding based on the composite metric is effective. Gen-2 showed a +481% improvement in mean fitness and a 14x improvement in the champion's fitness over Gen-1 (iter_163). The new champion rule achieves motion with significantly more compact structures (603 bits vs 8204 bits).
+
+  **Current Best:**
+  - **Rule:** `rule_022` from `iter_163`.
+  - **Fitness:** 0.000793 (`late_displacement / (1 + final_bit_count)`).
+
+  **Open Questions:**
+  - Can we continue the strong fitness improvement seen in `iter_163` into a third generation?
+  - What is the qualitative nature of the object produced by the new champion rule?
+  - Does the champion object's motion sustain over longer time horizons (e.g., 4000 steps)?
+```

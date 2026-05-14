@@ -3,43 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 52517
-cost_usd: 0.10279
-hypothesis: 'remnant-characterization: The 80-bit remnant from rule_011 consists of
-  a small number of distinct, repeating oscillator types that can be programmatically
-  identified and cataloged.'
-input_tokens: 64334
-iter: 132
-metrics:
-  displacement_at_1000_steps: 8.71275356
-  displacement_at_200_steps: 9.3448578
-  final_bit_count: 80
-  initial_bit_count: 325
-  motion_sustained: false
-  remnant_stable: true
-output_tokens: 1474
-status: ok
-```
-
-## iter_132: remnant-characterization: The 80-bit remnant from rule_011 consists of a small number of distinct, repeating oscillator types that can be programmatically identified and cataloged.
-
-**Analysis:** The long-run simulation conclusively refutes the hypothesis that the 78-bit remnant is a glider. The experiment shows that the "evaporation" process completes within the first 20 steps, displacing the center of mass to a new, stable position. For the remaining 980 steps, the remnant is not a translating object but a collection of stable oscillators. The displacement does not grow over time; it mer
-
-**Status:** ok
-
-**Metrics:** `{'initial_bit_count': 325, 'final_bit_count': 80, 'remnant_stable': True, 'displacement_at_200_steps': 9.3448578, 'displacement_at_1000_steps': 8.71275356, 'motion_sustained': False}`
-
-**Experimenter view:** rule_011 from iter_131 ran for 1000 steps on the canonical ash pattern (200x200
-grid, wrapping boundaries).  The initial 325-bit ash collapsed rapidly to a stable
-~78-80 bit remnant composed of ~37 objects by step 20.  The displacement from the
-original COM settled immediately into a tight oscillation between 8.71 and 9.34
-units and stayed there for the entire 1000-step run — it did not grow over 
-
-**Notes:** motion_sustained=false; remnant is a stable oscillating structure, not a glider
-
-
----
-```yaml
 cached_tokens: 51887
 cost_usd: 0.10181
 hypothesis: 'visualization: A visualization of the remnant will reveal that the different
@@ -1065,6 +1028,34 @@ status: no_execution
 ## iter_162: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
 
 **Analysis:** [Mock] Iteration 163. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.13661
+hypothesis: 'evolution-gen3-composite-metric: A third generation of rules, bred from
+  the top performers of Gen-2, will have a mean fitness at least 50% higher than the
+  Gen-2 mean.'
+input_tokens: 32522
+iter: 162
+metrics: {}
+output_tokens: 2170
+status: no_execution
+```
+
+## iter_162: evolution-gen3-composite-metric: A third generation of rules, bred from the top performers of Gen-2, will have a mean fitness at least 50% higher than the Gen-2 mean.
+
+**Analysis:** The previous iteration (`iter_159`) successfully identified a "founder" rule from a random population using a composite fitness metric: `late_displacement / (1 + final_bit_count)`. This metric rewards sustained motion while penalizing the explosive, space-filling growth that plagued earlier experiments. The key open question was whether this fitness signal was strong enough to guide an evolutionar
 
 **Status:** no_execution
 
