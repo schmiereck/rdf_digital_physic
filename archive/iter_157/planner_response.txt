@@ -1,0 +1,49 @@
+The previous iteration attempted to start a new evolutionary search using a validated, but strict, `late-displacement` fitness metric. The hypothesis was that a random population would contain at least one rule with a fitness score greater than 0.2, providing a strong starting point. This hypothesis was falsified. The experiment found no rules that met the threshold, and only 3 out of 100 rules showed any non-trivial motion at all (fitness > 0.1), with the best score being a meager 0.143.
+
+This result confirms that the desired property of sustained motion is extremely rare in the search space of random rules. However, the experiment was not a total failure. It successfully identified three "founder" rules which, while weak, are the only known rules that exhibit any late-stage motion under this metric.
+
+The most critical open question now is whether the weak signal from these three founder rules can be amplified through an evolutionary process. If the properties that give them their small fitness scores are heritable, breeding them should produce a next generation with significantly improved fitness. If not, the fitness landscape is effectively a needle-in-a-haystack, and evolution is unlikely to succeed without a different approach.
+
+```yaml
+analysis: |
+  The initial evolutionary search with the `late-displacement` metric failed to find any high-performing rules in its first generation (iter_157). The best score was 0.143, below the 0.2 threshold. However, it did identify three "viable" rules (fitness > 0.1) out of a population of 100. This confirms that the metric is highly selective, but also that the signal is very sparse. The logical next step is to see if this weak signal can be amplified through breeding.
+open_questions:
+  - "Can breeding the three viable founder rules from Gen-1 produce a Gen-2 with higher average fitness?"
+  - "Is the fitness landscape for sustained motion navigable via evolution, or is it too sparse?"
+  - "If breeding fails, should we try a different random seed for the initial population, or alter the simulation's initial conditions?"
+chosen_direction: "Breed the three founder rules from Gen-1 to create a second generation."
+hypothesis: "evolution-gen2-late-displacement: A second generation of rules, bred from the top 3 performers of Gen-1, will have a mean fitness at least 100% higher than the Gen-1 mean of 0.0148."
+rationale: |
+  While the initial random search yielded poor results, it provided three founder rules that are objectively better than the other 97. This experiment will test if their desirable (but weak) traits are heritable. If breeding successfully amplifies this signal, it validates that the evolutionary approach is working on this new, more accurate fitness landscape. A 100% increase in mean fitness is a strong indicator of heritability and progress.
+# --- Execution result (copy from run_agent → final_result) ---
+status: experiment_failed
+metrics:
+  gen1_max_fitness: 0.142895
+  gen1_mean_fitness: 0.014788
+  gen2_max_fitness: 0.13063
+  gen2_mean_fitness: 0.012543
+  mean_fitness_change_pct: -15.18
+  num_viable_rules: 2
+experimenter_view: |
+  The hypothesis was decisively refuted. A new generation of 100 rules was bred from the top 3 rules of Gen-1 (rule_025, rule_068, rule_019). The resulting Gen-2 population showed a *decrease* in performance compared to its parent generation. The mean fitness dropped by 15.2% (from 0.0148 to 0.0125), and the maximum fitness also dropped from 0.1429 to 0.1306. Only two rules in the new generation scored above the 0.1 viability threshold. This result strongly suggests that the minor fitness scores of the Gen-1 "founders" were not due to heritable structural properties but were likely random flukes of their interaction with the specific initial soup. The evolutionary process has no discernible gradient to climb from these starting points.
+notes: "Breeding from the top 3 Gen-1 rules failed to improve fitness, suggesting their small advantage was not heritable. The fitness signal is too weak/random to drive evolution."
+# --- Meta ---
+campaign: Phase 7 - Velocity-Stable Evolution
+state_update: |
+  Phase: Phase 7 - Velocity-Stable Evolution
+
+  **Goal:** Evolve a CA rule that supports a stable, moving particle (a true glider) with sustained, non-decaying velocity.
+
+  **Confirmed:**
+  - A fitness metric based *only* on late-stage displacement (steps 1200-2000) **successfully** identifies transient puffers as low-fitness individuals. (iter_156)
+
+  **Refuted:**
+  - A random population of 100 rules contains rules with significant (>0.2) late-stage displacement. The signal is very sparse. (iter_157)
+  - The small late-stage displacement observed in the top 3 rules of Gen-1 (iter_157) is not a heritable trait that can be amplified by breeding. The fitness landscape appears to be unnavigable from these starting points. (iter_157)
+
+  **Open Questions:**
+  - Since breeding failed, could a different random seed for the initial population yield a better starting point?
+  - Is the initial soup (density=0.25, seed=42) somehow hostile to the formation of late-stage movers?
+  - Should the fitness metric be modified to include a penalty for population size to explicitly select against slow, expansive "creepers"?
+  - Have we reached the limits of what can be found with a random soup initial condition? Should we switch to evolving on a specific, structured "object"?
+```

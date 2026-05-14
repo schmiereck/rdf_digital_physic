@@ -3,35 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 57174
-cost_usd: 0.08839
-hypothesis: 'evolution-late-displacement: A new generation of rules (Gen-4), bred
-  from Gen-3 elites and evaluated with a late-displacement metric (steps 100-200),
-  will contain at least one rule with a fitness score > 0.'
-input_tokens: 64351
-iter: 126
-metrics: {}
-output_tokens: 1261
-status: no_execution
-```
-
-## iter_126: evolution-late-displacement: A new generation of rules (Gen-4), bred from Gen-3 elites and evaluated with a late-displacement metric (steps 100-200), will contain at least one rule with a fitness score > 0.
-
-**Analysis:** The research was critically blocked when iter_125 revealed a fundamental flaw in our evolutionary fitness function. The metric, calculated over 100 steps, rewarded a brief, initial rearrangement of the "ash" pattern, not the desired sustained motion. The top-evolved rules simply found a loophole, completing all their "motion" within the first 10 steps and then freezing.
-
-This experiment conclusive
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
 cached_tokens: 56525
 campaign: Phase 5 - Sustained Motion Evolution
 cost_usd: 0.09731
@@ -1109,4 +1080,38 @@ window data showing window_1250_1500=0.134 and window_1500_2000 velocities near 
 The rule is correctly classified as a transient puf
 
 **Notes:** Script loads rule_021 by key name from population_gen3.json; late_displacement=0.133 confirms transient puffer classification.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.14688
+hypothesis: 'evolution-gen2-late-displacement: A second generation of rules, bred
+  from the top 3 performers of Gen-1, will have a mean fitness at least 100% higher
+  than the Gen-1 mean of 0.0148.'
+input_tokens: 36091
+iter: 157
+metrics:
+  gen1_max_fitness: 0.142895
+  gen1_mean_fitness: 0.014788
+  gen2_max_fitness: 0.13063
+  gen2_mean_fitness: 0.012543
+  mean_fitness_change_pct: -15.18
+  num_viable_rules: 2
+output_tokens: 1958
+status: experiment_failed
+```
+
+## iter_157: evolution-gen2-late-displacement: A second generation of rules, bred from the top 3 performers of Gen-1, will have a mean fitness at least 100% higher than the Gen-1 mean of 0.0148.
+
+**Analysis:** The initial evolutionary search with the `late-displacement` metric failed to find any high-performing rules in its first generation (iter_157). The best score was 0.143, below the 0.2 threshold. However, it did identify three "viable" rules (fitness > 0.1) out of a population of 100. This confirms that the metric is highly selective, but also that the signal is very sparse. The logical next step 
+
+**Status:** experiment_failed
+
+**Metrics:** `{'gen1_max_fitness': 0.142895, 'gen1_mean_fitness': 0.014788, 'gen2_max_fitness': 0.13063, 'gen2_mean_fitness': 0.012543, 'mean_fitness_change_pct': -15.18, 'num_viable_rules': 2}`
+
+**Experimenter view:** The hypothesis was decisively refuted. A new generation of 100 rules was bred from the top 3 rules of Gen-1 (rule_025, rule_068, rule_019). The resulting Gen-2 population showed a *decrease* in performance compared to its parent generation. The mean fitness dropped by 15.2% (from 0.0148 to 0.0125), and the maximum fitness also dropped from 0.1429 to 0.1306. Only two rules in the new generation sco
+
+**Notes:** Breeding from the top 3 Gen-1 rules failed to improve fitness, suggesting their small advantage was not heritable. The fitness signal is too weak/random to drive evolution.
 
