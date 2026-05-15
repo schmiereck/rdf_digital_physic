@@ -1,0 +1,93 @@
+I'll start by exploring the codebase to understand the structure and find relevant files.
+Search the codebase at C:\Users\thomas\Projekte\rdf_digital_physic\src for:
+1. Files related to "g10_rule_001" or "rule_001" 
+2. Files in or related to "iter_181" 
+3. Any Python files implementing cellular automata, gliders, or ash patterns
+4. Archive structure under C:\Users\thomas\Projekte\rdf_digital_physic\archive
+
+Please find actual file paths and key function names. Report file paths, relevant function signatures, and any constants or parameters that define the rule or glider patterns. Search breadth: very thorough.
+Let me read the key files to understand the implementation patterns before writing the experiment.
+Now I have enough context. Let me check the iter_181 result data and then write the experiment script.
+Now I have all the context needed. Let me write the experiment script.
+Now run the experiment:
+Unicode encoding issue on Windows. Let me fix the arrow characters.
+Good progress — the ash is confirmed at 192 bits. Two issues: another `→` in the collision print, and the ash wraps around the torus causing overlap with glider C's planned position. I'll fix both and add dynamic safe-position finding.
+Now fix the glider placement to dynamically find an ash-free position:
+Also need to adjust STAGE2_STEPS dynamically if needed, and fix the animation title reference to use `glider_c`:
+Also fix the Unicode em-dash and arrow in the animation title and outcome text:
+Also fix the delta print with the Unicode delta character and the outcome string:
+Also need to make the STAGE2_STEPS dynamic — update the loop to use a computed value:
+Now run again:
+The ash is a full-width stripe (rows 0–127, cols 63–64 only), with 75% density — no clear 5-row buffer exists. I need a more pragmatic placement strategy: find the smallest clear gap in those cols, or fall back to adjacent cols. Let me rewrite the placement logic.
+The experiment ran successfully. Here are the key findings:
+
+- **Stage 1**: 192-bit ash confirmed, forming a full-torus stripe at cols 63–64 across all 128 rows
+- **Stage 2**: Glider at col 61–62 (adjacent to ash at col 63) immediately triggered a growth reaction at step 1; ash grew from 192 → 322 bits, stabilizing by step ~150 and remaining constant to step 574
+- **GIF saved**: `archive/iter_185/results/glider_ash_interaction.gif`
+
+```yaml
+status: ok
+artifacts:
+  - src/iter_185_glider_ash_interaction.py
+  - archive/iter_185/results/glider_ash_interaction.gif
+metrics:
+  ash_initial_bits: 192
+  glider_bits_added: 3
+  final_bits: 322
+  bit_count_increase: 130
+  collision_step: 1
+  stabilization_step: 150
+  stage1_steps: 300
+  stage2_steps: 574
+  ash_col_span_min: 63
+  ash_col_span_max: 64
+  ash_row_span_min: 0
+  ash_row_span_max: 127
+log_excerpt: |
+  Stage 1 done. ash_bits=192  CoM=(63.7, 63.7)
+    Ash row span: 0..127  col span: 63..64
+    Glider C placed at: [(0, 61), (1, 61), (1, 62)]  (col offset from target: -2)
+    Estimated steps to reach ash center row 64: ~64
+  STAGE 2: Introducing L-tromino glider C at [(0, 61), (1, 61), (1, 62)]
+    Bits after adding glider C: 195  (ash=192 + 3 glider = expected 195)
+    COLLISION detected at step 1: bits 195 -> 197
+        50     246
+       100     296
+       150     322
+       200     322  (stable)
+       ...
+       574     322  (stable)
+  Stage 2 done.
+    ash_initial_bits:  192
+    final_bits:        322
+    collision_step:    1
+    outcome:           ash grew by 130 bits: glider catalyzed new structure
+  Animation saved: archive/iter_185/results/glider_ash_interaction.gif
+experimenter_view: |
+  The 192-bit ash from iter_181 is NOT inert. Introducing a 3-bit L-tromino
+  glider adjacent to the ash stripe (at col 61, 2 columns from the ash at col 63)
+  immediately triggered a cascade growth reaction starting at step 1.
+
+  The ash structure is a full-torus stripe: it occupies ALL 128 rows of the grid
+  but only columns 63-64 (a thin 2-column stripe with ~75% cell density).
+  No clean gap existed inside the stripe for direct glider insertion, so the
+  glider was placed at col 61-62 (adjacent), where its SE neighborhood overlapped
+  with ash cells at col 63 from the first step.
+
+  The interaction was catalytic and inelastic: the 3-bit glider caused the ash to
+  grow by +130 bits (192 -> 322), reaching a new stable fixed point by step ~150.
+  The new 322-bit structure was perfectly stable from step 150 through step 574
+  (the final observation point, 500+ steps post-collision).
+
+  Key conclusions:
+  1. The 192-bit ash is NOT inert — a single 3-bit glider perturbs it strongly.
+  2. The perturbation is catalytic: the glider triggers growth to a larger stable
+     structure (322 bits) without destroying the ash — a second-order fixed point.
+  3. No gliders or moving structures were created: the final state is another
+     static ash, 68% larger than the original.
+  4. The ash acts as a reactive medium: small perturbations cause it to jump to a
+     higher-energy (higher bit count) stable attractor.
+  5. The system's stable attractors have at least two sizes: 192-bit and 322-bit,
+     both reachable from the same initial 6-bit glider pair + optional perturbation.
+notes: "Ash is reactive: 3-bit glider adjacent to 192-bit stripe ash catalyzes growth to a new 322-bit stable fixed point in ~150 steps."
+```
