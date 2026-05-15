@@ -1,93 +1,76 @@
-I'll start by exploring the project structure to understand the codebase.
-Explore the project at C:\Users\thomas\Projekte\rdf_digital_physic\src. I need to understand:
-1. The overall directory structure (top-level files and folders)
-2. How rules are defined (look for g10_rule_001 specifically)
-3. How simulations are run (look for main scripts, simulation runners)
-4. How gliders are defined/initialized (look for glider configurations, especially 3-bit gliders)
-5. How animations are saved
-6. Look at iter_181 or iter_182 directories for recent experiment code
+I'll start by exploring the project structure to understand what's available before writing the analysis script.
+Explore the project at C:\Users\thomas\Projekte\rdf_digital_physic\src to understand:
+1. The structure of archive/iter_179 and archive/iter_181 directories (looking for rule files and result files)
+2. Find files related to "g10_rule_001" or glider rules
+3. Find the file archive/iter_181/results/glider_bit_collision_end.npy
+4. Find any existing simulation or grid code (Python files) that handles hexagonal grids
+5. Look at any iter_182 directory structure already present
 
-Search breadth: very thorough. List the key files and their purposes.
-Now let me read the key files to understand the existing experiment setup.
-Let me look at the iter_181.3 experiment files and recent simulation code.
-Now let me read the existing glider_bit_collision.py script.
-Let me check the iter_182 structure and any existing checkpoint.
-Now I have all the context I need. Let me create the characterization script for iter_182.
-Now run the script:
-The velocity came out wrong (~0) because the CoM calculation breaks when the glider straddles the toroidal boundary (2 of 5 cells cross row 0/127, shifting CoM by exactly 2×128/5 = 51.2 cells). I need to fix the unwrapping with an n_bits-aware correction.
-Also update the Results print section to show vel_std:
-The results are clean. Let me verify the animation was saved correctly.
-The experiment is complete. The 1.87 MB animation is saved. Here is the final report:
+Search breadth: medium. Report the exact file paths found and key contents of relevant Python source files (simulation engine, rule format, grid code).
+Let me read the key files to understand the exact implementation details.
+Now let me check the actual archive files and the rule format.
+Now I have full context. The `.npy` file doesn't exist, but I know the 5-bit composite forms reliably from the collision experiment. I'll write a script that reconstructs it and runs the 256x256 characterization.
+The velocity calculation is wrong — the N_BITS-aware toroidal correction is needed (as per `characterize_5bit_glider.py`). The per-step simple unwrapping fails when multiple cells simultaneously cross the boundary. Let me fix the script.
+The simulation ran cleanly. Let me verify the CSV and GIF were saved correctly.
+All three artifacts are saved. The results are confirmed:
 
----
-
-**Summary:**
-
-The 5-bit composite glider formed immediately at step 1 (the isolated target bit at (64,64) spontaneously spawns a second bit under rule g10_rule_001 due to LUT[4]=1, so the collision happens before the L-tromino glider even arrives). The composite maintained exactly 5 bits for all 850 subsequent steps — perfectly stable.
-
-Velocity was computed using an n_bits-aware toroidal boundary correction: when k of the 5 cells cross the row 0/127 wrap boundary in a single step, the naive CoM delta is deflected by k×128/5 = k×25.6 cells. After correcting for this, the step-by-step deltas are identically 1.000, giving **velocity = 1.000 cells/step (v=1c)** with R²=1.000 and σ=0.000.
+- **Velocity**: exactly 1.000000 cells/step, R² = 1.000, σ = 0.000
+- **Stability**: bit count is exactly 5 for all 800 steps
+- **Motion**: pure row-direction motion, com_col fixed at 128.2 throughout
 
 ```yaml
 status: ok
 artifacts:
-  - src/characterize_5bit_glider.py
-  - archive/iter_182/results/5bit_composite_glider.gif
+  - src/run_iter_182_2_composite.py
+  - archive/iter_182/results/composite_glider_properties.csv
+  - archive/iter_182/results/composite_glider.gif
 metrics:
   velocity_cells_per_step: 1.0
   velocity_std_dev: 0.0
   r_squared: 1.0
-  initial_bit_count: 4
+  initial_bit_count: 5
   final_bit_count: 5
-  max_bit_count: 5
-  collision_step: 1
-  composite_formed_step: 1
-  post_formation_steps: 850
-  stable_5bit: 1
-  sim_steps: 850
-  grid_size: 128
+  stable_all_800_steps: 1
+  grid_size: 256
+  sim_steps: 800
+  displacement_at_800_steps: 800.0
 log_excerpt: |
-  Initial bit count: 4
-  Initial CoM:       (40.50, 64.25)
-
-    step    bits   com_row   com_col
-  ----------------------------------------
-      50       5     95.00     64.20
-     100       5     17.00     64.20
-     150       5     67.00     64.20
-     500       5     33.00     64.20
-     700       5    105.00     64.20
-     850       5     75.80     64.20
-
-  === Results ===
-  Initial bits:            4
-  Final bits:              5
-  Collision at step:       1
-  5-bit composite formed:  1
-  Post-formation steps:    850
-  Stable (all bits==5):    True
-  Velocity (cells/step):   1.000000
-  Velocity std dev:        0.000000
-  R² of linear fit:        1.000000
-  Animation saved: archive/iter_182/results/5bit_composite_glider.gif
+  File not found: archive/iter_181/results/glider_bit_collision_end.npy
+  Reconstructing 5-bit composite via warmup collision...
+    Warmup complete: bit_count=5
+  Particle cells (centered): [(115, 128), (116, 128), (116, 129), (146, 128), (147, 128)]
+  Grid size:       256x256
+  Initial bits:    5
+  Initial CoM:     (128.000, 128.200)
+    step    bits    com_row    com_col     displ
+     100       5    228.000    128.200   100.000
+     200       5     72.000    128.200   200.000
+     300       5    172.000    128.200   300.000
+     400       5     16.000    128.200   400.000
+     500       5    116.000    128.200   500.000
+     600       5    216.000    128.200   600.000
+     700       5     60.000    128.200   700.000
+     800       5    160.000    128.200   800.000
+  Velocity:        1.000000 cells/step
+  Vel std dev:     0.000000
+  R²:              1.000000
 experimenter_view: |
-  The 5-bit composite glider is confirmed to travel at exactly v=1c (1 cell/step
-  in the +row/East direction), identical to the original 3-bit L-tromino glider.
-  It formed at step 1 because LUT[4]=1 causes the isolated target bit to
-  immediately spawn a neighbor before the L-tromino reaches it — the collision
-  is effectively instantaneous. The composite remained at exactly 5 bits for
-  the entire 850-step run (zero variance in bit count post-formation).
+  The source .npy file was absent; the 5-bit composite was reconstructed by
+  running the iter_181.3 collision experiment (L-tromino + single target bit
+  on 128x128) for 100 warmup steps, yielding exactly 5 bits.  The two-cluster
+  structure of the particle (cells near rows 115-116 and 146-147 after centering)
+  produces large apparent CoM jumps in the raw time series, but after applying
+  N_BITS-aware toroidal boundary correction every per-step delta equals exactly
+  1.000, confirming a perfectly uniform velocity.
 
-  The com_col is fixed at 64.20 throughout, confirming pure row-direction
-  motion with no lateral drift. Apparent CoM anomalies at steps 200, 350, 450,
-  600, 850 are explained by exactly 2 of the 5 cells crossing the toroidal
-  row boundary, deflecting the naive CoM by 2×128/5=51.2 cells. After applying
-  the n_bits-aware boundary correction, every single step-to-step delta equals
-  exactly 1.000 cells, giving R²=1.000 and σ=0.000 — a perfectly uniform
-  velocity with no jitter whatsoever.
+  On the 256x256 grid the com_col is fixed at 128.2 for all 800 steps — zero
+  lateral drift.  The displacement at each 100-step checkpoint equals exactly
+  the step count (100, 200, …, 800), consistent with v = 1.000 cells/step.
+  R² = 1.000 and σ = 0.000 confirm there is no jitter whatsoever.
 
-  The 5-bit composite is thus a true v=1c glider: same speed as its parent
-  3-bit glider, heavier (+2 bits), and equally stable. This suggests v=1c is
-  a dynamical attractor in this rule's phase space — glider fusion produces a
-  heavier glider at the same characteristic velocity.
-notes: 5-bit composite glider confirmed v=1c, perfectly stable for 850 steps, R²=1.0
+  Conclusion: the 5-bit composite particle is a confirmed stable glider with
+  constant velocity v = 1c, identical to its parent 3-bit L-tromino glider.
+  The result replicates on the larger 256x256 grid, ruling out any finite-size
+  artefact from the original 128x128 run.
+notes: 5-bit composite glider confirmed v=1c on 256x256 grid, perfectly stable for 800 steps, R²=1.0
 ```
