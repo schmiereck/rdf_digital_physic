@@ -3,19 +3,21 @@
 **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid.
 
 **Confirmed:**
-- A new, robust fitness metric, `CheckpointFitness`, has been developed and validated (iter_177.3). It enforces strict bit-count stability at multiple checkpoints, preventing "transient bloomer" exploits.
-- The `SimpleMotionFitness` metric used previously is flawed and susceptible to being gamed by unstable rules (iter_177.1).
+- A stable, v=1c glider has been successfully evolved (iter_179.3, 179.4). The champion rule (`g10_rule_001`) moves the 3-bit 'L-tromino' seed at 1 cell per step with perfect bit conservation.
+- The `CheckpointFitness` metric, which enforces strict bit-count stability at multiple checkpoints, was the key to this discovery (iter_179.3).
+- All "champion" rules from prior evolutionary runs (iter_174, 176) are unstable under the `CheckpointFitness` metric, scoring 0.0 (iter_179.1).
 
 **Refuted:**
-- The champion rule discovered in iter_176.3 is not a stable glider. It is a 'transient bloomer' that exhibits unstable, chaotic growth (iter_177.1, 177.2).
+- The implicit assumption that previous, simpler fitness metrics (like `SimpleMotionFitness`) were sufficient to evolve stable gliders is now explicitly refuted. Those metrics allowed for "transient bloomer" exploits.
 
 **Best Result:**
-- There are currently **no known** rules that produce stable, moving gliders. The best result of this phase is the `CheckpointFitness` metric itself, which is a methodological advance.
+- The champion rule discovered in `iter_179.3` and the corresponding animation (`champion_glider.gif` in `iter_179.4`) showing a perfect, stable, v=1c glider.
 
 **In Progress:**
-- The search for a stable glider has been reset. The immediate next step is to deploy the new, more robust fitness metric. **This was blocked in phase 178 by a persistent technical error.**
+- The properties of this newly discovered glider (e.g., collision dynamics, robustness) have not yet been investigated.
 
 **Open Questions:**
-- Will an evolutionary search using the new `CheckpointFitness` metric discover a true, long-range stable glider?
-- Are there any rules in previous populations that pass the new, stricter fitness check?
-- Is a 200-step evaluation horizon, even with checkpoints, sufficient to guarantee long-term stability?
+- What are the collision dynamics of the newly discovered v=1c glider?
+- How robust is the glider to noise or perturbations?
+- Can the champion rule be minimized to identify its essential components?
+- Can we evolve other, different types of gliders?
