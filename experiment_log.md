@@ -3,46 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.13929
-hypothesis: 'evolution: A fitness function `total_displacement / (1 + std_dev)` will
-  produce a generation of rules (Gen-1) with a mean fitness at least 50% greater than
-  the mean of a similarly-calculated baseline.'
-input_tokens: 32690
-iter: 150
-metrics:
-  annihilation_count: 0
-  max_fitness: 0.981041
-  mean_fitness: 0.823996
-  median_fitness: 0.827807
-  population_size: 100
-  std_dev_fitness: 0.090029
-output_tokens: 2369
-status: ok
-```
-
-## iter_150: evolution: A fitness function `total_displacement / (1 + std_dev)` will produce a generation of rules (Gen-1) with a mean fitness at least 50% greater than the mean of a similarly-calculated baseline.
-
-**Analysis:** The experiment to establish a baseline for the velocity-stability metric has produced a surprising and informative result. My hypothesis was that the mean fitness of a random population would be low (<0.1), assuming that most random rules would produce chaotic, high-variance motion. The opposite is true: the mean fitness was very high, at 0.824.
-
-The `experimenter_view` provides the crucial insigh
-
-**Status:** ok
-
-**Metrics:** `{'annihilation_count': 0, 'max_fitness': 0.981041, 'mean_fitness': 0.823996, 'median_fitness': 0.827807, 'population_size': 100, 'std_dev_fitness': 0.090029}`
-
-**Experimenter view:** Baseline over 100 random C2-symmetric rules with 8 kernel pairs each.
-Soup: 150x150, 25% density. Evaluation: 1600 steps (4 windows x 400).
-Annihilation_count=0: all rules preserved some initial COM motion; none erased the soup entirely.
-Dominant pattern is a large window-1 burst that decays to near-zero by window-2 onward,
-which the std_dev term penalizes. The metric correctly scores these low-to
-
-**Notes:** Baseline measurement for velocity-stability metric.
-
-
----
-```yaml
 cached_tokens: 31082
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.21742
@@ -998,4 +958,36 @@ First, sub-agent 179.1 confirmed that the persistent `code_error` from phase 178
 **Sub-agent 179.3 (Evolutionary Search):** After a transient error
 
 **Notes:** A major milestone was achieved. The methodological improvements of the last few phases have paid off, leading to the first-ever evolution of a stable, high-velocity glider.
+
+
+---
+```yaml
+cached_tokens: 128019
+cost_usd: 0.29121
+hypothesis: 'phase-180: All experiments to characterize the v=1c glider were blocked
+  by a persistent execution environment error.'
+input_tokens: 170611
+iter: 180
+metrics: {}
+output_tokens: 2869
+status: code_error
+```
+
+## iter_180: phase-180: All experiments to characterize the v=1c glider were blocked by a persistent execution environment error.
+
+**Analysis:** The goal for this phase was to characterize the newly discovered v=1c glider from iter_179 by conducting a series of collision experiments. The plan was logically sound: start with a head-on collision, then a glancing collision, then a collision with a stationary object.
+
+However, the entire phase was blocked by a persistent technical failure in the execution environment. Sub-agent 180.1, tasked w
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** **Sub-agent 180.1 (Head-on Collision):** Failed instantly with a `code_error` related to resource limits.
+**Sub-agent 180.2 (Retry Head-on Collision):** Failed instantly with the identical `code_error`.
+**Sub-agent 180.3 (Retry with High Complexity):** Failed instantly with the identical `code_error`, despite increased resources and a simplified task.
+
+The execution environment is currently unable
+
+**Notes:** This phase was a total loss due to technical roadblocks. The scientific questions remain valid but are currently unanswerable.
 
