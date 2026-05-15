@@ -1,0 +1,55 @@
+artifacts:
+- src/run_iter_179_reevaluate.py
+- archive/iter_179/results/reevaluation_scores.csv
+experimenter_view: 'The target file `archive/iter_176/results/final_population.json`
+  does not exist —
+
+  iter_176''s evolutionary sub-agent only persisted the single champion rule
+
+  (gen_5/rule_019.json), not the full population.
+
+
+  To honor the experiment''s intent (re-evaluating the best available prior
+
+  population), the script fell back to iter_174''s final generation
+
+  (gen_13_population.json, 100 rules) plus the iter_176 champion, for 101 rules total.
+
+
+  CheckpointFitness with the L-tromino seed and checkpoints at steps 50, 100, 150,
+  200
+
+  returned 0.0 for every single rule. This is the expected outcome: all prior populations
+
+  were evolved under metrics (StableVelocityFitness, SimpleMotionFitness) that did
+  not
+
+  enforce strict bit-count stability at intermediate steps, so all rules allow the
+
+  3-bit L-tromino to expand before reaching the first checkpoint at step 50.
+
+
+  Key finding: the strict CheckpointFitness metric is a genuine filter — none of
+
+  the 101 rules from previous "promising" runs survive it. This conclusively confirms
+
+  that a new evolutionary search using CheckpointFitness as its objective is required
+
+  to discover true stable gliders.
+
+  '
+log_excerpt: "[WARNING] archive/iter_176/results/final_population.json not found.\
+  \ Falling back to iter_174 gen_13 population.\n  Loaded 100 rules from iter_174\
+  \ gen_13 population.\n  Added iter_176 champion rule (gen_5/rule_019).\n\nEvaluating\
+  \ 101 rules with CheckpointFitness (L-tromino seed)...\nCheckpoints: [50, 100, 150,\
+  \ 200], Steps: 200\n\n  [10/101] hash=12ead3b6b78b323c score=0.000000\n  [20/101]\
+  \ hash=fdf8331ff76af568 score=0.000000\n  [30/101] hash=655e74d76aceaeea score=0.000000\n\
+  \  [100/101] hash=8982f475b70e6595 score=0.000000\n\nResults saved to archive/iter_179/results/reevaluation_scores.csv\n\
+  \nTop fitness score:  0.00000000\nRules scoring > 0: 0\nTotal rules:       101\n"
+metrics:
+  rules_evaluated: 101
+  rules_scoring_above_zero: 0
+  top_fitness_score: 0.0
+notes: All prior rules score 0.0 under CheckpointFitness; a new evolutionary run is
+  needed.
+status: ok
