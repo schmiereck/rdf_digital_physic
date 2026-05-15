@@ -1,26 +1,27 @@
 # Current Research State
 
-**Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid.
+**Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
 
 **Confirmed:**
-- A stable, v=1c glider (3-bit L-tromino) under rule `g10_rule_001` is reproducible (iter_179, iter_181.1).
-- A 5-bit composite particle, formed from the fusion of a 3-bit glider and a single bit, is also a stable, v=1c glider (iter_182.1).
-- The rule `g10_rule_001` is NOT generally bit-conserving; its behavior is highly density-dependent.
-- **High-density interaction (2 gliders, head-on):** Catastrophically inelastic, creating a 192-bit static "ash" (iter_181.2).
-- **Medium-density interaction (1 glider + 1 bit):** Constructive inelastic fusion, resulting in the stable 5-bit composite glider (iter_181.3).
-- **Interaction Range:** The interaction between gliders is strictly local (contact-only), with no effect observed at a 54-cell lateral separation (iter_182.2).
+- A stable, v=1c glider (3-bit L-tromino) under rule `g10_rule_001` is reproducible (iter_179).
+- A stable, v=1c 5-bit composite glider exists (iter_182.1).
+- All tested interactions under rule `g10_rule_001` are catastrophically inelastic and non-conserving:
+  - Head-on 3-bit vs 3-bit collision creates a 192-bit static 'ash' (iter_181.2).
+  - Glancing 3-bit vs 3-bit collision creates a 321-bit period-2 oscillator (iter_185.1).
+  - 3-bit vs 5-bit collision leads to a computationally intractable state explosion (iter_185.2).
+- The 192-bit 'ash' is not inert; it is a reactive medium that can be catalyzed by a glider collision to grow into a larger, 322-bit stable static structure (iter_185.3).
+- The interaction range of gliders is strictly local (contact-only) (iter_182.2).
 
 **Refuted:**
-- The implicit assumption that rule `g10_rule_001` is intrinsically bit-conserving is refuted. Conservation is an emergent property of specific low-density patterns.
+- The hypothesis that rule `g10_rule_001` could support any form of simple or elastic scattering is now strongly refuted by overwhelming evidence from multiple collision scenarios.
 
 **Best Result:**
-- The discovery and characterization of the `v=1c` glider and its complex, density-dependent interaction physics. The particle "zoo" now contains two confirmed stable gliders (3-bit and 5-bit) and two stable static structures (192-bit ash).
+- A thorough characterization of a rule that supports stable gliders but has complex, inelastic, density-dependent collision physics. This serves as a well-documented baseline for what to avoid in future searches.
 
 **In Progress:**
-- Characterization of glider interactions.
+- This line of inquiry is complete. A new evolutionary search is required.
 
 **Open Questions:**
-- What is the outcome of a true glancing collision between two 3-bit gliders with a lateral separation of only 1-2 cells?
-- What happens in a collision between the original 3-bit glider and the newly confirmed 5-bit glider?
-- Can the 192-bit static 'ash' be altered or activated by a collision with a glider?
-- Can we evolve a rule that produces truly elastic collisions?
+- Can an evolutionary search with a fitness function that directly rewards bit conservation *during* collisions produce a rule capable of elastic scattering?
+- What is the underlying mechanism causing the computational explosion in the 3-bit vs. 5-bit collision?
+- What properties of the initial state determine which of the high-bit-count attractors (e.g., 192-bit, 321-bit, 322-bit) the system falls into?

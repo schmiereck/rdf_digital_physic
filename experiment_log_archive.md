@@ -7719,3 +7719,44 @@ C2-symmetric kernel crossover and mutation raised the mean population fitness fr
 
 **Notes:** Gen-2 mean (+34.9% over Gen-1) confirms evolutionary signal; new script src/evolve.py created.
 
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.14504
+hypothesis: 'visualization: A visualization of the new champion rule_021''s dynamics
+  will show a coherent, high-velocity object that explains its exceptionally high
+  fitness score of 3.465.'
+input_tokens: 34807
+iter: 153
+metrics:
+  elite_count: 10
+  gen2_mean_fitness: 0.609371
+  improvement_pct: 25.84
+  max_fitness: 3.464986
+  mean_fitness: 0.766812
+  median_fitness: 0.728191
+  population_size: 100
+output_tokens: 2211
+status: ok
+```
+
+## iter_153: visualization: A visualization of the new champion rule_021's dynamics will show a coherent, high-velocity object that explains its exceptionally high fitness score of 3.465.
+
+**Analysis:** The experiment confirms that the composite fitness metric (`total_displacement / (1 + std_dev)`) continues to provide a strong evolutionary signal. The mean fitness of the Gen-3 population increased by 25.84% over Gen-2, from 0.609 to 0.767, meeting the success criterion of >20% improvement.
+
+The most significant finding is the emergence of an exceptional outlier, `rule_021`, with a fitness score 
+
+**Status:** ok
+
+**Metrics:** `{'elite_count': 10, 'gen2_mean_fitness': 0.609371, 'improvement_pct': 25.84, 'max_fitness': 3.464986, 'mean_fitness': 0.766812, 'median_fitness': 0.728191, 'population_size': 100}`
+
+**Experimenter view:** Gen-3 evolution using composite metric total_displacement / (1 + std_dev).
+Gen-2 rule dicts were reconstructed deterministically by replaying the iter_152
+breeding (seed=152) from iter_150 Gen-1 elites (seed=150). Top 10 Gen-2 elites
+selected; top-2 (rule_025, rule_073) carried unchanged into Gen-3. The remaining
+98 rules bred via crossover + mutation of C2-symmetric kernel pairs (breed seed=153).
+
+**Notes:** Gen-3 evolution +25.84% over Gen-2 mean; rule_021 is an exceptional outlier at 3.465 (2.6x Gen-2 max)
+
