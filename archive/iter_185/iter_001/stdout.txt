@@ -1,0 +1,70 @@
+I'll start by exploring the project structure to find the relevant files from iter_179.
+Search the project at C:\Users\thomas\Projekte\rdf_digital_physic\src for:
+1. All files in archive/iter_179/ - list them and read key ones
+2. The g10_rule_001 definition - what is it? What rule does it implement?
+3. Any glider definitions for 3-bit L-tromino gliders on hexagonal grids
+4. The archive/iter_185/ directory structure
+5. Any checkpoint.yaml files in iter_185 that describe the current task
+
+Please read the actual file contents, especially any Python files defining the rule and any existing simulation infrastructure. Report all file paths found and the key code/data found in them.
+Now let me read the key files to understand the exact rule and simulation infrastructure.
+Let me also check the head-on collision script and the evolution.py for additional context.
+Now I have all the context. The glider moves East (increasing row), N/S offset is the column direction. I'll write the iter_185 collision script now.
+The simulation ran successfully. The result is dramatic - the gliders merged and triggered explosive growth to 321 bits stabilizing as an oscillator. Let me verify the output file and update the checkpoint.
+The GIF was saved (759 KB). Now let me update the checkpoint with the result.
+The simulation is complete. Here's a summary of what happened:
+
+**Setup**: Two identical East-bound L-tromino gliders placed at `[(62,62),(63,62),(63,63)]` and `[(62,64),(63,64),(63,65)]` — a 2-cell lateral N/S column offset near the grid center (64,64).
+
+**Result**: The gliders immediately fused into an explosive runaway growth pattern. By step 50 there were 130 bits; by step ~150 the system stabilized at ~321 bits oscillating between 321–322 with period 2. The CoM barely moved in row (0.92 cells East in 500 steps) — the structure became effectively stationary.
+
+**Outcome**: **Catastrophic fusion → stable large oscillator.** The gliders did not pass through each other, scatter, or annihilate. Their adjacent neighborhoods triggered a cascade that grew into a 321-cell period-2 oscillator filling a region of the grid.
+
+```yaml
+status: ok
+artifacts:
+  - src/iter_185_glancing_collision.py
+  - archive/iter_185/results/glancing_collision.gif
+metrics:
+  initial_bits: 6
+  final_bits: 321
+  min_bits: 6
+  max_bits: 322
+  bits_conserved: false
+  first_deviation_step: 1
+  late_stage_oscillation_period: 2
+  late_stage_bits_min: 321
+  late_stage_bits_max: 322
+  com_row_displacement: 0.92
+  com_col_displacement: 127.87
+log_excerpt: |
+  === Parallel Glancing Collision Experiment — g10_rule_001 ===
+  Grid: 128x128  Steps: 500
+  Glider A (East, col~62): [(62, 62), (63, 62), (63, 63)]
+  Glider B (East, col~64): [(62, 64), (63, 64), (63, 65)]  [+2 col N/S offset]
+  Rule ID: g10_rule_001  fitness=56.0  LUT non-zero: 68
+  Initial bit count: 6  (expected 6 = 3+3)
+    step    50:  130 bits   com_row=87.99  com_col=63.22
+    step   100:  255 bits   com_row=67.32  com_col=63.21
+    step   150:  321 bits   com_row=63.59  com_col=63.21
+    step   200:  321 bits   (stable)
+    ...
+    step   500:  321 bits
+  Late-stage: oscillates 321/322 every step (period-2 oscillator)
+  Collision outcome: inelastic scatter (final=321, initial=6)
+  Animation saved: archive/iter_185/results/glancing_collision.gif
+experimenter_view: |
+  Two identical East-bound L-tromino gliders placed side-by-side with a 2-cell
+  North/South (column) offset near grid center immediately fused upon contact at
+  step 1. Rather than passing through each other or scattering into independent
+  gliders, the interaction triggered a runaway bit-growth cascade: bits grew
+  linearly (~2.6 bits/step) for ~100 steps, then abruptly saturated at 321 cells
+  forming a large period-2 oscillator. The center-of-mass moved only ~0.9 cells
+  East in 500 steps (effectively stationary). The N/S CoM displacement of ~128
+  (wrapping) indicates the pattern spread to fill a broad column band. This result
+  shows g10_rule_001 is highly sensitive to multi-glider proximity: the rule that
+  cleanly sustains isolated gliders produces catastrophic growth when two gliders
+  interact edge-to-edge. The final state is NOT two independent gliders — it is a
+  fused macroscopic oscillator. Annihilation and pass-through were both absent.
+notes: Parallel glancing collision → immediate fusion cascade → 321-cell period-2 oscillator; no scatter or pass-through observed
+```
