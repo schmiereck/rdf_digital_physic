@@ -30,6 +30,15 @@ LTROMINO_CELLS = [(63, 63), (64, 63), (64, 64)]
 INITIAL_BITS   = len(LTROMINO_CELLS)
 SIM_STEPS      = 400
 
+
+def make_grid_multi_particle(particles: list[list[tuple]], grid_size: int = GRID_SIZE) -> np.ndarray:
+    """Initialize a grid with multiple particles. Each particle is a list of (row, col) tuples."""
+    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
+    for particle_cells in particles:
+        for r, c in particle_cells:
+            grid[r % grid_size, c % grid_size] = 1
+    return grid
+
 FRAME_EVERY = 4   # 100 frames total for 400 steps
 FRAME_MS    = 60
 
