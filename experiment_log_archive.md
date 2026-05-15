@@ -7643,3 +7643,39 @@ which the std_dev term penalizes. The metric correctly scores these low-to
 
 **Notes:** Baseline measurement for velocity-stability metric.
 
+
+---
+```yaml
+cached_tokens: 31082
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.21742
+hypothesis: 'evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement
+  / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness
+  at least 50% greater than the random baseline of 0.45.'
+input_tokens: 80212
+iter: 151
+metrics:
+  max_fitness: 1.17941518
+  mean_fitness: 0.45167814
+  median_fitness: 0.42504039
+  new_fitness_for_rule_086: 0.04378386
+output_tokens: 1740
+status: ok
+```
+
+## iter_151: evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness at least 50% greater than the random baseline of 0.45.
+
+**Analysis:** In iter_150, we discovered a critical flaw in our velocity-stability fitness metric: it assigned the highest scores to rules that quickly became inactive ("settlers"), as zero motion has zero standard deviation. This iteration's goal was to fix this by introducing a composite metric: `total_displacement / (1 + std_dev)`.
+
+The experiment successfully re-evaluated the 100 random rules from the previ
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 0.45167814, 'max_fitness': 1.17941518, 'median_fitness': 0.42504039, 'new_fitness_for_rule_086': 0.04378386}`
+
+**Experimenter view:** Re-evaluated 100 random rules from iter_150 using the new composite fitness metric: new_fitness = total_displacement / (1 + std_dev).
+
+Key finding: rule_086, which had the highest original fitness (0.98104101), receives a dramatically lower new fitness score of 0.04378386. This reveals rule_086 as a "settler" rule—it appears fit in the original metric but has virtually no motion (total_displacemen
+
+**Notes:** New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
+

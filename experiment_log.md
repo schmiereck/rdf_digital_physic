@@ -3,42 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 31082
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.21742
-hypothesis: 'evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement
-  / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness
-  at least 50% greater than the random baseline of 0.45.'
-input_tokens: 80212
-iter: 151
-metrics:
-  max_fitness: 1.17941518
-  mean_fitness: 0.45167814
-  median_fitness: 0.42504039
-  new_fitness_for_rule_086: 0.04378386
-output_tokens: 1740
-status: ok
-```
-
-## iter_151: evolution-gen1-composite-metric: A new evolutionary run using the `total_displacement / (1 + std_dev)` fitness metric will produce a first generation with a mean fitness at least 50% greater than the random baseline of 0.45.
-
-**Analysis:** In iter_150, we discovered a critical flaw in our velocity-stability fitness metric: it assigned the highest scores to rules that quickly became inactive ("settlers"), as zero motion has zero standard deviation. This iteration's goal was to fix this by introducing a composite metric: `total_displacement / (1 + std_dev)`.
-
-The experiment successfully re-evaluated the 100 random rules from the previ
-
-**Status:** ok
-
-**Metrics:** `{'mean_fitness': 0.45167814, 'max_fitness': 1.17941518, 'median_fitness': 0.42504039, 'new_fitness_for_rule_086': 0.04378386}`
-
-**Experimenter view:** Re-evaluated 100 random rules from iter_150 using the new composite fitness metric: new_fitness = total_displacement / (1 + std_dev).
-
-Key finding: rule_086, which had the highest original fitness (0.98104101), receives a dramatically lower new fitness score of 0.04378386. This reveals rule_086 as a "settler" rule—it appears fit in the original metric but has virtually no motion (total_displacemen
-
-**Notes:** New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
-
-
----
-```yaml
 cached_tokens: 0
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.14295
@@ -990,4 +954,40 @@ However, the entire phase was blocked by a persistent technical failure in the e
 The execution environment is currently unable
 
 **Notes:** This phase was a total loss due to technical roadblocks. The scientific questions remain valid but are currently unanswerable.
+
+
+---
+```yaml
+cached_tokens: 86025
+cost_usd: 0.3538
+hypothesis: 'phase-181: Characterize the v=1c glider''s collision dynamics, revealing
+  density-dependent outcomes ranging from explosive growth to stable particle fusion.'
+input_tokens: 157451
+iter: 181
+metrics:
+  glider_bit_final_bits: 5
+  glider_bit_initial_bits: 4
+  head_on_final_bits: 192
+  head_on_initial_bits: 6
+output_tokens: 2718
+status: ok
+```
+
+## iter_181: phase-181: Characterize the v=1c glider's collision dynamics, revealing density-dependent outcomes ranging from explosive growth to stable particle fusion.
+
+**Analysis:** This phase successfully characterized the collision dynamics of the v=1c glider discovered in iter_179. The persistent `code_error` from phase 180 was resolved, allowing for a systematic investigation.
+
+First, sub-agent 181.1 confirmed the execution environment was stable by perfectly reproducing the single-glider dynamics, a critical prerequisite.
+
+Next, two collision experiments at different int
+
+**Status:** ok
+
+**Metrics:** `{'head_on_initial_bits': 6, 'head_on_final_bits': 192, 'glider_bit_initial_bits': 4, 'glider_bit_final_bits': 5}`
+
+**Experimenter view:** **Sub-agent 181.1 (Reproducibility):** Confirmed the v=1c glider is perfectly reproducible and the execution environment is stable. A single 3-bit glider moves at 1.0 cells/step with no change in bit count.
+
+**Sub-agent 181.2 (Head-on Collision):** Revealed a catastrophically inelastic collision. The two 3-bit gliders (6 bits total) annihilate each other, triggering an explosive growth phase that 
+
+**Notes:** Collision dynamics are highly density-dependent: high density leads to explosion, medium density to fusion.
 

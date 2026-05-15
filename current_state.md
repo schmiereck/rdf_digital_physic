@@ -2,24 +2,23 @@
 
 **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid.
 
-**Note:** Phase 180 was a complete failure due to persistent technical errors in the execution environment. All attempts to simulate glider collisions failed. The state of knowledge is unchanged since the end of phase 179.
-
 **Confirmed:**
-- A stable, v=1c glider has been successfully evolved (iter_179.3, 179.4). The champion rule (`g10_rule_001`) moves the 3-bit 'L-tromino' seed at 1 cell per step with perfect bit conservation.
-- The `CheckpointFitness` metric, which enforces strict bit-count stability at multiple checkpoints, was the key to this discovery (iter_179.3).
-- All "champion" rules from prior evolutionary runs (iter_174, 176) are unstable under the `CheckpointFitness` metric, scoring 0.0 (iter_179.1).
+- A stable, v=1c glider (3-bit L-tromino) under rule `g10_rule_001` is reproducible (iter_179, iter_181.1).
+- The rule `g10_rule_001` is NOT generally bit-conserving. Its behavior is highly density-dependent.
+- **High-density interaction:** A head-on collision between two gliders (6 bits) is catastrophically inelastic, resulting in a stable, 192-bit static "ash" (iter_181.2).
+- **Medium-density interaction:** A collision between a glider (3 bits) and a single bit (1 bit) is a constructive inelastic fusion, resulting in a new, stable, 5-bit composite glider (iter_181.3).
 
 **Refuted:**
-- The implicit assumption that previous, simpler fitness metrics (like `SimpleMotionFitness`) were sufficient to evolve stable gliders is now explicitly refuted. Those metrics allowed for "transient bloomer" exploits.
+- The implicit assumption that rule `g10_rule_001` is intrinsically bit-conserving is now refuted. Conservation is an emergent property of a specific low-density pattern (the single glider), not a general property of the rule.
 
 **Best Result:**
-- The champion rule discovered in `iter_179.3` and the corresponding animation (`champion_glider.gif` in `iter_179.4`) showing a perfect, stable, v=1c glider.
+- The discovery and characterization of the v=1c glider and its complex, density-dependent interaction physics. Two new stable structures have been identified: the 192-bit "ash" and a 5-bit composite glider.
 
 **In Progress:**
-- The properties of this newly discovered glider (e.g., collision dynamics, robustness) have not yet been investigated due to the technical failures in phase 180.
+- Characterization of the newly discovered glider and its interactions is underway.
 
 **Open Questions:**
-- What are the collision dynamics of the newly discovered v=1c glider?
-- How robust is the glider to noise or perturbations?
-- Can the champion rule be minimized to identify its essential components?
-- Can we evolve other, different types of gliders?
+- What are the properties of the new 5-bit composite glider (velocity, stability)?
+- What happens in a glancing (off-axis) collision between two of the original 3-bit gliders?
+- What are the properties of the 192-bit 'ash' created in the head-on collision?
+- Can we evolve a rule that produces truly *elastic* collisions?
