@@ -7679,3 +7679,43 @@ Key finding: rule_086, which had the highest original fitness (0.98104101), rece
 
 **Notes:** New metric effectively penalizes inactive "settler" rules; rule_086 drops from top performer to bottom quartile.
 
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.14295
+hypothesis: 'evolution-gen3-composite-metric: A third generation of rules, bred from
+  the top Gen-2 performers, will have a mean fitness at least 30% higher than the
+  Gen-2 mean of 0.609.'
+input_tokens: 34566
+iter: 152
+metrics:
+  elite_count: 10
+  gen1_mean_fitness: 0.451678
+  improvement_pct: 34.91
+  max_fitness: 1.320041
+  mean_fitness: 0.609371
+  median_fitness: 0.583951
+  population_size: 100
+output_tokens: 2092
+status: ok
+```
+
+## iter_152: evolution-gen3-composite-metric: A third generation of rules, bred from the top Gen-2 performers, will have a mean fitness at least 30% higher than the Gen-2 mean of 0.609.
+
+**Analysis:** The previous iteration, iter_151, established that a composite fitness metric, `total_displacement / (1 + std_dev)`, effectively filters out undesirable "settler" rules while providing a measurable signal for motion. A baseline mean fitness of 0.45 was established for a random population. This set the stage for the current experiment: to determine if this new metric could successfully drive an evo
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 0.609371, 'median_fitness': 0.583951, 'max_fitness': 1.320041, 'gen1_mean_fitness': 0.451678, 'improvement_pct': 34.91, 'elite_count': 10, 'population_size': 100}`
+
+**Experimenter view:** Gen-2 evolution using the composite metric total_displacement / (1 + std_dev)
+produced a clear fitness improvement over the Gen-1 random baseline. Selecting
+the top 10% (10 rules) of Gen-1 as elite parents and breeding 100 offspring via
+C2-symmetric kernel crossover and mutation raised the mean population fitness from
+0.4517 to 0.6094 (+34.9%). The two carried elites (rule_001, rule_002) retained
+
+
+**Notes:** Gen-2 mean (+34.9% over Gen-1) confirms evolutionary signal; new script src/evolve.py created.
+
