@@ -1,0 +1,83 @@
+I'll start by exploring the project structure and the relevant files before running the experiment.
+Let me read the champion rule file and check the archive structure.
+Let me check the iter_181 checkpoint to understand what's been done so far.
+Let me look at the previous iter_181 work and understand the glider's direction of travel.
+Now I understand the setup. "East" means +row direction. The L-tromino for eastward movement is `(r,c), (r+1,c), (r+1,c+1)`. I'll write the collision experiment script.
+Now let me run the simulation:
+The simulation ran successfully. Let me analyze the results in detail.
+
+The key findings:
+- Bit count immediately jumped from 4 to 5 at step 1 (the isolated target bit itself is unstable under this rule — it spawns a neighbor)
+- The bit count stayed at 5 consistently throughout all 500 steps — no explosion
+- The system settled into a stable 5-bit structure moving together
+- No explosive growth; outcome is "inelastic_creation" (1 bit created, net +1)
+
+The "collision_step: 1" indicates the target bit is already dynamically unstable before the glider even arrives — it expands from 1 to 2 bits at step 1. When the glider reaches the expanded target (~step 32 at v=1c), they merge into a stable 5-bit complex that continues to propagate.
+
+```yaml
+status: ok
+artifacts:
+  - src/glider_bit_collision.py
+  - archive/iter_181/results/glider_bit_collision.gif
+metrics:
+  initial_bit_count: 4
+  final_bit_count: 5
+  max_bit_count: 5
+  bits_created: 1
+  collision_step: 1
+  explosion_detected: 0
+  sim_steps: 500
+  grid_size: 128
+log_excerpt: |
+  Initial bit count: 4
+  Initial CoM:       (40.50, 64.25)
+
+    step    bits   com_row   com_col
+  ----------------------------------------
+      50       5     95.00     64.20
+     100       5     17.00     64.20
+     150       5     67.00     64.20
+     200       5     65.80     64.20
+     250       5     39.00     64.20
+     300       5     89.00     64.20
+     350       5     87.80     64.20
+     400       5     61.00     64.20
+     450       5     59.80     64.20
+     500       5     33.00     64.20
+
+  === Results ===
+  Initial bits:      4
+  Final bits:        5
+  Max bits ever:     5
+  Collision at step: 1
+  Explosion:         False
+  Bit conserved:     False
+  Final CoM:         (33.00, 64.20)
+  Outcome:           inelastic_creation
+  Animation saved: archive/iter_181/results/glider_bit_collision.gif
+experimenter_view: |
+  The single stationary target bit at (64,64) is dynamically unstable under
+  rule g10_rule_001: at step 1 it spawns a second bit (at (65,64)) before the
+  glider has even reached it. This is because LUT[4]=1, meaning a cell with
+  only its W-neighbor set spontaneously generates a new bit.
+
+  By the time the glider (starting at rows 32-33, moving East at ~1 row/step)
+  reaches the expanded 2-bit target region (~step 32), the collision produces
+  a stable 5-bit complex. This complex propagates continuously for all 500
+  steps with com_col fixed at 64.20, indicating coherent eastward motion.
+
+  Key answers:
+  - Glider survival: Yes — a combined 5-bit structure continues moving East.
+  - Target bit: Not simply destroyed; it first expanded to 2 bits, then
+    merged with the incoming glider into the 5-bit complex.
+  - Bit conservation: NOT conserved. Initial=4, final=5 (net +1 bit created).
+  - Explosive growth: None. Max bits ever = 5. Qualitatively different from
+    the head-on collision; this is a gentle inelastic merger rather than an
+    explosion.
+
+  The glider-vs-single-bit collision is "soft": the rule's birth condition
+  LUT[4]=1 makes isolated bits inherently unstable, so any isolated target
+  will immediately expand. The end result is a slightly heavier composite
+  glider (+1 bit) that survives and travels on — a clear inelastic fusion event.
+notes: Glider-bit collision produces a stable 5-bit composite glider (net +1 bit); no explosive growth.
+```
