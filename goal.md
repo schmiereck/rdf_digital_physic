@@ -37,17 +37,27 @@ Um den exponentiell explodierenden Regelraum zu bändigen, nutzt das Framework e
 
 Das Projekt ist in vier Sprints unterteilt, die jeweils mit einem "Savegame" des Wissensstandes enden:
 
-### Phase 1: Der 1D-Symmetrie-Sieber (Grundlagen)
+### Phase 1: Der 1D-Symmetrie-Sieber (Grundlagen) ✓ ABGESCHLOSSEN
 * **Ziel:** Identifikation aller reversiblen, bit-erhaltenden Regeln für $n=3$ Bits.
 * **Meilenstein:** Katalog von "Naturkonstanten" (Regelsätzen), die einfache Fortbewegung erlauben.
+* **Ergebnis (iter_001–002):** 33 nicht-triviale Regeln gefunden; 22 davon erzeugen v=c-Gleiter,
+  11 stabile Festpunkte. Details: `archive/iter_001/results/valid_rules.json`.
 
-### Phase 2: Der "Zappel"-Detektor (Innere Schwingung)
+### Phase 2: Der "Zappel"-Detektor (Innere Schwingung) ✓ ABGESCHLOSSEN
 * **Ziel:** Erweiterung der Bit-Tiefe (2-3 Bits pro Zelle), um interne Oszillationen zu ermöglichen.
 * **Meilenstein:** Erzeugung von Teilchen mit effektiven Geschwindigkeiten $v < c$ (Masse-Simulation).
+* **Ergebnis (iter_003–006):** 2-Bit/Zelle-System: Periode-2-Oszillator (v=0) und v=c/2-Gleiter
+  (Einzel- und Composite-Partikel) per Konstruktion nachgewiesen. Kollisionscharakterisierung
+  in 1D: 8 elastisch, 6 Fusion, 8 chaotisch (iter_007 / iter_018).
 
-### Phase 3: Die 2D-Hex-Kollision (Streuung)
+### Phase 3: Die 2D-Hex-Kollision (Streuung) ⟳ IN BEARBEITUNG
 * **Ziel:** Validierung der Interaktions-Logik bei elastischen Stößen im hexagonalen Gitter.
 * **Meilenstein:** Beobachtung von deterministischer Winkeländerung ohne Informationsverlust.
+* **Zwischenergebnis (iter_179, Milestone `milestone-glider-discovery`):**
+  Ein stabiler v=1c-Gleiter (3-Bit L-Tromino, Regel `g10_rule_001`) wurde durch evolutionäre
+  Suche entdeckt. Bit-Erhaltung perfekt, 400 Zellen Versatz in 400 Schritten, null Dispersion.
+  Animation: `archive/iter_179/results/champion_glider.gif`.
+* **Offen:** Kollisionsdynamik zweier Gleiter; v<c-Gleiter durch interne Oszillation.
 
 ### Phase 4: Das Kuboktaeder-Universum (3D bis 4D)
 In dieser Phase wird die Logik auf die volle Ziel-Geometrie übertragen. Wir unterscheiden dabei zwischen der Simulation im Raum und der Repräsentation als statische Raumzeit-Geometrie.
@@ -68,7 +78,67 @@ In dieser Phase wird die Logik auf die volle Ziel-Geometrie übertragen. Wir unt
 * **Meilenstein**: Vollständige Abbildung der Minkowski-Metrik auf ein diskretes Bit-Gitter. Nachweis, dass die Zeitdilatation geometrisch durch die Pfadlänge im 4D-Gitter (Eigenzeit) repräsentiert wird.
 ---
 
-## 4. Erfolgskriterien
+## 4. Gesichertes Wissen und methodische Lektionen (Stand: iter_179)
+
+Dieser Abschnitt ist das "Savegame" des bisherigen Wissensstands. Neue Agenten sollen ihn
+lesen, bevor sie Experimente planen, um bereits bekannte Sackgassen zu vermeiden.
+
+### 4.1 Bestätigte Fakten
+
+| Fakt | Iterationen |
+|------|------------|
+| 33 reversible, bit-erhaltende 1D-Regeln existieren (3-Bit-Nachbarschaft) | iter_001 |
+| 22 davon erzeugen v=c-Gleiter; 11 stabile Festpunkte | iter_002 |
+| 2-Bit/Zelle: v=c/2-Gleiter durch interne Oszillation möglich (Masse-Emergenz) | iter_003–006 |
+| Stabiler v=1c-Gleiter im 2D-Hex-Gitter evolutionär entwickelt (`g10_rule_001`) | iter_179 |
+| Fitness-Score 56.0 entspricht echtem Gleiter (visuell verifiziert, kein Exploit) | iter_179.4 |
+| Alle "Champion"-Regeln aus iter_174 und iter_176 sind unter `CheckpointFitness` instabil (Score 0.0) | iter_179.1 |
+
+### 4.2 Bekannte Exploits der Fitness-Funktion
+
+Jeder dieser Exploits hat frühere evolutionäre Läufe invalidiert. Bei neuen Fitness-Funktionen
+müssen sie explizit ausgeschlossen werden:
+
+| Exploit | Symptom | Lösung |
+|---------|---------|--------|
+| **Settler** | Ruhende Regel erzielt hohen Score, weil std_dev = 0 | Displacement-Term erzwingen |
+| **Annihilator** | Alle Bits gelöscht → CoM-Bewegung relativ groß | `final_bits / initial_bits`-Term |
+| **Transient Puffer** | Hohe Anfangsbewegung, dann Stillstand | Spät-Fenster oder Checkpoint-Messung |
+| **Explosive Bloomer** | Bit-Zahl explodiert, CoM driftet nur kurz | `max_bit_count`-Strafe |
+| **C2-Symmetrie-Bug** | C2-Regel + C2-symmetrischer Seed → CoM-Invarianz (immer 0) | Asymmetrischen Seed verwenden (L-Tromino) |
+
+### 4.3 Robuste Fitness-Funktion: `CheckpointFitness`
+
+Die bisher einzige Fitness-Funktion, die alle bekannten Exploits ablehnt.
+Implementierung: `src/run_iter_179_evolution.py` (iter_179).
+
+**Prinzip:** Das Partikel wird an mehreren Zeitpunkten (Checkpoints) gemessen.
+Fitness = Netto-Versatz × Anzahl Checkpoints, an denen die Bit-Zahl exakt stabil ist.
+Eine Regel, die auch nur an einem Checkpoint die falsche Bit-Zahl hat, bekommt Fitness 0.
+
+**Standardmäßig zu verwenden** für alle zukünftigen evolutionären Läufe, bis eine bessere
+Metrik mit expliziter Begründung eingeführt wird.
+
+### 4.4 Standardkonfiguration evolutionäre Suche (2D Hex)
+
+Aus iter_170–179 destilliert; direkt übertragbar auf neue Kampagnen im 2D-Hex-Gitter:
+
+* **Seed-Partikel:** 3-Bit L-Tromino (asymmetrisch, C2-symmetrische Seeds sind unbrauchbar)
+* **Gittergröße:** 128×128 Torus
+* **Checkpoint-Abstände:** 4 gleichmäßige Punkte über den Simulationshorizont
+* **Populations-Größe:** 100 Regeln; Elite-Anteil 10%
+* **Erwartetes Verhalten:** Phasen-Transition (sprungartiger Fitness-Anstieg) kann in Gen 5–10 auftreten;
+  nicht abbrechen, wenn frühe Generationen stagnieren (iter_174: Plateau bis Gen 6, dann Sprung)
+
+### 4.5 Warnung: Triviale 2D-Regeln
+
+Einfache lokale Regeln im 2D-Hex-Gitter (Bit-Rotation, Nachbar-Swap) sind typischerweise
+äquivalent zu einem globalen Gitter-Shift und produzieren keine echten lokalen Teilchen
+(iter_016–017). Für nicht-triviale Dynamik ist evolutionäre Suche notwendig.
+
+---
+
+## 6. Erfolgskriterien
 
 * **Deterministische Gleiter:** Stabile Bit-Muster, die sich über weite Distanzen ohne Zerfall bewegen.
 * **Quantisierte Zwischenwerte:** Emergenz kontinuierlich wirkender Geschwindigkeiten durch statistische Richtungswechsel (Duty Cycles).
@@ -77,7 +147,7 @@ In dieser Phase wird die Logik auf die volle Ziel-Geometrie übertragen. Wir unt
 
 ---
 
-## 5. Technische Beschränkungen
+## 7. Technische Beschränkungen
 
 * **Strikte Lokalität:** Kein Zugriff auf nicht-benachbarte Knoten (Ausnahme: Explizite Verschränkungs-Pointer auf Quell-Events).
 * **Binäre Reinheit:** Keine Nutzung von Float-Werten innerhalb der Physik-Engine.
