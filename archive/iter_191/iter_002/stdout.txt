@@ -1,0 +1,89 @@
+Let me quickly sanity-test the new script before running the full 20-generation evolution.
+The warm-start parent rule fails bit conservation on the 2-tromino seed (256 cells stabilize). The task explicitly acknowledges that all-zero fitness is a "significant result," so I'll run the full evolution and capture the finding.
+The evolution completed cleanly. All 21 generations scored 0.0 — a "significant null result" per the task's success criteria, because the parent rule `g10_rule_001` is a single-particle glider that does not conserve bits on the two-particle collision seed (256 cells stabilize from the initial 6).
+
+```yaml
+status: experiment_failed
+artifacts:
+  - src/run_evolution.py
+  - archive/iter_191/results/champion_rule.json
+  - archive/iter_191/results/evolution_log.csv
+metrics:
+  champion_fitness: 0.0
+  champion_generation: 0
+  num_generations: 20
+  population_size: 100
+  elite_size: 10
+  swaps_per_child: 1
+  warm_start_members_conserving_bits: 0
+  warm_start_total: 100
+  parent_rule_mid_bits: 256
+  parent_rule_initial_bits: 6
+  heavy_mutated_5swaps_conserving_bits: 0
+  heavy_mutated_5swaps_total: 200
+log_excerpt: |
+  Loading warm-start population from archive/iter_191/results/warm_start_population.json ...
+  Configuration: generations=20 pop=100 elite=10 swaps/child=1 horizon=400 midpoint=200 grid=128
+    Gen  0: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n>=1=0  n>=2=0  ** new champion **
+    Gen  1: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n>=1=0  n>=2=0
+    ... (Gen 2 - Gen 19 all identical to Gen 1) ...
+    Gen 20: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n>=1=0  n>=2=0
+  Saved champion rule -> archive/iter_191/results/champion_rule.json
+  Saved evolution log  -> archive/iter_191/results/evolution_log.csv
+  === Evolution complete ===
+    champion_fitness     = 0.0000
+    champion_generation  = 0
+    approach_score       = 0.0
+    recession_score      = 0.0
+    bits_conserved       = False
+    d_initial            = None
+    d_mid                = None
+    d_final              = None
+experimenter_view: |
+  src/run_evolution.py was rewritten to (a) accept --initial_population_path,
+  --generations, --population_size, --elite_size, --mutation_rate and related
+  CLI flags; (b) load warm-start populations as 128-bit chromosomes via a
+  chromosome_to_rule_dict conversion (identical to the encoding used in
+  iter_190.2); (c) evaluate each member with StagedCollisionFitness (which
+  already enforces strict bit conservation between t_initial, t_mid, t_final);
+  (d) reproduce by swap-mutating elites (matching the iter_191.1 mutation
+  operator that built the warm-start population); and (e) persist the
+  champion to archive/iter_191/results/champion_rule.json plus a per-
+  generation CSV log.
+
+  The evolutionary search executed the full 20 generations of 100 members
+  (21 fitness sweeps in total) cleanly with no errors, but every single
+  evaluation produced fitness = 0.0. The root cause is structural, not
+  algorithmic: the warm-start parent rule g10_rule_001 (iter_179 champion,
+  68/128 chromosome bits) is a single-L-tromino glider — it has no global
+  bit-conservation property. When applied to the two-L-tromino collision
+  seed used by StagedCollisionFitness (initial_bits=6), the rule grows a
+  stable secondary pattern: by step 200 the live cell count has jumped to
+  256 and stays there, so the strict conservation gate trips and fitness
+  is immediately zeroed.
+
+  A diagnostic sweep confirmed this is not a margin issue — 0/100 of the
+  warm-start members conserve bits on the collision seed, and 0/200 of
+  more aggressively mutated (5 swaps) variants do either. The bit-count
+  distribution at t_mid spans 8 → 16376 (essentially full grid), with no
+  member hitting the required 6. The "warm start" therefore provides
+  glider-like motion only in its single-particle nursery — the moment the
+  rule meets a richer initial configuration, the secondary pattern
+  dominates, motion is irrelevant, and the conservation check makes the
+  whole fitness landscape flat.
+
+  This matches the success criterion's third clause exactly: "The absence
+  of any progress (all fitness scores remaining 0.0) would also be a
+  significant result." iter_190 found a flat landscape from random
+  initialisation; iter_191 finds a flat landscape from a warm-start
+  initialisation — the bottleneck is the rule family's inability to
+  conserve bits on multi-object seeds, not the search's ability to
+  bootstrap motion. A follow-up should either (a) screen the warm-start
+  population on the collision seed and only retain members with bits
+  conserved (likely zero from this parent — a different parent is needed),
+  (b) relax StagedCollisionFitness to use a soft conservation penalty
+  instead of a hard gate, or (c) generate a warm-start from a rule that is
+  globally bit-conserving (e.g. a reversible block rule) rather than from
+  a single-particle glider.
+notes: All 21 generations scored 0.0 — warm-start parent g10_rule_001 fails strict bit conservation on the 2-tromino seed (6→256 cells), so the fitness landscape is uniformly flat.
+```
