@@ -531,3 +531,111 @@ class LeakyConservationCollisionFitness:
 
     def __call__(self, rule_dict: dict | None = None) -> dict:
         return self.evaluate(rule_dict)
+
+
+# ── RecessionBiasedFitness ─────────────────────────────────────────────────
+
+
+class RecessionBiasedFitness(StagedCollisionFitness):
+    """Continuous recession scoring with a leaky bit-conservation penalty.
+
+    Runs the full simulation (no midpoint snapshot) and rewards rules that
+    first approach then recede.  Recession quality is scored continuously:
+
+        recession_score = min(1.0, final_distance / initial_distance)
+        staged_score    = 1.0 + recession_score   # 1.0 (fusion) → 2.0 (perfect)
+        fitness         = staged_score / (1.0 + bit_error)
+
+    Approach detection uses the same threshold as the parent class:
+    the minimum inter-object distance observed during the simulation must
+    fall below ``initial_distance - _STAGED_MARGIN``.  If it does not,
+    fitness is 0.0.
+    """
+
+    name = "RecessionBiasedFitness"
+
+    @staticmethod
+    def _two_coms_and_distance(grid: np.ndarray):
+        """Return ((r1,c1), (r2,c2), distance) for the two largest components,
+        or None if fewer than two components are present."""
+        labels, n = label(grid, structure=_STAGED_LABEL_STRUCTURE)
+        if n < 2:
+            return None
+        sizes = sorted(
+            ((lbl, int(np.sum(labels == lbl))) for lbl in range(1, n + 1)),
+            key=lambda x: x[1],
+            reverse=True,
+        )
+        top2 = [sizes[0][0], sizes[1][0]]
+        coms = center_of_mass(grid, labels, top2)
+        (r1, c1), (r2, c2) = coms
+        dist = math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2)
+        return (r1, c1), (r2, c2), dist
+
+    def evaluate(self, rule_dict: dict | None = None) -> dict:
+        rule_dict = rule_dict if rule_dict is not None else self.rule
+        if rule_dict is None:
+            raise ValueError("RecessionBiasedFitness: no rule supplied")
+
+        lut  = rule_dict_to_lut(rule_dict)
+        grid = _make_staged_grid(self.grid_size)
+
+        # Initial state
+        initial_result = self._two_coms_and_distance(grid)
+        if initial_result is None:
+            return {"fitness": 0.0, "approach_ok": False}
+        initial_com1, initial_com2, initial_distance = initial_result
+        initial_bits = int(grid.sum())
+
+        # Run full simulation, tracking the minimum inter-object distance.
+        min_distance = initial_distance
+        for _ in range(self.horizon):
+            grid = step_grid(grid, lut)
+            d = _staged_two_object_com_distance(grid)
+            if d is not None and d < min_distance:
+                min_distance = d
+
+        # Final state
+        final_result = self._two_coms_and_distance(grid)
+        final_bits   = int(grid.sum())
+        bit_error    = abs(initial_bits - final_bits)
+
+        # Approach check — same threshold logic as the parent class.
+        approach_ok = min_distance < initial_distance - _STAGED_MARGIN
+        if not approach_ok:
+            return {
+                "fitness":          0.0,
+                "approach_ok":      False,
+                "min_distance":     float(min_distance),
+                "initial_distance": float(initial_distance),
+                "final_distance":   None,
+                "initial_bits":     initial_bits,
+                "final_bits":       final_bits,
+                "bit_error":        int(bit_error),
+            }
+
+        # final_distance is 0 if the two objects merged (fewer than 2 components).
+        if final_result is None:
+            final_com1, final_com2, final_distance = None, None, 0.0
+        else:
+            final_com1, final_com2, final_distance = final_result
+
+        recession_score = min(1.0, final_distance / initial_distance) if initial_distance > 0 else 0.0
+        staged_score    = 1.0 + recession_score
+        fitness         = staged_score / (1.0 + bit_error)
+
+        return {
+            "fitness":          float(fitness),
+            "approach_ok":      True,
+            "staged_score":     float(staged_score),
+            "recession_score":  float(recession_score),
+            "min_distance":     float(min_distance),
+            "initial_distance": float(initial_distance),
+            "final_distance":   float(final_distance),
+            "initial_bits":     initial_bits,
+            "final_bits":       final_bits,
+            "bit_error":        int(bit_error),
+        }
+
+    def __call__(self, rule_dict: dict | None = None) -> dict:
+        return self.evaluate(rule_dict)

@@ -1,0 +1,27 @@
+Reading the existing fitness.py to understand the structure.
+Now I have a clear picture of the existing code. I'll add `RecessionBiasedFitness` at the end of `fitness.py`.
+I'll use more context to uniquely target the last occurrence in `LeakyConservationCollisionFitness`.
+Now verify the class is importable:
+The class imports correctly. `RecessionBiasedFitness` is now in `src/fitness.py`, inheriting from `StagedCollisionFitness` with:
+- Full-horizon simulation tracking minimum distance for approach detection
+- Continuous `recession_score = min(1.0, final_distance / initial_distance)`
+- `staged_score = 1.0 + recession_score` (range 1.0–2.0)
+- Leaky conservation: `fitness = staged_score / (1.0 + bit_error)`
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness.py
+metrics: {}
+log_excerpt: |
+  OK, name: RecessionBiasedFitness horizon: 400
+experimenter_view: |
+  Added RecessionBiasedFitness as a subclass of StagedCollisionFitness.
+  The key behavioural differences from the parent: (1) no midpoint snapshot —
+  instead the minimum inter-object distance across all horizon steps is used
+  to detect approach; (2) recession quality is continuous rather than binary,
+  scored as min(1.0, final_distance/initial_distance); (3) leaky bit-conservation
+  penalty divides the staged score by (1 + bit_error) instead of hard-failing.
+  Import check passed; class name and default horizon (400) are correct.
+notes: RecessionBiasedFitness added to src/fitness.py; import verified.
+```
