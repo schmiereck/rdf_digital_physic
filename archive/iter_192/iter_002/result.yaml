@@ -1,0 +1,97 @@
+artifacts:
+- src/run_iter_192_prescreen.py
+- src/run_iter_192_screened_evolution.py
+- archive/iter_192/iter_002/results/conserving_population.json
+- archive/iter_192/iter_002/results/generation_stats.json
+- archive/iter_192/iter_002/results/final_population.json
+- archive/iter_192/iter_002/results/champion_rule.json
+- archive/iter_192/iter_002/results/fitness_plot.png
+experimenter_view: 'Pre-screen found 3268 conserving rules out of 10,000 tested (32.68%
+  pass rate),
+
+  a surprisingly high fraction. The explanation lies in the sparse C2 rule structure:
+
+  density=8 overrides at most ~32 of 128 LUT entries (4 per pair due to C2 symmetry),
+
+  leaving the majority as near-identity. Near-identity rules conserve bits trivially
+
+  because the grid barely changes. This is confirmed by the distance telemetry:
+
+  d_initial = d_mid = d_final = 47.518 exactly — the two L-trominos do not move at
+  all.
+
+
+  Consequently, StagedCollisionFitness scores every conserving rule at 0 because
+
+  approach_score = 0 (no motion detected). Evolution in 10 generations finds no
+
+  improvement: all 100 sampled individuals start frozen and remain frozen. Crossover
+
+  and mutation between frozen near-identity chromosomes cannot spontaneously produce
+
+  the long-range dynamic interactions needed for approach behavior.
+
+
+  Key insight: conservation and motion are orthogonal in the sparse-C2 rule space.
+
+  Conservation is achieved by "doing nothing" (near-identity), while motion requires
+
+  active state transitions that are inherently more likely to violate bit conservation.
+
+  Strategy B (conservation-first) therefore fails for the same reason as Strategy
+  A''s
+
+  hard-conservation mode in iter_190: the constraint is too strict to permit the dynamics
+
+  needed for scoring. The leaky approach (iter_192 iter_001, fitness=0.333) remains
+  the
+
+  only method that has produced a non-zero score by relaxing the conservation requirement.
+
+  '
+log_excerpt: 'Gen  0: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  1: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  2: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  3: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  4: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  5: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  6: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  7: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  8: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen  9: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Gen 10: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0
+
+  Champion fitness 0.0000 == 0 — no GIF generated.
+
+  best_fitness    = 0.0000  approach_score = 0.0  recession_score = 0.0
+
+  bits_conserved  = True    d_initial = 47.518    d_mid = 47.518    d_final = 47.518
+
+  '
+metrics:
+  best_approach_score: 0.0
+  best_fitness: 0.0
+  best_recession_score: 0.0
+  conservation_rate_pct: 32.68
+  conserving_rules_found: 3268
+  d_final: 47.518
+  d_initial: 47.518
+  d_mid: 47.518
+  full_pool_size: 3268
+  num_generations: 10
+  population_size_sampled: 100
+  rules_tested: 10000
+notes: Conservation-first population consists of near-identity frozen rules; fitness=0
+  across all 10 generations since no rule in the 3268-strong conserving pool exhibits
+  any approach dynamics.
+status: experiment_failed
