@@ -1,57 +1,29 @@
 artifacts:
-- src/fitness_g190.py
-- src/run_g190_evolution.py
-experimenter_view: 'Both files are implemented and import cleanly.
-
-  fitness_g190.py provides: graded_collision_fitness() (pure function taking three
-
-  grid snapshots) and GradedCollisionFitness class (runs simulation internally,
-
-  snapshots at step 0 / midpoint / final, delegates to the pure function).
-
-  _two_largest_coms() sorts all connected components by cell count and picks the
-
-  top two, satisfying the "two largest objects" requirement even when fragments exist.
-
-  The fitness formula conservation_score * (interaction_score + total_displacement)
-
-  is continuous: a random rule that moves particles but doesn''t collide already
-
-  scores 0.67 vs the flat 0.0 from MarginalDynamicCollisionFitness, confirming the
-
-  gradient exists to guide evolution.
-
-  run_g190_evolution.py mirrors the iter_189 evolution script structure but uses
-
-  GradedCollisionFitness, runs 20 generations (no binary early-stop since scores
-
-  are continuous), and saves the best rule unconditionally; a GIF is rendered only
-
-  when approach + recede + conservation > 0.9 are all satisfied.
-
-  '
-log_excerpt: 'COMs at step 0: ((60.33, 40.33), (67.33, 87.33))
-
-  Grid sum: 6
-
-  Static fitness (no movement): 0.0
-
-  Conservation: 1.0
-
-  Approach: 0.0  Recede: 0.0  Displacement: 0.0
-
-  run_g190_evolution imports: OK
-
-  fitness=0.6667  conservation=1.000  approach=0.000  recede=0.000  disp=0.667
-
-  End-to-end GradedCollisionFitness: OK
-
-  '
+- src/fitness.py
+experimenter_view: "StagedCollisionFitness has been implemented in src/fitness.py\
+  \ as specified.\n\nDesign:\n- Two 3-bit L-trominos on a 128x128 toroidal grid (_STAGED_OBJECT_A\
+  \ at (60,40)+(61,40)+(60,41),\n  _STAGED_OBJECT_B at (67,87)+(68,87)+(67,88)), matching\
+  \ the iter_190 grid layout.\n- Simulation runs for `horizon` (default 400) steps;\
+  \ snapshots captured at step 0\n  (t_initial), step `midpoint` (default 200, t_mid),\
+  \ and step `horizon` (t_final).\n- Bit conservation is checked at both t_mid and\
+  \ t_final against t_initial; any\n  violation causes an immediate return of fitness=0.0.\n\
+  - Object detection uses the two largest connected components (8-connectivity) at\
+  \ each\n  checkpoint to compute inter-CoM Euclidean distances d_initial, d_mid,\
+  \ d_final.\n- MARGIN = 1.0 grid unit prevents floating-point exploits on the binary\
+  \ thresholds.\n- approach_score = 1.0 if d_mid < d_initial - MARGIN else 0.0\n-\
+  \ recession_score = 1.0 if d_final > d_mid + MARGIN else 0.0\n- fitness = approach_score\
+  \ + recession_score (range: {0.0, 1.0, 2.0})\n- Smoke test with identity rule confirms:\
+  \ bits conserved=True, fitness=0.0 (objects\n  stationary at identical distances\
+  \ throughout), validating the threshold logic.\n"
+log_excerpt: "StagedCollisionFitness imported OK\nname: StagedCollisionFitness\nhorizon:\
+  \ 400\nmidpoint: 200\nIdentity rule result:\n  fitness: 0.0\n  approach_score: 0.0\n\
+  \  recession_score: 0.0\n  d_initial: 47.51841748206688\n  d_mid: 47.51841748206688\n\
+  \  d_final: 47.51841748206688\n  initial_bits: 6\n  mid_bits: 6\n  final_bits: 6\n\
+  \  bits_conserved: True\n"
 metrics:
-  sample_rule_conservation: 1.0
-  sample_rule_displacement: 0.667
-  sample_rule_fitness: 0.6667
-  smoke_test_conservation_score: 1.0
-  smoke_test_static_fitness: 0.0
-notes: Two files created; syntax-checked and end-to-end smoke-tested successfully.
+  identity_rule_bits_conserved: true
+  identity_rule_fitness: 0.0
+  initial_distance: 47.52
+notes: StagedCollisionFitness added to fitness.py with discrete {0,1,2} scoring for
+  approach and recession stages
 status: ok

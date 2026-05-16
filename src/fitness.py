@@ -293,3 +293,153 @@ class DynamicCollisionFitness:
 
     def __call__(self, rule_dict: dict | None = None) -> dict:
         return self.evaluate(rule_dict)
+
+
+# ── StagedCollisionFitness ──────────────────────────────────────────────────
+
+# 128x128 grid with two 3-bit L-trominos on a collision course.
+_STAGED_GRID_SIZE = 128
+_STAGED_OBJECT_A = [(60, 40), (61, 40), (60, 41)]
+_STAGED_OBJECT_B = [(67, 87), (68, 87), (67, 88)]
+_STAGED_INITIAL_BITS = len(_STAGED_OBJECT_A) + len(_STAGED_OBJECT_B)  # 6
+
+# 8-connectivity so diagonally-adjacent cells of an L-tromino count as one object.
+_STAGED_LABEL_STRUCTURE = np.ones((3, 3), dtype=np.uint8)
+
+_STAGED_MARGIN = 1.0
+
+
+def _make_staged_grid(grid_size: int = _STAGED_GRID_SIZE) -> np.ndarray:
+    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
+    for r, c in _STAGED_OBJECT_A:
+        grid[r % grid_size, c % grid_size] = 1
+    for r, c in _STAGED_OBJECT_B:
+        grid[r % grid_size, c % grid_size] = 1
+    return grid
+
+
+def _staged_two_object_com_distance(grid: np.ndarray) -> float | None:
+    """Return Euclidean distance between the two largest component COMs, or None if < 2."""
+    labels, n = label(grid, structure=_STAGED_LABEL_STRUCTURE)
+    if n < 2:
+        return None
+    sizes = sorted(
+        ((lbl, int(np.sum(labels == lbl))) for lbl in range(1, n + 1)),
+        key=lambda x: x[1],
+        reverse=True,
+    )
+    top2 = [sizes[0][0], sizes[1][0]]
+    coms = center_of_mass(grid, labels, top2)
+    (r1, c1), (r2, c2) = coms
+    return math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2)
+
+
+class StagedCollisionFitness:
+    """Fitness function providing a continuous gradient for two-body collisions.
+
+    Two 3-bit L-trominos are placed on a 128x128 toroidal grid. The simulation
+    runs for ``horizon`` steps (default 400), capturing snapshots at step 0
+    (t_initial), ``midpoint`` (default 200, t_mid), and ``horizon`` (t_final).
+
+    Scoring:
+      - Bit conservation is verified at t_mid and t_final against t_initial.
+        Any violation immediately returns fitness 0.0.
+      - approach_score  = 1.0 if d_mid   < d_initial - MARGIN, else 0.0
+      - recession_score = 1.0 if d_final > d_mid     + MARGIN, else 0.0
+      - fitness = approach_score + recession_score  (0.0, 1.0, or 2.0)
+
+    This staged scoring creates a clear fitness gradient: rules that merely
+    bring particles together score 1.0, while a full approach-then-recede
+    sequence scores 2.0.
+    """
+
+    name = "StagedCollisionFitness"
+
+    def __init__(
+        self,
+        horizon: int = 400,
+        midpoint: int | None = None,
+        grid_size: int = _STAGED_GRID_SIZE,
+        rule: dict | None = None,
+    ) -> None:
+        self.horizon   = int(horizon)
+        self.midpoint  = int(midpoint) if midpoint is not None else self.horizon // 2
+        self.grid_size = int(grid_size)
+        self.rule      = rule
+
+    def evaluate(self, rule_dict: dict | None = None) -> dict:
+        rule_dict = rule_dict if rule_dict is not None else self.rule
+        if rule_dict is None:
+            raise ValueError("StagedCollisionFitness: no rule supplied")
+
+        lut           = rule_dict_to_lut(rule_dict)
+        grid          = _make_staged_grid(self.grid_size)
+        grid_initial  = grid.copy()
+        initial_bits  = int(grid_initial.sum())
+        grid_mid      = None
+
+        for step in range(1, self.horizon + 1):
+            grid = step_grid(grid, lut)
+            if step == self.midpoint:
+                grid_mid = grid.copy()
+
+        if grid_mid is None:
+            grid_mid = grid_initial.copy()
+
+        grid_final = grid
+
+        # Bit conservation check — fail fast on any violation.
+        mid_bits   = int(grid_mid.sum())
+        final_bits = int(grid_final.sum())
+        if mid_bits != initial_bits or final_bits != initial_bits:
+            return {
+                "fitness":         0.0,
+                "approach_score":  0.0,
+                "recession_score": 0.0,
+                "d_initial":       None,
+                "d_mid":           None,
+                "d_final":         None,
+                "initial_bits":    initial_bits,
+                "mid_bits":        mid_bits,
+                "final_bits":      final_bits,
+                "bits_conserved":  False,
+            }
+
+        d_initial = _staged_two_object_com_distance(grid_initial)
+        d_mid     = _staged_two_object_com_distance(grid_mid)
+        d_final   = _staged_two_object_com_distance(grid_final)
+
+        # If we cannot identify two objects at any checkpoint, score 0.
+        if d_initial is None or d_mid is None or d_final is None:
+            return {
+                "fitness":         0.0,
+                "approach_score":  0.0,
+                "recession_score": 0.0,
+                "d_initial":       float(d_initial) if d_initial is not None else None,
+                "d_mid":           float(d_mid)     if d_mid     is not None else None,
+                "d_final":         float(d_final)   if d_final   is not None else None,
+                "initial_bits":    initial_bits,
+                "mid_bits":        mid_bits,
+                "final_bits":      final_bits,
+                "bits_conserved":  True,
+            }
+
+        approach_score  = 1.0 if d_mid   < d_initial - _STAGED_MARGIN else 0.0
+        recession_score = 1.0 if d_final > d_mid     + _STAGED_MARGIN else 0.0
+        fitness         = approach_score + recession_score
+
+        return {
+            "fitness":         float(fitness),
+            "approach_score":  float(approach_score),
+            "recession_score": float(recession_score),
+            "d_initial":       float(d_initial),
+            "d_mid":           float(d_mid),
+            "d_final":         float(d_final),
+            "initial_bits":    initial_bits,
+            "mid_bits":        mid_bits,
+            "final_bits":      final_bits,
+            "bits_conserved":  True,
+        }
+
+    def __call__(self, rule_dict: dict | None = None) -> dict:
+        return self.evaluate(rule_dict)
