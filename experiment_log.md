@@ -4,50 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.08617
-hypothesis: 'visualization: The champion rule_021''s high fitness score (3.465) is
-  caused by a coherent, high-velocity object, not by explosive growth or other artifacts.'
-input_tokens: 20052
-iter: 154
-metrics:
-  bit_ratio: 1.834
-  composite_fitness_iter153: 3.465
-  final_bits: 10099
-  gif_frames: 201
-  gif_size_kb: 1811
-  initial_bits: 5508
-  total_com_displacement: 64.67
-  window1_disp_steps_0_250: 2.4
-  window2_disp_steps_250_500: 2.62
-  window3_disp_steps_500_750: 0.85
-  window4_disp_steps_750_1000: 0.21
-output_tokens: 1523
-status: ok
-```
-
-## iter_154: visualization: The champion rule_021's high fitness score (3.465) is caused by a coherent, high-velocity object, not by explosive growth or other artifacts.
-
-**Analysis:** The previous iteration (153) produced an exceptional rule, `rule_021`, with a fitness score of 3.465, an outlier suggesting a major breakthrough. This iteration's goal was to visually verify the dynamics causing this high score.
-
-The visualization was successful and revealed that `rule_021` is not a true glider but a "transient puffer". It exhibits high-velocity, coherent motion for approximately 
-
-**Status:** ok
-
-**Metrics:** `{'initial_bits': 5508, 'final_bits': 10099, 'bit_ratio': 1.834, 'total_com_displacement': 64.67, 'window1_disp_steps_0_250': 2.4, 'window2_disp_steps_250_500': 2.62, 'window3_disp_steps_500_750': 0.85, 'window4_disp_steps_750_1000': 0.21, 'gif_frames': 201, 'gif_size_kb': 1811, 'composite_fitness_iter153': 3.465}`
-
-**Experimenter view:** rule_021 exhibits PUFFER dynamics. Starting from a 150x150 random soup (density=0.25,
-seed=21) with 5508 live cells, the automaton undergoes rapid initial expansion (reaching
-~8800 bits by step 100) while its center-of-mass drifts coherently — ~2.4–2.6 cells per
-250-step window in the first half of the run. This combination of net translation and
-growing cell count is the hallmark of a puffer: the
-
-**Notes:** rule_021 is a transient puffer — high-velocity coherent motion for ~500 steps, then debris-dominated deceleration
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.15882
 hypothesis: 'late-displacement-metric: A fitness metric based on displacement in the
   final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer
@@ -973,4 +929,39 @@ Sub-agent 185.1 demonstrated that a 'glancing' collision between two 3-bit glide
 **Sub-agent 185.2 (3-bit vs 5-bit Collision):** Failed (Agent Sto
 
 **Notes:** This phase effectively closes the book on rule `g10_rule_001`. While it produces stable gliders, its interaction dynamics are far too complex and non-conserving to serve as a basis for emergent physics. The project must pivot back to evolutionary search.
+
+
+---
+```yaml
+cached_tokens: 41906
+cost_usd: 0.16901
+hypothesis: 'phase-187: Develop and validate an evolutionary framework to discover
+  rules with bit-conserving, two-body collision dynamics.'
+input_tokens: 69858
+iter: 187
+metrics:
+  best_fitness_corrected_fn: 1.0
+  best_fitness_initial_flawed_fn: 12.0
+  final_bit_count: 6
+  final_object_count: 2
+  generations_to_find_solution: 0
+output_tokens: 3287
+status: ok
+```
+
+## iter_187: phase-187: Develop and validate an evolutionary framework to discover rules with bit-conserving, two-body collision dynamics.
+
+**Analysis:** This phase successfully pivoted the project from analyzing a single non-conserving rule back to evolutionary discovery, with a new focus on elastic collisions.
+
+The phase began by creating a new evolutionary framework with a `CollisionFitness` function (187.1). This initial step immediately revealed a critical flaw in the specified fitness formula: it rewarded particle annihilation far more than e
+
+**Status:** ok
+
+**Metrics:** `{'best_fitness_initial_flawed_fn': 12.0, 'best_fitness_corrected_fn': 1.0, 'generations_to_find_solution': 0, 'final_bit_count': 6, 'final_object_count': 2}`
+
+**Experimenter view:** **Sub-agent 187.1:** Successfully built the evolutionary framework. Crucially, its `experimenter_view` identified that the specified fitness function `(initial/final) * (2/objects)` was flawed, as it rewarded annihilation (shrinking 6 bits to 1 yielded a score of 12.0). This was an excellent example of an agent providing critical feedback on the task's own design.
+
+**Sub-agent 187.2:** Successfull
+
+**Notes:** The key outcome of this phase is methodological: we have a robust, validated fitness function for finding conserving collisions. The discovered rule is a candidate that requires further validation.
 

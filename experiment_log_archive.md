@@ -7760,3 +7760,47 @@ selected; top-2 (rule_025, rule_073) carried unchanged into Gen-3. The remaining
 
 **Notes:** Gen-3 evolution +25.84% over Gen-2 mean; rule_021 is an exceptional outlier at 3.465 (2.6x Gen-2 max)
 
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.08617
+hypothesis: 'visualization: The champion rule_021''s high fitness score (3.465) is
+  caused by a coherent, high-velocity object, not by explosive growth or other artifacts.'
+input_tokens: 20052
+iter: 154
+metrics:
+  bit_ratio: 1.834
+  composite_fitness_iter153: 3.465
+  final_bits: 10099
+  gif_frames: 201
+  gif_size_kb: 1811
+  initial_bits: 5508
+  total_com_displacement: 64.67
+  window1_disp_steps_0_250: 2.4
+  window2_disp_steps_250_500: 2.62
+  window3_disp_steps_500_750: 0.85
+  window4_disp_steps_750_1000: 0.21
+output_tokens: 1523
+status: ok
+```
+
+## iter_154: visualization: The champion rule_021's high fitness score (3.465) is caused by a coherent, high-velocity object, not by explosive growth or other artifacts.
+
+**Analysis:** The previous iteration (153) produced an exceptional rule, `rule_021`, with a fitness score of 3.465, an outlier suggesting a major breakthrough. This iteration's goal was to visually verify the dynamics causing this high score.
+
+The visualization was successful and revealed that `rule_021` is not a true glider but a "transient puffer". It exhibits high-velocity, coherent motion for approximately 
+
+**Status:** ok
+
+**Metrics:** `{'initial_bits': 5508, 'final_bits': 10099, 'bit_ratio': 1.834, 'total_com_displacement': 64.67, 'window1_disp_steps_0_250': 2.4, 'window2_disp_steps_250_500': 2.62, 'window3_disp_steps_500_750': 0.85, 'window4_disp_steps_750_1000': 0.21, 'gif_frames': 201, 'gif_size_kb': 1811, 'composite_fitness_iter153': 3.465}`
+
+**Experimenter view:** rule_021 exhibits PUFFER dynamics. Starting from a 150x150 random soup (density=0.25,
+seed=21) with 5508 live cells, the automaton undergoes rapid initial expansion (reaching
+~8800 bits by step 100) while its center-of-mass drifts coherently — ~2.4–2.6 cells per
+250-step window in the first half of the run. This combination of net translation and
+growing cell count is the hallmark of a puffer: the
+
+**Notes:** rule_021 is a transient puffer — high-velocity coherent motion for ~500 steps, then debris-dominated deceleration
+
