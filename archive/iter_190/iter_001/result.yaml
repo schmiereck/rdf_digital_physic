@@ -1,0 +1,57 @@
+artifacts:
+- src/fitness_g190.py
+- src/run_g190_evolution.py
+experimenter_view: 'Both files are implemented and import cleanly.
+
+  fitness_g190.py provides: graded_collision_fitness() (pure function taking three
+
+  grid snapshots) and GradedCollisionFitness class (runs simulation internally,
+
+  snapshots at step 0 / midpoint / final, delegates to the pure function).
+
+  _two_largest_coms() sorts all connected components by cell count and picks the
+
+  top two, satisfying the "two largest objects" requirement even when fragments exist.
+
+  The fitness formula conservation_score * (interaction_score + total_displacement)
+
+  is continuous: a random rule that moves particles but doesn''t collide already
+
+  scores 0.67 vs the flat 0.0 from MarginalDynamicCollisionFitness, confirming the
+
+  gradient exists to guide evolution.
+
+  run_g190_evolution.py mirrors the iter_189 evolution script structure but uses
+
+  GradedCollisionFitness, runs 20 generations (no binary early-stop since scores
+
+  are continuous), and saves the best rule unconditionally; a GIF is rendered only
+
+  when approach + recede + conservation > 0.9 are all satisfied.
+
+  '
+log_excerpt: 'COMs at step 0: ((60.33, 40.33), (67.33, 87.33))
+
+  Grid sum: 6
+
+  Static fitness (no movement): 0.0
+
+  Conservation: 1.0
+
+  Approach: 0.0  Recede: 0.0  Displacement: 0.0
+
+  run_g190_evolution imports: OK
+
+  fitness=0.6667  conservation=1.000  approach=0.000  recede=0.000  disp=0.667
+
+  End-to-end GradedCollisionFitness: OK
+
+  '
+metrics:
+  sample_rule_conservation: 1.0
+  sample_rule_displacement: 0.667
+  sample_rule_fitness: 0.6667
+  smoke_test_conservation_score: 1.0
+  smoke_test_static_fitness: 0.0
+notes: Two files created; syntax-checked and end-to-end smoke-tested successfully.
+status: ok

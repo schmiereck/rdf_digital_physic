@@ -1,0 +1,55 @@
+I'll explore the existing codebase structure first to understand the patterns used.
+Explore the codebase at C:\Users\thomas\Projekte\rdf_digital_physic\src. I need to understand:
+1. The structure of existing fitness files (look for files named fitness_*.py)
+2. The structure of existing evolution/run scripts (look for files named run_*.py)
+3. The MarginalDynamicCollisionFitness class/function specifically
+4. How particles and simulation states are represented (coordinates, bit counts)
+5. How the two largest objects/particles are identified in a grid
+
+Search breadth: medium. Return file contents of the most relevant fitness file and at least one run script so I can understand the patterns.
+Let me read the key existing files to understand the exact code patterns before implementing.
+Now let me check the evolution.py for `_try_build_c2_rule` and other key utilities.
+Now I have a complete picture of the codebase. Let me implement both files.
+Now let me do a quick syntax check on both files:
+Both files parse cleanly. Let me do a quick smoke-test to verify the fitness function can be imported and called with a trivial rule:
+The smoke-test looks correct. Static case (no movement) gives fitness 0.0, and conservation_score is 1.0 as expected. Let me also verify the evolution script imports successfully:
+The imports are all fine — the `NameError` is from using `exec` to run script code that references `__file__`, not an actual bug. Let me do a cleaner function-level test:
+The pipeline works end-to-end. With a random C2 rule the fitness is 0.667 — driven entirely by displacement (0.667) with perfect conservation but no approach/recede interaction yet, which is exactly the expected behavior for a non-colliding rule.
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness_g190.py
+  - src/run_g190_evolution.py
+metrics:
+  smoke_test_static_fitness: 0.0
+  smoke_test_conservation_score: 1.0
+  sample_rule_fitness: 0.6667
+  sample_rule_conservation: 1.000
+  sample_rule_displacement: 0.667
+log_excerpt: |
+  COMs at step 0: ((60.33, 40.33), (67.33, 87.33))
+  Grid sum: 6
+  Static fitness (no movement): 0.0
+  Conservation: 1.0
+  Approach: 0.0  Recede: 0.0  Displacement: 0.0
+  run_g190_evolution imports: OK
+  fitness=0.6667  conservation=1.000  approach=0.000  recede=0.000  disp=0.667
+  End-to-end GradedCollisionFitness: OK
+experimenter_view: |
+  Both files are implemented and import cleanly.
+  fitness_g190.py provides: graded_collision_fitness() (pure function taking three
+  grid snapshots) and GradedCollisionFitness class (runs simulation internally,
+  snapshots at step 0 / midpoint / final, delegates to the pure function).
+  _two_largest_coms() sorts all connected components by cell count and picks the
+  top two, satisfying the "two largest objects" requirement even when fragments exist.
+  The fitness formula conservation_score * (interaction_score + total_displacement)
+  is continuous: a random rule that moves particles but doesn't collide already
+  scores 0.67 vs the flat 0.0 from MarginalDynamicCollisionFitness, confirming the
+  gradient exists to guide evolution.
+  run_g190_evolution.py mirrors the iter_189 evolution script structure but uses
+  GradedCollisionFitness, runs 20 generations (no binary early-stop since scores
+  are continuous), and saves the best rule unconditionally; a GIF is rendered only
+  when approach + recede + conservation > 0.9 are all satisfied.
+notes: Two files created; syntax-checked and end-to-end smoke-tested successfully.
+```
