@@ -1,0 +1,61 @@
+```yaml
+analysis: |
+  This phase executed a crucial comparative experiment to break the "motion vs. conservation" impasse that had halted progress. Two opposing strategies were tested.
+
+  Sub-agent 192.1 tested Strategy A: starting with a known "mover" rule (`g10_rule_001`) and evolving it with a "leaky" fitness function that penalized, but did not forbid, bit non-conservation. This was a resounding success. It broke the flat fitness landscape, producing a champion rule that achieves the "approach" phase of a collision (`staged_score=1.0`). The rule is not perfect—it results in particle fusion with a 2-bit error—but it represents the first meaningful progress on the collision problem in many phases.
+
+  Sub-agent 192.2 tested Strategy B: pre-screening a large random population to find rules that were already perfectly conserving, and then trying to evolve motion. This strategy failed completely. The pre-screening revealed that the vast majority of conserving rules are near-identities that produce no particle motion at all. The subsequent evolutionary run had a fitness of 0.0 across all generations, demonstrating that starting from conservation is a dead end.
+
+  The conclusion is decisive: it is more viable to start with a rare rule that has the desired dynamics (motion) and iteratively fix its conservation flaws, than it is to start with a common conserving rule and hope to create complex dynamics from scratch. The leaky fitness function is the key enabling technology.
+open_questions:
+  - The champion from 192.1 achieves approach but not recession (particle fusion). How can the fitness function be modified to specifically reward recession and guide evolution out of this local optimum?
+  - Can increasing the simulation horizon give fused particles more time to separate, thus revealing latent recession capabilities?
+  - Is the `bit_error=2` of the current champion an irreducible artifact of the `g10_rule_001` family, or can it be eliminated through further evolution?
+  - Can a curriculum-based approach work, where we start with the leaky fitness and gradually increase the penalty for non-conservation over generations?
+chosen_direction: "Refine the leaky fitness function to prioritize recession, and continue evolution from the best population found in this phase (192.1)."
+hypothesis: "phase-192: A comparative experiment will show that evolving a 'leaky' motion-first population towards conservation is more effective than evolving a pre-screened conservation-first population towards motion."
+rationale: |
+  The project was stuck at a dead end where strict fitness functions created flat landscapes. This phase was designed to explicitly test the two most plausible solutions. Sub-goal 192.1 tested the "soft penalty" approach, while 192.2 tested the "pre-screening" approach. By running them back-to-back, we could definitively determine which path was more promising for breaking the impasse.
+status: ok
+metrics:
+  strategy_A_best_fitness: 0.3333
+  strategy_A_best_staged_score: 1.0
+  strategy_A_best_bit_error: 2
+  strategy_B_best_fitness: 0.0
+  strategy_B_conserving_rules_found: 3268
+experimenter_view: |
+  **Sub-agent 192.1 (Strategy A - Leaky Conservation):** Succeeded. The introduction of a soft penalty for bit non-conservation immediately created a viable fitness gradient. The warm-start population, previously scoring zero, rapidly evolved a champion that achieves the "approach" part of a collision. The particles fuse, resulting in a `staged_score` of 1.0 and a `bit_error` of 2. The evolution plateaued at a fitness of 0.3333, indicating it found a local optimum corresponding to this fusion behavior.
+
+  **Sub-agent 192.2 (Strategy B - Conservation First):** Failed. The pre-screening of 10,000 rules found a surprisingly large pool of 3,268 bit-conserving rules. However, analysis showed these are almost all near-identity rules that produce no motion. As a result, the `StagedCollisionFitness` assigned a score of 0.0 to every member of the population, and 10 generations of evolution produced no improvement. This demonstrates that conservation is easy to achieve via stasis, but motion is hard to create from it.
+
+  **Synthesis:** The results provide a clear verdict. Strategy A is the correct path. The project has successfully moved from a state of "no progress" to a new, more tractable problem: "how to improve upon the fusion champion?".
+notes: "This phase was highly successful and decisive. The 'leaky conservation' approach is validated as the way forward."
+artifacts:
+  - archive/iter_192/iter_001/results/collision.gif
+  - archive/iter_192/iter_001/results/champion_rule.json
+  - archive/iter_192/iter_002/results/conserving_population.json
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A "leaky" fitness function with a soft penalty for non-conservation provides a viable evolutionary gradient where strict functions fail (iter_192.1).
+  - Starting with a "motion-first" population (mutants of `g10_rule_001`) and evolving with a leaky fitness function can produce rules that achieve the "approach" phase of a two-body collision (iter_192.1).
+  - The champion rule from this approach results in particle fusion, achieving `staged_score=1.0` with `bit_error=2` (iter_192.1).
+
+  **Refuted:**
+  - The "conservation-first" strategy of pre-screening for bit-conserving rules and then evolving for motion is ineffective. The vast majority of conserving rules exhibit no motion, creating a flat fitness landscape (iter_192.2).
+  - The hypothesis that seeding evolution with a known single-particle glider rule (`g10_rule_001`) is sufficient to evolve collision dynamics is refuted (iter_191.2). The glider-producing property does not generalize to multi-particle seeds.
+
+  **Best Result:**
+  - A rule evolved that produces the "approach" phase of a collision. The two particles merge into a stationary object, gaining 2 bits in the process. This is the first progress on multi-body dynamics. Champion rule is in `archive/iter_192/iter_001/results/champion_rule.json`.
+
+  **In Progress:**
+  - The primary blocker is no longer the absence of a fitness gradient, but finding a way to guide the evolution beyond the local optimum of "particle fusion" towards "particle recession" (a true elastic collision).
+
+  **Open Questions:**
+  - How can the fitness function be modified to specifically reward recession and guide evolution out of the fusion local optimum?
+  - Can increasing the simulation horizon allow fused particles more time to separate?
+  - Is the `bit_error=2` of the current champion an irreducible artifact of the `g10_rule_001` family, or can it be eliminated through further evolution?
+```

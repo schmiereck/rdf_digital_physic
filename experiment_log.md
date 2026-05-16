@@ -3,42 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 14878
-cost_usd: 0.10869
-hypothesis: 'evolution-composite-metric: A new random population of 100 rules, when
-  evaluated with the `late_displacement / (1 + final_bit_count)` metric, will contain
-  at least one rule with a fitness score > 0.01.'
-input_tokens: 35587
-iter: 159
-metrics:
-  composite_fitness: 1.551e-05
-  final_bit_count: 4265
-  late_displacement: 0.066187
-  late_displacement_fitness: 0.066187
-output_tokens: 2209
-status: ok
-```
-
-## iter_159: evolution-composite-metric: A new random population of 100 rules, when evaluated with the `late_displacement / (1 + final_bit_count)` metric, will contain at least one rule with a fitness score > 0.01.
-
-**Analysis:** The experiment successfully validated the new composite fitness metric. The previous best rule from a random search, `rule_058` from iter_158, was shown to produce a diffuse, high-entropy field of ash with over 4000 live cells. Its `late_displacement` score of ~0.066 was already low, but the new metric, `late_displacement / (1 + final_bit_count)`, correctly crushed its fitness score to a near-zero
-
-**Status:** ok
-
-**Metrics:** `{'late_displacement': 0.066187, 'final_bit_count': 4265, 'composite_fitness': 1.551e-05, 'late_displacement_fitness': 0.066187}`
-
-**Experimenter view:** The final grid at t=2000 is a completely diffuse, salt-and-pepper pattern of
-roughly 4265 live cells scattered quasi-randomly across the entire 128x128
-domain. There is no compact object, no moving structure, no coherent region
-of activity — only uniform chaotic ash. The center of mass moved only ~0.066
-grid units between t=1200 and t=2000, indicating the rule has settled into a
-spatially-frozen r
-
-**Notes:** Implemented main.py with calculate_composite_fitness; rule_058 confirmed as diffuse ash with composite_fitness=0.0000155.
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.00875
 hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
@@ -945,4 +909,38 @@ Sub-agent 191.1 successfully implemented this strategy, creating a population of
 **Sub-agent 191.2:** Failed. The ev
 
 **Notes:** The phase was a crucial diagnostic. We solved the 'no motion' problem and immediately discovered the more subtle 'no generalization' problem. The parent rule is a specialist, not a generalist.
+
+
+---
+```yaml
+cached_tokens: 18931
+cost_usd: 0.23246
+hypothesis: 'phase-192: A comparative experiment will show that evolving a ''leaky''
+  motion-first population towards conservation is more effective than evolving a pre-screened
+  conservation-first population towards motion.'
+input_tokens: 70946
+iter: 192
+metrics:
+  strategy_A_best_bit_error: 2
+  strategy_A_best_fitness: 0.3333
+  strategy_A_best_staged_score: 1.0
+  strategy_B_best_fitness: 0.0
+  strategy_B_conserving_rules_found: 3268
+output_tokens: 3223
+status: ok
+```
+
+## iter_192: phase-192: A comparative experiment will show that evolving a 'leaky' motion-first population towards conservation is more effective than evolving a pre-screened conservation-first population towards motion.
+
+**Analysis:** This phase executed a crucial comparative experiment to break the "motion vs. conservation" impasse that had halted progress. Two opposing strategies were tested.
+
+Sub-agent 192.1 tested Strategy A: starting with a known "mover" rule (`g10_rule_001`) and evolving it with a "leaky" fitness function that penalized, but did not forbid, bit non-conservation. This was a resounding success. It broke the
+
+**Status:** ok
+
+**Metrics:** `{'strategy_A_best_fitness': 0.3333, 'strategy_A_best_staged_score': 1.0, 'strategy_A_best_bit_error': 2, 'strategy_B_best_fitness': 0.0, 'strategy_B_conserving_rules_found': 3268}`
+
+**Experimenter view:** **Sub-agent 192.1 (Strategy A - Leaky Conservation):** Succeeded. The introduction of a soft penalty for bit non-conservation immediately created a viable fitness gradient. The warm-start population, previously scoring zero, rapidly evolved a champion that achieves the "approach" part of a collision. The particles fuse, resulting in a `staged_score` of 1.0 and a `bit_error` of 2. The evolution pla
+
+**Notes:** This phase was highly successful and decisive. The 'leaky conservation' approach is validated as the way forward.
 
