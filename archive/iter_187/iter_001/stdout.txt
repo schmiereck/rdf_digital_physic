@@ -1,0 +1,59 @@
+Now I have enough context. Let me rewrite `fitness_functions.py` with the new spec and create `run_evolution_elastic.py`.
+Now let me create `run_evolution_elastic.py`.
+Let me run the evolution to produce the required output JSON.
+Framework built and ran end-to-end. Implementation summary:
+
+**`src/fitness_functions.py`** — `CollisionFitness` class with the spec'd formula `(initial_bit_count / final_bit_count) * (2 / final_object_count)`, 128×128 toroidal grid, gliders at (48,64) and (80,64) on head-on courses, 100 steps, scipy.ndimage.label (8-connectivity) for object counting, div-by-zero handled.
+
+**`src/run_evolution_elastic.py`** — Top-10% elitism, two-point crossover (0.8), per-bit mutation (0.01), population 100, 10 generations, ProcessPool parallel evaluation. Saves best rule (kernel definition + chromosome + metrics) to `archive/iter_187/results/best_elastic_rule.json`.
+
+⚠️ **Important experimental finding**: the spec'd formula is unbounded above 1.0 and *rewards* annihilation. A degenerate (1 bit, 1 object) outcome scores `(6/1) * (2/1) = 12.0` — exactly what the GA latched onto from gen 1 onward. The next agent should revise the formula (e.g. `min(initial/final, final/initial) * min(2/objects, objects/2)`) for the next round.
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness_functions.py
+  - src/run_evolution_elastic.py
+  - archive/iter_187/results/best_elastic_rule.json
+metrics:
+  best_fitness: 12.0
+  generation_of_best: 1
+  best_final_bit_count: 1
+  best_final_object_count: 1
+  population_size: 100
+  num_generations: 10
+  elite_count: 10
+log_excerpt: |
+  Gen 0:  best=3.000000  mean=0.709548  non_zero=100
+  Gen  1: best=12.000000  mean=2.263390  non_zero=99
+  Gen  2: best=12.000000  mean=6.902639  non_zero=97
+  Gen  3: best=12.000000  mean=8.788397  non_zero=98
+  Gen  4: best=12.000000  mean=9.620109  non_zero=97
+  Gen  5: best=12.000000  mean=9.128560  non_zero=96
+  Gen  6: best=12.000000  mean=9.621152  non_zero=98
+  Gen  7: best=12.000000  mean=9.505057  non_zero=97
+  Gen  8: best=12.000000  mean=8.948543  non_zero=98
+  Gen  9: best=12.000000  mean=9.250053  non_zero=96
+  Gen 10: best=12.000000  mean=8.572105  non_zero=95
+  Best fitness: 12.000000 (generation 1)
+  Saved best rule: archive/iter_187/results/best_elastic_rule.json
+experimenter_view: |
+  The framework is built and runs end-to-end. CollisionFitness on the
+  identity rule yields 1.0 (gliders stay put -> 6 bits, 2 objects) which
+  validates the formula plumbing. The GA also runs cleanly: population
+  initialisation with 8-pair C2 rules, top-10% elitism, two-point crossover,
+  per-bit mutation, parallel evaluation, JSON dump.
+
+  However, the fitness formula provided in the task is mathematically
+  unbounded above 1.0 and is maximised by ANNIHILATION, not by elastic
+  collision. With (initial/final) * (2/objects), shrinking to (1 bit,
+  1 object) scores (6/1)*(2/1)=12.0 — twelve times the "ideal" elastic
+  score the task labels as 1.0. The GA immediately discovered this
+  degenerate optimum by generation 1, and the population converged on
+  rules that collapse the gliders into a single live cell. To actually
+  reward elastic dynamics, the next iteration should switch to a
+  symmetric / clipped form such as
+    min(init/final, final/init) * min(2/objs, objs/2)
+  or equivalent, so the score truly peaks at 1.0.
+notes: framework ready; spec'd formula rewards annihilation — flag for next iter
+```

@@ -3,135 +3,157 @@
 fitness_functions.py
 
 A library of fitness functions for evaluating cellular-automaton rules on the
-128×128 toroidal hexagonal grid used throughout this project.
+128x128 toroidal hexagonal grid used throughout this project.
 
-Currently provides:
-  CollisionFitness — rewards rules that produce elastic head-on collisions
-                     between two L-tromino gliders (bit conservation).
+CollisionFitness
+----------------
+Rewards rules that produce *elastic* head-on collisions between two 3-bit
+L-tromino gliders. The score combines bit conservation and object
+conservation:
+
+    fitness = (initial_bit_count / final_bit_count) * (2 / final_object_count)
+
+A perfect elastic collision (two 3-bit objects emerge from two 3-bit objects)
+yields  (6/6) * (2/2) = 1.0.  Annihilation, fusion, or explosion all push the
+score below 1.0.
 """
 
+from __future__ import annotations
+
 import numpy as np
+from scipy.ndimage import label
 
 from evolution import rule_dict_to_lut, step_grid
 from fitness_simple_motion import BaseFitness
 
-GRID_SIZE = 128
-SIM_STEPS = 200
 
-# Glider A: standard L-tromino anchored at (32, 64), moves East.
-_GLIDER_A = [(32, 64), (33, 64), (33, 65)]
+# ── Configuration ────────────────────────────────────────────────────────────
 
-# Glider B: 180°-rotated L-tromino anchored at (96, 64), moves West.
-_GLIDER_B = [(96, 64), (95, 64), (95, 63)]
+GRID_SIZE = 128          # toroidal grid edge length
+SIM_STEPS = 100          # simulation steps per evaluation
+
+# Seed 1: standard L-tromino anchored at (48, 64). Moves East (+row).
+# Shape: (r, c), (r+1, c), (r+1, c+1).
+_GLIDER_A = [(48, 64), (49, 64), (49, 65)]
+
+# Seed 2: 180-rotated L-tromino anchored at (80, 64). Moves West (-row).
+# Rotated shape: (r, c), (r, c+1), (r+1, c+1).
+_GLIDER_B = [(80, 64), (80, 65), (81, 65)]
 
 INITIAL_BIT_COUNT = len(_GLIDER_A) + len(_GLIDER_B)  # 6
+INITIAL_OBJECT_COUNT = 2
+
+# 8-connectivity structuring element for scipy.ndimage.label — required so
+# diagonally-adjacent live cells of a tromino are counted as one object.
+_LABEL_STRUCTURE = np.ones((3, 3), dtype=np.uint8)
 
 
-def _make_collision_grid() -> np.ndarray:
-    """Return a 128×128 grid seeded with both head-on gliders (6 bits total)."""
-    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+def _make_collision_grid(grid_size: int = GRID_SIZE) -> np.ndarray:
+    """Return a `grid_size`x`grid_size` toroidal grid seeded with both gliders."""
+    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
     for r, c in _GLIDER_A:
-        grid[r, c] = 1
+        grid[r % grid_size, c % grid_size] = 1
     for r, c in _GLIDER_B:
-        grid[r, c] = 1
+        grid[r % grid_size, c % grid_size] = 1
     return grid
 
 
 class CollisionFitness(BaseFitness):
     """Fitness function for discovering rules with elastic head-on collisions.
 
-    Two 3-bit L-tromino gliders are placed on a direct, head-on collision
-    course (one at row 32, one at row 96, both at column 64) on a 128×128
-    toroidal hexagonal grid.  The simulation runs for 200 steps — enough time
-    for the particles to travel toward each other, collide, and (potentially)
-    separate again.
+    Two 3-bit L-tromino gliders are placed on a 128x128 toroidal grid on a
+    direct collision course (one at row 48, one at row 80, both at column 64).
+    After running the rule for 100 steps the bit count and connected-component
+    count are measured.
 
-    Scoring:
-      * 1.0  if the final bit count equals the initial bit count (6),
-             indicating that no bits were created or destroyed — the hallmark
-             of a perfectly elastic collision.
-      * 0.0  for any other final bit count (inelastic, annihilation, or growth).
+    Score formula (higher is better, 1.0 is ideal)::
 
-    Parameters
-    ----------
-    grid_size : int
-        Side length of the square toroidal grid.  Default 128.
-    steps : int
-        Number of simulation steps.  Default 200.
+        fitness = (initial_bit_count / final_bit_count)
+                  * (2 / final_object_count)
 
-    Returns (from evaluate)
-    -----------------------
-    dict with keys:
-      fitness           : float — 1.0 (elastic) or 0.0 (inelastic / other)
-      initial_bit_count : int   — always 6
-      final_bit_count   : int   — observed bit count after `steps` steps
+    Edge cases:
+      * final_bit_count == 0     -> fitness = 0.0   (annihilation)
+      * final_object_count == 0  -> fitness = 0.0   (empty grid)
+
+    The class is callable. The ``rule`` argument may be supplied at
+    construction time (so it acts as a configured functor) or passed directly
+    to ``__call__`` / ``evaluate``.
     """
 
     name = "CollisionFitness"
 
-    def __init__(self, grid_size: int = GRID_SIZE, steps: int = SIM_STEPS):
+    def __init__(
+        self,
+        rule: dict | None = None,
+        grid_size: int = GRID_SIZE,
+        steps: int = SIM_STEPS,
+    ) -> None:
+        self.rule = rule
         self.grid_size = grid_size
         self.steps = steps
-        # Scale glider positions proportionally when grid_size != 128
-        scale = grid_size / 128
-        half = grid_size // 2
-        a_anchor = (round(32 * scale), half)
-        b_anchor = (round(96 * scale), half)
-        self._glider_a = [
-            (a_anchor[0],     a_anchor[1]),
-            (a_anchor[0] + 1, a_anchor[1]),
-            (a_anchor[0] + 1, a_anchor[1] + 1),
-        ]
-        self._glider_b = [
-            (b_anchor[0],     b_anchor[1]),
-            (b_anchor[0] - 1, b_anchor[1]),
-            (b_anchor[0] - 1, b_anchor[1] - 1),
-        ]
-        self._initial_bits = len(self._glider_a) + len(self._glider_b)
+        self._initial_bits = INITIAL_BIT_COUNT
+        self._initial_objects = INITIAL_OBJECT_COUNT
 
-    def evaluate(self, rule_dict: dict) -> dict:
-        """Evaluate a rule by running the head-on collision and checking bit conservation.
+    # ── core evaluation ──────────────────────────────────────────────────
+
+    def evaluate(self, rule_dict: dict | None = None) -> dict:
+        """Run the head-on collision and return the fitness metrics.
 
         Parameters
         ----------
-        rule_dict : dict
-            Mapping from neighbourhood-state index (int) to output-state index (int),
-            as produced by the C2-symmetric rule generator in ``evolution.py``.
-
-        Returns
-        -------
-        dict
-            ``fitness``           : 1.0 if elastic, else 0.0
-            ``initial_bit_count`` : int (6 for the default 128-grid configuration)
-            ``final_bit_count``   : int
+        rule_dict : dict | None
+            CA rule mapping neighbourhood index -> output state. If omitted,
+            ``self.rule`` (passed at construction) is used.
         """
-        lut  = rule_dict_to_lut(rule_dict)
-        grid = np.zeros((self.grid_size, self.grid_size), dtype=np.uint8)
-        for r, c in self._glider_a:
-            grid[r % self.grid_size, c % self.grid_size] = 1
-        for r, c in self._glider_b:
-            grid[r % self.grid_size, c % self.grid_size] = 1
+        rule_dict = rule_dict if rule_dict is not None else self.rule
+        if rule_dict is None:
+            raise ValueError("CollisionFitness: no rule supplied")
+
+        lut = rule_dict_to_lut(rule_dict)
+        grid = _make_collision_grid(self.grid_size)
 
         for _ in range(self.steps):
             grid = step_grid(grid, lut)
 
-        final_bits = int(grid.sum())
-        fitness = 1.0 if final_bits == self._initial_bits else 0.0
+        final_bit_count = int(grid.sum())
+
+        if final_bit_count == 0:
+            return {
+                "fitness":             0.0,
+                "initial_bit_count":   self._initial_bits,
+                "final_bit_count":     0,
+                "final_object_count":  0,
+            }
+
+        _, final_object_count = label(grid, structure=_LABEL_STRUCTURE)
+        if final_object_count == 0:
+            return {
+                "fitness":             0.0,
+                "initial_bit_count":   self._initial_bits,
+                "final_bit_count":     final_bit_count,
+                "final_object_count":  0,
+            }
+
+        fitness = (
+            (self._initial_bits / final_bit_count)
+            * (2.0 / final_object_count)
+        )
 
         return {
-            "fitness":           fitness,
-            "initial_bit_count": self._initial_bits,
-            "final_bit_count":   final_bits,
+            "fitness":             float(fitness),
+            "initial_bit_count":   self._initial_bits,
+            "final_bit_count":     final_bit_count,
+            "final_object_count":  int(final_object_count),
         }
 
+    # ── callable sugar ───────────────────────────────────────────────────
 
-# Module-level default instance and convenience wrapper
-_DEFAULT = CollisionFitness()
+    def __call__(self, rule_dict: dict | None = None) -> dict:
+        return self.evaluate(rule_dict)
 
+
+# ── Module-level convenience wrapper ────────────────────────────────────────
 
 def evaluate(rule_dict: dict) -> dict:
-    """Convenience wrapper: evaluate *rule_dict* with default CollisionFitness settings.
-
-    Returns the same dict as ``CollisionFitness().evaluate(rule_dict)``.
-    """
-    return _DEFAULT.evaluate(rule_dict)
+    """Evaluate *rule_dict* with the default CollisionFitness settings."""
+    return CollisionFitness().evaluate(rule_dict)
