@@ -1,0 +1,5 @@
+Using the champion rule from iter_193 (`archive/iter_193/iter_002/results/champion_rule.json`), investigate the effect of a lateral offset on the collision dynamics.
+1.  Create a new seed function in `src/seeds.py` called `create_offset_colliding_gliders_seed`. This function should be identical to `create_colliding_gliders_seed` but must shift one of the two gliders by one cell in a direction perpendicular to its velocity vector.
+2.  Run a 400-step simulation using the champion rule and this new offset seed.
+3.  Generate a GIF animation of the outcome and save it to `archive/iter_194/results/offset_collision.gif`.
+4.  Write a `results.json` file to `archive/iter_194/results/offset_results.json` summarizing the outcome, including a classification of the interaction (e.g., 'elastic_deflection', 'pass_through', 'inelastic'), the final bit count, and the minimum distance achieved between the gliders' centers of mass.
