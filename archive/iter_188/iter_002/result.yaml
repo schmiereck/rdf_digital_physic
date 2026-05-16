@@ -1,0 +1,134 @@
+analysis: 'The sub-task successfully implemented and validated the `DynamicCollisionFitness`
+  function. The validation step (Part A) confirmed that the new function correctly
+  assigns a fitness of 0.0 to the static champion from iter_187, closing the previous
+  loophole.
+
+
+  However, the subsequent evolutionary search (Part B), while technically successful
+  in finding a rule with fitness 1.0, revealed a new, more subtle flaw in the fitness
+  function. As detailed in the experimenter_view, the champion rule satisfies the
+  "approach" condition with a distance change of only 3e-15, which is effectively
+  floating-point noise. The rule found another near-stasis solution instead of a genuine,
+  dynamic collision.
+
+
+  This is a valuable negative result. We have learned that a simple strict inequality
+  (`<`/`>`) is insufficient to enforce meaningful motion.
+
+  '
+campaign: ''
+campaign_status: ''
+campaign_summary: 'null
+
+  '
+chosen_direction: Address the newly discovered flaw by making the fitness function
+  more robust.
+experimenter_view: 'Part A worked as designed: the iter_187 stasis champion scored
+  0.0 under
+
+  DynamicCollisionFitness, confirming the new metric does reject the
+
+  end-state-only loophole that gamed iter_187.
+
+
+  Part B "succeeded" in the literal sense — a fitness 1.0 individual emerged in
+
+  generation 1 with bit/object conservation intact and the strict inequalities
+
+  satisfied. But the metric report exposes a new loophole at the float64
+
+  precision floor: midpoint_distance = 23.194827009486403 vs
+
+  initial_distance = 23.194827009486406, a 3e-15 difference (unit-in-last-place
+
+  of float64 around the value 23). The "approach" is pure rounding noise; the
+
+  rule is essentially another near-stasis attractor, not a genuine collision.
+
+
+  Take-away: the strict `<` / `>` formulation is exploitable by any rule that
+
+  keeps the gliders nearly stationary while letting their COMs jitter by an
+
+  epsilon. A future iteration should require an absolute approach margin (e.g.
+
+  midpoint_distance <= initial_distance - 1.0) and a recession margin, plus
+
+  perhaps a minimum cell-displacement check, to force real motion. The
+
+  generated GIF should be inspected to confirm the diagnosis.
+
+  '
+hypothesis: A revised fitness function, `RobustDynamicCollisionFitness`, requiring
+  an approach and recession margin of at least 1.0 grid unit, will reject near-static
+  rules and find a rule for genuine glider collision.
+metrics:
+  champion_found: 1
+  champion_generation: 1
+  final_bit_count: 6
+  final_distance: 23.194827009486406
+  final_object_count: 2
+  horizon: 100
+  initial_distance: 23.194827009486406
+  midpoint_distance: 23.194827009486403
+  num_generations: 10
+  population_size: 100
+milestone_reached: ''
+notes: champion found gen 1 but exploits float-precision noise in the strict-inequality
+  test; metric needs an absolute approach threshold
+open_questions:
+- Can a fitness function with an absolute distance margin (e.g., `distance < initial_distance
+  - 1.0`) prevent the 'floating-point noise' exploit?
+- What is the minimum margin required to enforce genuine movement?
+- Should a cell-displacement metric (e.g., Hamming distance between frames) be added
+  to the fitness function to explicitly reward movement?
+rationale: 'The previous experiment showed that a strict inequality on distance is
+  not enough to guarantee movement. An absolute margin will force the gliders to move
+  a meaningful distance, filtering out the near-static solutions that exploit floating-point
+  noise. This is the most direct way to fix the observed failure mode.
+
+  '
+state_update: 'Phase: Focused Exploration
+
+
+  **Goal:** Find a cellular automaton rule that produces a dynamic, conserving collision
+  between two 3-bit gliders.
+
+
+  **Confirmed:**
+
+  - The `CollisionFitness` from `iter_187` is flawed; it can be satisfied by static
+  "still-life" patterns (iter_188.1).
+
+  - The `DynamicCollisionFitness` function (using strict inequality for distance checks)
+  correctly rejects the static still-life rule from `iter_187` (iter_188.2).
+
+
+  **Refuted:**
+
+  - The hypothesis that `DynamicCollisionFitness` with strict inequality is sufficient
+  to find dynamic collisions is refuted. It can be exploited by near-static rules
+  that cause glider centers-of-mass to change by amounts on the order of floating-point
+  precision noise (iter_188.2).
+
+
+  **Current Best Result:**
+
+  - `archive/iter_188/results/dynamic_champion_rule.json`. While technically having
+  a fitness of 1.0 under the `DynamicCollisionFitness` metric, it is known to be a
+  flawed, near-static solution, not a true collision.
+
+
+  **Open Questions:**
+
+  - Can a fitness function with an absolute distance margin (e.g., `distance < initial_distance
+  - 1.0`) prevent the "floating-point noise" exploit?
+
+  - What is the minimum margin required to enforce genuine movement?
+
+  - Should a cell-displacement metric be added to the fitness function to explicitly
+  reward movement?
+
+  '
+status: ok
+user_question: ''
