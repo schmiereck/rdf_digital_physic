@@ -1,0 +1,59 @@
+```yaml
+analysis: |
+  This phase aimed to solve the "bootstrap problem" (iter_190) where evolutionary search fails due to a lack of motion in random rule populations. The strategy was to "warm-start" the search using mutated variants of a known glider rule, `g10_rule_001`.
+
+  Sub-agent 191.1 successfully implemented this strategy, creating a population of 100 rules clustered around the parent glider rule. This part of the plan worked perfectly.
+
+  However, the main evolutionary run (191.2) failed completely, uncovering a more fundamental "context-switch" problem. While `g10_rule_001` produces a perfect, bit-conserving glider from its original single-particle seed, it fails catastrophically when presented with the two-particle seed required for collision experiments. Its bit count explodes from 6 to 256. Because the `StagedCollisionFitness` function has a strict bit-conservation gate, every single member of the warm-start population scored a fitness of 0.0.
+
+  The key insight is that the glider-producing property of `g10_rule_001` is not a general characteristic of the rule, but an emergent behavior highly specific to the simple, single-particle context it was evolved in. It does not generalize to more complex initial conditions. This phase successfully replaced the "bootstrap problem" with the deeper and more challenging "generalization problem."
+open_questions:
+  - Can the fitness function be relaxed to use a soft penalty for bit non-conservation, providing a gradient towards conservation instead of a hard gate?
+  - Can we pre-screen a large random population to find rare rules that *do* conserve bits on the two-particle collision seed, and use those for a warm-start, regardless of their initial motion properties?
+  - Does a different family of rules, such as reversible block cellular automata, offer better global conservation properties suitable for a warm-start?
+  - What is the simplest initial condition that still triggers the bit explosion in `g10_rule_001`?
+chosen_direction: "Relaxing the fitness function to use a penalty-based approach for bit conservation."
+hypothesis: "phase-191: The 'warm-start' evolutionary strategy fails because single-particle glider rules do not generalize to conserve bits in multi-particle collision scenarios."
+rationale: |
+  The failure in iter_190 was a flat fitness landscape due to a lack of motion. The logical next step was to inject motion by seeding the population with a known glider rule. This phase was designed as a two-step process: first, create this "warm-start" population (191.1), and second, run the evolution with it (191.2). This cleanly tested the hypothesis that providing motion is sufficient to enable the evolution of collisions.
+status: experiment_failed
+metrics:
+  champion_fitness: 0.0
+  warm_start_members_conserving_bits: 0
+  parent_rule_initial_bits_on_collision_seed: 6
+  parent_rule_midpoint_bits_on_collision_seed: 256
+experimenter_view: |
+  **Sub-agent 191.1:** Succeeded. A new script, `src/create_mutated_population.py`, was created and used to generate `archive/iter_191/results/warm_start_population.json`. The population consists of 100 rules, with 47 being unique, single-mutation variants of the parent glider rule `g10_rule_001`. This successfully prepared the conditions for the main experiment.
+
+  **Sub-agent 191.2:** Failed. The evolutionary search using the warm-start population ran for 20 generations, but every rule evaluated scored a fitness of 0.0. The root cause was a failure of generalization. The parent rule `g10_rule_001` and all its variants, while stable with one L-tromino, are not bit-conserving when presented with the two-tromino initial condition for a collision. The bit count explodes from 6 to 256, which is immediately rejected by the fitness function's strict conservation requirement. The warm-start successfully provided motion, but that motion was irrelevant because the conservation prerequisite was universally violated. The fitness landscape remained perfectly flat.
+notes: "The phase was a crucial diagnostic. We solved the 'no motion' problem and immediately discovered the more subtle 'no generalization' problem. The parent rule is a specialist, not a generalist."
+artifacts:
+  - src/create_mutated_population.py
+  - archive/iter_191/results/warm_start_population.json
+  - src/run_evolution.py
+  - archive/iter_191/results/evolution_log.csv
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A `StagedCollisionFitness` function that provides a theoretical gradient for collision stages is implemented (iter_190.1).
+  - A "warm-start" technique for seeding an evolutionary population with mutated clones of a known rule is implemented and works as expected (iter_191.1).
+
+  **Refuted:**
+  - The hypothesis that seeding evolution with a known single-particle glider rule (`g10_rule_001`) is sufficient to evolve collision dynamics is refuted (iter_191.2).
+  - The glider-producing property of `g10_rule_001` is highly context-dependent and does not generalize to multi-particle initial conditions. It is not globally bit-conserving.
+  - Starting with a population that has motion is not sufficient if that population does not also satisfy the bit-conservation constraint on the target (collision) seed.
+
+  **Best Result:**
+  - No viable rule for elastic collisions is currently known. A new "context-switch" or "generalization" problem has been identified as the primary blocker: rules evolved for simple scenarios do not generalize to more complex ones.
+
+  **In Progress:**
+  - Diagnosing the fundamental limitations of the evolutionary approach. The focus has shifted from bootstrapping motion to finding or evolving rules with global conservation properties.
+
+  **Open Questions:**
+  - Can the fitness function be relaxed to use a soft penalty for bit non-conservation, providing a gradient towards conservation instead of a hard gate?
+  - Can we pre-screen a large random population to find rare rules that *do* conserve bits on the two-particle collision seed, and use those for a warm-start?
+  - Does a different family of rules, such as reversible block cellular automata, offer better global conservation properties suitable for a warm-start?
+```

@@ -3,45 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 32328
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.12451
-hypothesis: 'evolution-reboot-new-seed: A new random population, generated with a
-  different seed, will contain at least one rule with a late-displacement fitness
-  score > 0.2.'
-input_tokens: 53705
-iter: 158
-metrics:
-  best_rule_id: rule_058
-  gen1_max_fitness: 0.158514
-  gen1_mean_fitness: 0.017089
-  num_viable_rules: 0
-output_tokens: 2038
-status: ok
-```
-
-## iter_158: evolution-reboot-new-seed: A new random population, generated with a different seed, will contain at least one rule with a late-displacement fitness score > 0.2.
-
-**Analysis:** In iter_157, an attempt to evolve rules for sustained motion failed. A second generation of rules, bred from the best of the first, showed a *decrease* in fitness. This suggested that the small fitness advantage of the parent rules was not a heritable trait, but likely just random noise. The landscape appeared unnavigable from that starting point.
-
-This led to the primary open question: was the in
-
-**Status:** ok
-
-**Metrics:** `{'best_rule_id': 'rule_058', 'gen1_max_fitness': 0.158514, 'gen1_mean_fitness': 0.017089, 'num_viable_rules': 0}`
-
-**Experimenter view:** Fresh Gen-1 search with population_seed=43 produced results nearly identical to
-the iter_157 Gen-1 (seed-42-equivalent): mean=0.0171 vs 0.0148, max=0.1585 vs
-prior max. No rules exceeded the 0.2 viability threshold. The top three rules
-(rule_058=0.1585, rule_100=0.1343, rule_075=0.1095) are the best candidates for
-breeding, but their fitness is still well below the level that produced heritable
-ad
-
-**Notes:** Gen-1 reboot with seed=43; no viable rules found; max_fitness=0.1585 (rule_058)
-
-
----
-```yaml
 cached_tokens: 14878
 cost_usd: 0.10869
 hypothesis: 'evolution-composite-metric: A new random population of 100 rules, when
@@ -950,4 +911,38 @@ However, the subsequent evolutionary run (190.2) completely failed,
 **Sub-agent 190.2:** The evolutionary searc
 
 **Notes:** The staged fitness function is likely a necessary, but not sufficient, condition for success. The immediate next step must be to solve the 'bootstrap problem' by seeding the initial population with rules that are already known to produce motion.
+
+
+---
+```yaml
+cached_tokens: 18669
+cost_usd: 0.22372
+hypothesis: 'phase-191: The ''warm-start'' evolutionary strategy fails because single-particle
+  glider rules do not generalize to conserve bits in multi-particle collision scenarios.'
+input_tokens: 68634
+iter: 191
+metrics:
+  champion_fitness: 0.0
+  parent_rule_initial_bits_on_collision_seed: 6
+  parent_rule_midpoint_bits_on_collision_seed: 256
+  warm_start_members_conserving_bits: 0
+output_tokens: 3096
+status: experiment_failed
+```
+
+## iter_191: phase-191: The 'warm-start' evolutionary strategy fails because single-particle glider rules do not generalize to conserve bits in multi-particle collision scenarios.
+
+**Analysis:** This phase aimed to solve the "bootstrap problem" (iter_190) where evolutionary search fails due to a lack of motion in random rule populations. The strategy was to "warm-start" the search using mutated variants of a known glider rule, `g10_rule_001`.
+
+Sub-agent 191.1 successfully implemented this strategy, creating a population of 100 rules clustered around the parent glider rule. This part of th
+
+**Status:** experiment_failed
+
+**Metrics:** `{'champion_fitness': 0.0, 'warm_start_members_conserving_bits': 0, 'parent_rule_initial_bits_on_collision_seed': 6, 'parent_rule_midpoint_bits_on_collision_seed': 256}`
+
+**Experimenter view:** **Sub-agent 191.1:** Succeeded. A new script, `src/create_mutated_population.py`, was created and used to generate `archive/iter_191/results/warm_start_population.json`. The population consists of 100 rules, with 47 being unique, single-mutation variants of the parent glider rule `g10_rule_001`. This successfully prepared the conditions for the main experiment.
+
+**Sub-agent 191.2:** Failed. The ev
+
+**Notes:** The phase was a crucial diagnostic. We solved the 'no motion' problem and immediately discovered the more subtle 'no generalization' problem. The parent rule is a specialist, not a generalist.
 

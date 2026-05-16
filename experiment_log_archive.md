@@ -7922,3 +7922,42 @@ status: experiment_failed
 
 **Notes:** Breeding from the top 3 Gen-1 rules failed to improve fitness, suggesting their small advantage was not heritable. The fitness signal is too weak/random to drive evolution.
 
+
+---
+```yaml
+cached_tokens: 32328
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.12451
+hypothesis: 'evolution-reboot-new-seed: A new random population, generated with a
+  different seed, will contain at least one rule with a late-displacement fitness
+  score > 0.2.'
+input_tokens: 53705
+iter: 158
+metrics:
+  best_rule_id: rule_058
+  gen1_max_fitness: 0.158514
+  gen1_mean_fitness: 0.017089
+  num_viable_rules: 0
+output_tokens: 2038
+status: ok
+```
+
+## iter_158: evolution-reboot-new-seed: A new random population, generated with a different seed, will contain at least one rule with a late-displacement fitness score > 0.2.
+
+**Analysis:** In iter_157, an attempt to evolve rules for sustained motion failed. A second generation of rules, bred from the best of the first, showed a *decrease* in fitness. This suggested that the small fitness advantage of the parent rules was not a heritable trait, but likely just random noise. The landscape appeared unnavigable from that starting point.
+
+This led to the primary open question: was the in
+
+**Status:** ok
+
+**Metrics:** `{'best_rule_id': 'rule_058', 'gen1_max_fitness': 0.158514, 'gen1_mean_fitness': 0.017089, 'num_viable_rules': 0}`
+
+**Experimenter view:** Fresh Gen-1 search with population_seed=43 produced results nearly identical to
+the iter_157 Gen-1 (seed-42-equivalent): mean=0.0171 vs 0.0148, max=0.1585 vs
+prior max. No rules exceeded the 0.2 viability threshold. The top three rules
+(rule_058=0.1585, rule_100=0.1343, rule_075=0.1095) are the best candidates for
+breeding, but their fitness is still well below the level that produced heritable
+ad
+
+**Notes:** Gen-1 reboot with seed=43; no viable rules found; max_fitness=0.1585 (rule_058)
+
