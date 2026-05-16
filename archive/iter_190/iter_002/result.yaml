@@ -1,0 +1,68 @@
+artifacts:
+- src/run_iter_190_2_evolution.py
+- archive/iter_190/iter_002/results/generation_stats.json
+- archive/iter_190/iter_002/results/final_population.json
+- archive/iter_190/iter_002/results/best_rule.json
+- archive/iter_190/iter_002/results/fitness_plot.png
+experimenter_view: "The GA ran cleanly for 10 generations of 100 individuals each\
+  \ with the\nconfiguration requested (StagedCollisionFitness, 128x128 torus, two\
+  \ L-trominos at\nthe seed positions baked into the fitness module, horizon=400,\
+  \ midpoint=200,\nelite_fraction=0.10, density=8, crossover=0.8, mutation=0.01, RNG\
+  \ seed=190_002).\n\nPrimary success criterion (champion fitness >= 1.0): FAILED\
+  \ — no individual in\nany generation scored above 0.0.\nSecondary criterion (positive\
+  \ trend in mean fitness): FAILED — mean, max, and\nstd were exactly 0.0 across all\
+  \ 11 generations.\n\nDiagnostic probe of an independent 100-rule cohort drawn the\
+  \ same way shows the\nfailure mode is a fully flat fitness landscape, not a bug:\n\
+  \  - 63/100 rules change the bit count by step 200, immediately killing fitness\n\
+  \    via the conservation check.\n  - 37/100 rules conserve bits but leave both\
+  \ L-trominos completely stationary\n    (d_initial == d_mid == d_final == 47.518).\
+  \ The champion that the GA ended\n    up \"selecting\" is one of these inert-but-conservative\
+  \ rules — its 0.0\n    fitness is indistinguishable from every other 0.0 in the\
+  \ population.\n  - 0/100 rules produce ANY change in inter-object distance, even\
+  \ ignoring the\n    1.0-grid-unit margin.\n\nConsequence: the elite tier is 10 identical-by-fitness\
+  \ inert rules, the 1% bit\nmutation rate is far too weak to invent motion ex nihilo,\
+  \ and StagedCollision-\nFitness's intended {0, 1, 2} gradient never separates anyone.\
+  \ The \"staging\" only\nhelps once some individual already moves the trominos toward\
+  \ each other; it\ncannot bootstrap motion from a population where nobody moves at\
+  \ all.\n\nImplication for follow-up: StagedCollisionFitness needs either (a) a much\
+  \ denser\nrule encoding / much higher mutation rate to seed motion, (b) a warm-start\n\
+  population drawn from previously-discovered glider rules (e.g. the iter_17x\nL-tromino\
+  \ motion rules), or (c) an even finer-grained stage-0 reward (e.g. ANY\ninter-object\
+  \ distance change, not bounded by the 1.0-unit margin) so the search\nhas a foothold.\
+  \ The current landscape — though no longer binary at the top —\nis still flat at\
+  \ the bottom where the search has to start.\n"
+log_excerpt: "=== iter_190.2 Evolutionary Search (StagedCollisionFitness) ===\n  Population\
+  \ : 100   Generations: 10\n  Density    : 8           Elite: 10\n  Horizon    :\
+  \ 400           Midpoint: 200\n  Grid size  : 128x128 torus\n  Fitness    : StagedCollisionFitness\
+  \ (discrete 0/1/2)\n\n  Gen  0: max=0.0000  mean=0.0000  std=0.0000  non_zero=0\
+  \  n_1=0  n_2=0\n  Gen  1: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0\
+  \  n_2=0\n  Gen  2: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0\n\
+  \  Gen  3: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0\n  Gen\
+  \  4: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0\n  Gen  5: max=0.0000\
+  \  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0\n  Gen  6: max=0.0000  mean=0.0000\
+  \  std=0.0000  non_zero=0  n_1=0  n_2=0\n  Gen  7: max=0.0000  mean=0.0000  std=0.0000\
+  \  non_zero=0  n_1=0  n_2=0\n  Gen  8: max=0.0000  mean=0.0000  std=0.0000  non_zero=0\
+  \  n_1=0  n_2=0\n  Gen  9: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0\
+  \  n_2=0\n  Gen 10: max=0.0000  mean=0.0000  std=0.0000  non_zero=0  n_1=0  n_2=0\n\
+  \  best_fitness    = 0.0000   best_generation = 0\n  d_initial=d_mid=d_final=47.518\
+  \  bits_conserved=True\n"
+metrics:
+  best_fitness: 0.0
+  best_generation: 0
+  champions_fitness_1: 0
+  champions_fitness_2: 0
+  elite_count: 10
+  gen0_mean: 0.0
+  gen0_non_zero: 0
+  gen10_max: 0.0
+  gen10_mean: 0.0
+  gen10_non_zero: 0
+  initial_pop_approach_no_margin: 0
+  initial_pop_bit_change: 63
+  initial_pop_moving_conserve: 0
+  initial_pop_stationary_conserve: 37
+  num_generations: 10
+  population_size: 100
+notes: GA ran to spec; landscape is uniformly 0.0 — no champion >= 1.0, no positive
+  trend. 37/100 random rules conserve bits but produce no motion; 63/100 destroy bits.
+status: experiment_failed

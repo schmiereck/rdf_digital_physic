@@ -1,0 +1,397 @@
+#!/usr/bin/env python3
+"""
+run_iter_190_2_evolution.py  —  iter_190 sub-task 2 evolutionary search using
+StagedCollisionFitness.
+
+Setup
+-----
+* Fitness     : StagedCollisionFitness (discrete {0, 1, 2} — staged approach/recede)
+* Population  : 100 random C2-symmetric rules
+* Generations : 10
+* Elite       : 10% (== 10 individuals)
+* Seed        : two 3-bit L-trominos on a 128x128 torus (defined inside StagedCollisionFitness)
+* Simulation  : 400 steps, midpoint snapshot at step 200
+
+Outputs (under archive/iter_190/iter_002/results/):
+  - generation_stats.json    : per-gen mean / max / std fitness + non_zero counts
+  - final_population.json    : every rule + fitness at the final generation
+  - best_rule.json           : champion rule, its chromosome, fitness, metrics
+  - fitness_plot.png         : max + mean fitness vs generation
+  - collision.gif            : dynamics of the champion (only if best fitness >= 1.0)
+"""
+
+from __future__ import annotations
+
+import json
+import random
+import sys
+from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from evolution import _try_build_c2_rule, rule_dict_to_lut, step_grid
+from fitness import StagedCollisionFitness, _make_staged_grid
+
+
+# ── Paths ────────────────────────────────────────────────────────────────────
+
+PROJECT_ROOT = Path(__file__).parent.parent
+OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_190" / "iter_002" / "results"
+GEN_STATS    = OUTPUT_DIR / "generation_stats.json"
+FINAL_POP    = OUTPUT_DIR / "final_population.json"
+BEST_JSON    = OUTPUT_DIR / "best_rule.json"
+FIT_PLOT     = OUTPUT_DIR / "fitness_plot.png"
+BEST_GIF     = OUTPUT_DIR / "collision.gif"
+
+
+# ── GA hyper-parameters ──────────────────────────────────────────────────────
+
+POPULATION_SIZE = 100
+NUM_GENERATIONS = 10
+ELITE_FRACTION  = 0.10
+DENSITY         = 8
+CROSSOVER_RATE  = 0.8
+MUTATION_RATE   = 0.01
+LUT_SIZE        = 128
+RNG_SEED        = 190_002
+HORIZON         = 400
+MIDPOINT        = 200
+GRID_SIZE       = 128
+
+ELITE_COUNT = max(2, int(POPULATION_SIZE * ELITE_FRACTION))
+
+
+# ── Chromosome <-> rule_dict conversions ─────────────────────────────────────
+
+def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
+    lut = np.arange(LUT_SIZE, dtype=np.uint8)
+    for k, v in rule_dict.items():
+        lut[int(k)] = int(v)
+    return ((lut >> 6) & 1).astype(np.uint8)
+
+
+def chromosome_to_rule_dict(chrom: np.ndarray) -> dict:
+    out: dict = {}
+    for s in range(LUT_SIZE):
+        default_center = (s >> 6) & 1
+        actual_center  = int(chrom[s])
+        if actual_center != default_center:
+            v = (actual_center << 6) | (s & 0b0111111)
+            out[s] = v
+    return out
+
+
+def generate_c2_rule_density(
+    rng: random.Random, density: int = DENSITY, max_attempts: int = 10_000,
+) -> dict:
+    for _ in range(max_attempts):
+        pairs = [(rng.randint(1, 127), rng.randint(1, 127)) for _ in range(density)]
+        rule = _try_build_c2_rule(pairs)
+        if rule is not None:
+            return rule
+    raise RuntimeError(f"Failed to generate C2 rule with density {density}")
+
+
+# ── Fitness evaluation ────────────────────────────────────────────────────────
+
+_FITNESS = StagedCollisionFitness(horizon=HORIZON, midpoint=MIDPOINT, grid_size=GRID_SIZE)
+
+
+def evaluate_population(population: list) -> tuple[list, list]:
+    n         = len(population)
+    fitnesses = [0.0] * n
+    metrics_l = [None] * n
+    for i, chrom in enumerate(population):
+        rule_dict = chromosome_to_rule_dict(chrom)
+        m         = _FITNESS.evaluate(rule_dict)
+        fitnesses[i] = float(m["fitness"])
+        metrics_l[i] = m
+    return fitnesses, metrics_l
+
+
+# ── Genetic operators ─────────────────────────────────────────────────────────
+
+def two_point_crossover(p1, p2, rng):
+    n      = len(p1)
+    a, b   = sorted(rng.sample(range(n + 1), 2))
+    c1, c2 = p1.copy(), p2.copy()
+    c1[a:b] = p2[a:b]
+    c2[a:b] = p1[a:b]
+    return c1, c2
+
+
+def per_bit_mutation(chrom, rate, rng):
+    for i in range(len(chrom)):
+        if rng.random() < rate:
+            chrom[i] ^= 1
+    return chrom
+
+
+def select_top_k(population, fitnesses, k):
+    order = sorted(range(len(population)), key=lambda i: fitnesses[i], reverse=True)
+    return [population[i].copy() for i in order[:k]]
+
+
+# ── Champion-rule animation ───────────────────────────────────────────────────
+
+def render_collision_gif(
+    rule_dict: dict, gif_path: Path, steps: int = HORIZON, frame_stride: int = 4,
+) -> None:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    lut    = rule_dict_to_lut(rule_dict)
+    grid   = _make_staged_grid(GRID_SIZE)
+    frames = [(0, grid.copy())]
+    for step in range(1, steps + 1):
+        grid = step_grid(grid, lut)
+        if step % frame_stride == 0 or step == steps:
+            frames.append((step, grid.copy()))
+
+    fig, ax = plt.subplots(figsize=(6, 6), dpi=100)
+    ax.set_title("iter_190.2 StagedCollisionFitness champion")
+    ax.set_xlabel("col")
+    ax.set_ylabel("row")
+    img = ax.imshow(
+        frames[0][1], origin="upper", interpolation="nearest", cmap="hot", vmin=0, vmax=1,
+    )
+    step_text = ax.text(
+        0.02, 0.97, f"step={frames[0][0]}", transform=ax.transAxes,
+        color="white", fontsize=10, va="top",
+    )
+
+    def update(i):
+        step, g = frames[i]
+        img.set_data(g)
+        step_text.set_text(f"step={step}")
+        return img, step_text
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(frames), interval=80, blit=True,
+    )
+    gif_path.parent.mkdir(parents=True, exist_ok=True)
+    ani.save(str(gif_path), writer="pillow", fps=12)
+    plt.close(fig)
+
+
+def render_fitness_plot(stats: list[dict], plot_path: Path) -> None:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    gens = [s["generation"] for s in stats]
+    max_ = [s["max"]        for s in stats]
+    mean = [s["mean"]       for s in stats]
+
+    fig, ax = plt.subplots(figsize=(8, 5), dpi=100)
+    ax.plot(gens, max_,  marker="o", label="max")
+    ax.plot(gens, mean,  marker="s", label="mean")
+    ax.set_xlabel("generation")
+    ax.set_ylabel("fitness")
+    ax.set_title("iter_190.2 — StagedCollisionFitness population fitness")
+    ax.set_ylim(-0.05, 2.1)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    plot_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(plot_path), bbox_inches="tight")
+    plt.close(fig)
+
+
+# ── Evolutionary search ───────────────────────────────────────────────────────
+
+def run_search() -> dict:
+    print("=== iter_190.2 Evolutionary Search (StagedCollisionFitness) ===")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(RNG_SEED)
+
+    print(f"  Population : {POPULATION_SIZE}   Generations: {NUM_GENERATIONS}")
+    print(f"  Density    : {DENSITY}           Elite: {ELITE_COUNT}")
+    print(f"  Horizon    : {HORIZON}           Midpoint: {MIDPOINT}")
+    print(f"  Grid size  : {GRID_SIZE}x{GRID_SIZE} torus")
+    print(f"  Fitness    : StagedCollisionFitness (discrete 0/1/2)\n")
+
+    population = [
+        rule_dict_to_chromosome(generate_c2_rule_density(rng, density=DENSITY))
+        for _ in range(POPULATION_SIZE)
+    ]
+
+    fitnesses, metrics_l = evaluate_population(population)
+    best_idx        = int(np.argmax(fitnesses))
+    best_fitness    = float(fitnesses[best_idx])
+    best_chrom      = population[best_idx].copy()
+    best_metrics    = metrics_l[best_idx]
+    best_generation = 0
+
+    stats: list[dict] = []
+    n_nonzero = sum(1 for f in fitnesses if f > 0.0)
+    n_one     = sum(1 for f in fitnesses if f == 1.0)
+    n_two     = sum(1 for f in fitnesses if f == 2.0)
+    stats.append({
+        "generation": 0,
+        "max":        float(np.max(fitnesses)),
+        "mean":       float(np.mean(fitnesses)),
+        "std":        float(np.std(fitnesses)),
+        "non_zero":   int(n_nonzero),
+        "n_one":      int(n_one),
+        "n_two":      int(n_two),
+    })
+    print(
+        f"  Gen  0: max={stats[-1]['max']:.4f}  mean={stats[-1]['mean']:.4f}  "
+        f"std={stats[-1]['std']:.4f}  non_zero={n_nonzero}  "
+        f"n_1={n_one}  n_2={n_two}"
+    )
+
+    for gen in range(1, NUM_GENERATIONS + 1):
+        elite  = select_top_k(population, fitnesses, ELITE_COUNT)
+        new_pop = [e.copy() for e in elite]
+        while len(new_pop) < POPULATION_SIZE:
+            p1, p2 = rng.sample(elite, 2)
+            if rng.random() < CROSSOVER_RATE:
+                c1, c2 = two_point_crossover(p1, p2, rng)
+            else:
+                c1, c2 = p1.copy(), p2.copy()
+            c1 = per_bit_mutation(c1, MUTATION_RATE, rng)
+            c2 = per_bit_mutation(c2, MUTATION_RATE, rng)
+            new_pop.append(c1)
+            if len(new_pop) < POPULATION_SIZE:
+                new_pop.append(c2)
+
+        population = new_pop
+        fitnesses, metrics_l = evaluate_population(population)
+        gen_best_idx = int(np.argmax(fitnesses))
+        gen_best     = float(fitnesses[gen_best_idx])
+        gen_mean     = float(np.mean(fitnesses))
+        gen_std      = float(np.std(fitnesses))
+
+        if gen_best > best_fitness:
+            best_fitness    = gen_best
+            best_chrom      = population[gen_best_idx].copy()
+            best_metrics    = metrics_l[gen_best_idx]
+            best_generation = gen
+
+        n_nonzero = sum(1 for f in fitnesses if f > 0.0)
+        n_one     = sum(1 for f in fitnesses if f == 1.0)
+        n_two     = sum(1 for f in fitnesses if f == 2.0)
+        stats.append({
+            "generation": gen,
+            "max":        gen_best,
+            "mean":       gen_mean,
+            "std":        gen_std,
+            "non_zero":   int(n_nonzero),
+            "n_one":      int(n_one),
+            "n_two":      int(n_two),
+        })
+        print(
+            f"  Gen {gen:2d}: max={gen_best:.4f}  mean={gen_mean:.4f}  "
+            f"std={gen_std:.4f}  non_zero={n_nonzero}  "
+            f"n_1={n_one}  n_2={n_two}"
+        )
+
+    return {
+        "best_fitness":    float(best_fitness),
+        "best_chrom":      best_chrom,
+        "best_metrics":    best_metrics,
+        "best_generation": int(best_generation),
+        "generations_ran": NUM_GENERATIONS,
+        "stats":           stats,
+        "final_population": [c.tolist() for c in population],
+        "final_fitnesses":  [float(f) for f in fitnesses],
+        "final_metrics":    metrics_l,
+    }
+
+
+# ── Reporting ─────────────────────────────────────────────────────────────────
+
+def write_results(result: dict) -> list:
+    print("\n=== Results ===")
+    artifacts: list[str] = []
+
+    # 1. generation_stats.json
+    with open(GEN_STATS, "w") as f:
+        json.dump(result["stats"], f, indent=2)
+    print(f"  Generation stats saved: {GEN_STATS}")
+    artifacts.append(str(GEN_STATS.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+
+    # 2. final_population.json (rules + fitness for the final generation)
+    final_pop_payload = []
+    for i, (chrom, fit) in enumerate(zip(result["final_population"], result["final_fitnesses"])):
+        rule_dict = chromosome_to_rule_dict(np.asarray(chrom, dtype=np.uint8))
+        final_pop_payload.append({
+            "index":     i,
+            "fitness":   fit,
+            "rule_dict": {str(k): int(v) for k, v in rule_dict.items()},
+        })
+    with open(FINAL_POP, "w") as f:
+        json.dump(final_pop_payload, f, indent=2)
+    print(f"  Final population saved: {FINAL_POP}")
+    artifacts.append(str(FINAL_POP.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+
+    # 3. best_rule.json (champion)
+    rule_dict = chromosome_to_rule_dict(result["best_chrom"])
+    m         = result["best_metrics"] or {}
+    payload = {
+        "iteration":          "iter_190.2",
+        "fitness":            result["best_fitness"],
+        "generation_of_best": result["best_generation"],
+        "num_generations":    NUM_GENERATIONS,
+        "population_size":    POPULATION_SIZE,
+        "elite_count":        ELITE_COUNT,
+        "crossover_rate":     CROSSOVER_RATE,
+        "mutation_rate":      MUTATION_RATE,
+        "rng_seed":           RNG_SEED,
+        "horizon":            HORIZON,
+        "midpoint":           MIDPOINT,
+        "grid_size":          GRID_SIZE,
+        "fitness_function":   "StagedCollisionFitness",
+        "metrics":            m,
+        "rule_dict":          {str(k): int(v) for k, v in rule_dict.items()},
+        "chromosome":         result["best_chrom"].tolist(),
+    }
+    with open(BEST_JSON, "w") as f:
+        json.dump(payload, f, indent=2)
+    print(f"  Best rule saved: {BEST_JSON}")
+    artifacts.append(str(BEST_JSON.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+
+    # 4. fitness_plot.png
+    render_fitness_plot(result["stats"], FIT_PLOT)
+    print(f"  Fitness plot saved: {FIT_PLOT}")
+    artifacts.append(str(FIT_PLOT.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+
+    # 5. collision.gif (only if a non-trivial champion was found)
+    if result["best_fitness"] >= 1.0:
+        print(f"  Champion fitness {result['best_fitness']:.2f} >= 1.0 — rendering GIF ...")
+        render_collision_gif(rule_dict, BEST_GIF, steps=HORIZON)
+        print(f"  GIF saved: {BEST_GIF}")
+        artifacts.append(str(BEST_GIF.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+    else:
+        print(f"  Champion fitness {result['best_fitness']:.2f} < 1.0 — no GIF generated.")
+
+    print(f"\n  best_fitness    = {result['best_fitness']:.4f}")
+    print(f"  best_generation = {result['best_generation']}")
+    if m:
+        print(f"  approach_score  = {m.get('approach_score', 'n/a')}")
+        print(f"  recession_score = {m.get('recession_score', 'n/a')}")
+        print(f"  bits_conserved  = {m.get('bits_conserved', 'n/a')}")
+        print(f"  d_initial       = {m.get('d_initial', 'n/a')}")
+        print(f"  d_mid           = {m.get('d_mid', 'n/a')}")
+        print(f"  d_final         = {m.get('d_final', 'n/a')}")
+    return artifacts
+
+
+def main() -> int:
+    result    = run_search()
+    artifacts = write_results(result)
+
+    print("\n=== Summary ===")
+    print(f"  best_fitness    = {result['best_fitness']:.4f}")
+    print(f"  best_generation = {result['best_generation']}")
+    print(f"  artifacts       = {artifacts}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
