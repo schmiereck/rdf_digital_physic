@@ -3,40 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.14688
-hypothesis: 'evolution-gen2-late-displacement: A second generation of rules, bred
-  from the top 3 performers of Gen-1, will have a mean fitness at least 100% higher
-  than the Gen-1 mean of 0.0148.'
-input_tokens: 36091
-iter: 157
-metrics:
-  gen1_max_fitness: 0.142895
-  gen1_mean_fitness: 0.014788
-  gen2_max_fitness: 0.13063
-  gen2_mean_fitness: 0.012543
-  mean_fitness_change_pct: -15.18
-  num_viable_rules: 2
-output_tokens: 1958
-status: experiment_failed
-```
-
-## iter_157: evolution-gen2-late-displacement: A second generation of rules, bred from the top 3 performers of Gen-1, will have a mean fitness at least 100% higher than the Gen-1 mean of 0.0148.
-
-**Analysis:** The initial evolutionary search with the `late-displacement` metric failed to find any high-performing rules in its first generation (iter_157). The best score was 0.143, below the 0.2 threshold. However, it did identify three "viable" rules (fitness > 0.1) out of a population of 100. This confirms that the metric is highly selective, but also that the signal is very sparse. The logical next step 
-
-**Status:** experiment_failed
-
-**Metrics:** `{'gen1_max_fitness': 0.142895, 'gen1_mean_fitness': 0.014788, 'gen2_max_fitness': 0.13063, 'gen2_mean_fitness': 0.012543, 'mean_fitness_change_pct': -15.18, 'num_viable_rules': 2}`
-
-**Experimenter view:** The hypothesis was decisively refuted. A new generation of 100 rules was bred from the top 3 rules of Gen-1 (rule_025, rule_068, rule_019). The resulting Gen-2 population showed a *decrease* in performance compared to its parent generation. The mean fitness dropped by 15.2% (from 0.0148 to 0.0125), and the maximum fitness also dropped from 0.1429 to 0.1306. Only two rules in the new generation sco
-
-**Notes:** Breeding from the top 3 Gen-1 rules failed to improve fitness, suggesting their small advantage was not heritable. The fitness signal is too weak/random to drive evolution.
-
-
----
-```yaml
 cached_tokens: 32328
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.12451
@@ -949,4 +915,39 @@ Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` 
 **Sub-agent 189.2 (Evolution):** Failed. The evolutionary search ran for 10 generations, evaluati
 
 **Notes:** The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there.
+
+
+---
+```yaml
+cached_tokens: 58780
+cost_usd: 0.35129
+hypothesis: 'phase-190: A staged fitness function, while correctly implemented, fails
+  to guide evolution from a random start due to the rarity of motion-inducing rules.'
+input_tokens: 132993
+iter: 190
+metrics:
+  best_fitness: 0.0
+  gen10_mean_fitness: 0.0
+  generations_ran: 10
+  initial_pop_bit_conserving_rules: 37
+  initial_pop_motion_rules: 0
+output_tokens: 3820
+status: experiment_failed
+```
+
+## iter_190: phase-190: A staged fitness function, while correctly implemented, fails to guide evolution from a random start due to the rarity of motion-inducing rules.
+
+**Analysis:** This phase aimed to solve the "flat fitness landscape" problem identified in iter_189 by introducing a `StagedCollisionFitness` function designed to provide a continuous gradient. Sub-agent 190.1 successfully implemented this function, which awards partial credit for achieving the 'approach' and 'recession' stages of a collision.
+
+However, the subsequent evolutionary run (190.2) completely failed,
+
+**Status:** experiment_failed
+
+**Metrics:** `{'best_fitness': 0.0, 'generations_ran': 10, 'gen10_mean_fitness': 0.0, 'initial_pop_bit_conserving_rules': 37, 'initial_pop_motion_rules': 0}`
+
+**Experimenter view:** **Sub-agent 190.1:** Successfully implemented the `StagedCollisionFitness` function in `src/fitness.py`. The function correctly assigns discrete scores of 0.0, 1.0, or 2.0 based on whether particles approach and recede, while strictly enforcing bit conservation. A smoke test with an identity rule correctly yielded a fitness of 0.0, confirming the logic.
+
+**Sub-agent 190.2:** The evolutionary searc
+
+**Notes:** The staged fitness function is likely a necessary, but not sufficient, condition for success. The immediate next step must be to solve the 'bootstrap problem' by seeding the initial population with rules that are already known to produce motion.
 

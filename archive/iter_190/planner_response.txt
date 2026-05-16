@@ -1,0 +1,58 @@
+```yaml
+analysis: |
+  This phase aimed to solve the "flat fitness landscape" problem identified in iter_189 by introducing a `StagedCollisionFitness` function designed to provide a continuous gradient. Sub-agent 190.1 successfully implemented this function, which awards partial credit for achieving the 'approach' and 'recession' stages of a collision.
+
+  However, the subsequent evolutionary run (190.2) completely failed, revealing a deeper issue. The fitness for all rules across all 10 generations remained exactly 0.0. The new fitness function, while conceptually providing a gradient, was unable to do so in practice due to a "bootstrap problem." A diagnostic probe revealed that within a random population, 63% of rules fail the prerequisite bit-conservation check, while the remaining 37% are inert rules that produce no motion whatsoever.
+
+  The core hypothesis that a staged fitness function alone would solve the problem was refuted. The search landscape is still flat, but for a new reason: the joint probability of a random rule both conserving bits AND producing any motion is effectively zero. The evolutionary search has no initial foothold to begin climbing the designed gradient. The key lesson is that the initial population must be seeded with rules already capable of motion.
+open_questions:
+  - "Can an initial population 'warmed' with mutated variants of a known glider rule provide the necessary motion for the StagedCollisionFitness to work?"
+  - "What is the minimum mutation rate required to evolve collision dynamics from a single parent glider rule without destroying the motion property?"
+  - "Is it more effective to evolve two separate single-glider rules and then attempt to combine them?"
+chosen_direction: "Warm-start evolution with a population derived from a known glider rule."
+hypothesis: "phase-190: A staged fitness function, while correctly implemented, fails to guide evolution from a random start due to the rarity of motion-inducing rules."
+rationale: |
+  The phase was structured to first build the new tool (the staged fitness function) and then use it.
+  1.  **190.1: Implement Staged Fitness:** This was the necessary first step to create the new fitness landscape. It succeeded, validating the implementation.
+  2.  **190.2: Run Evolution:** This step directly tested the hypothesis that the new landscape was searchable. It failed conclusively, providing critical diagnostic information that the starting population itself is the problem.
+status: experiment_failed
+metrics:
+  best_fitness: 0.0
+  generations_ran: 10
+  gen10_mean_fitness: 0.0
+  initial_pop_bit_conserving_rules: 37
+  initial_pop_motion_rules: 0
+experimenter_view: |
+  **Sub-agent 190.1:** Successfully implemented the `StagedCollisionFitness` function in `src/fitness.py`. The function correctly assigns discrete scores of 0.0, 1.0, or 2.0 based on whether particles approach and recede, while strictly enforcing bit conservation. A smoke test with an identity rule correctly yielded a fitness of 0.0, confirming the logic.
+
+  **Sub-agent 190.2:** The evolutionary search using the new fitness function failed to make any progress. The maximum and mean fitness remained at 0.0 for all 10 generations. A diagnostic analysis revealed that no rule in the initial random population produced any particle motion, preventing the staged fitness gradient from ever being engaged. Of 100 random rules, 63 were non-conserving and 37 were conserving but produced completely stationary particles. The evolution had no signal to optimize.
+notes: "The staged fitness function is likely a necessary, but not sufficient, condition for success. The immediate next step must be to solve the 'bootstrap problem' by seeding the initial population with rules that are already known to produce motion."
+artifacts:
+  - archive/iter_190/iter_002/results/fitness_plot.png
+  - archive/iter_190/iter_002/results/generation_stats.json
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A `StagedCollisionFitness` function that provides a theoretical gradient (scores of 0, 1, or 2 for stages of collision) has been successfully implemented and validated (iter_190.1).
+  - A robust evolutionary framework for finding rules with conserving collisions exists (iter_187).
+
+  **Refuted:**
+  - The hypothesis that a staged fitness function alone is sufficient to guide evolution out of a flat landscape is refuted (iter_190.2).
+  - A random population of rules is too sparse in motion-inducing, bit-conserving rules to provide a starting point for evolutionary search, even with a staged fitness function. This is a critical "bootstrap problem".
+  - The hypothesis that `g10_rule_001` supports elastic collisions is refuted (iter_185).
+  - Binary, all-or-nothing fitness functions create flat landscapes unsuitable for evolution (iter_189).
+
+  **Best Result:**
+  - No viable rule for elastic collisions is currently known. All recent attempts have been defeated by methodological dead-ends in fitness function design and population seeding.
+
+  **In Progress:**
+  - Iteratively refining the evolutionary methodology. The focus has now shifted from the fitness function's gradient to the quality of the initial population.
+
+  **Open Questions:**
+  - Can "warm-starting" evolution with a population of mutated variants of a known glider rule provide the necessary motion for the `StagedCollisionFitness` to work?
+  - What is the minimum mutation rate required to evolve collision dynamics from a single parent glider rule without destroying the motion property?
+  - Is it more effective to evolve two separate single-glider rules and then attempt to combine them?
+```
