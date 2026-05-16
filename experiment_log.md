@@ -3,45 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 14021
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.10368
-hypothesis: 'late-displacement-metric: A fitness metric based purely on displacement
-  in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient
-  puffer rule_021.'
-input_tokens: 35676
-iter: 156
-metrics:
-  com_at_t1200_x: 74.0099
-  com_at_t1200_y: 73.6141
-  com_at_t2000_x: 74.1234
-  com_at_t2000_y: 73.5442
-  late_displacement_fitness: 0.133237
-output_tokens: 1488
-status: ok
-```
-
-## iter_156: late-displacement-metric: A fitness metric based purely on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021.
-
-**Analysis:** The previous evolutionary metric, `total_displacement / (1 + std_dev)`, was proven to be flawed in iter_155. It failed to penalize "transient puffers" like rule_021, which exhibit a brief burst of motion followed by stagnation. The initial high displacement completely dominated the metric, rendering it useless for selecting for *sustained* motion.
-
-This iteration directly addressed the primary ope
-
-**Status:** ok
-
-**Metrics:** `{'com_at_t1200_x': 74.0099, 'com_at_t1200_y': 73.6141, 'com_at_t2000_x': 74.1234, 'com_at_t2000_y': 73.5442, 'late_displacement_fitness': 0.133237}`
-
-**Experimenter view:** The late-displacement metric scores rule_021 at 0.133, far below the 0.5 threshold.
-The CoM barely moves between t=1200 and t=2000 (delta ~0.13 grid units over 800 steps),
-confirming the rule has essentially halted by step 1200. This is consistent with iter_155's
-window data showing window_1250_1500=0.134 and window_1500_2000 velocities near 0.2.
-The rule is correctly classified as a transient puf
-
-**Notes:** Script loads rule_021 by key name from population_gen3.json; late_displacement=0.133 confirms transient puffer classification.
-
-
----
-```yaml
 cached_tokens: 0
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.14688
@@ -953,4 +914,39 @@ Sub-agent 188.1 immediately and definitively proved this was a "stasis exploit."
 **Sub-agent 188.2:** Successfully implemented a new `DynamicCollisionFitness` function that requires particles to approach and th
 
 **Notes:** The phase successfully peeled back two layers of exploits in the fitness function. The next phase must implement a margin-based check for motion.
+
+
+---
+```yaml
+cached_tokens: 38007
+cost_usd: 0.15307
+hypothesis: 'phase-189: A margin-based fitness function, while correctly rejecting
+  floating-point exploits, creates a flat fitness landscape that prevents successful
+  evolutionary search.'
+input_tokens: 66048
+iter: 189
+metrics:
+  evolution_best_fitness: 0.0
+  evolution_champion_found: false
+  evolution_generations_ran: 10
+  validation_fitness_for_exploit: 0.0
+output_tokens: 2064
+status: experiment_failed
+```
+
+## iter_189: phase-189: A margin-based fitness function, while correctly rejecting floating-point exploits, creates a flat fitness landscape that prevents successful evolutionary search.
+
+**Analysis:** This phase successfully addressed the "micro-jitter" exploit from iter_188 but revealed a deeper methodological problem in the evolutionary search.
+
+Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` function. By requiring particles to move by a margin of at least 1.0 grid units, it correctly assigned a fitness of 0.0 to the previous exploit, confirming the fix was suc
+
+**Status:** experiment_failed
+
+**Metrics:** `{'validation_fitness_for_exploit': 0.0, 'evolution_generations_ran': 10, 'evolution_best_fitness': 0.0, 'evolution_champion_found': False}`
+
+**Experimenter view:** **Sub-agent 189.1 (Validation):** Succeeded. The `MarginalDynamicCollisionFitness` function correctly assigned a fitness of 0.0 to the "micro-jitter" exploit rule from iter_188. The required margin of 1.0 was far greater than the observed floating-point noise movement (~2.7e-5), validating the logic.
+
+**Sub-agent 189.2 (Evolution):** Failed. The evolutionary search ran for 10 generations, evaluati
+
+**Notes:** The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there.
 

@@ -7849,3 +7849,42 @@ drama
 
 **Notes:** Script src/long_evaluate.py created; hypothesis refuted — composite metric does not penalise transient puffers.
 
+
+---
+```yaml
+cached_tokens: 14021
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.10368
+hypothesis: 'late-displacement-metric: A fitness metric based purely on displacement
+  in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient
+  puffer rule_021.'
+input_tokens: 35676
+iter: 156
+metrics:
+  com_at_t1200_x: 74.0099
+  com_at_t1200_y: 73.6141
+  com_at_t2000_x: 74.1234
+  com_at_t2000_y: 73.5442
+  late_displacement_fitness: 0.133237
+output_tokens: 1488
+status: ok
+```
+
+## iter_156: late-displacement-metric: A fitness metric based purely on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021.
+
+**Analysis:** The previous evolutionary metric, `total_displacement / (1 + std_dev)`, was proven to be flawed in iter_155. It failed to penalize "transient puffers" like rule_021, which exhibit a brief burst of motion followed by stagnation. The initial high displacement completely dominated the metric, rendering it useless for selecting for *sustained* motion.
+
+This iteration directly addressed the primary ope
+
+**Status:** ok
+
+**Metrics:** `{'com_at_t1200_x': 74.0099, 'com_at_t1200_y': 73.6141, 'com_at_t2000_x': 74.1234, 'com_at_t2000_y': 73.5442, 'late_displacement_fitness': 0.133237}`
+
+**Experimenter view:** The late-displacement metric scores rule_021 at 0.133, far below the 0.5 threshold.
+The CoM barely moves between t=1200 and t=2000 (delta ~0.13 grid units over 800 steps),
+confirming the rule has essentially halted by step 1200. This is consistent with iter_155's
+window data showing window_1250_1500=0.134 and window_1500_2000 velocities near 0.2.
+The rule is correctly classified as a transient puf
+
+**Notes:** Script loads rule_021 by key name from population_gen3.json; late_displacement=0.133 confirms transient puffer classification.
+

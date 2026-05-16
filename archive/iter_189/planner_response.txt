@@ -1,0 +1,58 @@
+```yaml
+analysis: |
+  This phase successfully addressed the "micro-jitter" exploit from iter_188 but revealed a deeper methodological problem in the evolutionary search.
+
+  Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` function. By requiring particles to move by a margin of at least 1.0 grid units, it correctly assigned a fitness of 0.0 to the previous exploit, confirming the fix was successful.
+
+  However, sub-agent 189.2, a planner tasked with running an evolutionary search using this new function, failed completely. Over 10 generations and ~1100 candidate rules, not a single rule achieved a fitness score greater than 0.0. The experimenter's view correctly diagnosed the problem: the fitness function is a binary, all-or-nothing check. It creates a completely flat fitness landscape, providing no gradient for the genetic algorithm to optimize. The probability of a random mutation satisfying all four strict criteria (approach, recede, conserve bits, conserve objects) simultaneously is vanishingly small.
+
+  The key takeaway is that a correct fitness function is not necessarily a useful one for evolution. The next phase must pivot from fixing exploits to designing a continuous fitness function that rewards partial progress.
+open_questions:
+  - "How can the fitness function be redesigned to be continuous and provide a gradient for evolution?"
+  - "Could a composite fitness score rewarding partial achievements (e.g., +0.25 for approach, +0.25 for recession) be more effective?"
+  - "Is rewarding any particle displacement a necessary precursor to rewarding specific collision dynamics?"
+  - "Should the search first evolve rules for movement, and then filter or fine-tune them for conservation properties?"
+chosen_direction: "Redesign the fitness function to be continuous, likely by creating a composite score from individual success criteria."
+hypothesis: "phase-189: A margin-based fitness function, while correctly rejecting floating-point exploits, creates a flat fitness landscape that prevents successful evolutionary search."
+rationale: |
+  The phase was structured to first fix the known exploit and then use the fix.
+  1. **189.1 (Validate Fix):** It was critical to first confirm that the margin-based fitness function solved the micro-jitter problem before investing in a long evolutionary run. This succeeded.
+  2. **189.2 (Evolutionary Search):** With the validated function, the next logical step was to apply it to the search. This failed, but in doing so, it provided the crucial insight that the binary nature of the fitness function is the new bottleneck. This sequential process was efficient, as it isolated the new problem precisely.
+status: experiment_failed
+metrics:
+  validation_fitness_for_exploit: 0.0
+  evolution_generations_ran: 10
+  evolution_best_fitness: 0.0
+  evolution_champion_found: false
+experimenter_view: |
+  **Sub-agent 189.1 (Validation):** Succeeded. The `MarginalDynamicCollisionFitness` function correctly assigned a fitness of 0.0 to the "micro-jitter" exploit rule from iter_188. The required margin of 1.0 was far greater than the observed floating-point noise movement (~2.7e-5), validating the logic.
+
+  **Sub-agent 189.2 (Evolution):** Failed. The evolutionary search ran for 10 generations, evaluating approximately 1100 rules. Every single rule scored 0.0. The fitness landscape is pathologically flat for a genetic algorithm. The all-or-nothing requirement to simultaneously satisfy approach, recession, bit conservation, and object conservation is too strict to be found by random chance, and the binary score provides no path for gradual improvement.
+notes: "The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there."
+artifacts:
+  - src/run_iter_189_fitness_validation.py
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A robust evolutionary framework for finding rules with conserving collisions exists (iter_187).
+  - A `MarginalDynamicCollisionFitness` function with a distance margin correctly rejects both "stasis" and "micro-jitter" exploits (iter_189.1).
+
+  **Refuted:**
+  - The hypothesis that `g10_rule_001` supports elastic collisions is refuted (iter_185).
+  - Simple, non-symmetric fitness functions are easily exploited by static or near-static rules (iter_187, iter_188).
+  - A strict, binary, all-or-nothing fitness function (like `MarginalDynamicCollisionFitness`) is unsuitable for evolutionary search, as it creates a flat fitness landscape with no gradient for optimization (iter_189.2).
+
+  **Best Result:**
+  - No viable rule for elastic collisions is currently known. All recent attempts have been defeated by exploits or methodological dead-ends in the fitness function design.
+
+  **In Progress:**
+  - Iteratively refining the fitness function to eliminate exploits and guide evolution.
+
+  **Open Questions:**
+  - How can the fitness function be redesigned to be continuous and provide a gradient for evolution?
+  - Could a composite fitness score rewarding partial achievements (e.g., +0.25 for approach, +0.25 for recession) be more effective?
+  - Is rewarding any particle displacement a necessary precursor to rewarding specific collision dynamics?
+```
