@@ -36,11 +36,23 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 
 from evolution import _try_build_c2_rule  # noqa: E402  (path setup needed first)
+import fitness as _fitness_module  # noqa: E402
 from fitness import StagedCollisionFitness  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).parent.parent
 
 LUT_SIZE = 128
+
+
+def _resolve_fitness_class(name: str):
+    """Look up a fitness class by name in src/fitness.py."""
+    cls = getattr(_fitness_module, name, None)
+    if cls is None:
+        raise ValueError(
+            f"Unknown fitness class '{name}'. "
+            f"Expected a class name exported from src/fitness.py."
+        )
+    return cls
 
 
 # ── Chromosome <-> rule_dict conversion ──────────────────────────────────────
@@ -154,11 +166,17 @@ def evolve(
     rng_seed: int,
     champion_output_path: Path,
     log_csv_path: Path,
+    fitness_class: type = StagedCollisionFitness,
+    final_population_path: Path | None = None,
 ) -> dict:
     rng = random.Random(rng_seed)
-    fitness = StagedCollisionFitness(
-        horizon=horizon, midpoint=midpoint, grid_size=grid_size
-    )
+    try:
+        fitness = fitness_class(
+            horizon=horizon, midpoint=midpoint, grid_size=grid_size
+        )
+    except TypeError:
+        # Fitness class without midpoint kwarg.
+        fitness = fitness_class(horizon=horizon, grid_size=grid_size)
 
     if initial_population_path is not None:
         print(f"Loading warm-start population from {initial_population_path} ...")
@@ -249,10 +267,10 @@ def evolve(
         population = next_pop
 
     # ── Persist results ─────────────────────────────────────────────────────
+    fitness_name = getattr(fitness_class, "name", fitness_class.__name__)
     if champion_chrom is not None:
         rule_dict = chromosome_to_rule_dict(champion_chrom)
         payload = {
-            "iteration": "iter_191.2",
             "fitness": float(champion_fitness),
             "champion_generation": int(champion_generation),
             "num_generations": int(generations),
@@ -264,7 +282,7 @@ def evolve(
             "horizon": int(horizon),
             "midpoint": int(midpoint),
             "grid_size": int(grid_size),
-            "fitness_function": "StagedCollisionFitness",
+            "fitness_function": fitness_name,
             "initial_population_path": (
                 str(initial_population_path)
                 if initial_population_path is not None
@@ -278,6 +296,24 @@ def evolve(
         with open(champion_output_path, "w") as f:
             json.dump(payload, f, indent=2)
         print(f"Saved champion rule -> {champion_output_path}")
+
+    if final_population_path is not None:
+        final_pop_payload = []
+        for i, chrom in enumerate(population):
+            rule_dict_i = chromosome_to_rule_dict(chrom)
+            final_pop_payload.append(
+                {
+                    "index": i,
+                    "fitness": float(scores[i]),
+                    "metrics": _coerce_metrics(metrics_l[i] or {}),
+                    "rule_dict": {str(k): int(v) for k, v in rule_dict_i.items()},
+                    "chromosome": [int(b) for b in chrom],
+                }
+            )
+        final_population_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(final_population_path, "w") as f:
+            json.dump(final_pop_payload, f, indent=2)
+        print(f"Saved final population -> {final_population_path}")
 
     log_csv_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
@@ -360,6 +396,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             PROJECT_ROOT / "archive" / "iter_191" / "results" / "evolution_log.csv"
         ),
     )
+    parser.add_argument(
+        "--fitness_class",
+        type=str,
+        default="StagedCollisionFitness",
+        help=(
+            "Name of a fitness class exported from src/fitness.py "
+            "(e.g. StagedCollisionFitness, RecessionBiasedFitness)."
+        ),
+    )
+    parser.add_argument(
+        "--final_population_path",
+        type=str,
+        default=None,
+        help=(
+            "Optional path to dump the final generation's rules + fitnesses "
+            "as JSON. If omitted, the final population is not persisted."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -381,6 +435,14 @@ def main(argv: list[str] | None = None) -> int:
     if not log_csv_path.is_absolute():
         log_csv_path = (PROJECT_ROOT / log_csv_path).resolve()
 
+    final_population_path: Path | None = None
+    if args.final_population_path:
+        final_population_path = Path(args.final_population_path)
+        if not final_population_path.is_absolute():
+            final_population_path = (PROJECT_ROOT / final_population_path).resolve()
+
+    fitness_class = _resolve_fitness_class(args.fitness_class)
+
     result = evolve(
         initial_population_path=initial_path,
         generations=args.generations,
@@ -393,6 +455,8 @@ def main(argv: list[str] | None = None) -> int:
         rng_seed=args.rng_seed,
         champion_output_path=champion_output_path,
         log_csv_path=log_csv_path,
+        fitness_class=fitness_class,
+        final_population_path=final_population_path,
     )
 
     print("\n=== Evolution complete ===")
