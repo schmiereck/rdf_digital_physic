@@ -443,3 +443,91 @@ class StagedCollisionFitness:
 
     def __call__(self, rule_dict: dict | None = None) -> dict:
         return self.evaluate(rule_dict)
+
+
+# ── LeakyConservationCollisionFitness ──────────────────────────────────────────
+
+
+class LeakyConservationCollisionFitness:
+    """Fitness combining staged motion scoring with a soft bit-conservation penalty.
+
+    Computes a ``staged_score`` using the same approach/recession logic as
+    ``StagedCollisionFitness``, but instead of hard-failing on bit-count
+    violations applies a continuous penalty:
+
+        fitness = staged_score / (1.0 + bit_error)
+
+    where ``bit_error = abs(final_bits - initial_bits)``.
+
+    Rules with perfect motion but imperfect conservation receive a fractional
+    score, preserving evolutionary gradient toward both goals simultaneously.
+    """
+
+    name = "LeakyConservationCollisionFitness"
+
+    def __init__(
+        self,
+        horizon: int = 400,
+        midpoint: int | None = None,
+        grid_size: int = _STAGED_GRID_SIZE,
+        rule: dict | None = None,
+    ) -> None:
+        self.horizon   = int(horizon)
+        self.midpoint  = int(midpoint) if midpoint is not None else self.horizon // 2
+        self.grid_size = int(grid_size)
+        self.rule      = rule
+
+    def evaluate(self, rule_dict: dict | None = None) -> dict:
+        rule_dict = rule_dict if rule_dict is not None else self.rule
+        if rule_dict is None:
+            raise ValueError("LeakyConservationCollisionFitness: no rule supplied")
+
+        lut          = rule_dict_to_lut(rule_dict)
+        grid         = _make_staged_grid(self.grid_size)
+        grid_initial = grid.copy()
+        initial_bits = int(grid_initial.sum())
+        grid_mid     = None
+
+        for step in range(1, self.horizon + 1):
+            grid = step_grid(grid, lut)
+            if step == self.midpoint:
+                grid_mid = grid.copy()
+
+        if grid_mid is None:
+            grid_mid = grid_initial.copy()
+
+        grid_final = grid
+        mid_bits   = int(grid_mid.sum())
+        final_bits = int(grid_final.sum())
+        bit_error  = abs(final_bits - initial_bits)
+
+        d_initial = _staged_two_object_com_distance(grid_initial)
+        d_mid     = _staged_two_object_com_distance(grid_mid)
+        d_final   = _staged_two_object_com_distance(grid_final)
+
+        if d_initial is None or d_mid is None or d_final is None:
+            approach_score  = 0.0
+            recession_score = 0.0
+        else:
+            approach_score  = 1.0 if d_mid   < d_initial - _STAGED_MARGIN else 0.0
+            recession_score = 1.0 if d_final > d_mid     + _STAGED_MARGIN else 0.0
+
+        staged_score = approach_score + recession_score
+        fitness      = staged_score / (1.0 + bit_error)
+
+        return {
+            "fitness":         float(fitness),
+            "staged_score":    float(staged_score),
+            "approach_score":  float(approach_score),
+            "recession_score": float(recession_score),
+            "bit_error":       int(bit_error),
+            "d_initial":       float(d_initial) if d_initial is not None else None,
+            "d_mid":           float(d_mid)     if d_mid     is not None else None,
+            "d_final":         float(d_final)   if d_final   is not None else None,
+            "initial_bits":    initial_bits,
+            "mid_bits":        mid_bits,
+            "final_bits":      final_bits,
+        }
+
+    def __call__(self, rule_dict: dict | None = None) -> dict:
+        return self.evaluate(rule_dict)
