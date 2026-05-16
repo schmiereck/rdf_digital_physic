@@ -1,0 +1,66 @@
+I'll load the champion rule, recreate the simulation setup, and generate the animation.
+Now let me look at the iter_187 simulation code to understand the setup:
+Now let me look at the existing simulation code:
+Now I have everything I need. Let me create the animation script for iter_188:
+Now let me check the iter_188 directory structure and create the animation script:
+Now I'll write the animation script for iter_188:
+The simulation ran. Now let me run a deeper diagnostic to understand the particle dynamics:
+The diagnosis is clear. Let me verify the GIF was created and check its size:
+The result is unambiguous. The animation is saved and the diagnostic data tells the full story.
+
+**Key finding:** The champion rule is a **stasis fixed-point** — both L-trominos are completely frozen at their initial positions for all 400 steps. The exact same six cells `{(48,64), (49,64), (49,65), (80,64), (80,65), (81,65)}` are live at every single step with zero change. No collision ever occurs.
+
+This confirms the concern flagged in iter_187.2's experimenter view: the end-state-only fitness metric (6 bits, 2 objects at step 100) is perfectly satisfied by a rule that simply treats the initial configurations as still-lifes. The GA found this trivial solution immediately in generation 0.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_iter_188_head_on_collision.py
+  - archive/iter_188/results/head_on_collision.gif
+metrics:
+  initial_bit_count: 6
+  final_bit_count: 6
+  min_bit_count_over_400_steps: 6
+  max_bit_count_over_400_steps: 6
+  initial_object_count: 2
+  final_object_count: 2
+  com_displacement_row: 0.0
+  com_displacement_col: 0.0
+  sim_steps: 400
+log_excerpt: |
+  Loaded rule from: best_elastic_rule.json
+  Rule entries: 8
+  Initial bits: 6, initial CoM: (64.5, 64.5)
+  Step    0: obj 1 CoM=(48.67, 64.33), obj 2 CoM=(80.33, 64.67)
+  Step  100: obj 1 CoM=(48.67, 64.33), obj 2 CoM=(80.33, 64.67)
+  Step  200: obj 1 CoM=(48.67, 64.33), obj 2 CoM=(80.33, 64.67)
+  Step  400: obj 1 CoM=(48.67, 64.33), obj 2 CoM=(80.33, 64.67)
+  Final bit count: 6
+  Bit range over simulation: min=6, max=6
+  CoM displacement (dr=0.000, dc=0.000)
+  Animation saved: archive/iter_188/results/head_on_collision.gif
+experimenter_view: |
+  The champion rule discovered in iter_187.2 is a STASIS FIXED-POINT, not a
+  dynamic elastic collider. Both L-tromino particles are completely frozen at
+  their initial positions for all 400 simulation steps. The live cells
+  {(48,64),(49,64),(49,65)} and {(80,64),(80,65),(81,65)} remain identical at
+  every single step with zero variation — the rule maps each cell's neighborhood
+  to an output that exactly preserves the initial configuration as a still-life.
+
+  No collision occurs. The particles never approach each other, never interact,
+  and never change trajectory. There is no scattering, no pass-through, and no
+  annihilation — simply two frozen L-trominos that the rule treats as two
+  independent still-lifes.
+
+  The fitness score of 1.0 was achieved via the trivial "stasis" path: an
+  end-state metric that only checks bit count and object count at step 100
+  cannot distinguish a frozen configuration from a dynamic elastic rebound. The
+  GA exploited this degeneracy immediately in generation 0.
+
+  This definitively rules out true elastic scattering for this champion rule.
+  The next iteration must add a trajectory or momentum term to the fitness
+  function — e.g., requiring the particles to have actually moved toward each
+  other within the first N steps, or rewarding post-collision displacement away
+  from the starting positions — to force discovery of genuinely dynamic rules.
+notes: champion rule is a trivial still-life fixed-point; fitness metric must be redesigned to require actual particle motion
+```
