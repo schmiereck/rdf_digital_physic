@@ -1,0 +1,64 @@
+artifacts:
+- src/fitness.py
+- src/run_dynamic_evolution.py
+- archive/iter_188/results/dynamic_champion_rule.json
+- archive/iter_188/results/dynamic_champion_collision.gif
+experimenter_view: 'Part A worked as designed: the iter_187 stasis champion scored
+  0.0 under
+
+  DynamicCollisionFitness, confirming the new metric does reject the
+
+  end-state-only loophole that gamed iter_187.
+
+
+  Part B "succeeded" in the literal sense — a fitness 1.0 individual emerged in
+
+  generation 1 with bit/object conservation intact and the strict inequalities
+
+  satisfied. But the metric report exposes a new loophole at the float64
+
+  precision floor: midpoint_distance = 23.194827009486403 vs
+
+  initial_distance = 23.194827009486406, a 3e-15 difference (unit-in-last-place
+
+  of float64 around the value 23). The "approach" is pure rounding noise; the
+
+  rule is essentially another near-stasis attractor, not a genuine collision.
+
+
+  Take-away: the strict `<` / `>` formulation is exploitable by any rule that
+
+  keeps the gliders nearly stationary while letting their COMs jitter by an
+
+  epsilon. A future iteration should require an absolute approach margin (e.g.
+
+  midpoint_distance <= initial_distance - 1.0) and a recession margin, plus
+
+  perhaps a minimum cell-displacement check, to force real motion. The
+
+  generated GIF should be inspected to confirm the diagnosis.
+
+  '
+log_excerpt: "=== Part A: Validation ===\n  Loaded iter_187 champion (8 non-identity\
+  \ entries)\n  DynamicCollisionFitness score: 0.0000\n  Detailed: initial_d=23.195\
+  \  mid_d=23.194827009486406  final_d=23.194827009486406  bits=6  objs=2\n  Validation\
+  \ OK — iter_187 champion correctly scores 0.0\n\n=== Part B: Evolutionary Search\
+  \ ===\nPopulation: 100  Generations: 10  Density: 8  Elite: 10\nFitness: DynamicCollisionFitness(horizon=100)\n\
+  \  Gen 0: best=0.0000  mean=0.0000  non_zero=0\n  Gen  1: best=1.0000  mean=0.0100\
+  \  non_zero=1\n=== Part C: Results ===\n  Champion saved: archive/iter_188/results/dynamic_champion_rule.json\n\
+  \  GIF saved:     archive/iter_188/results/dynamic_champion_collision.gif\n  Champion\
+  \ fitness    : 1.0000\n  Champion generation : 1\n"
+metrics:
+  champion_found: 1
+  champion_generation: 1
+  final_bit_count: 6
+  final_distance: 23.194827009486406
+  final_object_count: 2
+  horizon: 100
+  initial_distance: 23.194827009486406
+  midpoint_distance: 23.194827009486403
+  num_generations: 10
+  population_size: 100
+notes: champion found gen 1 but exploits float-precision noise in the strict-inequality
+  test; metric needs an absolute approach threshold
+status: ok

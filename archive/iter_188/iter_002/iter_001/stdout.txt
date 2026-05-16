@@ -1,0 +1,73 @@
+Now let me look at the simulator and evolution modules:
+Now I'll add `DynamicCollisionFitness` to `fitness.py`:
+Now append the new class:
+Now let's quickly sanity check the fitness function imports cleanly:
+Now I'll create `src/run_dynamic_evolution.py`. First, let me check if there's an animation helper already in the codebase:
+Good — task aligned. Now let me write the script:
+Now let's run the script:
+The search produced fitness 1.0 — but inspect the distances: they differ only at the 15th decimal place (floating-point noise). The "champion" is essentially a static rule exploiting strict-inequality noise. Let me inspect:
+The search returned fitness 1.0 in generation 1. However, inspection reveals the three distances differ only at the 15th decimal place (~3e-15 — at float64 precision limit). The strict-inequality test was gamed by an essentially-static rule. I'll report this honestly in `experimenter_view`.
+All artifacts written. Implementation summary:
+
+- `src/fitness.py`: added `DynamicCollisionFitness(horizon=100)` with 64x64 grid, two 3-bit gliders at the specified seeds, evaluating four conditions (approach, recession, bit conservation, object conservation) via `scipy.ndimage.label` + `center_of_mass`.
+- `src/run_dynamic_evolution.py`: validates iter_187 champion (scored 0.0 as expected), then runs the 100×10 C2-symmetric search and persists artifacts on first 1.0 hit.
+- `archive/iter_188/results/dynamic_champion_rule.json` and `dynamic_champion_collision.gif` were generated.
+
+Caveat: the search found a rule whose midpoint distance is only ~3e-15 less than initial — i.e. float64 unit-in-last-place noise. The strict `<` / `>` inequalities can be gamed by near-stasis rules; the metric needs an absolute threshold to robustly require real motion.
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness.py
+  - src/run_dynamic_evolution.py
+  - archive/iter_188/results/dynamic_champion_rule.json
+  - archive/iter_188/results/dynamic_champion_collision.gif
+metrics:
+  champion_found: 1
+  champion_generation: 1
+  population_size: 100
+  num_generations: 10
+  horizon: 100
+  initial_distance: 23.194827009486406
+  midpoint_distance: 23.194827009486403
+  final_distance: 23.194827009486406
+  final_bit_count: 6
+  final_object_count: 2
+log_excerpt: |
+  === Part A: Validation ===
+    Loaded iter_187 champion (8 non-identity entries)
+    DynamicCollisionFitness score: 0.0000
+    Detailed: initial_d=23.195  mid_d=23.194827009486406  final_d=23.194827009486406  bits=6  objs=2
+    Validation OK — iter_187 champion correctly scores 0.0
+
+  === Part B: Evolutionary Search ===
+  Population: 100  Generations: 10  Density: 8  Elite: 10
+  Fitness: DynamicCollisionFitness(horizon=100)
+    Gen 0: best=0.0000  mean=0.0000  non_zero=0
+    Gen  1: best=1.0000  mean=0.0100  non_zero=1
+  === Part C: Results ===
+    Champion saved: archive/iter_188/results/dynamic_champion_rule.json
+    GIF saved:     archive/iter_188/results/dynamic_champion_collision.gif
+    Champion fitness    : 1.0000
+    Champion generation : 1
+experimenter_view: |
+  Part A worked as designed: the iter_187 stasis champion scored 0.0 under
+  DynamicCollisionFitness, confirming the new metric does reject the
+  end-state-only loophole that gamed iter_187.
+
+  Part B "succeeded" in the literal sense — a fitness 1.0 individual emerged in
+  generation 1 with bit/object conservation intact and the strict inequalities
+  satisfied. But the metric report exposes a new loophole at the float64
+  precision floor: midpoint_distance = 23.194827009486403 vs
+  initial_distance = 23.194827009486406, a 3e-15 difference (unit-in-last-place
+  of float64 around the value 23). The "approach" is pure rounding noise; the
+  rule is essentially another near-stasis attractor, not a genuine collision.
+
+  Take-away: the strict `<` / `>` formulation is exploitable by any rule that
+  keeps the gliders nearly stationary while letting their COMs jitter by an
+  epsilon. A future iteration should require an absolute approach margin (e.g.
+  midpoint_distance <= initial_distance - 1.0) and a recession margin, plus
+  perhaps a minimum cell-displacement check, to force real motion. The
+  generated GIF should be inspected to confirm the diagnosis.
+notes: champion found gen 1 but exploits float-precision noise in the strict-inequality test; metric needs an absolute approach threshold
+```
