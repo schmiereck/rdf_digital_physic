@@ -7804,3 +7804,48 @@ growing cell count is the hallmark of a puffer: the
 
 **Notes:** rule_021 is a transient puffer — high-velocity coherent motion for ~500 steps, then debris-dominated deceleration
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.15882
+hypothesis: 'late-displacement-metric: A fitness metric based on displacement in the
+  final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer
+  rule_021.'
+input_tokens: 36350
+iter: 155
+metrics:
+  fitness_reduction_pct: -2.65
+  new_fitness_2000_steps: 3.556738
+  original_fitness_1000_steps: 3.465
+  total_com_displacement: 7.005198
+  velocity_std_dev: 0.96955714
+  window_0_250: 2.40304
+  window_1000_1250: 0.406092
+  window_1250_1500: 0.134422
+  window_1500_1750: 0.221067
+  window_1750_2000: 0.162393
+  window_250_500: 2.618603
+  window_500_750: 0.848512
+  window_750_1000: 0.211068
+output_tokens: 3009
+status: ok
+```
+
+## iter_155: late-displacement-metric: A fitness metric based on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021.
+
+**Analysis:** The previous iteration decisively refuted the hypothesis that a longer evaluation window would fix our fitness metric. The experiment in iter_155 showed that the `total_displacement / (1 + std_dev)` metric is fundamentally flawed, as it's dominated by initial high-velocity bursts and fails to penalize the subsequent decay characteristic of "transient puffers". The fitness score for `rule_021` rema
+
+**Status:** ok
+
+**Metrics:** `{'fitness_reduction_pct': -2.65, 'new_fitness_2000_steps': 3.556738, 'original_fitness_1000_steps': 3.465, 'total_com_displacement': 7.005198, 'velocity_std_dev': 0.96955714, 'window_1000_1250': 0.406092, 'window_1250_1500': 0.134422, 'window_1500_1750': 0.221067, 'window_1750_2000': 0.162393, 'window_250_500': 2.618603, 'window_500_750': 0.848512, 'window_750_1000': 0.211068, 'window_0_250': 2.40304}`
+
+**Experimenter view:** The hypothesis that the 2000-step evaluation would reveal a significant fitness
+drop for rule_021 was NOT supported. The new composite fitness (3.557) is
+essentially identical to the original 1000-step score (3.465), a change of only
+-2.65%. The per-window displacement profile clearly confirms the transient-puffer
+character: extremely high velocity in windows 0-500 (2.40, 2.62) followed by a
+drama
+
+**Notes:** Script src/long_evaluate.py created; hypothesis refuted — composite metric does not penalise transient puffers.
+

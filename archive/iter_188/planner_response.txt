@@ -1,0 +1,60 @@
+```yaml
+analysis: |
+  This phase was a critical debugging cycle for the evolutionary search framework, specifically targeting the fitness function for elastic collisions. The phase began by investigating the supposed "elastic collision" champion from iter_187.
+
+  Sub-agent 188.1 immediately and definitively proved this was a "stasis exploit." The rule produced two frozen, still-life L-trominos that never moved, trivially satisfying the end-state conservation metrics from the previous fitness function. This invalidated the rule and the metric that found it.
+
+  In response, sub-agent 188.2 designed and deployed a new `DynamicCollisionFitness` function, which explicitly required the particles to first approach each other and then recede. The evolutionary search succeeded in finding a new champion with a fitness of 1.0. However, analysis of the result revealed a second, more subtle exploit: the rule satisfied the "approach" and "recession" conditions with a change in distance on the order of 3e-15, which is effectively floating-point noise from a microscopic jitter in the particle's center-of-mass.
+
+  The key outcome of this phase is not a new rule, but a new, deeper understanding of the fitness function's failure modes. We have successfully diagnosed and moved from a "stasis" exploit to a "micro-jitter" exploit, providing a clear directive for the next phase: the fitness function must enforce motion with a significant, absolute threshold.
+open_questions:
+  - "Can a fitness function with an absolute distance margin (e.g., `distance_mid < distance_initial - 1.0`) prevent the 'floating-point noise' exploit?"
+  - "What is the minimum margin required to enforce genuine, multi-cell displacement?"
+  - "Should a cell-displacement metric (e.g., Manhattan distance of the particle's bitmask) be added to the fitness function to make it independent of floating-point COM calculations?"
+  - "Are C2-symmetric rules inherently prone to stasis, and should the search space be expanded?"
+chosen_direction: "Refine the fitness function with an absolute motion threshold."
+hypothesis: "phase-188: Exposed and diagnosed two successive failure modes in the collision fitness function, from 'stasis' to 'micro-jitter' exploits."
+rationale: |
+  The initial goal was to characterize the rule from iter_187. Sub-agent 188.1 revealed it to be a trivial exploit, which pivoted the phase goal to fixing the underlying fitness function. Sub-agent 188.2 was then necessary to implement the fix and re-run the search. The result of 188.2, in turn, revealed a deeper flaw, making a full characterization of the problem the main outcome of the phase.
+status: experiment_failed
+metrics:
+  stasis_exploit_displacement: 0.0
+  micro_jitter_initial_distance: 23.194827009486406
+  micro_jitter_midpoint_distance: 23.194827009486403
+  micro_jitter_distance_change: -3.0e-15
+experimenter_view: |
+  **Sub-agent 188.1:** Succeeded in characterizing the rule from iter_187. The result was definitive: the rule produces two independent, perfectly stable still-lifes. The particles never move or interact. This was a trivial exploit of the end-state-only fitness function.
+
+  **Sub-agent 188.2:** Successfully implemented a new `DynamicCollisionFitness` function that requires particles to approach and then recede. The validation step correctly assigned a score of 0.0 to the previous static rule. However, the subsequent evolutionary search uncovered a new exploit. The new champion rule satisfies the motion criteria with a distance change of only 3e-15, which is numerical noise. The animation confirms the particles are effectively static. This demonstrates that a simple strict inequality check is insufficient to enforce meaningful motion.
+notes: "The phase successfully peeled back two layers of exploits in the fitness function. The next phase must implement a margin-based check for motion."
+artifacts:
+  - archive/iter_188/results/head_on_collision.gif
+  - archive/iter_188/results/dynamic_champion_collision.gif
+  - archive/iter_188/results/dynamic_champion_rule.json
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A robust evolutionary framework for finding rules with conserving collisions exists (iter_187).
+  - The `CollisionFitness` from `iter_187` is flawed; it can be satisfied by static "still-life" patterns (iter_188.1).
+  - The `DynamicCollisionFitness` function (using strict inequality for distance checks) correctly rejects the static still-life rule from `iter_187` (iter_188.2).
+
+  **Refuted:**
+  - Simple, non-symmetric fitness functions for collision dynamics are easily exploited (iter_187.1).
+  - The hypothesis that `g10_rule_001` supports elastic collisions is refuted (iter_185).
+  - The hypothesis that `DynamicCollisionFitness` with strict inequality is sufficient to find dynamic collisions is refuted. It can be exploited by near-static rules that cause glider centers-of-mass to change by amounts on the order of floating-point precision noise (iter_188.2).
+
+  **Best Result:**
+  - No viable rule for elastic collisions is currently known. The champion from iter_187.2 was a stasis exploit, and the champion from iter_188.2 was a micro-jitter exploit.
+
+  **In Progress:**
+  - Iteratively refining the fitness function to eliminate exploits and enforce genuine, dynamic collisions.
+
+  **Open Questions:**
+  - How can the fitness function be improved to reward dynamic scattering properties (e.g., momentum change) and not just end-state counts?
+  - Can a fitness function with an absolute distance margin (e.g., `distance < initial_distance - 1.0`) prevent the "floating-point noise" exploit?
+  - What is the minimum margin required to enforce genuine movement?
+  - Should a cell-displacement metric be added to the fitness function to explicitly reward movement?
+```

@@ -3,51 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.15882
-hypothesis: 'late-displacement-metric: A fitness metric based on displacement in the
-  final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer
-  rule_021.'
-input_tokens: 36350
-iter: 155
-metrics:
-  fitness_reduction_pct: -2.65
-  new_fitness_2000_steps: 3.556738
-  original_fitness_1000_steps: 3.465
-  total_com_displacement: 7.005198
-  velocity_std_dev: 0.96955714
-  window_0_250: 2.40304
-  window_1000_1250: 0.406092
-  window_1250_1500: 0.134422
-  window_1500_1750: 0.221067
-  window_1750_2000: 0.162393
-  window_250_500: 2.618603
-  window_500_750: 0.848512
-  window_750_1000: 0.211068
-output_tokens: 3009
-status: ok
-```
-
-## iter_155: late-displacement-metric: A fitness metric based on displacement in the final 800 steps (1200-2000) will assign a low score (<0.5) to the transient puffer rule_021.
-
-**Analysis:** The previous iteration decisively refuted the hypothesis that a longer evaluation window would fix our fitness metric. The experiment in iter_155 showed that the `total_displacement / (1 + std_dev)` metric is fundamentally flawed, as it's dominated by initial high-velocity bursts and fails to penalize the subsequent decay characteristic of "transient puffers". The fitness score for `rule_021` rema
-
-**Status:** ok
-
-**Metrics:** `{'fitness_reduction_pct': -2.65, 'new_fitness_2000_steps': 3.556738, 'original_fitness_1000_steps': 3.465, 'total_com_displacement': 7.005198, 'velocity_std_dev': 0.96955714, 'window_1000_1250': 0.406092, 'window_1250_1500': 0.134422, 'window_1500_1750': 0.221067, 'window_1750_2000': 0.162393, 'window_250_500': 2.618603, 'window_500_750': 0.848512, 'window_750_1000': 0.211068, 'window_0_250': 2.40304}`
-
-**Experimenter view:** The hypothesis that the 2000-step evaluation would reveal a significant fitness
-drop for rule_021 was NOT supported. The new composite fitness (3.557) is
-essentially identical to the original 1000-step score (3.465), a change of only
--2.65%. The per-window displacement profile clearly confirms the transient-puffer
-character: extremely high velocity in windows 0-500 (2.40, 2.62) followed by a
-drama
-
-**Notes:** Script src/long_evaluate.py created; hypothesis refuted — composite metric does not penalise transient puffers.
-
-
----
-```yaml
 cached_tokens: 14021
 campaign: Phase 7 - Velocity-Stable Evolution
 cost_usd: 0.10368
@@ -964,4 +919,38 @@ The phase began by creating a new evolutionary framework with a `CollisionFitnes
 **Sub-agent 187.2:** Successfull
 
 **Notes:** The key outcome of this phase is methodological: we have a robust, validated fitness function for finding conserving collisions. The discovered rule is a candidate that requires further validation.
+
+
+---
+```yaml
+cached_tokens: 18603
+cost_usd: 0.20656
+hypothesis: 'phase-188: Exposed and diagnosed two successive failure modes in the
+  collision fitness function, from ''stasis'' to ''micro-jitter'' exploits.'
+input_tokens: 66226
+iter: 188
+metrics:
+  micro_jitter_distance_change: -3.0e-15
+  micro_jitter_initial_distance: 23.194827009486406
+  micro_jitter_midpoint_distance: 23.194827009486403
+  stasis_exploit_displacement: 0.0
+output_tokens: 2248
+status: experiment_failed
+```
+
+## iter_188: phase-188: Exposed and diagnosed two successive failure modes in the collision fitness function, from 'stasis' to 'micro-jitter' exploits.
+
+**Analysis:** This phase was a critical debugging cycle for the evolutionary search framework, specifically targeting the fitness function for elastic collisions. The phase began by investigating the supposed "elastic collision" champion from iter_187.
+
+Sub-agent 188.1 immediately and definitively proved this was a "stasis exploit." The rule produced two frozen, still-life L-trominos that never moved, trivially
+
+**Status:** experiment_failed
+
+**Metrics:** `{'stasis_exploit_displacement': 0.0, 'micro_jitter_initial_distance': 23.194827009486406, 'micro_jitter_midpoint_distance': 23.194827009486403, 'micro_jitter_distance_change': -3e-15}`
+
+**Experimenter view:** **Sub-agent 188.1:** Succeeded in characterizing the rule from iter_187. The result was definitive: the rule produces two independent, perfectly stable still-lifes. The particles never move or interact. This was a trivial exploit of the end-state-only fitness function.
+
+**Sub-agent 188.2:** Successfully implemented a new `DynamicCollisionFitness` function that requires particles to approach and th
+
+**Notes:** The phase successfully peeled back two layers of exploits in the fitness function. The next phase must implement a margin-based check for motion.
 
