@@ -9,13 +9,14 @@ CollisionFitness
 ----------------
 Rewards rules that produce *elastic* head-on collisions between two 3-bit
 L-tromino gliders. The score combines bit conservation and object
-conservation:
+conservation using a symmetric, clipped formula that peaks at 1.0:
 
-    fitness = (initial_bit_count / final_bit_count) * (2 / final_object_count)
+    bit_ratio = min(initial/final, final/initial)
+    obj_ratio = min(2/final_objs, final_objs/2)
+    fitness   = bit_ratio * obj_ratio
 
 A perfect elastic collision (two 3-bit objects emerge from two 3-bit objects)
-yields  (6/6) * (2/2) = 1.0.  Annihilation, fusion, or explosion all push the
-score below 1.0.
+yields 1.0. Annihilation, fusion, or explosion all push the score below 1.0.
 """
 
 from __future__ import annotations
@@ -134,10 +135,10 @@ class CollisionFitness(BaseFitness):
                 "final_object_count":  0,
             }
 
-        fitness = (
-            (self._initial_bits / final_bit_count)
-            * (2.0 / final_object_count)
-        )
+        initial_bit_count = self._initial_bits
+        bit_ratio = min(initial_bit_count / final_bit_count, final_bit_count / initial_bit_count) if final_bit_count > 0 else 0
+        obj_ratio = min(2 / final_object_count, final_object_count / 2) if final_object_count > 0 else 0
+        fitness = bit_ratio * obj_ratio
 
         return {
             "fitness":             float(fitness),
