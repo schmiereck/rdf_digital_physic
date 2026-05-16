@@ -1,0 +1,38 @@
+I'll explore the archive to find the parent rule file, then create and run the script.
+The working directory is restricted to `src`. Let me try Glob to find the rule file.
+Good, I can see the structure. The champion rule is `g10_rule_001`. Let me check the full structure to understand the lookup table format.
+Now I have all the info I need. The chromosome is the lookup table with 128 entries. Let me create the script and the results directory.
+Interesting - 0 differences. This is because swapping two identical values leaves the chromosome unchanged. Let me check the chromosome values.
+The script works correctly. The 50% rate of "no-op" swaps is expected since the binary chromosome has ~50% identical values — swapping two identical values changes nothing. This is valid per spec (random swap of any two positions). The population file is created successfully.
+
+```yaml
+status: ok
+artifacts:
+  - src/create_mutated_population.py
+  - archive/iter_191/results/warm_start_population.json
+metrics:
+  population_size: 100
+  chromosome_length: 128
+  swaps_per_clone: 1
+  members_with_effective_mutation: 47
+  members_identical_to_parent: 53
+log_excerpt: |
+  Parent rule: g10_rule_001
+  Chromosome length: 128
+  Mutation rate: 0.01 -> 1 swaps per clone
+  Generating 100 members...
+  Saved 100 rules to archive/iter_191/results/warm_start_population.json
+  Population size: 100
+  Diff distribution across population: {0: 53, 2: 47}
+  Members with at least 1 diff: 47
+experimenter_view: |
+  The warm-start population was successfully generated from g10_rule_001 (iter_179 champion,
+  fitness=56.0, chromosome length=128). Each of the 100 members is a mutated clone with 1 swap
+  applied (mutation_rate=0.01 * 128 = 1.28, rounded to 1). Since the chromosome is binary (60
+  zeros, 68 ones), ~50% of random swaps involve two identical values and produce no effective
+  change — 53 members are identical to the parent, 47 have exactly 2 positions different. This
+  is expected behavior per spec. The population provides a meaningful warm start: all members
+  begin near a known glider-producing rule, avoiding the bootstrap problem of random
+  initialization where motion-inducing rules are extremely rare.
+notes: warm-start population created; ~47% of clones have a single effective 2-position mutation from g10_rule_001
+```
