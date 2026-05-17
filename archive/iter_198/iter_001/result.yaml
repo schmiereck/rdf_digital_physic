@@ -1,0 +1,75 @@
+artifacts:
+- src/run_iter_198_collision_diagnose.py
+- archive/iter_198/results/collision_log.csv
+- archive/iter_198/results/final_state.png
+- archive/iter_198/iter_001/run.log
+experimenter_view: 'Neither failure hypothesis is supported. The 800-step 60-degree
+  collision
+
+  simulation under the iter_193 champion rule is trivial: it runs in 0.67 s
+
+  wall, bit_count never exceeds the initial 6, ncomp settles to 4 after the
+
+  first step, and per-step time is rock-flat at ~0.84 ms (max single-step 1.63 ms).
+
+
+  Mechanistic interpretation: under this rule the L-tromino seed does NOT
+
+  propagate as a glider. Within one CA step each L-tromino fragments into two
+
+  static (or low-period) micro-components — going from 2 blobs (6 bits) to 4
+
+  blobs (6 bits) at step 1 and remaining there forever. The two seeds are
+
+  ~109 cells apart and never approach, so there is in fact no "collision".
+
+  This is consistent with iter_193''s fitness=2.0 reflecting some stability /
+
+  bit-conservation metric rather than coherent motion.
+
+
+  Therefore iter_197.1''s "3x timeout" was NOT caused by a chaotic explosion
+
+  (bit_count would have grown — it didn''t) and NOT by a computationally
+
+  expensive pattern (sim_time_ms would have grown — it didn''t). The runaway
+
+  must lie outside the CA loop in iter_197.1. The prime suspect is its
+
+  post-processing: it accumulates 601 frames of a 256x256 array
+
+  (~40 MB resident), then PIL-encodes ~370 of them upscaled to 512x512 as a
+
+  palettized GIF. PIL''s GIF encoder is the well-known bottleneck for that
+
+  shape of data and easily blows past the planner''s runtime budget while
+
+  reporting nothing to stderr. The simulation itself is healthy on this grid
+
+  size and this rule.
+
+  '
+log_excerpt: "step  750: bits=     6  ncomp=  4  step_ms=  0.81  wall=  0.63s\nstep\
+  \  800: bits=     6  ncomp=  4  step_ms=  0.81  wall=  0.67s\nLoop done: last_step=800,\
+  \ stop_reason=completed, total_wall=0.67s\nWrote .../archive/iter_198/results/collision_log.csv\
+  \  (801 rows)\nWrote .../archive/iter_198/results/final_state.png\n=== Diagnostic\
+  \ summary ===\n  steps logged:        800\n  stop_reason:         completed\n  bits\
+  \  min/max/last:  4 / 6 / 6\n  ncomp min/max/last:  2 / 5 / 4\n  step_ms min/max/avg:\
+  \ 0.33 / 1.63 / 0.84\n  total wall time:     0.67s\n"
+metrics:
+  bit_count_final: 6
+  bit_count_max: 6
+  bit_count_min: 4
+  initial_bits: 6
+  non_steady_rows: 15
+  num_components_final: 4
+  num_components_max: 5
+  num_components_min: 2
+  sim_time_ms_max: 1.63
+  sim_time_ms_mean: 0.84
+  sim_time_ms_min: 0.33
+  steps_logged: 800
+  total_wall_seconds: 0.67
+notes: simulation stable; suspected iter_197.1 bottleneck is PIL GIF encoding, not
+  the CA step.
+status: ok
