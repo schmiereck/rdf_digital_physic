@@ -1,0 +1,43 @@
+Let me start by reading the existing files to understand the codebase structure.
+Now let me check the experiments directory and seeds module.
+Let me check for existing infrastructure files.
+Let me look at simulator.py and evolution.py to understand the existing infrastructure.
+Now I have a clear picture. The codebase uses `rule_dict` and inline step functions. I need to add a `Fitness` base class, `MassiveGliderFitness`, create `seeds.py`, and create the experiments directory/config. Let me implement all of this.
+Now add `_bounding_box` helper and `MassiveGliderFitness` at the end of `fitness.py`.
+Now I can safely append to the end of the file:
+I need more context to target the last `__call__`. Let me read the end of the file:
+Now create `seeds.py` and the experiments directory/file:
+Now verify the fitness.py addition is syntactically correct by checking the import and class definition:
+Both files load cleanly. The `MassiveGliderFitness` class and experiment config are working.
+
+```yaml
+status: ok
+artifacts:
+  - "src/fitness.py"
+  - "src/experiments/exp_198_2_massive_glider.py"
+  - "src/seeds.py"
+metrics: {}
+log_excerpt: |
+  OK: MassiveGliderFitness
+  name: massive_glider_search
+  fitness: MassiveGliderFitness
+  seed shape: (128, 128)
+  generations: 10
+experimenter_view: |
+  The `MassiveGliderFitness` class has been added to `src/fitness.py` along with:
+  - A `Fitness` base class (required by the inheritance chain)
+  - A `_bounding_box` helper function
+
+  The fitness function correctly implements:
+  - 4 checkpoints over 256 steps (64 steps each)
+  - Velocity constraint: 0 < v < c per inter-checkpoint segment
+  - Fizzler/chaos filter: returns 0.0 if final_bits == 0 or > 3x initial
+  - Compactness penalty: total_displacement / (1 + final_bits * bbox_area)
+
+  Supporting files created:
+  - `src/seeds.py` with `L_TROMINO_SEED` (3-cell L-tromino at grid centre)
+  - `src/experiments/exp_198_2_massive_glider.py` with 10-generation config
+
+  Both imports verified successfully via Python import test.
+notes: "Setup for the v<c glider search is complete."
+```

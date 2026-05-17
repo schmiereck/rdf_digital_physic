@@ -30,6 +30,17 @@ from engine import (
 HEX_DIRS = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
 
 
+# ── Base class ──────────────────────────────────────────────────────────────
+
+class Fitness:
+    """Base class for fitness callables."""
+    def __init__(self, target_ca_string=None):
+        self.target_ca_string = target_ca_string
+
+    def __call__(self, rule_dict, seed):
+        raise NotImplementedError
+
+
 # ── Multi-bit-aware helpers ─────────────────────────────────────────────────
 # These keep the legacy 1-bit fast path intact while letting fitness classes
 # operate on (H, W, bits_per_cell) grids when bits_per_cell > 1.
@@ -629,7 +640,7 @@ class LeakyConservationCollisionFitness:
         return self.evaluate(rule_dict)
 
 
-# ── RecessionBiasedFitness ─────────────────────────────────────────────────
+# ── RecessionBiasedFitness (StagedCollisionFitness subclass) ─────────────────────────────────────────────────
 
 
 class RecessionBiasedFitness(StagedCollisionFitness):
@@ -740,3 +751,68 @@ class RecessionBiasedFitness(StagedCollisionFitness):
 
     def __call__(self, rule_dict: dict | None = None) -> dict:
         return self.evaluate(rule_dict)
+
+
+# ── MassiveGliderFitness ────────────────────────────────────────────────────
+
+def _bounding_box(grid: np.ndarray):
+    """Return (min_r, min_c, max_r, max_c) of live cells, or (0,0,0,0) if empty."""
+    rows, cols = np.where(grid > 0)
+    if len(rows) == 0:
+        return 0, 0, 0, 0
+    return int(rows.min()), int(cols.min()), int(rows.max()), int(cols.max())
+
+
+class MassiveGliderFitness(Fitness):
+    """Find v<c gliders while penalising grid-filling and fizzler exploits.
+
+    Runs the CA for ``steps`` total, sampling the centre of mass at each of
+    ``checkpoints`` equally-spaced checkpoints.  A rule scores > 0 only when:
+      - every inter-checkpoint displacement is strictly between 0 and c (the
+        number of steps_per_checkpoint), and
+      - the final bit count has not exploded (> 3x initial).
+
+    The final score is ``total_displacement / (1 + final_bits * bbox_area)``,
+    which rewards compact, fast gliders.
+    """
+
+    name = "MassiveGliderFitness"
+
+    def __init__(self, target_ca_string=None, steps=256, checkpoints=4):
+        super().__init__(target_ca_string)
+        self.steps = steps
+        self.num_checkpoints = checkpoints
+        self.steps_per_checkpoint = steps // checkpoints
+
+    def __call__(self, rule_dict, seed):
+        lut = _rule_to_lut(rule_dict)
+        initial_bit_count = int(np.sum(seed))
+        grid = seed.copy()
+
+        centers = []
+        for _ in range(self.num_checkpoints):
+            for _ in range(self.steps_per_checkpoint):
+                grid = _step_grid(grid, lut)
+            centers.append(_center_of_mass(grid))
+
+        final_bit_count = int(np.sum(grid))
+        if final_bit_count == 0 or final_bit_count > initial_bit_count * 3:
+            return 0.0
+
+        total_displacement = 0.0
+        for i in range(self.num_checkpoints - 1):
+            p1, p2 = np.array(centers[i]), np.array(centers[i + 1])
+            d = float(np.linalg.norm(p2 - p1))
+            if d == 0.0 or d >= self.steps_per_checkpoint:
+                return 0.0
+            total_displacement += d
+
+        if total_displacement == 0.0:
+            return 0.0
+
+        min_r, min_c, max_r, max_c = _bounding_box(grid)
+        bounding_box_area = (max_r - min_r + 1) * (max_c - min_c + 1)
+        if bounding_box_area == 0:
+            return 0.0
+
+        return total_displacement / (1.0 + final_bit_count * bounding_box_area)
