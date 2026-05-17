@@ -1,0 +1,53 @@
+```yaml
+analysis: |
+  This phase aimed to expand on the recent discovery of a v=1c elastic collision rule. The plan was twofold: further characterize the rule with a 60-degree collision test (197.1) and adapt the evolutionary framework to search for massive, v<c gliders (197.2). Both sub-tasks failed, but for highly informative reasons.
+
+  Sub-agent 197.1, the 60-degree collision test, was terminated after running for over three times its estimated duration. This suggests the champion rule, while stable for head-on and slightly offset collisions, may lead to computationally explosive or unexpectedly complex interactions at different angles. This finding tempers the previous success and reveals a potential fragility in our current best rule.
+
+  Sub-agent 197.2, a sub-planner tasked with finding v<c gliders, successfully identified a critical flaw in the proposed fitness function. The evolutionary algorithm did not find a glider; instead, it found a "grid-filler" rule that exploited an unbounded `log(1 + bit_count)` complexity bonus. By saturating the grid, the rule achieved a maximal complexity score and trivially satisfied the constant-velocity checks due to a fixed center-of-mass. This is a classic case of reward hacking and a valuable negative result that provides a clear direction for correcting the fitness function in the next phase.
+open_questions:
+  - "Can a revised fitness function (with a capped complexity bonus and a particle-size check) guide evolution to a stable v<c glider?"
+  - "What is the mechanism causing the computational explosion in 60-degree collisions for the v=1c elastic rule?"
+  - "What are the dynamics of three-body or multi-body collisions under the champion elastic rule?"
+  - "What is the maximum offset at which the elastic scattering interaction occurs for the v=1c rule?"
+chosen_direction: "Refine the fitness function to prevent grid-filling exploits and re-run the evolutionary search for v<c gliders."
+hypothesis: "phase-197: An attempt to find v<c gliders fails due to a fitness function exploit, and the existing v=1c rule shows instability in 60-degree collisions."
+rationale: |
+  The phase was logically structured to first consolidate knowledge of the v=1c rule (197.1) before moving to the next major research question of v<c particles (197.2). The failure of 197.1 was unexpected, while the failure of 197.2 was a necessary learning step in designing a robust evolutionary search for a new class of particle. The results dictate that the next immediate step must be to fix the fitness function.
+status: experiment_failed
+metrics:
+  task_197_1_status: "timeout_failure"
+  task_197_2_status: "fitness_exploit_identified"
+  v_c_glider_found: false
+experimenter_view: |
+  Sub-agent 197.1 failed to complete its simulation of a 60-degree collision, timing out after >900 seconds. This indicates the champion `v=1c` elastic rule may harbor complex, computationally expensive dynamics not observed in head-on collisions.
+
+  The sub-planner for 197.2 successfully executed an evolutionary search for `v<c` gliders. However, the search was derailed by a fitness function exploit. The champion rule discovered was a "grid-filler," which saturated the 128x128 torus. This maximized the unbounded `log(1 + bit_count)` complexity bonus term, which outweighed the velocity term. The saturated grid's static center-of-mass trivially passed the constant-velocity checkpoints. No true `v<c` gliders were found. The key insight is that the fitness function must be hardened against this exploit, likely by capping the bit count contribution and adding a "particle-ness" check (e.g., connected components).
+notes: "A phase of informative failures. The v=1c rule is less robust than believed, and the v<c fitness function needs significant refinement."
+artifacts:
+- archive/iter_197/iter_002/results/champion_glider.gif
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A rule supporting perfect, bit-conserving elastic collisions for **head-on** impacts has been discovered (iter_193, iter_195.1).
+  - The elastic scattering angle for head-on collisions is systematically dependent on the impact parameter (iter_195.2).
+  - A fitness function for `v<c` gliders requires more than just constant-velocity checks; it must be robust against "grid-filling" exploits where the center-of-mass is trivially stable (iter_197.2).
+
+  **Refuted:**
+  - The hypothesis that the `v=1c` elastic collision rule is robustly stable is now in question. A 60-degree collision simulation failed to complete, suggesting a potential for computationally explosive behavior (iter_197.1).
+
+  **Best Result:**
+  - A rule (`archive/iter_193/iter_002/results/champion_rule.json`) that produces robust elastic collisions for head-on and near-head-on impacts. Its general stability is now under investigation.
+
+  **In Progress:**
+  - The search for massive (`v<c`) particles. The initial attempt failed due to a flawed fitness function, and a revised approach is required.
+
+  **Open Questions:**
+  - Can a revised fitness function (with a capped complexity bonus and a particle-size check) guide evolution to a stable `v<c` glider?
+  - What is the mechanism causing the computational explosion in 60-degree collisions for the `v=1c` elastic rule?
+  - What are the dynamics of three-body or multi-body collisions under the champion elastic rule?
+  - What is the maximum offset at which the elastic scattering interaction occurs for the `v=1c` rule?
+```
