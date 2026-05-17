@@ -1,0 +1,72 @@
+Let me explore the existing codebase to understand the structure before creating the new script.
+The `SparseGliderFitness` class is not in `fitness.py` yet. Let me look for it in the iter_199 archive.
+Now let me read `fitness_v2.py` and also look for the evolution-related code.
+Now let me read the evolution module and the rule generator for C2-symmetric rules.
+Let me also check a recent evolutionary run script for reference.
+Now I have everything I need. Let me create the `run_vc_search.py` script.
+Now let me run the script.
+The search completed successfully. Let me verify the artifacts and read the champion metrics.
+All three artifacts are confirmed. The search ran successfully for 15 generations.
+
+**Observations:**
+- The champion was found in generation 1 with fitness ≈ 0.4714
+- `mean_sparsity = 1.0` — the 3-bit particle remained perfectly compact (bounding box area = bit count) at all 5 checkpoints, confirming strict bit conservation
+- `total_displacement = 0.4714` with all motion in the first 50-step window (displacements `[0.471, 0.0, 0.0, 0.0, 0.0]`), meaning the particle moved ~0.47 cells then became a still life or oscillator
+- No true sustained-velocity v<c glider was found; the champion performs one short displacement burst then halts
+- The population converged quickly around fitness 0.47 (mean reached ~0.43 by gen 6), suggesting a shallow fitness landscape dominated by brief-motion rules
+
+```yaml
+status: ok
+artifacts:
+  - "archive/iter_200/results/champion_vc_rule.json"
+  - "archive/iter_200/results/evolution_log.csv"
+  - "archive/iter_200/results/champion_vc_glider.gif"
+metrics:
+  final_champion_fitness: 0.471405
+  max_fitness_achieved: 0.471405
+  generations_completed: 15
+log_excerpt: |
+  === iter_200 v<c Glider Search (SparseGliderFitness) ===
+    Population      : 50
+    Generations     : 15
+    Elite count     : 5
+    Grid size       : 128x128
+    Sim steps       : 250  (checkpoints every 50)
+    Seed particle   : [(0, 0), (0, 1), (1, 1)]
+    Fitness         : SparseGliderFitness
+  
+    Gen  0: champion=0.1667  mean=0.0033  non_zero=1
+    Gen  1: champion=0.4714  gen_best=0.4714  mean=0.0194  non_zero=4
+    Gen  2: champion=0.4714  gen_best=0.4714  mean=0.1216  non_zero=31
+    Gen  3: champion=0.4714  gen_best=0.4714  mean=0.2702  non_zero=39
+    Gen  4: champion=0.4714  gen_best=0.4714  mean=0.4148  non_zero=44
+    Gen  5: champion=0.4714  gen_best=0.4714  mean=0.4087  non_zero=44
+    Gen  6: champion=0.4714  gen_best=0.4714  mean=0.4215  non_zero=46
+    Gen  7: champion=0.4714  gen_best=0.4714  mean=0.3771  non_zero=40
+    Gen  8: champion=0.4714  gen_best=0.4714  mean=0.4026  non_zero=44
+    Gen  9: champion=0.4714  gen_best=0.4714  mean=0.3710  non_zero=40
+    Gen 10: champion=0.4714  gen_best=0.4714  mean=0.4276  non_zero=46
+    Gen 15: champion=0.4714  gen_best=0.4714  mean=0.4370  non_zero=47
+    best_fitness    = 0.471405
+    max_ever        = 0.471405
+    best_generation = 1
+    total_disp      = 0.47140452079102496
+    mean_sparsity   = 1.0
+    reason          = ok
+experimenter_view: |
+  No sustained v<c glider was found in this 15-generation run. The champion
+  rule (fitness ≈ 0.4714) passes the bit-conservation gate at all 5 checkpoints
+  (mean_sparsity = 1.0, final_bits = 3 = initial_bits), but its displacement
+  profile is [0.471, 0.0, 0.0, 0.0, 0.0]: the 3-bit L-tromino moves approximately
+  0.47 cells during the first 50 steps, then freezes into a still life or
+  low-period oscillator for the remaining 200 steps. This is not a v<c glider —
+  it is a transient-motion pattern. The fitness plateau (champion constant at
+  0.4714 from gen 1 onward, population mean converging to ~0.43) indicates the
+  search converged prematurely to a local optimum. A true v<c glider would need
+  non-zero displacement at multiple checkpoints. The animation confirms the
+  particle settles quickly and shows no translational motion after step ~50.
+  Recommended next steps: (1) increase population size and generations, (2) add
+  a multi-checkpoint displacement bonus to break the plateau, or (3) use a
+  diversity-preserving selection strategy.
+notes: "Evolutionärer Lauf zur Suche nach v<c-Gleitschirm abgeschlossen."
+```
