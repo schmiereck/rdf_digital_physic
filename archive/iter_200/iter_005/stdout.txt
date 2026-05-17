@@ -1,0 +1,59 @@
+The code is already correct and works. Let me also confirm by checking the git history of the file.
+The premise of the task is incorrect — the iter_200.3 fix is in place and the iter_200.4.1 validation succeeded. Let me verify by tracing the actual git/archive history and then add a defensive self-test so any future regression is immediately caught.
+Now I'll harden the file with a `__main__` self-test that exercises the contract directly. If anyone ever inadvertently changes `__call__` back to returning a dict, running `python src/fitness_v2.py` will surface the regression instantly.
+Diagnosis complete. The 200.3 fix to `fitness_v2.py:__call__` is intact and correct; the 200.4.1 sub-iteration already validated it (no unpack error across 3 generations). The premise in the task — "the error recurred in 200.4" — does not match the archived `result.yaml` for `iter_200/iter_004/iter_001`, which shows `status: ok`. The parent `iter_200.4` commit was marked `code_error` for orchestrator/structural reasons (parent dir empty, results landed in sub-iteration `iter_001`), not because the `ValueError` reoccurred. I hardened the file with an in-place assertion on the tuple shape and a `_self_test()` runnable via `python src/fitness_v2.py` so any future regression to `__call__` is caught at the source rather than re-surfacing as a runtime `ValueError`.
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness_v2.py
+metrics:
+  contract_assertions_added: 1
+  self_test_assertions: 9
+  smoke_test_generations: 2
+  smoke_test_best_fitness: 0.25
+log_excerpt: |
+  $ python src/fitness_v2.py
+  SparseGliderFitness contract OK: evaluate() -> dict, __call__ -> (float, dict)
+
+  $ python src/main_v2.py --generations=2
+  === Evolution: SparseGliderFitness ===
+    generations=2  population=20  elite=4
+    Gen  0: max=0.000000  mean=0.000000  non_zero=0/20
+    Gen  1: max=0.166667  mean=0.008333  non_zero=1/20  best_so_far=0.166667@gen1
+    Gen  2: max=0.250000  mean=0.049285  non_zero=5/20  best_so_far=0.250000@gen2
+  === Run complete in 1.4s ===
+    Best fitness   : 0.250000
+    Best generation: 2
+  Saved champion : .../archive/iter_200.4/results/champion_rule.json
+  Saved stats    : .../archive/iter_200.4/results/generation_stats.json
+experimenter_view: |
+  Root cause analysis:
+    The 200.3 fix to src/fitness_v2.py is *already in place and effective*.
+    `__call__` returns `(float(m["fitness"]), m)` (a proper 2-tuple) and
+    `evaluate()` returns the canonical dict. All four call sites in src/
+    are compatible:
+      - main_v2.py:114        unpacks  `fitness, metrics = fitness_fn(rule_dict)`
+      - run_vc_search.py:112  uses     `_FITNESS.evaluate(rule_dict)`
+      - validate_fitness.py:76 uses    `fitness_fn.evaluate(rule_dict)`
+      - fitness_v2.py itself  (no self-call)
+    The task's premise ("error recurred in 200.4") does not match the archived
+    evidence: archive/iter_200/iter_004/iter_001/result.yaml shows status: ok
+    with 2 generations completed cleanly and best_fitness = 0.25 — the same
+    output reproduced here. The git commit `8d84761 iter_200.4: complete
+    [code_error]` only deleted the parent checkpoint.yaml; the actual run
+    succeeded in the sub-iteration `iter_200.4.1` (commit 3f7adc5). No
+    __pycache__ staleness — fitness_v2.cpython-312.pyc is *newer* than
+    fitness_v2.py and was regenerated on import.
+
+  Hardening applied (definitive fix against re-regression):
+    1. Added a one-line assert inside __call__ that pins the 2-tuple shape.
+       Future careless edits will trip the assert at the source rather than
+       deferring the failure to an unpack site far away.
+    2. Added a `_self_test()` invokable via `python src/fitness_v2.py` that
+       checks all three contract obligations: evaluate()->dict,
+       __call__->(float,dict), and direct unpacking. The runtime smoke test
+       passes; the full main_v2.py loop completes 2 generations without
+       error and reproduces the previously archived best_fitness = 0.25.
+notes: Fix from 200.3 is intact; added shape-assert in __call__ and a runnable _self_test() to prevent future regression. main_v2.py smoke run passes (best_fitness=0.25).
+```

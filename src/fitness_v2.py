@@ -224,4 +224,48 @@ class SparseGliderFitness:
         of which there are more than 2).
         """
         m = self.evaluate(rule_dict)
-        return float(m["fitness"]), m
+        result: tuple[float, dict] = (float(m["fitness"]), m)
+        # Defensive: pin the contract.  Any future edit that breaks the
+        # 2-tuple shape will trip this assertion immediately rather than
+        # surfacing later as `ValueError: too many values to unpack`.
+        assert isinstance(result, tuple) and len(result) == 2, (
+            "SparseGliderFitness.__call__ must return a 2-tuple "
+            "(fitness: float, metrics: dict)."
+        )
+        return result
+
+
+# ---------------------------------------------------------------------------
+# Self-test (run with: ``python src/fitness_v2.py``)
+# ---------------------------------------------------------------------------
+
+def _self_test() -> None:
+    """Verify the dual calling convention.
+
+    Run via ``python src/fitness_v2.py``.  Exits non-zero on any contract
+    violation so regressions in ``__call__`` are caught at the source.
+    """
+    fit = SparseGliderFitness(grid_size=32, simulation_steps=10, checkpoint_every=5)
+
+    # 1. evaluate() must return a dict containing "fitness".
+    m = fit.evaluate({})
+    assert isinstance(m, dict),       f"evaluate() must return dict, got {type(m).__name__}"
+    assert "fitness" in m,            "evaluate() result must contain 'fitness' key"
+
+    # 2. __call__ must return a 2-tuple (float, dict).
+    r = fit({})
+    assert isinstance(r, tuple),      f"__call__ must return tuple, got {type(r).__name__}"
+    assert len(r) == 2,               f"__call__ must return 2-tuple, got length {len(r)}"
+    assert isinstance(r[0], float),   f"__call__[0] must be float, got {type(r[0]).__name__}"
+    assert isinstance(r[1], dict),    f"__call__[1] must be dict, got {type(r[1]).__name__}"
+
+    # 3. Direct unpacking in the evolutionary-loop style must succeed.
+    fitness, metrics = fit({})
+    assert isinstance(fitness, float)
+    assert isinstance(metrics, dict)
+
+    print("SparseGliderFitness contract OK: evaluate() -> dict, __call__ -> (float, dict)")
+
+
+if __name__ == "__main__":
+    _self_test()
