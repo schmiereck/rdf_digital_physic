@@ -1,10 +1,19 @@
-**Validierung des Bugfixes: Kurzer evolutionärer Testlauf**
+Your task is to write a standalone Python script, `src/characterize_glider.py`, to analyze the champion rule found in `200.1`. Do NOT execute the script.
 
-**Kontext:** Agent 200.3 hat einen kritischen Fehler in `src/fitness_v2.py` behoben, der den evolutionären Planner in 200.1 zum Absturz brachte. Dieser Task dient als abschließende Validierung, um zu bestätigen, dass der Fix wirksam ist und der Planner nun wie erwartet funktioniert.
+**Script Requirements:**
 
-**Anweisungen:**
-1.  **Aufgabe:** Führen Sie die ursprünglich für 200.1 geplante evolutionäre Suche durch, jedoch für eine stark verkürzte Dauer.
-2.  **Dauer:** Beschränken Sie den Lauf auf maximal **2 Generationen**.
-3.  **Fitness-Funktion:** Verwenden Sie die jetzt korrigierte `SparseGliderFitness`-Funktion.
-4.  **Erfolgskriterium:** Der Agent schließt den Lauf ohne den Fehler "too many values to unpack" oder andere `code_error` ab. Das Finden eines Gleiters ist für diesen Validierungslauf nicht erforderlich.
-5.  **Ergebnis:** Berichten Sie über den Status des Laufs (Erfolg oder Misserfolg) und bestätigen Sie, dass der Fehler nicht erneut aufgetreten ist.
+1.  **File:** Create the script at `src/characterize_glider.py`.
+2.  **Functionality:** The script should, when run, perform the following actions:
+    *   Load the rule from `archive/iter_200/results/champion_v_lt_c_rule.json`.
+    *   Initialize a 256x256 hexagonal grid with the 3-bit L-tromino seed.
+    *   Run a 2000-step simulation.
+    *   Track the bit count and center-of-mass (CoM) at each step.
+    *   Calculate the average velocity over the last 1000 steps (1000-2000).
+    *   Determine the period of the glider's shape oscillation.
+    *   Check for perfect bit conservation over all 2000 steps.
+    *   Save the results to `archive/iter_200/results/glider_properties.json` with keys `velocity_vc`, `period`, and `is_stable`.
+    *   Generate a plot of the CoM trajectory (X and Y vs. time) and save it to `archive/iter_200/results/trajectory.png`.
+3.  **Imports:** Use existing project utilities from `src.grid` and `src.rule` where possible.
+4.  **Execution:** The script should be runnable from the project root via `python -m src.characterize_glider`.
+
+Your sole output is the created script file `src/characterize_glider.py`. You do not need to run it.
