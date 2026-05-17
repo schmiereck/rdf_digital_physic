@@ -1,227 +1,276 @@
 #!/usr/bin/env python3
 """
-evolve.py  —  Gen-1 genetic algorithm for L-tromino motion (iter_170)
+evolve.py  —  Evolutionary search for v<c "massive" gliders (iter_197.2)
 
-Reads Gen-0 results, applies tournament selection (k=3) + uniform crossover
-(p=0.5 per bit) + bit-flip mutation (p=0.01 per bit) to produce Gen-1.
+Imports MassiveGliderFitness and T_TROMINO_PARTICLE from
+massive_glider_fitness.py and runs a GA over 7-bit hex LUT chromosomes
+(only the center-output bit is mutable; the simulator only reads that bit).
 
-Chromosome: 128-bit binary LUT (center-cell output for each 7-bit state).
-Fitness:    displacement / (1 + final_bit_count) after 200 steps.
-Output:     archive/iter_170/results/gen_1_results.json
+The lightweight ``Evolution`` class wraps the GA loop and accepts
+``fitness_fn`` and ``particle_shape`` so the same harness can be reused
+with other fitness/particle pairs.
+
+Outputs are written under archive/iter_197.2/results/.
 """
+
+from __future__ import annotations
 
 import concurrent.futures
 import json
-import math
 import random
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).parent))
+
+from evolution import generate_random_c2_rule
+from massive_glider_fitness import (
+    MassiveGliderFitness,
+    T_TROMINO_PARTICLE,
+)
+
+
 PROJECT_ROOT = Path(__file__).parent.parent
-GEN0_PATH    = PROJECT_ROOT / "archive" / "iter_170" / "results" / "gen_0_results.json"
-OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_170" / "results"
+OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_197.2" / "results"
 
-POPULATION_SIZE = 100
-GRID_SIZE       = 128
-STEPS           = 200
-TOURNAMENT_SIZE = 3
-CROSSOVER_PROB  = 0.5
-MUTATION_PROB   = 0.01
-LTROMINO_CELLS  = [(63, 63), (64, 63), (64, 64)]
-RNG_SEED        = 1701
+LUT_SIZE        = 128
+RNG_SEED        = 197_2
+ELITE_FRACTION  = 0.10
+CROSSOVER_RATE  = 0.8
+MUTATION_RATE   = 0.01
 
 
-# ── Rule / chromosome helpers ──────────────────────────────────────────────────
+# ── Chromosome <-> rule_dict ──────────────────────────────────────────────────
 
-def rule_dict_to_lut(rule_dict: dict) -> np.ndarray:
-    """Convert a rule dict to the 128-bit binary center-cell LUT."""
-    lut = np.arange(128, dtype=np.uint8)
+def chromosome_to_rule_dict(chrom: np.ndarray) -> dict:
+    """Convert a 128-bit center-output chromosome to the rule_dict form expected
+    by MassiveGliderFitness (rule_dict_to_lut only reads the center bit anyway,
+    so we encode v = (center_bit << 6) | (state & 0x3F))."""
+    out: dict = {}
+    for s in range(LUT_SIZE):
+        default_center = (s >> 6) & 1
+        actual_center  = int(chrom[s])
+        if actual_center != default_center:
+            v = (actual_center << 6) | (s & 0b0111111)
+            out[s] = v
+    return out
+
+
+def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
+    lut = np.arange(LUT_SIZE, dtype=np.uint8)
     for k, v in rule_dict.items():
         lut[int(k)] = int(v)
     return ((lut >> 6) & 1).astype(np.uint8)
 
 
-# ── Simulation (identical to archive/iter_170/evolve.py) ──────────────────────
+# ── Module-level fitness (initialised in __main__ / worker) ──────────────────
 
-def _step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:
-    e  = np.roll(grid, -1, axis=0)
-    w  = np.roll(grid,  1, axis=0)
-    ne = np.roll(grid, -1, axis=1)
-    sw = np.roll(grid,  1, axis=1)
-    se = np.roll(e,    1, axis=1)
-    nw = np.roll(w,   -1, axis=1)
-    state = (
-        (grid.astype(np.uint16) << 6)
-        | (e.astype(np.uint16)  << 5)
-        | (se.astype(np.uint16) << 4)
-        | (sw.astype(np.uint16) << 3)
-        | (w.astype(np.uint16)  << 2)
-        | (nw.astype(np.uint16) << 1)
-        |  ne.astype(np.uint16)
-    ).astype(np.uint8)
-    return lut[state]
+_FITNESS: MassiveGliderFitness | None = None
 
 
-def _center_of_mass(grid: np.ndarray) -> tuple[float, float]:
-    xs, ys = np.where(grid > 0)
-    if len(xs) == 0:
-        return (0.0, 0.0)
-    return (float(np.mean(xs)), float(np.mean(ys)))
+def _eval_worker(chrom_list: list) -> dict:
+    global _FITNESS
+    if _FITNESS is None:
+        _FITNESS = MassiveGliderFitness()
+    chrom     = np.asarray(chrom_list, dtype=np.uint8)
+    rule_dict = chromosome_to_rule_dict(chrom)
+    m         = _FITNESS.evaluate(rule_dict)
+    return {"chromosome": chrom_list, "metrics": m}
 
 
-def evaluate_lut(lut: np.ndarray) -> dict:
-    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
-    for r, c in LTROMINO_CELLS:
-        grid[r, c] = 1
-    initial_com = _center_of_mass(grid)
+# ── Genetic operators ────────────────────────────────────────────────────────
 
-    for _ in range(STEPS):
-        grid = _step_grid(grid, lut)
-
-    final_com       = _center_of_mass(grid)
-    final_bit_count = int(grid.sum())
-    dx              = final_com[0] - initial_com[0]
-    dy              = final_com[1] - initial_com[1]
-    displacement    = math.sqrt(dx * dx + dy * dy)
-    fitness         = displacement / (1.0 + final_bit_count)
-    return {
-        "fitness":         fitness,
-        "displacement":    displacement,
-        "final_bit_count": final_bit_count,
-        "initial_com":     list(initial_com),
-        "final_com":       list(final_com),
-    }
+def two_point_crossover(p1, p2, rng):
+    n = len(p1)
+    a, b = sorted(rng.sample(range(n + 1), 2))
+    c1, c2 = p1.copy(), p2.copy()
+    c1[a:b] = p2[a:b]
+    c2[a:b] = p1[a:b]
+    return c1, c2
 
 
-def _eval_worker(args: tuple) -> dict:
-    rule_id, chrom_list = args
-    lut    = np.array(chrom_list, dtype=np.uint8)
-    result = evaluate_lut(lut)
-    return {"rule_id": rule_id, "chromosome": chrom_list, **result}
-
-
-# ── Genetic operators ──────────────────────────────────────────────────────────
-
-def tournament_select(
-    chromosomes: list,
-    fitnesses: list,
-    k: int,
-    rng: random.Random,
-) -> np.ndarray:
-    candidates = rng.sample(range(len(chromosomes)), k)
-    best = max(candidates, key=lambda i: fitnesses[i])
-    return chromosomes[best].copy()
-
-
-def uniform_crossover(
-    p1: np.ndarray,
-    p2: np.ndarray,
-    prob: float,
-    rng: random.Random,
-) -> np.ndarray:
-    mask  = np.array([rng.random() < prob for _ in range(len(p1))], dtype=bool)
-    child = p1.copy()
-    child[mask] = p2[mask]
-    return child
-
-
-def bit_flip_mutation(chrom: np.ndarray, prob: float, rng: random.Random) -> np.ndarray:
+def per_bit_mutation(chrom, rate, rng):
     for i in range(len(chrom)):
-        if rng.random() < prob:
+        if rng.random() < rate:
             chrom[i] ^= 1
     return chrom
 
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+def select_top_k(population, fitnesses, k):
+    order = sorted(range(len(population)), key=lambda i: fitnesses[i], reverse=True)
+    return [population[i].copy() for i in order[:k]]
+
+
+# ── Evolution loop ───────────────────────────────────────────────────────────
+
+class Evolution:
+    """Minimal GA harness parameterised by fitness function and particle shape.
+
+    ``particle_shape`` is forwarded for API completeness; the seed shape is
+    actually owned by the fitness function (MassiveGliderFitness already uses
+    T_TROMINO_PARTICLE internally).
+    """
+
+    def __init__(
+        self,
+        fitness_fn,
+        particle_shape: list,
+        generations: int = 50,
+        population_size: int = 100,
+        elite_fraction: float = ELITE_FRACTION,
+        crossover_rate: float = CROSSOVER_RATE,
+        mutation_rate:  float = MUTATION_RATE,
+        rng_seed: int = RNG_SEED,
+        max_workers: int = 8,
+    ) -> None:
+        self.fitness_fn      = fitness_fn
+        self.particle_shape  = particle_shape
+        self.generations     = generations
+        self.population_size = population_size
+        self.elite_count     = max(2, int(population_size * elite_fraction))
+        self.crossover_rate  = crossover_rate
+        self.mutation_rate   = mutation_rate
+        self.rng             = random.Random(rng_seed)
+        self.max_workers     = max_workers
+
+    def initial_population(self) -> list:
+        pop = []
+        for _ in range(self.population_size):
+            rule = generate_random_c2_rule(self.rng)
+            pop.append(rule_dict_to_chromosome(rule))
+        return pop
+
+    def _evaluate(self, population):
+        tasks = [c.tolist() for c in population]
+        out   = [None] * len(tasks)
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.max_workers) as ex:
+            futs = {ex.submit(_eval_worker, t): i for i, t in enumerate(tasks)}
+            for fut in concurrent.futures.as_completed(futs):
+                i = futs[fut]
+                out[i] = fut.result()
+        fitnesses = [r["metrics"]["fitness"] for r in out]
+        metrics   = [r["metrics"]            for r in out]
+        return fitnesses, metrics
+
+    def run(self):
+        print(f"=== Evolution: {self.fitness_fn.name} / particle={self.particle_shape} ===")
+        print(f"  generations={self.generations}  population={self.population_size}  "
+              f"elite={self.elite_count}  workers={self.max_workers}")
+
+        population = self.initial_population()
+        fitnesses, metrics_l = self._evaluate(population)
+        best_idx        = int(np.argmax(fitnesses))
+        best_fitness    = float(fitnesses[best_idx])
+        best_chrom      = population[best_idx].copy()
+        best_metrics    = metrics_l[best_idx]
+        best_generation = 0
+
+        stats = []
+        n_nonzero = sum(1 for f in fitnesses if f > 0.0)
+        stats.append({
+            "generation": 0,
+            "max":  float(np.max(fitnesses)),
+            "mean": float(np.mean(fitnesses)),
+            "std":  float(np.std(fitnesses)),
+            "non_zero": int(n_nonzero),
+        })
+        print(f"  Gen  0: max={stats[-1]['max']:.4f}  mean={stats[-1]['mean']:.4f}  "
+              f"non_zero={n_nonzero}")
+
+        for gen in range(1, self.generations + 1):
+            elite   = select_top_k(population, fitnesses, self.elite_count)
+            new_pop = [e.copy() for e in elite]
+            while len(new_pop) < self.population_size:
+                p1, p2 = self.rng.sample(elite, 2)
+                if self.rng.random() < self.crossover_rate:
+                    c1, c2 = two_point_crossover(p1, p2, self.rng)
+                else:
+                    c1, c2 = p1.copy(), p2.copy()
+                c1 = per_bit_mutation(c1, self.mutation_rate, self.rng)
+                c2 = per_bit_mutation(c2, self.mutation_rate, self.rng)
+                new_pop.append(c1)
+                if len(new_pop) < self.population_size:
+                    new_pop.append(c2)
+
+            population = new_pop
+            fitnesses, metrics_l = self._evaluate(population)
+            gen_best_idx = int(np.argmax(fitnesses))
+            gen_best     = float(fitnesses[gen_best_idx])
+
+            if gen_best > best_fitness:
+                best_fitness    = gen_best
+                best_chrom      = population[gen_best_idx].copy()
+                best_metrics    = metrics_l[gen_best_idx]
+                best_generation = gen
+
+            n_nonzero = sum(1 for f in fitnesses if f > 0.0)
+            stats.append({
+                "generation": gen,
+                "max":  gen_best,
+                "mean": float(np.mean(fitnesses)),
+                "std":  float(np.std(fitnesses)),
+                "non_zero": int(n_nonzero),
+            })
+            print(f"  Gen {gen:2d}: max={gen_best:.4f}  "
+                  f"mean={stats[-1]['mean']:.4f}  non_zero={n_nonzero}  "
+                  f"best_so_far={best_fitness:.4f}@gen{best_generation}")
+
+        return {
+            "best_fitness":    float(best_fitness),
+            "best_chrom":      best_chrom,
+            "best_metrics":    best_metrics,
+            "best_generation": int(best_generation),
+            "stats":           stats,
+            "final_population": [c.tolist() for c in population],
+            "final_fitnesses":  [float(f) for f in fitnesses],
+        }
+
+
+# ── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> int:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
 
-    with open(GEN0_PATH) as f:
-        gen0 = json.load(f)
-    gen0_pop = gen0["population"]
-    print(f"Loaded {len(gen0_pop)} Gen-0 rules from {GEN0_PATH.name}")
+    evo = Evolution(
+        fitness_fn      = MassiveGliderFitness(),
+        particle_shape  = T_TROMINO_PARTICLE,
+        generations     = 50,
+        population_size = 100,
+    )
+    result = evo.run()
+    elapsed = time.time() - t0
 
-    gen0_chroms    = [rule_dict_to_lut(e["rule"]) for e in gen0_pop]
-    gen0_fitnesses = [e["fitness"] for e in gen0_pop]
-    print(f"Gen-0 max={max(gen0_fitnesses):.6f}  "
-          f"mean={sum(gen0_fitnesses)/len(gen0_fitnesses):.6f}")
+    print(f"\n=== Search complete in {elapsed:.1f}s ===")
+    print(f"  Best fitness   : {result['best_fitness']:.6f}")
+    print(f"  Best generation: {result['best_generation']}")
+    print(f"  Best metrics   : {result['best_metrics']}")
 
-    rng             = random.Random(RNG_SEED)
-    gen1_chroms: list = []
-    for _ in range(POPULATION_SIZE):
-        p1    = tournament_select(gen0_chroms, gen0_fitnesses, TOURNAMENT_SIZE, rng)
-        p2    = tournament_select(gen0_chroms, gen0_fitnesses, TOURNAMENT_SIZE, rng)
-        child = uniform_crossover(p1, p2, CROSSOVER_PROB, rng)
-        child = bit_flip_mutation(child, MUTATION_PROB, rng)
-        gen1_chroms.append(child)
-
-    print(f"\nGenerated {POPULATION_SIZE} Gen-1 offspring. Evaluating ...")
-
-    tasks   = [(f"gen1_rule_{i+1:03d}", chrom.tolist())
-               for i, chrom in enumerate(gen1_chroms)]
-    pop     = []
-    workers = min(4, POPULATION_SIZE)
-
-    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as ex:
-        futures = {ex.submit(_eval_worker, t): t[0] for t in tasks}
-        done    = 0
-        for fut in concurrent.futures.as_completed(futures):
-            result = fut.result()
-            pop.append(result)
-            done += 1
-            print(
-                f"  [{done:3d}/{POPULATION_SIZE}] {result['rule_id']}: "
-                f"fitness={result['fitness']:.6f}  "
-                f"disp={result['displacement']:.4f}  "
-                f"bits={result['final_bit_count']:5d}"
-            )
-
-    pop.sort(key=lambda e: e["fitness"], reverse=True)
-
-    fitnesses    = [e["fitness"] for e in pop]
-    max_fitness  = float(max(fitnesses))
-    mean_fitness = float(sum(fitnesses) / len(fitnesses))
-    min_fitness  = float(min(fitnesses))
-
-    print(f"\n=== Gen-1 Summary ===")
-    print(f"  max_fitness:  {max_fitness:.8f}")
-    print(f"  mean_fitness: {mean_fitness:.8f}")
-    print(f"  min_fitness:  {min_fitness:.8f}")
-
-    results = {
-        "generation":      1,
-        "population_size": POPULATION_SIZE,
-        "tournament_size": TOURNAMENT_SIZE,
-        "crossover_prob":  CROSSOVER_PROB,
-        "mutation_prob":   MUTATION_PROB,
-        "grid_size":       GRID_SIZE,
-        "steps":           STEPS,
-        "ltromino_cells":  LTROMINO_CELLS,
-        "fitness_formula": "displacement / (1 + final_bit_count)",
-        "max_fitness":     round(max_fitness,  10),
-        "mean_fitness":    round(mean_fitness, 10),
-        "min_fitness":     round(min_fitness,  10),
-        "population": [
-            {
-                "rule_id":         e["rule_id"],
-                "chromosome":      e["chromosome"],
-                "fitness":         round(e["fitness"],      10),
-                "displacement":    round(e["displacement"],  8),
-                "final_bit_count": e["final_bit_count"],
-                "final_com":       [round(x, 4) for x in e["final_com"]],
-                "initial_com":     [round(x, 4) for x in e["initial_com"]],
-            }
-            for e in pop
-        ],
+    # Save champion
+    champ_rule = chromosome_to_rule_dict(np.asarray(result["best_chrom"], dtype=np.uint8))
+    champion_path = OUTPUT_DIR / "champion_rule.json"
+    payload = {
+        "fitness":        result["best_fitness"],
+        "generation":     result["best_generation"],
+        "metrics":        {k: (v if not isinstance(v, float) else round(v, 8))
+                           for k, v in result["best_metrics"].items()},
+        "particle":       T_TROMINO_PARTICLE,
+        "rule":           {str(k): int(v) for k, v in champ_rule.items()},
+        "chromosome":     list(map(int, result["best_chrom"])),
+        "elapsed_sec":    round(elapsed, 2),
     }
+    with open(champion_path, "w") as f:
+        json.dump(payload, f, indent=2)
+    print(f"\nSaved champion: {champion_path}")
 
-    out_path = OUTPUT_DIR / "gen_1_results.json"
-    with open(out_path, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"\nSaved: {out_path}")
+    # Save generation stats
+    stats_path = OUTPUT_DIR / "generation_stats.json"
+    with open(stats_path, "w") as f:
+        json.dump(result["stats"], f, indent=2)
+    print(f"Saved stats   : {stats_path}")
 
     return 0
 

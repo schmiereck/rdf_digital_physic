@@ -1,0 +1,61 @@
+artifacts:
+- src/evolve.py
+- src/characterize_iter_197_2_champion.py
+- src/scan_iter_197_2_population.py
+- archive/iter_197.2/results/champion_rule.json
+- archive/iter_197.2/results/champion_characterisation.json
+- archive/iter_197.2/results/champion_glider.gif
+- archive/iter_197.2/results/generation_stats.json
+- archive/iter_197.2/results/alt_candidates.json
+experimenter_view: "The GA finished cleanly (50 gens × 100 pop in 401 s, parallel\
+  \ ProcessPool of 8\nworkers), but the \"champion\" is a degenerate grid-filler,\
+  \ not a v<c glider.\n\nWhat the GA found\n  Fitness 16.70 = 7 valid checkpoints\
+  \ + 9.70 complexity bonus.\n  mean_bit_count = 16383.9 / 16384 -> the rule rapidly\
+  \ saturates the entire\n  128×128 torus.  A saturated torus has a constant centre\
+  \ of mass at (63.5,\n  63.5), so the velocity-constancy checkpoints all pass trivially\
+  \ (n_valid =\n  n_checked = 7) even though speed ≈ 7e-4 cells/step (essentially\
+  \ zero).\n  The complexity_bonus = log(1 + 16384) ≈ 9.70 alone is larger than the\n\
+  \  maximum possible n_valid (7), so the GA's gradient pointed straight at\n  \"\
+  fill the grid\", not \"find a sub-luminal mover\".\n\nDid we find any real v<c glider?\n\
+  \  No.  A side-scan of 200 fresh random C2-symmetric rules with the same\n  fitness\
+  \ produced 0 candidates with mean_bit_count in [5, 500] AND speed\n  in (1e-3, 0.99)\
+  \ AND n_valid >= 3.  Stochastically, neither the random pool\n  nor the GA's final\
+  \ population contained any plausible sub-luminal mover.\n\nImplications for next\
+  \ iteration (the actual signal of value here)\n  1. Cap or normalise the complexity\
+  \ bonus.  log(1+mbc) is unbounded and\n     grossly out-scales the discrete n_valid\
+  \ term.  Either clip mbc to a\n     physically reasonable upper bound (e.g. mbc\
+  \ <= 100) or zero-out fitness\n     when mbc > 0.5 * grid_area (saturation is not\
+  \ a particle).\n  2. Add an \"is this really a particle?\" gate before measuring\
+  \ velocity:\n     require connected support smaller than some fraction of the grid.\n\
+  \  3. The T-tromino seed + C2-random initial population may be too narrow.\n   \
+  \  Consider larger seeds or a non-symmetric initial pool.\n\nThe GIF (champion_glider.gif)\
+  \ shows the saturation visually — within ~10\nsteps the grid is uniformly lit; nothing\
+  \ translates.\n"
+log_excerpt: "Gen  0: max=3.8072  mean=0.0381  non_zero=1\nGen  1: max=7.3745  mean=0.3064\
+  \  non_zero=7  best_so_far=7.3745@gen1\nGen  2: max=8.4879  mean=2.6295  non_zero=59\
+  \  best_so_far=8.4879@gen2\nGen  3: max=16.4495  mean=6.3213  non_zero=85  best_so_far=16.4495@gen3\n\
+  Gen  4: max=16.4858  mean=8.7322  non_zero=87  best_so_far=16.4858@gen4\nGen  5:\
+  \ max=16.5429  mean=14.3698 non_zero=90  best_so_far=16.5429@gen5\n...\nGen 45:\
+  \ max=16.7041  mean=15.8824  non_zero=97  best_so_far=16.7041@gen45\nGen 50: max=16.7041\
+  \  mean=15.6680  non_zero=96  best_so_far=16.7041@gen45\n=== Search complete in\
+  \ 400.8s ===\n  Best fitness   : 16.704118\n  Best generation: 45\n  Best metrics\
+  \   : {'fitness': 16.7, 'n_valid': 7, 'n_checked': 7, 'vr': -7.04e-4,\n        \
+  \            'vc': -4.22e-05, 'speed': 7.05e-04, 'mean_bit_count': 16383.93,\n \
+  \                   'complexity_bonus': 9.704, 'reason': 'ok'}\n"
+metrics:
+  alt_candidates_found: 0
+  best_generation: 45
+  complexity_bonus: 9.704118
+  elapsed_sec: 400.8
+  fitness_score: 16.704118
+  generations_ran: 50
+  mean_bit_count: 16383.93
+  n_checked: 7
+  n_valid_checkpoints: 7
+  population_size: 100
+  speed: 0.0007051464
+  velocity_x: -4.22328e-05
+  velocity_y: -0.0007038805
+notes: Champion is a grid-filler that gamed the complexity bonus; no real v<c glider
+  found.
+status: ok
