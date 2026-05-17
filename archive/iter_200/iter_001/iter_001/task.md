@@ -1,42 +1,48 @@
 ## Goal
 
-Führen Sie eine evolutionäre Suche nach einem stabilen v<c-Gleiter unter Verwendung der in `iter_199` entwickelten Fitnessfunktion `SparseGliderFitness` durch.
+Your goal is to discover a stable, `v<c` (sub-light speed) glider in a 2D hexagonal lattice by running an evolutionary search. You will use the `SparseGliderFitness` function.
 
-### Anweisungen:
+### Methodology
 
-1.  **Neues Skript erstellen:** Erstellen Sie ein neues Python-Skript `src/run_vc_search.py`. Dieses Skript sollte die evolutionäre Suche orchestrieren.
-2.  **Fitness-Funktion verwenden:** Importieren und verwenden Sie die Klasse `SparseGliderFitness` aus `src/fitness.py`.
-3.  **Suchparameter:**
-    *   Startpopulation: 50 zufällige C2-symmetrische Regeln.
-    *   Generationen: Führen Sie den Lauf für 15 Generationen durch.
-    *   Seed-Partikel: Verwenden Sie das 3-Bit-L-Tromino-Muster, das durch die folgenden Koordinaten definiert ist: `[(0, 0), (0, 1), (1, 1)]`.
-    *   Gittergröße: Verwenden Sie ein 128x128-Gitter.
-    *   Simulationsschritte: 250 Schritte pro Auswertung.
-4.  **Artefakte generieren:**
-    *   **Champion-Regel:** Speichern Sie am Ende des Laufs die beste gefundene Regel (den "Champion") in `archive/iter_200/results/champion_vc_rule.json`.
-    *   **Evolutionsprotokoll:** Protokollieren Sie die Fitness des Champions jeder Generation in einer CSV-Datei unter `archive/iter_200/results/evolution_log.csv`. Die Spalten sollten `generation` und `champion_fitness` sein.
-    *   **Animation:** Erstellen Sie eine GIF-Animation des Champion-Musters, das sich über 250 Schritte entwickelt, und speichern Sie sie als `archive/iter_200/results/champion_vc_glider.gif`.
-5.  **Ausführung:** Führen Sie das Skript `src/run_vc_search.py` aus.
+1.  **Create a new experiment script:** `src/run_v_less_than_c_search.py`. This script will orchestrate the entire experiment.
+2.  **Implement the Evolutionary Search:**
+    *   The script should set up and run an evolutionary algorithm.
+    *   **Configuration:**
+        *   **Seed Particle:** 3-bit L-Tromino.
+        *   **Grid:** 128x128 torus (hexagonal).
+        *   **Population:** 100 C2-symmetric rules.
+        *   **Elitism:** 10% (top 10 rules carry over to the next generation).
+        *   **Fitness Function:** Import and use `SparseGliderFitness` from `src/fitness_v2.py`.
+    *   **Execution:** Run the evolution for **15 generations**. In each generation:
+        *   Evaluate the fitness of every rule in the population.
+        *   Log the fitness of the best rule in that generation.
+        *   Create the next generation by applying mutation to the top 10 elite rules.
+3.  **Analyze and Save Champion Rule:**
+    *   After the evolutionary run is complete, identify the single best rule (the 'champion') from all generations.
+    *   Save this champion rule to `archive/iter_200.1/results/champion_v_lt_c_rule.json`.
+4.  **Generate Outputs:**
+    *   **Animation:** Generate an animation of the champion rule acting on the L-tromino seed for 500 steps. Save it as `archive/iter_200.1/results/champion_v_lt_c_glider.gif`.
+    *   **Summary:** Write a summary of the evolutionary run (generation number and best fitness for that generation) to `archive/iter_200.1/results/evolution_summary.csv`. The CSV should have headers: `generation,best_fitness`.
+5.  **Execution:**
+    *   Run the script using `python src/run_v_less_than_c_search.py`.
+    *   The primary metric to report should be the `champion_fitness`.
 
-### Zusammenfassung der erwarteten Ergebnisse:
+### Final YAML Output
 
-Der Agent muss am Ende seiner Ausführung den folgenden YAML-Block ausgeben:
+Please conclude your work by providing the following YAML block in your response.
 
 ```yaml
 status: ok
 artifacts:
-  - "archive/iter_200/results/champion_vc_rule.json"
-  - "archive/iter_200/results/evolution_log.csv"
-  - "archive/iter_200/results/champion_vc_glider.gif"
+  - "archive/iter_200.1/results/champion_v_lt_c_rule.json"
+  - "archive/iter_200.1/results/champion_v_lt_c_glider.gif"
+  - "archive/iter_200.1/results/evolution_summary.csv"
 metrics:
-  final_champion_fitness: <float>
-  max_fitness_achieved: <float>
-  generations_completed: 15
+  champion_fitness: <fitness_of_the_best_rule>
+  generations_run: 15
 log_excerpt: |
-  <Letzte 20 Zeilen der Konsolenausgabe, die den Fortschritt der Generationen zeigen>
+  <Last 20 lines of output from the evolutionary run>
 experimenter_view: |
-  <Eine qualitative Beschreibung, ob ein stabiler v<c-Gleiter gefunden wurde, basierend auf der Beobachtung der endgültigen Animation und der Fitnesswerte.>
-notes: "Evolutionärer Lauf zur Suche nach v<c-Gleitschirm abgeschlossen."
+  <Your qualitative observations about the run. Did the fitness improve steadily? Were there any interesting behaviors observed? Did you find a stable glider?>
+notes: "Executed evolutionary search for a v<c glider."
 ```
-
-Stellen Sie sicher, dass alle Pfade relativ zum Projektstammverzeichnis sind. Der vorhandene Code in `src/` sollte wiederverwendet werden.
