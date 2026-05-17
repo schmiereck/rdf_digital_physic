@@ -1,0 +1,40 @@
+I'll explore the existing fitness function files to understand the required interface before implementing the new file.
+Look at the src/ directory of this project at C:\Users\thomas\Projekte\rdf_digital_physic\src. I need to understand the interface for fitness function classes used in an evolutionary framework for cellular automata / physics simulations. Please:
+1. List all Python files in src/
+2. Read any files that contain "fitness" in their name or define fitness classes
+3. Look for how simulations are initialized and run (what parameters they take)
+4. Look for particle definitions (how particles/seeds are defined as coordinate offsets)
+5. Find the evaluate() method signature used by fitness classes
+
+Report the full content of at least 2-3 fitness files and the simulation initialization code. I need enough detail to replicate the interface exactly.
+Now let me read a couple of the most relevant files to verify exact imports and the simulation API.
+I have all the information I need. Now I'll create the `massive_glider_fitness.py` file.
+Now let me do a quick syntax check:
+The file is syntactically valid. The implementation is complete.
+
+```yaml
+status: ok
+artifacts:
+  - src/massive_glider_fitness.py
+metrics: {}
+log_excerpt: |
+  syntax ok
+experimenter_view: |
+  Created src/massive_glider_fitness.py with:
+  - T_TROMINO_PARTICLE: 4-cell T-tetromino defined as offsets [(-1,0),(0,-1),(0,0),(0,1)]
+  - MassiveGliderFitness class following the exact BaseFitness interface
+    (evaluate(rule_dict)->dict, __call__ wrapper) used across all existing
+    fitness files (fitness_simple_motion.py, fitness_stable_velocity.py, etc.)
+  - Uses the same imports (rule_dict_to_lut, step_grid, center_of_mass from evolution)
+  - Phase 1: 200 settle steps; Phase 2: COM measured at step 200 and 300;
+    velocity vector v = displacement / 100
+  - Early exits for stationary (speed < 1e-6) and v=c gliders (_is_vc_speed
+    checks proximity to any integer ≥ 1, within threshold 0.15)
+  - Phase 3: checkpoints every 100 steps from step 300 to 1000; each
+    checkpoint predicts COM via constant-velocity extrapolation and validates
+    against actual COM within TOLERANCE=2.5 cells
+  - Fitness = n_valid_checkpoints + log(1 + mean_bit_count) complexity bonus
+  - Module-level evaluate() convenience wrapper for drop-in compatibility
+  - File passes Python AST syntax check
+notes: 4-cell asymmetric T-tromino seed; sub-luminal glider fitness with v=c exclusion and complexity bonus
+```
