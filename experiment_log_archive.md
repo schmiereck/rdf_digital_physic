@@ -8072,3 +8072,31 @@ status: no_execution
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Velocity-Stable Evolution
+cost_usd: 0.13661
+hypothesis: 'evolution-gen3-composite-metric: A third generation of rules, bred from
+  the top performers of Gen-2, will have a mean fitness at least 50% higher than the
+  Gen-2 mean.'
+input_tokens: 32522
+iter: 162
+metrics: {}
+output_tokens: 2170
+status: no_execution
+```
+
+## iter_162: evolution-gen3-composite-metric: A third generation of rules, bred from the top performers of Gen-2, will have a mean fitness at least 50% higher than the Gen-2 mean.
+
+**Analysis:** The previous iteration (`iter_159`) successfully identified a "founder" rule from a random population using a composite fitness metric: `late_displacement / (1 + final_bit_count)`. This metric rewards sustained motion while penalizing the explosive, space-filling growth that plagued earlier experiments. The key open question was whether this fitness signal was strong enough to guide an evolutionar
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+

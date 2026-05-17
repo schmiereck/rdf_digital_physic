@@ -1,0 +1,59 @@
+```yaml
+analysis: |
+  This phase successfully investigated and resolved the two critical failures from `iter_197`.
+
+  Sub-agent 199.1 refuted the hypothesis of computational explosion in the `v=1c` elastic rule. It discovered the timeout in `iter_197.1` was caused by a technical issue (GIF generation overhead), not by the CA dynamics. More importantly, it revealed the rule's lack of generality: the L-tromino particle is not a stable glider at a 60-degree orientation, meaning the rule's physics are brittle and over-specialized to the head-on collision scenario it was evolved for.
+
+  Sub-agent 199.3 (a successful re-run of the technically failed 199.2) developed and validated `SparseGliderFitness`, a new fitness function for finding `v<c` gliders. The validation script confirmed that the new function assigns a fitness of 0.0 to the "grid-filling" exploit from `iter_197.2`, successfully blocking the failure mode.
+
+  With both primary research blockers now resolved, the project can proceed with a much clearer understanding of the existing rule's limitations and a robust new tool for future discovery.
+open_questions:
+  - "Now that a robust fitness function (`SparseGliderFitness`) exists, can a full evolutionary search discover a stable `v<c` glider?"
+  - "Can we evolve a new rule that exhibits elastic collisions across multiple impact angles (e.g., 0 and 60 degrees) by using a more complex fitness scenario?"
+  - "What are the dynamics of three-body or multi-body collisions under the champion `v=1c` elastic rule in the head-on configuration?"
+  - "What is the maximum interaction offset for the `v=1c` elastic scattering rule?"
+chosen_direction: "Launch a full-scale evolutionary search for v<c gliders using the newly validated `SparseGliderFitness` function."
+hypothesis: "phase-199: Diagnosed the v=1c rule's instability as brittleness, not explosion, and developed an exploit-resistant fitness function for v<c gliders."
+rationale: |
+  The two sub-goals were designed to systematically unblock the two main research avenues. Sub-agent 199.1 clarified the nature of the known elastic rule, revealing its limitations and correcting the erroneous 'instability' hypothesis. Sub-agent 199.3 provided the necessary tool to restart the search for massive particles. The logical next step is to immediately apply this new, validated tool to the problem it was designed to solve.
+status: ok
+metrics:
+  bit_conserved_60_deg: true
+  active_cells_exploded_60_deg: false
+  new_fitness_on_exploit_pattern: 0.0
+  old_fitness_on_exploit_pattern: 16.7
+experimenter_view: |
+  **Sub-agent 199.1 (Diagnosis of `v=1c` rule):** The investigation revealed that the timeout in `iter_197.1` was not caused by a computational or bit-count explosion in the CA. The dynamics were perfectly stable, with bit count conserved and active cells remaining constant. The failure was traced to technical overhead in generating a large GIF animation. However, the experiment also showed that the rule is brittle: the 60-degree glider launch configuration immediately fragments into stationary patterns. The rule is not a general-purpose glider rule.
+
+  **Sub-agent 199.3 (New Fitness Function):** This agent successfully implemented `SparseGliderFitness` in `src/fitness_v2.py`. This function rewards displacement while penalizing patterns that are not bit-conserving or sparse. A validation script confirmed that this new function assigns a fitness score of exactly 0.0 to the grid-filling exploit pattern from `iter_197.2`, which had scored 16.7 under the old system. The bit-conservation check fires immediately, rejecting the pattern. The tool is ready for use.
+notes: "A highly successful phase. Corrected a major misunderstanding about the v=1c rule and built the tool needed to resume the v<c search."
+artifacts:
+  - archive/iter_199/results/collision_log.csv
+  - src/fitness_v2.py
+  - src/validate_fitness.py
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, moving particle (glider) in a 2D hexagonal grid with stable, ideally elastic, collision dynamics.
+
+  **Confirmed:**
+  - A rule supporting perfect, bit-conserving elastic collisions for **head-on** impacts has been discovered (iter_193, iter_195.1).
+  - The elastic scattering angle for head-on collisions is systematically dependent on the impact parameter (iter_195.2).
+  - A new fitness function, `SparseGliderFitness`, robust against the "grid-filling" exploits seen in `iter_197.2`, has been developed and validated (iter_199.3).
+
+  **Refuted:**
+  - The hypothesis that the `v=1c` elastic collision rule is generally robust. The rule fails to support stable gliders at a 60-degree orientation (iter_199.1).
+  - The timeout observed in `iter_197.1` was not caused by a computational explosion in the CA dynamics, but by technical overhead in visualization code (iter_199.1).
+
+  **Best Result:**
+  - A rule (`archive/iter_193/iter_002/results/champion_rule.json`) that produces robust elastic collisions for head-on and near-head-on impacts. Its generality is now known to be limited.
+
+  **In Progress:**
+  - The search for massive (`v<c`) particles is now unblocked and ready to proceed with a new, more robust fitness function.
+
+  **Open Questions:**
+  - Now that a robust fitness function (`SparseGliderFitness`) exists, can a full evolutionary search discover a stable `v<c` glider?
+  - Can we evolve a new rule that exhibits elastic collisions across multiple impact angles (e.g., 0 and 60 degrees) by using a more complex fitness scenario?
+  - What are the dynamics of three-body or multi-body collisions under the champion `v=1c` elastic rule in the head-on configuration?
+  - What is the maximum interaction offset for the `v=1c` elastic scattering rule?
+```

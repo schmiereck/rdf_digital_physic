@@ -4,34 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-campaign: Phase 7 - Velocity-Stable Evolution
-cost_usd: 0.13661
-hypothesis: 'evolution-gen3-composite-metric: A third generation of rules, bred from
-  the top performers of Gen-2, will have a mean fitness at least 50% higher than the
-  Gen-2 mean.'
-input_tokens: 32522
-iter: 162
-metrics: {}
-output_tokens: 2170
-status: no_execution
-```
-
-## iter_162: evolution-gen3-composite-metric: A third generation of rules, bred from the top performers of Gen-2, will have a mean fitness at least 50% higher than the Gen-2 mean.
-
-**Analysis:** The previous iteration (`iter_159`) successfully identified a "founder" rule from a random population using a composite fitness metric: `late_displacement / (1 + final_bit_count)`. This metric rewards sustained motion while penalizing the explosive, space-filling growth that plagued earlier experiments. The key open question was whether this fitness signal was strong enough to guide an evolutionar
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.00875
 hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
 input_tokens: 1000
@@ -972,4 +944,36 @@ Sub-agent 197.1, the 60-degree collision test, was terminated after running for 
 The sub-planner for 197.2 successfully executed an evolutionary search for `v<c` gliders. However, the search was derailed by a fitness function exploit.
 
 **Notes:** A phase of informative failures. The v=1c rule is less robust than believed, and the v<c fitness function needs significant refinement.
+
+
+---
+```yaml
+cached_tokens: 64410
+cost_usd: 0.28593
+hypothesis: 'phase-199: Diagnosed the v=1c rule''s instability as brittleness, not
+  explosion, and developed an exploit-resistant fitness function for v<c gliders.'
+input_tokens: 119852
+iter: 199
+metrics:
+  active_cells_exploded_60_deg: false
+  bit_conserved_60_deg: true
+  new_fitness_on_exploit_pattern: 0.0
+  old_fitness_on_exploit_pattern: 16.7
+output_tokens: 3383
+status: ok
+```
+
+## iter_199: phase-199: Diagnosed the v=1c rule's instability as brittleness, not explosion, and developed an exploit-resistant fitness function for v<c gliders.
+
+**Analysis:** This phase successfully investigated and resolved the two critical failures from `iter_197`.
+
+Sub-agent 199.1 refuted the hypothesis of computational explosion in the `v=1c` elastic rule. It discovered the timeout in `iter_197.1` was caused by a technical issue (GIF generation overhead), not by the CA dynamics. More importantly, it revealed the rule's lack of generality: the L-tromino particle is 
+
+**Status:** ok
+
+**Metrics:** `{'bit_conserved_60_deg': True, 'active_cells_exploded_60_deg': False, 'new_fitness_on_exploit_pattern': 0.0, 'old_fitness_on_exploit_pattern': 16.7}`
+
+**Experimenter view:** **Sub-agent 199.1 (Diagnosis of `v=1c` rule):** The investigation revealed that the timeout in `iter_197.1` was not caused by a computational or bit-count explosion in the CA. The dynamics were perfectly stable, with bit count conserved and active cells remaining constant. The failure was traced to technical overhead in generating a large GIF animation. However, the experiment also showed that the
+
+**Notes:** A highly successful phase. Corrected a major misunderstanding about the v=1c rule and built the tool needed to resume the v<c search.
 
