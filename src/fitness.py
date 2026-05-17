@@ -20,9 +20,54 @@ from scipy.ndimage import label, center_of_mass
 sys.path.insert(0, str(Path(__file__).parent))
 from simulator import Particle, Simulator
 from evolution import rule_dict_to_lut, step_grid
+from engine import (
+    BITS_PER_CELL,
+    build_lut as engine_build_lut,
+    step_grid as engine_step_grid,
+)
 
 
 HEX_DIRS = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
+
+
+# ── Multi-bit-aware helpers ─────────────────────────────────────────────────
+# These keep the legacy 1-bit fast path intact while letting fitness classes
+# operate on (H, W, bits_per_cell) grids when bits_per_cell > 1.
+
+def _fitness_build_lut(rule_dict: dict, bits_per_cell: int) -> np.ndarray:
+    """Build the LUT the fitness step function will use."""
+    if int(bits_per_cell) == 1:
+        return rule_dict_to_lut(rule_dict)
+    return engine_build_lut(rule_dict, bits_per_cell)
+
+
+def _fitness_step(
+    grid: np.ndarray,
+    lut: np.ndarray,
+    bits_per_cell: int,
+) -> np.ndarray:
+    """Advance a grid by one step using the appropriate engine path.
+
+    Returns a 2D grid for ``bits_per_cell == 1`` (matches the legacy fast path
+    used throughout fitness.py) and a 3D ``(H, W, N)`` grid for N > 1.
+    """
+    if int(bits_per_cell) == 1:
+        return step_grid(grid, lut)
+    if grid.ndim == 2:
+        grid = grid[..., None]
+    return engine_step_grid(grid, lut, bits_per_cell)
+
+
+def _occupancy_2d(grid: np.ndarray) -> np.ndarray:
+    """Return a 2D uint8 occupancy mask suitable for scipy.ndimage.label."""
+    if grid.ndim == 2:
+        return (grid > 0).astype(np.uint8)
+    return (grid.sum(axis=-1) > 0).astype(np.uint8)
+
+
+def _total_bits(grid: np.ndarray) -> int:
+    """Total bits set across cells and the per-cell bit dimension."""
+    return int(grid.sum())
 
 
 def _rule_to_lut(rule_dict: dict) -> np.ndarray:
@@ -63,6 +108,7 @@ def calculate_velocity_stability(
     initial_state: np.ndarray,
     steps_per_window: int = 400,
     num_windows: int = 3,
+    bits_per_cell: int | None = None,
 ) -> tuple:
     """
     Calculates fitness based on the stability of velocity over multiple time windows.
@@ -73,16 +119,39 @@ def calculate_velocity_stability(
 
     Returns (fitness, velocities, std_dev) where fitness = 1 / (1 + std_dev).
     """
-    lut  = _rule_to_lut(rule_dict)
-    grid = np.copy(initial_state)
+    bpc = int(BITS_PER_CELL if bits_per_cell is None else bits_per_cell)
+    if bpc == 1:
+        lut  = _rule_to_lut(rule_dict)
+        grid = np.copy(initial_state)
+    else:
+        lut = engine_build_lut(rule_dict, bpc)
+        grid = np.copy(initial_state)
+        if grid.ndim == 2:
+            tmp = np.zeros((*grid.shape, bpc), dtype=np.uint8)
+            tmp[:, :, -1] = grid
+            grid = tmp
 
     # Record COM at the start of each window
-    com_checkpoints = [_center_of_mass(grid)]
+    com_checkpoints = [_center_of_mass(grid) if grid.ndim == 2 else (
+        float(np.mean(np.where(grid.sum(axis=-1) > 0)[0])) if (grid.sum() > 0) else 0.0,
+        float(np.mean(np.where(grid.sum(axis=-1) > 0)[1])) if (grid.sum() > 0) else 0.0,
+    )]
 
     for _ in range(num_windows):
         for __ in range(steps_per_window):
-            grid = _step_grid(grid, lut)
-        com_checkpoints.append(_center_of_mass(grid))
+            if bpc == 1:
+                grid = _step_grid(grid, lut)
+            else:
+                grid = engine_step_grid(grid, lut, bpc)
+        if grid.ndim == 2:
+            com_checkpoints.append(_center_of_mass(grid))
+        else:
+            mask = grid.sum(axis=-1) > 0
+            if mask.any():
+                xs, ys = np.where(mask)
+                com_checkpoints.append((float(np.mean(xs)), float(np.mean(ys))))
+            else:
+                com_checkpoints.append((0.0, 0.0))
 
     velocities = []
     for i in range(num_windows):
@@ -112,9 +181,15 @@ class CheckpointFitness:
     change at a checkpoint immediately returns 0.0 (early exit).
     """
 
-    def __init__(self, checkpoints: list, simulation_steps: int):
+    def __init__(
+        self,
+        checkpoints: list,
+        simulation_steps: int,
+        bits_per_cell: int | None = None,
+    ):
         self.checkpoints = set(checkpoints)
         self.simulation_steps = simulation_steps
+        self.bits_per_cell = int(BITS_PER_CELL if bits_per_cell is None else bits_per_cell)
 
     def evaluate(self, rule, seed_bits: list) -> float:
         """Evaluate *rule* starting from *seed_bits* coordinates.
@@ -136,8 +211,8 @@ class CheckpointFitness:
         for r, c in seed_bits:
             grid[r][c] = 1
 
-        particle = Particle(grid)
-        simulator = Simulator(rule)
+        particle = Particle(grid, bits_per_cell=self.bits_per_cell)
+        simulator = Simulator(rule, bits_per_cell=self.bits_per_cell)
 
         initial_bits = particle.bit_count
         initial_com = particle.center_of_mass()
@@ -180,10 +255,11 @@ def _make_dynamic_collision_grid(grid_size: int = _DYN_GRID_SIZE) -> np.ndarray:
 def _two_object_com_distance(grid: np.ndarray) -> float | None:
     """Return Euclidean distance between the two component COMs, or None if
     the grid does not contain exactly two connected components."""
-    labels, n = label(grid, structure=_DYN_LABEL_STRUCTURE)
+    mask = _occupancy_2d(grid)
+    labels, n = label(mask, structure=_DYN_LABEL_STRUCTURE)
     if n != 2:
         return None
-    coms = center_of_mass(grid, labels, [1, 2])
+    coms = center_of_mass(mask, labels, [1, 2])
     (r1, c1), (r2, c2) = coms
     return math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2)
 
@@ -214,10 +290,12 @@ class DynamicCollisionFitness:
         horizon: int = 100,
         grid_size: int = _DYN_GRID_SIZE,
         rule: dict | None = None,
+        bits_per_cell: int | None = None,
     ) -> None:
         self.horizon = int(horizon)
         self.grid_size = int(grid_size)
         self.rule = rule
+        self.bits_per_cell = int(BITS_PER_CELL if bits_per_cell is None else bits_per_cell)
 
     # ── core evaluation ──────────────────────────────────────────────────
 
@@ -226,8 +304,13 @@ class DynamicCollisionFitness:
         if rule_dict is None:
             raise ValueError("DynamicCollisionFitness: no rule supplied")
 
-        lut = rule_dict_to_lut(rule_dict)
+        lut = _fitness_build_lut(rule_dict, self.bits_per_cell)
         grid = _make_dynamic_collision_grid(self.grid_size)
+        if self.bits_per_cell > 1:
+            # Promote 2D seed to (H, W, N) bit-grid; cell value 1 → LSB set.
+            grid_3d = np.zeros((*grid.shape, self.bits_per_cell), dtype=np.uint8)
+            grid_3d[:, :, -1] = grid
+            grid = grid_3d
 
         # Initial distance — there are exactly two components by construction.
         initial_distance = _two_object_com_distance(grid)
@@ -237,19 +320,19 @@ class DynamicCollisionFitness:
                 "initial_distance": None,
                 "midpoint_distance": None,
                 "final_distance": None,
-                "final_bit_count": int(grid.sum()),
+                "final_bit_count": _total_bits(grid),
                 "final_object_count": 0,
             })
 
         midpoint_step = self.horizon // 2
         midpoint_distance: float | None = None
         for step in range(1, self.horizon + 1):
-            grid = step_grid(grid, lut)
+            grid = _fitness_step(grid, lut, self.bits_per_cell)
             if step == midpoint_step:
                 midpoint_distance = _two_object_com_distance(grid)
 
-        final_bit_count = int(grid.sum())
-        _, final_object_count = label(grid, structure=_DYN_LABEL_STRUCTURE)
+        final_bit_count = _total_bits(grid)
+        _, final_object_count = label(_occupancy_2d(grid), structure=_DYN_LABEL_STRUCTURE)
         final_object_count = int(final_object_count)
         final_distance = _two_object_com_distance(grid)
 
@@ -320,7 +403,8 @@ def _make_staged_grid(grid_size: int = _STAGED_GRID_SIZE) -> np.ndarray:
 
 def _staged_two_object_com_distance(grid: np.ndarray) -> float | None:
     """Return Euclidean distance between the two largest component COMs, or None if < 2."""
-    labels, n = label(grid, structure=_STAGED_LABEL_STRUCTURE)
+    mask = _occupancy_2d(grid)
+    labels, n = label(mask, structure=_STAGED_LABEL_STRUCTURE)
     if n < 2:
         return None
     sizes = sorted(
@@ -329,7 +413,7 @@ def _staged_two_object_com_distance(grid: np.ndarray) -> float | None:
         reverse=True,
     )
     top2 = [sizes[0][0], sizes[1][0]]
-    coms = center_of_mass(grid, labels, top2)
+    coms = center_of_mass(mask, labels, top2)
     (r1, c1), (r2, c2) = coms
     return math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2)
 
@@ -361,25 +445,31 @@ class StagedCollisionFitness:
         midpoint: int | None = None,
         grid_size: int = _STAGED_GRID_SIZE,
         rule: dict | None = None,
+        bits_per_cell: int | None = None,
     ) -> None:
         self.horizon   = int(horizon)
         self.midpoint  = int(midpoint) if midpoint is not None else self.horizon // 2
         self.grid_size = int(grid_size)
         self.rule      = rule
+        self.bits_per_cell = int(BITS_PER_CELL if bits_per_cell is None else bits_per_cell)
 
     def evaluate(self, rule_dict: dict | None = None) -> dict:
         rule_dict = rule_dict if rule_dict is not None else self.rule
         if rule_dict is None:
             raise ValueError("StagedCollisionFitness: no rule supplied")
 
-        lut           = rule_dict_to_lut(rule_dict)
+        lut           = _fitness_build_lut(rule_dict, self.bits_per_cell)
         grid          = _make_staged_grid(self.grid_size)
+        if self.bits_per_cell > 1:
+            grid_3d = np.zeros((*grid.shape, self.bits_per_cell), dtype=np.uint8)
+            grid_3d[:, :, -1] = grid
+            grid = grid_3d
         grid_initial  = grid.copy()
-        initial_bits  = int(grid_initial.sum())
+        initial_bits  = _total_bits(grid_initial)
         grid_mid      = None
 
         for step in range(1, self.horizon + 1):
-            grid = step_grid(grid, lut)
+            grid = _fitness_step(grid, lut, self.bits_per_cell)
             if step == self.midpoint:
                 grid_mid = grid.copy()
 
@@ -389,8 +479,8 @@ class StagedCollisionFitness:
         grid_final = grid
 
         # Bit conservation check — fail fast on any violation.
-        mid_bits   = int(grid_mid.sum())
-        final_bits = int(grid_final.sum())
+        mid_bits   = _total_bits(grid_mid)
+        final_bits = _total_bits(grid_final)
         if mid_bits != initial_bits or final_bits != initial_bits:
             return {
                 "fitness":         0.0,
@@ -471,25 +561,31 @@ class LeakyConservationCollisionFitness:
         midpoint: int | None = None,
         grid_size: int = _STAGED_GRID_SIZE,
         rule: dict | None = None,
+        bits_per_cell: int | None = None,
     ) -> None:
         self.horizon   = int(horizon)
         self.midpoint  = int(midpoint) if midpoint is not None else self.horizon // 2
         self.grid_size = int(grid_size)
         self.rule      = rule
+        self.bits_per_cell = int(BITS_PER_CELL if bits_per_cell is None else bits_per_cell)
 
     def evaluate(self, rule_dict: dict | None = None) -> dict:
         rule_dict = rule_dict if rule_dict is not None else self.rule
         if rule_dict is None:
             raise ValueError("LeakyConservationCollisionFitness: no rule supplied")
 
-        lut          = rule_dict_to_lut(rule_dict)
+        lut          = _fitness_build_lut(rule_dict, self.bits_per_cell)
         grid         = _make_staged_grid(self.grid_size)
+        if self.bits_per_cell > 1:
+            grid_3d = np.zeros((*grid.shape, self.bits_per_cell), dtype=np.uint8)
+            grid_3d[:, :, -1] = grid
+            grid = grid_3d
         grid_initial = grid.copy()
-        initial_bits = int(grid_initial.sum())
+        initial_bits = _total_bits(grid_initial)
         grid_mid     = None
 
         for step in range(1, self.horizon + 1):
-            grid = step_grid(grid, lut)
+            grid = _fitness_step(grid, lut, self.bits_per_cell)
             if step == self.midpoint:
                 grid_mid = grid.copy()
 
@@ -497,8 +593,8 @@ class LeakyConservationCollisionFitness:
             grid_mid = grid_initial.copy()
 
         grid_final = grid
-        mid_bits   = int(grid_mid.sum())
-        final_bits = int(grid_final.sum())
+        mid_bits   = _total_bits(grid_mid)
+        final_bits = _total_bits(grid_final)
         bit_error  = abs(final_bits - initial_bits)
 
         d_initial = _staged_two_object_com_distance(grid_initial)
@@ -558,7 +654,8 @@ class RecessionBiasedFitness(StagedCollisionFitness):
     def _two_coms_and_distance(grid: np.ndarray):
         """Return ((r1,c1), (r2,c2), distance) for the two largest components,
         or None if fewer than two components are present."""
-        labels, n = label(grid, structure=_STAGED_LABEL_STRUCTURE)
+        mask = _occupancy_2d(grid)
+        labels, n = label(mask, structure=_STAGED_LABEL_STRUCTURE)
         if n < 2:
             return None
         sizes = sorted(
@@ -567,7 +664,7 @@ class RecessionBiasedFitness(StagedCollisionFitness):
             reverse=True,
         )
         top2 = [sizes[0][0], sizes[1][0]]
-        coms = center_of_mass(grid, labels, top2)
+        coms = center_of_mass(mask, labels, top2)
         (r1, c1), (r2, c2) = coms
         dist = math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2)
         return (r1, c1), (r2, c2), dist
@@ -577,27 +674,31 @@ class RecessionBiasedFitness(StagedCollisionFitness):
         if rule_dict is None:
             raise ValueError("RecessionBiasedFitness: no rule supplied")
 
-        lut  = rule_dict_to_lut(rule_dict)
+        lut  = _fitness_build_lut(rule_dict, self.bits_per_cell)
         grid = _make_staged_grid(self.grid_size)
+        if self.bits_per_cell > 1:
+            grid_3d = np.zeros((*grid.shape, self.bits_per_cell), dtype=np.uint8)
+            grid_3d[:, :, -1] = grid
+            grid = grid_3d
 
         # Initial state
         initial_result = self._two_coms_and_distance(grid)
         if initial_result is None:
             return {"fitness": 0.0, "approach_ok": False}
         initial_com1, initial_com2, initial_distance = initial_result
-        initial_bits = int(grid.sum())
+        initial_bits = _total_bits(grid)
 
         # Run full simulation, tracking the minimum inter-object distance.
         min_distance = initial_distance
         for _ in range(self.horizon):
-            grid = step_grid(grid, lut)
+            grid = _fitness_step(grid, lut, self.bits_per_cell)
             d = _staged_two_object_com_distance(grid)
             if d is not None and d < min_distance:
                 min_distance = d
 
         # Final state
         final_result = self._two_coms_and_distance(grid)
-        final_bits   = int(grid.sum())
+        final_bits   = _total_bits(grid)
         bit_error    = abs(initial_bits - final_bits)
 
         # Approach check — same threshold logic as the parent class.
