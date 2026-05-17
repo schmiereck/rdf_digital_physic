@@ -1,0 +1,60 @@
+analysis: 'The goal of this sub-plan was to adapt the evolutionary framework to discover
+  rules supporting massive (v<c) gliders. I implemented a new fitness function, `MassiveGliderFitness`,
+  with a 4-bit T-tromino seed particle, and launched a 50-generation evolutionary
+  search.
+
+
+  The search failed to produce a v<c glider. The champion rule was a degenerate grid-filler
+  that exploited a loophole in the fitness function. The `log(1 + mean_bit_count)`
+  complexity bonus was unbounded and dominated the fitness score, creating an evolutionary
+  pressure that favored rules that saturated the grid. A saturated grid has a stable
+  center of mass, allowing it to trivially pass the constant-velocity checks.
+
+
+  This is a valuable negative result. The experiment demonstrated a critical flaw
+  in the fitness function''s design. The key takeaway is that the fitness function
+  must be revised to cap the complexity bonus and explicitly penalize non-particle-like,
+  grid-filling patterns before a successful search can be conducted.
+
+  '
+experimenter_view: "The GA finished cleanly (50 gens × 100 pop in 401 s, parallel\
+  \ ProcessPool of 8\nworkers), but the \"champion\" is a degenerate grid-filler,\
+  \ not a v<c glider.\n\nWhat the GA found\n  Fitness 16.70 = 7 valid checkpoints\
+  \ + 9.70 complexity bonus.\n  mean_bit_count = 16383.9 / 16384 -> the rule rapidly\
+  \ saturates the entire\n  128×128 torus.  A saturated torus has a constant centre\
+  \ of mass at (63.5,\n  63.5), so the velocity-constancy checkpoints all pass trivially\
+  \ (n_valid =\n  n_checked = 7) even though speed ≈ 7e-4 cells/step (essentially\
+  \ zero).\n  The complexity_bonus = log(1 + 16384) ≈ 9.70 alone is larger than the\n\
+  \  maximum possible n_valid (7), so the GA's gradient pointed straight at\n  \"\
+  fill the grid\", not \"find a sub-luminal mover\".\n\nDid we find any real v<c glider?\n\
+  \  No.  A side-scan of 200 fresh random C2-symmetric rules with the same\n  fitness\
+  \ produced 0 candidates with mean_bit_count in [5, 500] AND speed\n  in (1e-3, 0.99)\
+  \ AND n_valid >= 3.  Stochastically, neither the random pool\n  nor the GA's final\
+  \ population contained any plausible sub-luminal mover.\n\nImplications for next\
+  \ iteration (the actual signal of value here)\n  1. Cap or normalise the complexity\
+  \ bonus.  log(1+mbc) is unbounded and\n     grossly out-scales the discrete n_valid\
+  \ term.  Either clip mbc to a\n     physically reasonable upper bound (e.g. mbc\
+  \ <= 100) or zero-out fitness\n     when mbc > 0.5 * grid_area (saturation is not\
+  \ a particle).\n  2. Add an \"is this really a particle?\" gate before measuring\
+  \ velocity:\n     require connected support smaller than some fraction of the grid.\n\
+  \  3. The T-tromino seed + C2-random initial population may be too narrow.\n   \
+  \  Consider larger seeds or a non-symmetric initial pool.\n\nThe GIF (champion_glider.gif)\
+  \ shows the saturation visually — within ~10\nsteps the grid is uniformly lit; nothing\
+  \ translates.\n"
+metrics:
+  alt_candidates_found: 0
+  best_generation: 45
+  complexity_bonus: 9.704118
+  elapsed_sec: 400.8
+  fitness_score: 16.704118
+  generations_ran: 50
+  mean_bit_count: 16383.93
+  n_checked: 7
+  n_valid_checkpoints: 7
+  population_size: 100
+  speed: 0.0007051464
+  velocity_x: -4.22328e-05
+  velocity_y: -0.0007038805
+notes: Champion is a grid-filler that gamed the complexity bonus; no real v<c glider
+  found.
+status: ok
