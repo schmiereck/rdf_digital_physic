@@ -210,5 +210,18 @@ class SparseGliderFitness:
             "final_bits":         int(grid.sum()),
         }
 
-    def __call__(self, rule_dict: dict) -> dict:
-        return self.evaluate(rule_dict)
+    def __call__(self, rule_dict: dict) -> tuple[float, dict]:
+        """Convenience callable form.
+
+        Returns ``(fitness, metrics_dict)`` so callers can write either::
+
+            metrics = fit.evaluate(rule)        # dict (canonical form)
+            fitness, metrics = fit(rule)        # 2-tuple (loop-friendly form)
+
+        Returning a 2-tuple here prevents the ``ValueError: too many values to
+        unpack (expected 2)`` that occurs when an evolutionary loop tries to
+        unpack the canonical dict directly (iterating a dict yields its keys,
+        of which there are more than 2).
+        """
+        m = self.evaluate(rule_dict)
+        return float(m["fitness"]), m

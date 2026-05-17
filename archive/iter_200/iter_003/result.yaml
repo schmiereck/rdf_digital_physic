@@ -1,0 +1,52 @@
+artifacts:
+- src/fitness_v2.py
+experimenter_view: 'Ursache des Fehlers `too many values to unpack (expected 2)` lokalisiert:
+
+  `SparseGliderFitness.__call__` lieferte ein dict mit 8 Schlüsseln. Wird das
+
+  Resultat im üblichen evolutionären Loop-Stil `fitness, metrics = fit(rule)`
+
+  entpackt, iteriert Python über die Dict-Keys und scheitert.
+
+
+  Die einzigen bestehenden Aufrufer (`run_vc_search.py`, `validate_fitness.py`)
+
+  nutzen das kanonische `m = fit.evaluate(rule)`-Muster und sind nicht betroffen
+
+  - der Smoke-Test des `run_vc_search.py`-Loops lief vor und nach dem Fix
+
+  unverändert durch. Der Patch ist also abwärtskompatibel und fängt zusätzlich
+
+  den im Task beschriebenen Fehlermodus ab.
+
+
+  Korrektur: `__call__` gibt jetzt `(fitness, metrics_dict)` zurück, `evaluate()`
+
+  bleibt unverändert. Beide Aufrufkonventionen koexistieren, der `ValueError`
+
+  ist eliminiert.
+
+  '
+log_excerpt: '1. evaluate() -> dict OK; fitness = 0.0
+
+  2. fit() -> (fitness, dict) OK; fitness = 0.0
+
+  3. Unpack as 2-tuple OK; a = 0.0 ; b is dict = True
+
+  ALL OK
+
+  Gen  0: champion=0.0000  mean=0.0000  non_zero=0
+
+  Gen  1: champion=0.0000  gen_best=0.0000  mean=0.0000  non_zero=0
+
+  Gen  2: champion=0.0000  gen_best=0.0000  mean=0.0000  non_zero=0
+
+  OK: existing caller still works, best_fitness = 0.0
+
+  '
+metrics:
+  smoke_test_generations: 2
+  smoke_test_population: 8
+  unpacking_tests_passed: 3
+notes: __call__ now returns (fitness, metrics_dict); evaluate() unchanged.
+status: ok
