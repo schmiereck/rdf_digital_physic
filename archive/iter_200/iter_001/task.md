@@ -1,14 +1,18 @@
-Führen Sie eine evolutionäre Suche nach einem stabilen v<c-Gleiter (massives Teilchen) durch.
+Your goal is to discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal lattice. You must use the new, exploit-resistant `SparseGliderFitness` function located in `src/fitness_v2.py`.
 
-**Kontext:** Phase 199 hat eine neue, robuste Fitnessfunktion, `SparseGliderFitness`, entwickelt, die frühere Exploits ("Grid-Filling") verhindert. Diese Phase soll diese neue Funktion nutzen, um das langjährige Ziel der Entdeckung eines v<c-Gleiters zu erreichen.
+**Methodology: Evolutionary Search**
+1.  **Setup:** Create a new experiment script, `src/run_v_less_than_c_search.py`.
+2.  **Configuration:** Use the established standard configuration for 2D hex evolution:
+    *   **Seed Particle:** 3-bit L-Tromino.
+    *   **Grid:** 128x128 torus.
+    *   **Population:** 100 C2-symmetric rules.
+    *   **Elitism:** 10%.
+    *   **Fitness Function:** `SparseGliderFitness`.
+3.  **Execution:** Run the evolutionary search for at least 10 generations. Log the fitness of the best rule from each generation.
+4.  **Analysis:** Identify the single best rule (the 'champion') from the entire run.
+5.  **Output:**
+    *   Save the champion rule to `archive/iter_200/results/champion_v_lt_c_rule.json`.
+    *   Generate an animation of the champion rule acting on the L-tromino seed for 500 steps and save it to `archive/iter_200/results/champion_v_lt_c_glider.gif`.
+    *   Write a summary of the evolutionary run (top fitness per generation) to `archive/iter_200/results/evolution_summary.csv`.
 
-**Anweisungen:**
-1.  **Fitness-Funktion:** Verwenden Sie die in `iter_199` entwickelte und validierte `SparseGliderFitness`. Diese Funktion belohnt die Verschiebung und bestraft gleichzeitig eine hohe Dichte oder das Füllen des Gitters.
-2.  **Evolutionärer Lauf:** Führen Sie einen vollständigen evolutionären Lauf für mindestens 10 Generationen durch. Beginnen Sie mit einer neuen, zufälligen Population von C2-symmetrischen Regeln.
-3.  **Seed-Partikel:** Verwenden Sie das Standard-3-Bit-L-Tromino als Ausgangspartikel.
-4.  **Erfolgskriterium:** Das Ziel ist die Entdeckung einer Regel, die ein Teilchen erzeugt, das sich stabil mit einer Geschwindigkeit von deutlich weniger als 1 Zelle pro Schritt bewegt (v < 1c).
-5.  **Artefakte:**
-    *   Speichern Sie die Champion-Regel in `archive/iter_200/results/champion_vc_rule.json`.
-    *   Erstellen Sie eine Animation des resultierenden v<c-Gleiters und speichern Sie sie als `archive/iter_200/results/champion_vc_glider.gif`.
-    *   Protokollieren Sie die Fitness jeder Generation in `archive/iter_200/results/evolution_log.csv`.
-6.  **Synthese:** Berichten Sie über den Erfolg der Suche, die höchste erreichte Fitness und ob ein stabiler v<c-Gleiter gefunden wurde.
+Your primary objective is to find a rule that results in a non-zero, stable fitness score, indicating successful `v<c` motion.
