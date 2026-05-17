@@ -1,0 +1,82 @@
+I'll start by exploring the codebase to understand the existing fitness function and the known exploit.
+Search this codebase (working directory: C:\Users\thomas\Projekte\rdf_digital_physic\src) for:
+1. The file `fitness.py` or similar - read its full content
+2. Any file containing `CheckpointFitness` class - read full content
+3. Any checkpoint/result files from iter_197.2 that contain a "champion rule" or "initial seed" - look in archive folders
+4. Any file called `checkpoint.yaml` especially in iter_199 or iter_197
+
+Search breadth: very thorough. Report full file contents for fitness.py and the iter_197.2 checkpoint/result.
+Now let me read the actual source files to get the exact code.
+Now let me read the iter_197.2 champion rule and check the existing fitness_v2.py if it exists.
+Let me try reading the archive files directly with the Read tool.
+`fitness_v2.py` already exists. Now let me check for `validate_fitness.py` and look at `evolution.py`.
+Let me check the `rule_dict_to_lut` implementation to understand the key format.
+Now I have everything I need. Let me write the `validate_fitness.py` script.
+Now let me run the validation script to get the actual results.
+The validation works - fitness is 0.0. I just need to fix the encoding issue with the arrow character.
+The validation passes cleanly. The exploit that scored 16.70 under the old fitness function now scores exactly 0.0. Here's the YAML result block:
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness_v2.py
+  - src/validate_fitness.py
+metrics:
+  old_fitness_exploit: 16.704118
+  new_fitness_exploit: 0.0
+  exploit_bits_at_step_0: 4
+  exploit_bits_at_step_50: 2699
+  exploit_bits_at_step_100: 10399
+  exploit_bits_at_step_150: 16288
+  exploit_bits_at_step_200: 16338
+log_excerpt: |
+  ============================================================
+  Exploit rule loaded from iter_197.2
+  ============================================================
+    Old fitness (old scheme) : 16.704118
+    Reported mean_bit_count  : 16383.93
+    Seed bit count (expected): 4
+    Grid size                : 128 x 128 = 16384 cells
+
+  Simulation trace (bit count at each checkpoint):
+    Step   0:      4 bits
+    Step  50:   2699 bits
+    Step 100:  10399 bits
+    Step 150:  16288 bits
+    Step 200:  16338 bits
+
+  SparseGliderFitness evaluation:
+    fitness : 0.000000
+    reason  : bit_conservation_failed
+    failed at step 50
+    bit count: 4 -> 2699
+
+  ============================================================
+  PASS: SparseGliderFitness assigns fitness = 0.0 to the exploit.
+        The sparsity/bit-conservation gate successfully rejects it.
+  ============================================================
+experimenter_view: |
+  The iter_197.2 champion rule was a grid-filling exploit: starting from a 4-cell
+  T-tromino, it exploded to 2,699 bits by step 50 and saturated the entire 128x128
+  grid (~16,384 cells) by step 150. Under the old scheme this scored 16.70 because
+  the centre-of-mass barely moved (exploiting the displacement metric with a
+  near-symmetric explosion).
+
+  SparseGliderFitness rejects this pattern via its hard bit-conservation gate: the
+  first checkpoint at step 50 detects that bits have grown from 4 to 2,699 and
+  immediately returns fitness = 0.0. The sparsity term (bit_count / bounding_box_area)
+  would provide a secondary defence against diffuse-but-conserving patterns, but in
+  this case it is never even reached.
+
+  The new fitness function is structured as:
+    final_fitness = total_displacement * mean_sparsity
+  where sparsity = bit_count / bounding_box_area at each checkpoint. True compact
+  gliders (few bits, tight bounding box) score sparsity close to 1.0, while
+  diffuse patterns score near 0.0. Combined with the hard bit-conservation gate,
+  this dual defence makes the function significantly more exploit-resistant.
+
+  Both fitness_v2.py (already existed with correct implementation) and
+  validate_fitness.py (rewritten to target the iter_197.2 champion) are confirmed
+  working.
+notes: SparseGliderFitness scores the iter_197.2 grid-filling exploit exactly 0.0; bit conservation gate fires at step 50 (4 -> 2699 bits).
+```
