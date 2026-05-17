@@ -8150,3 +8150,41 @@ status: no_execution
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 34984
+cost_usd: 0.21409
+hypothesis: A random population of C2-rules, when seeded with random noise, fails
+  to produce a single rule with a composite fitness score > 0.01.
+input_tokens: 81607
+iter: 166
+metrics:
+  max_fitness: 1.964e-05
+  mean_fitness: 3.2e-07
+  top_rule_displacement: 0.099935
+  top_rule_final_bits: 5087
+  top_rule_id: rule_048
+output_tokens: 1933
+status: ok
+```
+
+## iter_166: A random population of C2-rules, when seeded with random noise, fails to produce a single rule with a composite fitness score > 0.01.
+
+**Analysis:** The previous iteration, iter_159, failed to execute its stated goal of evaluating a new random population of 100 rules. It only validated the new composite fitness metric (`late_displacement / (1 + final_bit_count)`) on a single, old rule. This iteration corrected that oversight by running the intended experiment.
+
+The experiment evaluated 100 new, randomly generated C2-symmetric rules. The hypoth
+
+**Status:** ok
+
+**Metrics:** `{'mean_fitness': 3.2e-07, 'max_fitness': 1.964e-05, 'top_rule_id': 'rule_048', 'top_rule_displacement': 0.099935, 'top_rule_final_bits': 5087}`
+
+**Experimenter view:** A fresh population of 100 random C2-symmetric rules (seed=166) was generated
+and evaluated with the composite fitness metric on a 128x128 grid (25% density,
+seed=42, 2000 steps). The vast majority of rules (96/100) produced zero CoM
+displacement between t=1200 and t=2000, indicating the dynamics froze into
+symmetric, non-moving configurations. Only 4 rules showed any motion:
+rule_048 (disp=0.100, 
+
+**Notes:** 100 random C2-symmetric rules evaluated; rule_048 is champion with fitness 1.96e-5
+

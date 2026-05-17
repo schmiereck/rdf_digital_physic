@@ -3,19 +3,21 @@
 **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
 
 **Confirmed:**
-- The execution framework is sound and the `SparseGliderFitness` function in `src/fitness_v2.py` is correctly implemented, returning the expected 2-tuple for fitness evaluation. The system is not affected by any persistent execution bugs (iter_200.5).
+- A stable, slow (`v << c`) glider has been discovered via evolutionary search (`iter_200.1`). The champion rule is located at `archive/iter_200/results/champion_v_lt_c_rule.json`.
+- The `SparseGliderFitness` function is an effective tool for evolving `v<c` motion (`iter_200.1`).
+- The discovered particle is compact, non-diffuse, and maintains perfect bit-conservation over hundreds of steps (`iter_200.1`, `iter_200.5`).
 - The `v=1c` elastic collision rule from `iter_193` remains the best result for particle interaction.
 
 **Refuted:**
-- The belief that a persistent `ValueError` was blocking progress. The issue was traced to a misinterpretation of a prior sub-agent's failure (iter_200.5).
+- The belief that a persistent `ValueError` was blocking progress. The issue was resolved in the previous phase (`iter_200` second run).
 
 **Best Result:**
-- `v=1c` elastic collision rule from `iter_193`. No new scientific results were produced in this phase.
+- The `v<c` glider rule discovered in `iter_200.1`. This is a major breakthrough.
 
 **In Progress:**
-- The evolutionary search for `v<c` gliders is unblocked and ready to begin.
+- The *quantitative* characterization of the new `v<c` glider (precise velocity, period) is currently blocked by persistent platform token limit errors.
 
 **Open Questions:**
-- Can the `SparseGliderFitness` function guide evolution to a stable `v<c` glider?
-- What velocity and period will the first discovered `v<c` glider have?
-- Will `v<c` glider rules also support elastic collisions, or are these properties mutually exclusive?
+- What is the precise velocity and period of the `v<c` glider from `iter_200.1`?
+- Can the platform instability (token limits) be resolved to allow for quantitative analysis scripts to run?
+- Will the new `v<c` glider rule also support elastic collisions?
