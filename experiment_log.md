@@ -7,31 +7,6 @@ cached_tokens: 0
 cost_usd: 0.00875
 hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
 input_tokens: 1000
-iter: 161
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_161: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 162. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
 iter: 162
 metrics: {}
 output_tokens: 500
@@ -952,4 +927,41 @@ The strategy was to engineer a new fitness function with a continuous gradient. 
 **Sub-agent 193.2:** The evolutionary search using the new fitness function yielded a breakthrough result.
 
 **Notes:** This phase marks a significant success, achieving the primary goal of the 2D hexagonal simulation stage: finding a rule that supports stable, elastic collisions.
+
+
+---
+```yaml
+cached_tokens: 18998
+cost_usd: 0.22294
+hypothesis: 'phase-195: Characterize the elastic collision rule, confirming its robustness
+  and physics-like scattering properties.'
+input_tokens: 70052
+iter: 195
+metrics:
+  bit_error_at_max_offset: 0
+  elastic_rules_in_top_5: 5
+  max_offset_tested: 3
+  offset_scattering_confirmed: 1.0
+  robustness_check_total_rules: 5
+output_tokens: 2631
+status: ok
+```
+
+## iter_195: phase-195: Characterize the elastic collision rule, confirming its robustness and physics-like scattering properties.
+
+**Analysis:** This phase successfully transitioned from discovering an elastic collision (iter_193) to rigorously characterizing it. The two sub-goals were designed to answer the most critical follow-up questions: is the discovery a fluke, and how does it behave under imperfect conditions?
+
+Sub-agent 195.1 confirmed that the discovery is highly robust. By re-simulating the top 5 rules from the previous evolutio
+
+**Status:** ok
+
+**Metrics:** `{'elastic_rules_in_top_5': 5, 'robustness_check_total_rules': 5, 'max_offset_tested': 3, 'bit_error_at_max_offset': 0, 'offset_scattering_confirmed': 1.0}`
+
+**Experimenter view:** The characterization in this phase yielded results that exceeded expectations.
+
+**Sub-agent 195.1:** Confirmed that all 5 of the top-performing rules from iter_193's final population exhibit perfect, bit-conserving elastic collisions. The discovery is not a fragile, one-off result but represents a robust solution space.
+
+**Sub-agent 195.2:** Demonstrated that the champion rule's behavior is remark
+
+**Notes:** This phase solidifies the v=1c elastic collision discovery. The rule is robust and its interaction dynamics are non-trivial and predictable.
 
