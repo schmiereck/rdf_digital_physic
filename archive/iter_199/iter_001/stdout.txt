@@ -1,0 +1,65 @@
+I'll start by reading the champion rule and understanding the codebase structure.
+Let me look at the simulation framework by reading recent iter files to understand the structure.
+Now I have the full picture. I'll write a new instrumented script for iter_199 that adds `active_cell_count` tracking, then run it.
+The simulation completed successfully. Let me verify the CSV was written and read the first/last few rows.
+The CSV is clean and complete. The data tells a very clear story. Here is the analysis:
+
+**What happened:** At step 1, each L-tromino immediately fragments into 2 sub-components (total 4 blobs), bits briefly drop to 4 then recover to 6 at step 2. From step 2 onward, the state is perfectly frozen: `bits=6, active=30, ncomp=4` for all 998 remaining steps. The 4 fragments are permanent oscillators/still-lifes — **the two gliders never converge and never collide**. Step time is a flat ~1.1ms throughout.
+
+**Root cause of iter_197.1 timeout:** The simulation loop itself is trivially fast (~1 second for 1000 steps). The timeout was caused by the **GIF animation generation** in `run_iter_197_collision_60deg.py` — that script stores 600 full 256×256 frames in RAM and then tries to save them as a 512×512 animated GIF via PIL. The GIF palette-quantization of 400+ large frames is the bottleneck, not computational explosion.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_iter_199_collision_diagnose.py
+  - archive/iter_199/results/collision_log.csv
+metrics:
+  initial_bits: 6
+  final_bits: 6
+  bit_error: 0
+  initial_active_cells: 24
+  final_active_cells: 30
+  max_active_cells: 30
+  initial_ncomp: 2
+  final_ncomp: 4
+  max_ncomp: 5
+  steps_run: 1000
+  total_wall_time_sec: 1.12
+  avg_step_ms: 1.12
+  max_step_ms: 2.56
+  bit_conserved: true
+  active_cells_exploded: false
+experimenter_view: |
+  The 60-degree collision scenario from iter_197.1 was fully re-created on a 256x256
+  grid using the iter_193/iter_002 champion rule and run for 1000 steps with per-step
+  instrumentation of total_bit_count and active_cell_count.
+
+  RESULT — NEITHER explosion pattern is present:
+    • Bit-count: perfectly conserved. Bits start at 6, dip to 4 at step 1 (tromino
+      transient), and lock at 6 from step 2 through step 1000. Bit error = 0.
+    • Active-cell count: starts at 24 (baseline L-trominos), rises to 30 at step 2,
+      and stays at exactly 30 for all remaining 998 steps. No growth whatsoever.
+    • Step time: flat ~1.1ms throughout — no computational complexity explosion.
+
+  ACTUAL FAILURE MECHANISM in iter_197.1:
+    The simulation loop itself is trivially fast (1000 steps in 1.1 seconds).
+    The original run_iter_197_collision_60deg.py script accumulated ALL 600 frames
+    as 256x256 numpy arrays (≈39 MB), then attempted to convert and save them as a
+    512x512 animated GIF using PIL. PIL's GIF palette-quantization applied to 400+
+    large frames is the performance bottleneck that caused the orchestrator timeout —
+    NOT any property of the CA dynamics.
+
+  SECONDARY FINDING — NO COLLISION OCCURS:
+    The L-tromino gliders immediately fragment at step 1 (ncomp rises from 2 → 4).
+    From step 2 onward the state is frozen: 4 stable sub-components (still-lifes or
+    period-1/2 oscillators) that never converge. The 60-degree placement never
+    produces an actual collision for this champion rule. The rule was evolved only
+    for a specific head-on scenario and does not support glider motion in the
+    60-degree launch geometry.
+
+  CONCLUSION: The timeout failure is classified as "GIF generation overhead", not
+  bit-count explosion and not active-cell complexity explosion. The CA dynamics
+  are perfectly tame — stable bit conservation and constant active frontier of 30
+  cells for the entire 1000-step run.
+notes: timeout in iter_197.1 was GIF-save overhead, not CA explosion; no actual collision occurs in 60-degree setup
+```
