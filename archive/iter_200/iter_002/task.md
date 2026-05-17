@@ -1,9 +1,17 @@
-**Fehlerdiagnose und -behebung: "too many values to unpack"**
+The planner in `200.1` discovered a promising champion rule for `v<c` motion. Your task is to characterize this rule to determine if it produces a true, stable glider.
 
-**Kontext:** Der vorherige Agent (200.1) ist mit dem Fehler `too many values to unpack (expected 2)` abgestürzt. Dies geschah bei dem Versuch, eine evolutionäre Suche mit der neuen `SparseGliderFitness`-Funktion durchzuführen. Die wahrscheinlichste Ursache ist eine Nichtübereinstimmung zwischen den von der Fitnessfunktion zurückgegebenen Werten und dem, was die evolutionäre Schleife erwartet.
+**Methodology:**
 
-**Aufgabe:**
-1.  **Code-Analyse:** Untersuchen Sie den relevanten Code, insbesondere die Implementierung von `SparseGliderFitness` (wahrscheinlich in `src/fitness_functions.py` oder einer ähnlichen Datei, die in den letzten Iterationen verwendet wurde) und die Haupt-Evolutionsschleife, die sie aufruft.
-2.  **Fehleridentifikation:** Finden Sie die genaue Zeile, in der der `ValueError` auftritt. Identifizieren Sie die Nichtübereinstimmung (z.B. gibt die Funktion ein einzelnes Tupel zurück, aber der Aufrufer erwartet zwei separate Werte, oder sie gibt drei Werte statt zwei zurück).
-3.  **Code-Korrektur:** Ändern Sie den Code, um diese Nichtübereinstimmung zu beheben. Stellen Sie sicher, dass die Anzahl der von der Fitnessfunktion zurückgegebenen Werte mit der Anzahl der Variablen übereinstimmt, denen sie in der aufrufenden Schleife zugewiesen werden.
-4.  **Ergebnis:** Liefern Sie die korrigierte(n) Codedatei(en) als Ergebnis. Geben Sie eine kurze Erklärung der Ursache des Fehlers und der vorgenommenen Korrektur.
+1.  **Load Rule:** Load the champion rule from `archive/iter_200/results/champion_v_lt_c_rule.json`.
+2.  **Long Simulation:** Run a 2000-step simulation on a 256x256 grid using this rule and the standard 3-bit L-tromino seed.
+3.  **Analysis:**
+    *   Track the center-of-mass (CoM) coordinates at every step.
+    *   Track the bit count at every step.
+    *   Analyze the CoM trajectory to calculate the average velocity as a fraction of `c`. The velocity is the displacement over the last 1000 steps (from step 1000 to 2000) to ignore initial transients.
+    *   Analyze the sequence of glider shapes (relative bit positions) to find the period of its internal oscillation. The period is the number of steps after which the shape repeats.
+4.  **Output:**
+    *   Create a JSON file `archive/iter_200/results/glider_properties.json`. It must contain the following keys:
+        *   `velocity_vc`: The calculated average velocity (float).
+        *   `period`: The detected period (integer).
+        *   `is_stable`: A boolean indicating if the bit count remained perfectly constant throughout the 2000 steps.
+    *   Generate a plot of the X and Y coordinates of the CoM versus time and save it to `archive/iter_200/results/trajectory.png` to visualize the motion.
