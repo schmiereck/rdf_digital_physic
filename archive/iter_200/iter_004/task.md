@@ -1,0 +1,10 @@
+**Validierung des Bugfixes: Kurzer evolutionärer Testlauf**
+
+**Kontext:** Agent 200.3 hat einen kritischen Fehler in `src/fitness_v2.py` behoben, der den evolutionären Planner in 200.1 zum Absturz brachte. Dieser Task dient als abschließende Validierung, um zu bestätigen, dass der Fix wirksam ist und der Planner nun wie erwartet funktioniert.
+
+**Anweisungen:**
+1.  **Aufgabe:** Führen Sie die ursprünglich für 200.1 geplante evolutionäre Suche durch, jedoch für eine stark verkürzte Dauer.
+2.  **Dauer:** Beschränken Sie den Lauf auf maximal **2 Generationen**.
+3.  **Fitness-Funktion:** Verwenden Sie die jetzt korrigierte `SparseGliderFitness`-Funktion.
+4.  **Erfolgskriterium:** Der Agent schließt den Lauf ohne den Fehler "too many values to unpack" oder andere `code_error` ab. Das Finden eines Gleiters ist für diesen Validierungslauf nicht erforderlich.
+5.  **Ergebnis:** Berichten Sie über den Status des Laufs (Erfolg oder Misserfolg) und bestätigen Sie, dass der Fehler nicht erneut aufgetreten ist.
