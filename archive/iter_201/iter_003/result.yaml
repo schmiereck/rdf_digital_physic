@@ -1,0 +1,109 @@
+artifacts:
+- src/forensic_fitness_analysis.py
+- archive/iter_201/results/displacement_over_time.csv
+experimenter_view: 'The "transient puffer" hypothesis is CONFIRMED, but with a more
+  precise
+
+  mechanism: this is an OSCILLATOR PHASE-SAMPLING exploit, not a simple
+
+  early-motion-then-stop transient.
+
+
+  The forensic simulation at checkpoints 32, 64, 128, 256, 384, and 512
+
+  shows the cumulative CoM displacement is identically 0.666667 at every
+
+  single checkpoint (spread = 0.0). The pattern moves exactly 0.6667 units
+
+  from its initial position in the first ~32 steps and then NEVER moves
+
+  again. The 3-bit L-tromino evolved into a stationary oscillator with
+
+  period dividing 32 steps, locked 0.6667 units from its starting CoM.
+
+
+  Despite this, SparseGliderFitness reported a fitness of 1.927 (exactly
+
+  reproduced). The reason: its checkpoints fall at steps 50, 100, 150, 200
+
+  -- none of which are multiples of the oscillation period. The evaluator
+
+  samples the CoM at four different oscillation phases and records
+
+  inter-checkpoint displacements [0.3333, 0.7454, 0.7454, 0.7454],
+
+  totalling 2.569 units of apparent displacement. This is pure phase noise,
+
+  not translation.
+
+
+  The fitness function''s bit-conservation gate (initial_bits == 3 throughout)
+
+  passed, and the sparsity term was satisfied (3 bits / 4-cell bounding box =
+
+  0.75). So all three components of the defence were individually satisfied
+
+  by a non-moving oscillator.
+
+
+  Root cause: SparseGliderFitness uses a fixed checkpoint_every=50 parameter
+
+  with no mechanism to detect that identical grid states are recurring. A
+
+  period-aware test (e.g., checking for grid state repetition) or using
+
+  checkpoints that are coprime with likely oscillation periods would have
+
+  caught this. Alternatively, measuring cumulative displacement from the
+
+  INITIAL position (not inter-checkpoint) would show zero net progress.
+
+  '
+log_excerpt: 'Displacement at step  32 (early): 0.666667
+
+  Displacement at step  64        : 0.666667
+
+  Displacement at step 128        : 0.666667
+
+  Displacement at step 256        : 0.666667
+
+  Displacement at step 384        : 0.666667
+
+  Displacement at step 512 (final): 0.666667
+
+
+  CoM displacement spread across forensic checkpoints: 0.00e+00
+
+  SparseGliderFitness inter-checkpoint displacements : [0.3333, 0.7454, 0.7454, 0.7454]
+
+
+  Verdict: CONFIRMED (oscillator phase-sampling exploit, not a classic transient puffer).
+
+  The forensic simulation shows the CoM is CONSTANT at all checkpoints
+
+  that are multiples of 32 (spread = 0.00e+00). This proves the champion
+
+  is a stationary oscillator whose period divides 32 steps.
+
+  SparseGliderFitness checkpoints are at steps 50, 100, 150, 200 --
+
+  none of which are multiples of the oscillation period. The evaluator
+
+  therefore samples the CoM at different oscillation phases and mistakes
+
+  the phase-to-phase shift for genuine translational motion.
+
+  '
+metrics:
+  com_spread_across_checkpoints: 0.0
+  cumulative_displacement_step32: 0.666667
+  cumulative_displacement_step512: 0.666667
+  final_bits_at_512: 3
+  initial_bits: 3
+  reported_fitness: 1.927050983124829
+  reproduced_fitness: 1.927051
+  sparse_mean_sparsity: 0.75
+  sparse_total_displacement: 2.569401
+notes: Oscillator phase-sampling exploit confirmed; fitness reproduced exactly at
+  1.927051
+status: ok
