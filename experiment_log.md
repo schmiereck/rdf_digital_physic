@@ -1007,3 +1007,28 @@ status: experiment_failed
 
 **Notes:** Scientific tooling is now sound, but the main experiment is blocked by the execution environment. The immediate next step must be to re-run the failed search.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 206
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_206: strategy_error
+
+**Analysis:** MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
+
