@@ -1,0 +1,71 @@
+I'll read the memory index and explore the project structure to understand how to proceed.
+Let me look at the result files and search for champion rule files across iterations.
+Let me look at the planner responses and result files to find the champion rule information.
+Let me find the actual rule data from the result files and the population JSON.
+Let me check the iter_213.10 subagent stdout for the champion rule, and look for iter_176 results.
+Now let me read the actual champion rule files.
+Let me look at iter_176's champion rule file more carefully.
+Now let me get rule_021 from iter_153's population.
+Now let me look at the source code to understand the rule format and how mutations are implemented.
+Now I have all the data I need. Let me look at the evolution module to understand the chromosome format better.
+Let me check the iter_215 checkpoint to understand what format the evolutionary search expects.
+Let me check iter_214.3 to understand the expected format.
+Let me look at iter_214.3's task to understand how the population was used.
+Let me read the step_grid function to understand how rules work.
+I have all the information needed. Now I'll write a Python script to generate the warm-start population.
+Let me verify the output file is well-formed.
+The population is valid and complete. The output file is at `archive/iter_215/results/warm_start_population.json`.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_215/results/warm_start_population.json
+  - src/generate_warm_start_215.py
+metrics:
+  population_size: 100
+  seed_count: 3
+  mutant_count: 97
+  seed_1_non_identity_entries: 15
+  seed_2_non_identity_entries: 8
+  seed_3_non_identity_entries: 28
+  mutation_rates_used: [0.01, 0.02, 0.03, 0.05, 0.08, 0.10]
+log_excerpt: |
+  Seed: iter_213_champion               non_identity_entries=15
+  Seed: iter_177_champion               non_identity_entries=8
+  Seed: iter_153_rule_021               non_identity_entries=28
+
+  Wrote 100 rules to archive/iter_215/results/warm_start_population.json
+    Seeds:   3
+    Mutants: 97
+    Mutation rate distribution (mutants only):
+      rate=0.01  count=11
+      rate=0.02  count=20
+      rate=0.03  count=16
+      rate=0.05  count=17
+      rate=0.08  count=16
+      rate=0.10  count=17
+  Total rules: 100
+  All chromosomes length 128: True
+  Seed 1 rule_dict/chromosome consistent: True
+experimenter_view: |
+  Successfully loaded the three champion rules from their source files:
+  - iter_213 champion (transient drift oscillator): archive/iter_213.10/results/champion_rule.json
+    → 15 non-identity LUT entries, using the chromosome field directly.
+  - iter_177 champion (transient bloomer, iter_176 gen5 rule_019): archive/iter_176/results/gen_5/rule_019.json
+    → 8 non-identity LUT entries, a very sparse rule.
+  - iter_153 rule_021 (fast puffer): archive/iter_153/results/population_gen3.json
+    → 28 non-identity LUT entries, the richest seed.
+
+  All three seeds were converted to the standard 128-bit chromosome representation
+  (bit 6 of each LUT entry). The conversion was verified to be lossless.
+
+  97 mutants were generated using per-bit mutation with rates drawn uniformly from
+  [0.01, 0.02, 0.03, 0.05, 0.08, 0.10], giving a diverse spread from subtle
+  perturbations (~1-2 bits flipped) to aggressive exploration (~10-13 bits flipped).
+  Mutant counts: 33 from seed 1, 32 from seed 2, 32 from seed 3.
+
+  Each entry in the population JSON stores both the full rule_dict and the chromosome,
+  along with provenance metadata (parent rule, mutation rate). This allows the next
+  search script to load either format.
+notes: "100-rule warm-start population seeded from iter_213/177/153 champions + 97 per-bit mutants with graduated mutation rates 0.01-0.10"
+```
