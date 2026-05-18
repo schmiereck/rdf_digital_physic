@@ -5,6 +5,7 @@ main_v2.py  —  Configurable evolutionary planner for v<c glider search.
 Usage:
     python src/main_v2.py --fitness=SparseGliderFitness --generations=N
     python src/main_v2.py --fitness=CumulativeDisplacementFitness --generations=N
+    python src/main_v2.py --fitness=RobustCumulativeDisplacementFitness --generations=N
 
 Writes results to archive/iter_202.2.1/results/.
 """
@@ -23,7 +24,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 
 from evolution import generate_random_c2_rule, rule_dict_to_lut
-from fitness_v2 import SparseGliderFitness, CumulativeDisplacementFitness, T_TROMINO
+from fitness_v2 import SparseGliderFitness, CumulativeDisplacementFitness, RobustCumulativeDisplacementFitness, T_TROMINO
 
 PROJECT_ROOT = Path(__file__).parent.parent
 OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_202.2.1" / "results"
@@ -45,8 +46,9 @@ L_TROMINO: list[tuple[int, int]] = [
 ]
 
 REGISTRY = {
-    "SparseGliderFitness":          SparseGliderFitness,
-    "CumulativeDisplacementFitness": CumulativeDisplacementFitness,
+    "SparseGliderFitness":              SparseGliderFitness,
+    "CumulativeDisplacementFitness":    CumulativeDisplacementFitness,
+    "RobustCumulativeDisplacementFitness": RobustCumulativeDisplacementFitness,
 }
 
 

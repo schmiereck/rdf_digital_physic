@@ -27,6 +27,12 @@ CumulativeDisplacementFitness:
   - Immune to "phase-sampling" exploits where an oscillator moves once
     then oscillates in place — the net displacement from start to finish
     will be small for such stationary oscillators.
+
+RobustCumulativeDisplacementFitness:
+  - Inherits from CumulativeDisplacementFitness.
+  - Adds a "conservation gate": if final_bit_count != initial_bit_count,
+    fitness is 0.0 (rejects annihilating/exploitive rules).
+  - Otherwise delegates to the parent displacement-based evaluation.
 """
 
 import math
@@ -343,6 +349,90 @@ class CumulativeDisplacementFitness:
 
 
 # ---------------------------------------------------------------------------
+# RobustCumulativeDisplacementFitness — immune to both phase-sampling AND
+# annihilation exploits (iter_202.2)
+# ---------------------------------------------------------------------------
+
+class RobustCumulativeDisplacementFitness(CumulativeDisplacementFitness):
+    """Fitness that adds a bit-conservation gate to CumulativeDisplacementFitness.
+
+    This class inherits all behaviour from CumulativeDisplacementFitness and
+    adds a single, hard "conservation gate":
+
+      - If ``final_bit_count != initial_bit_count`` → fitness is immediately
+        returned as ``0.0`` (reason: "bit_conservation_failed").
+      - If bit counts match, the parent ``evaluate`` method is called to
+        compute the displacement-based fitness normally.
+
+    This makes the function robust to both:
+      1. The "phase-sampling" exploit (iter_201) — handled by the parent's
+         net-displacement logic.
+      2. The "annihilation" exploit (iter_202.2) — handled by the conservation
+         gate that rejects any rule whose final bit count differs from the
+         initial bit count.
+
+    Parameters
+    ----------
+    grid_size : int
+        Side length of the square toroidal grid (default 128).
+    simulation_steps : int
+        Total simulation steps (default 200).
+    particle : list of (int, int)
+        Seed particle as (dr, dc) offsets from grid centre.
+        Defaults to the 4-cell T-tromino.
+    """
+
+    name = "RobustCumulativeDisplacementFitness"
+
+    def evaluate(self, rule_dict: dict) -> dict:
+        """Evaluate *rule_dict* with a conservation gate.
+
+        If final bit count differs from initial bit count, returns fitness 0.0.
+        Otherwise delegates to the parent class's evaluate() method.
+
+        Returns
+        -------
+        dict
+            - ``"fitness"``           : float ≥ 0  (0.0 on conservation failure)
+            - ``"reason"``            : "ok" | "bit_conservation_failed"
+            - ``"initial_bits"``      : seed bit count
+            - ``"final_bits"``        : bit count at t=max_steps
+            - (plus all parent keys when reason is "ok")
+        """
+        lut  = rule_dict_to_lut(rule_dict)
+        grid = _make_particle_grid(self.particle, self.grid_size)
+
+        initial_bits = int(grid.sum())
+
+        for _step in range(self.simulation_steps):
+            grid = step_grid(grid, lut)
+
+        final_bits = int(grid.sum())
+
+        # ── Conservation gate ──────────────────────────────────────────
+        if final_bits != initial_bits:
+            return {
+                "fitness":       0.0,
+                "reason":        "bit_conservation_failed",
+                "initial_bits":  initial_bits,
+                "final_bits":    final_bits,
+            }
+
+        # Bit conservation holds — delegate to parent for displacement calc.
+        return super().evaluate(rule_dict)
+
+    def __call__(self, rule_dict: dict) -> tuple[float, dict]:
+        """Convenience callable returning (fitness, metrics_dict)."""
+        m = self.evaluate(rule_dict)
+        result: tuple[float, dict] = (float(m["fitness"]), m)
+        assert isinstance(result, tuple) and len(result) == 2, (
+            "RobustCumulativeDisplacementFitness.__call__ must return a "
+            "2-tuple (fitness: float, metrics: dict)."
+        )
+        return result
+
+
+# ---------------------------------------------------------------------------
 # Self-test (run with: ``python src/fitness_v2.py``)
 # ---------------------------------------------------------------------------
 
@@ -385,7 +475,22 @@ def _self_test() -> None:
     assert isinstance(fitness2, float)
     assert isinstance(metrics2, dict)
 
-    print("SparseGliderFitness + CumulativeDisplacementFitness contract OK")
+    # 5. RobustCumulativeDisplacementFitness must satisfy the contract.
+    rcdf = RobustCumulativeDisplacementFitness(grid_size=32, simulation_steps=10)
+    m3 = rcdf.evaluate({})
+    assert isinstance(m3, dict),       f"RCDF evaluate() must return dict, got {type(m3).__name__}"
+    assert "fitness" in m3,            "RCDF evaluate() result must contain 'fitness' key"
+
+    r3 = rcdf({})
+    assert isinstance(r3, tuple),      f"RCDF __call__ must return tuple, got {type(r3).__name__}"
+    assert len(r3) == 2,               f"RCDF __call__ must return 2-tuple, got length {len(r3)}"
+
+    fitness3, metrics3 = rcdf({})
+    assert isinstance(fitness3, float)
+    assert isinstance(metrics3, dict)
+
+    print("SparseGliderFitness + CumulativeDisplacementFitness + "
+          "RobustCumulativeDisplacementFitness contract OK")
 
 
 if __name__ == "__main__":
