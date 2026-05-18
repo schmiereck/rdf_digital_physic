@@ -1,0 +1,93 @@
+artifacts:
+- archive/iter_203.3/results/champion_rule.json
+- archive/iter_203.3/results/fitness_log.csv
+experimenter_view: 'DisplacementOverBoundingBoxFitness successfully defends against
+  the puffer
+
+  exploit: the champion rule maintained a max bounding-box diagonal of only
+
+  2.828 (a 2x2 cell footprint), meaning the search never found a rule that
+
+  inflated its bounding box to boost fitness.
+
+
+  However, the function fell into a different local optimum: a compact
+
+  oscillator. The champion achieves a cumulative CoM displacement of 148.99
+
+  over 200 steps (averaging ~0.75/step) while its bounding box stays tiny.
+
+  But the net displacement over 512 steps is only 0.333 — the pattern oscillates
+
+  in place, accumulating cumulative_displacement through tiny wobbles rather
+
+  than coherent translational motion. This is the phase-sampling exploit
+
+  (iter_201) in disguise: instead of moving once then stopping, the rule moves
+
+  back and forth continuously, accumulating step-by-step displacement with
+
+  near-zero net translation.
+
+
+  Fitness plateaued at gen 1 (38.917) and the population rapidly converged
+
+  there (mean rose from 0.15 → 35 by gen 6), indicating a strong, easily
+
+  discovered attractor. No rule with genuine glider-like translation was found.
+
+
+  Root cause: the formula rewards cumulative (step-by-step) displacement, not
+
+  net displacement. A compact oscillator maximises the ratio because it keeps
+
+  the denominator small (tight bounding box) and accumulates a large numerator
+
+  (many tiny oscillatory steps). Replacing cumulative_displacement with
+
+  net_displacement (start-to-end CoM distance) would close this loophole while
+
+  retaining the puffer defence.
+
+  '
+log_excerpt: 'Gen  0: max=14.920782  mean=0.151064  non_zero=3/100
+
+  Gen  1: max=38.917421  mean=1.740509  non_zero=20/100  best_so_far=38.917421@gen1
+
+  Gen  2: max=38.917421  mean=13.845965  non_zero=88/100  best_so_far=38.917421@gen1
+
+  Gen  6: max=38.917421  mean=35.025679  non_zero=90/100  best_so_far=38.917421@gen1
+
+  Gen 15: max=38.917421  mean=33.461589  non_zero=87/100  best_so_far=38.917421@gen1
+
+  Saved champion rule -> archive/iter_203.3/results/champion_rule.json
+
+  Saved fitness log  -> archive/iter_203.3/results/fitness_log.csv
+
+  validation_fitness = 0.083333
+
+  displacement       = 0.3333
+
+  bits conserved     = True
+
+  initial_bits       = 3
+
+  final_bits         = 3
+
+  Evolution complete in 92.5s
+
+  '
+metrics:
+  best_fitness: 38.917421
+  best_generation: 1
+  cumulative_displacement_200steps: 148.9925
+  elapsed_sec: 92.54
+  final_bits: 3
+  generations: 15
+  initial_bits: 3
+  max_bounding_box_diagonal: 2.8284
+  non_zero_at_gen15: 87
+  population_size: 100
+  validation_displacement_512steps: 0.3333
+notes: compact-oscillator exploit found; formula needs net-displacement not cumulative
+status: ok

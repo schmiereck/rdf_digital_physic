@@ -46,6 +46,7 @@ from fitness_v2 import (
     RobustCumulativeDisplacementFitness,
     T_TROMINO,
 )
+from new_fitness import DisplacementOverBoundingBoxEvaluator
 from evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid
 
 # ── Seed particles ──────────────────────────────────────────────────────────
@@ -73,6 +74,7 @@ REGISTRY = {
     "SparseGliderFitness": SparseGliderFitness,
     "CumulativeDisplacementFitness": CumulativeDisplacementFitness,
     "RobustCumulativeDisplacementFitness": RobustCumulativeDisplacementFitness,
+    "DisplacementOverBoundingBoxFitness": DisplacementOverBoundingBoxEvaluator,
 }
 
 # ── Chromosome helpers ──────────────────────────────────────────────────────
