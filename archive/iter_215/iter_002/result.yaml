@@ -1,0 +1,84 @@
+artifacts:
+- archive/iter_215/results/champion_rule.json
+- archive/iter_215/results/final_population.json
+- archive/iter_215/results/fitness_log.csv
+- archive/iter_215/results/run_log.txt
+- src/run_evolution.py
+experimenter_view: 'The warm-start strategy was decisive. Where the iter_214.3 random-init
+  search
+
+  produced an entirely flat fitness landscape (best=0.0 across all 100×11=1100
+
+  evaluations), this run found a non-trivial v<c glider already in generation 0
+
+  — embedded in the warm-start population as rule_053, a 0.05-rate per-bit
+
+  mutant of the iter_177 "transient bloomer" champion. The champion is a clean
+
+  bit-conserving translator: COM moves from (76.33, 64.67) at step 500 to
+
+  (88.33, 64.67) at step 1000 — exactly 12 cells of pure row-axis displacement
+
+  over a 500-step late window, with bb_area=4 holding throughout. That gives a
+
+  speed of ~0.024 cells/step, sub-c by any reasonable definition for this
+
+  hex CA, and persistence well past the transient-drift window that iter_213
+
+  was exploiting. By gen 2 the swap-mutation operator had propagated this
+
+  variant to 87/100 of the population, and the elite plateau at fitness=2.4
+
+  held cleanly for the remaining 18 generations — no further improvement
+
+  emerged, suggesting this is a local optimum that the 1-swap-per-child
+
+  operator cannot escape, but the warm-start sufficed to clear the v<c bar.
+
+  This confirms the iter_214 post-mortem: the LateWindow filter is not the
+
+  problem — the random-init search space is too sparse for blind discovery,
+
+  and seeding with rules from prior transient-motion champions bridges the
+
+  gap. Minor: three small surgical edits were made to src/run_evolution.py to
+
+  support (a) dict-wrapped warm-start JSONs, (b) fitness-class lookup in
+
+  fitness_v_lessthan_c.py, and (c) fitness constructors that take neither
+
+  horizon nor midpoint.
+
+  '
+log_excerpt: "Gen  0: max=2.4000  mean=0.0240  std=0.2388  non_zero=1  n>=1=1  n>=2=1\
+  \  ** new champion **\nGen  1: max=2.4000  mean=0.2880  std=0.7799  non_zero=12\
+  \  n>=1=12  n>=2=12\nGen  2: max=2.4000  mean=2.0880  std=0.8071  non_zero=87  n>=1=87\
+  \  n>=2=87\nGen  3: max=2.4000  mean=2.2800  std=0.5231  non_zero=95  n>=1=95  n>=2=95\n\
+  ...\nGen 19: max=2.4000  mean=2.2080  std=0.6511  non_zero=92  n>=1=92  n>=2=92\n\
+  Gen 20: max=2.4000  mean=2.1600  std=0.7200  non_zero=90  n>=1=90  n>=2=90\nSaved\
+  \ champion rule -> archive/iter_215/results/champion_rule.json\nSaved final population\
+  \ -> archive/iter_215/results/final_population.json\nSaved evolution log  -> archive/iter_215/results/fitness_log.csv\n\
+  === Evolution complete ===\n  champion_fitness     = 2.4000\n  champion_generation\
+  \  = 0\n"
+metrics:
+  best_fitness: 2.4
+  champion_generation: 0
+  champion_parent_mutation_rate: 0.05
+  champion_parent_seed: iter_177_champion
+  elite_size: 10
+  final_bb_area: 4
+  final_bits: 3
+  gen0_non_zero: 1
+  gen20_mean_fitness: 2.16
+  gen20_non_zero: 90
+  initial_bits: 3
+  late_window_displacement: 12.0
+  mutation_rate: 0.01
+  num_generations: 20
+  population_size: 100
+  rng_seed: 215002
+  speed_cells_per_step: 0.024
+  swaps_per_child: 1
+notes: Warm-start cleared the v<c bar — champion fitness 2.4, 12-cell late-window
+  displacement, descended from iter_177 mutant.
+status: ok

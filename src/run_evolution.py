@@ -45,12 +45,20 @@ LUT_SIZE = 128
 
 
 def _resolve_fitness_class(name: str):
-    """Look up a fitness class by name in src/fitness.py."""
+    """Look up a fitness class by name in src/fitness.py or sibling fitness modules."""
     cls = getattr(_fitness_module, name, None)
+    if cls is None:
+        try:
+            import fitness_v_lessthan_c as _fvc  # local import to avoid cycles
+        except ImportError:
+            _fvc = None
+        if _fvc is not None:
+            cls = getattr(_fvc, name, None)
     if cls is None:
         raise ValueError(
             f"Unknown fitness class '{name}'. "
-            f"Expected a class name exported from src/fitness.py."
+            f"Expected a class name exported from src/fitness.py "
+            f"or src/fitness_v_lessthan_c.py."
         )
     return cls
 
@@ -87,6 +95,8 @@ def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
 def load_initial_population(path: Path) -> list[np.ndarray]:
     with open(path, "r") as f:
         members = json.load(f)
+    if isinstance(members, dict) and "population" in members:
+        members = members["population"]
     if not isinstance(members, list):
         raise ValueError(
             f"Expected a JSON list of rule dicts in {path}, got {type(members)}"
@@ -175,8 +185,13 @@ def evolve(
             horizon=horizon, midpoint=midpoint, grid_size=grid_size
         )
     except TypeError:
-        # Fitness class without midpoint kwarg.
-        fitness = fitness_class(horizon=horizon, grid_size=grid_size)
+        try:
+            # Fitness class without midpoint kwarg.
+            fitness = fitness_class(horizon=horizon, grid_size=grid_size)
+        except TypeError:
+            # Fitness class that takes neither horizon nor midpoint
+            # (e.g. LateWindowDisplacementFitness in fitness_v_lessthan_c.py).
+            fitness = fitness_class(grid_size=grid_size)
 
     if initial_population_path is not None:
         print(f"Loading warm-start population from {initial_population_path} ...")
