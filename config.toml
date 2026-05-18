@@ -1,9 +1,26 @@
-[models]
-strategy = "gemini-2.5-pro"
-implementation_cli = "claude"
+[roles]
+planner_model    = "gemini-2.5-pro"
+planner_adapter  = "gemini"
+executor_adapter = "claude-code"
+
+# --- NEU: Flexible Agenten-Konfiguration ---
+
+# Der günstige Executor über OpenRouter (wird für 'low' Komplexität genutzt)
+[agents.executor.low]
+adapter = "OpenRouterExecutorAdapter"
+model   = "qwen/qwen3.6-35b-a3b"
+
+# Claude über den Pro Plan (Login), wird für 'medium' Komplexität genutzt
+[agents.executor.medium]
+adapter = "ClaudeCodeExecutorAdapter"
+model   = "claude-sonnet-4-6"
+
+# Hier könnten wir auch den 'high' Executor explizit definieren
+[agents.executor.high]
+adapter = "ClaudeCodeExecutorAdapter"
+model   = "claude-opus-4-7"
 
 [claude_code]
-# Granulare Tool-Freigabe für den Implementierungs-Agenten.
 allowed_tools = "Read,Write,Edit,Bash"
 # Bei true wird permission_mode="bypassPermissions" gesetzt (Claude Agent SDK).
 # User ist immer in der Loop und kann Strg+C drücken.
@@ -12,15 +29,17 @@ dangerously_skip_permissions = false
 [limits]
 max_iterations = 100
 max_state_tokens = 8000           # Hard-Limit für current_state.md (Tokens)
-strategy_timeout_sec = 180
-experiment_timeout_sec = 14400    # 4 h; null = unbegrenzt
+planner_timeout_sec = 180
+executor_timeout_sec = 14400    # 4 h; null = unlimited
 max_retries_on_parse_fail = 2
 max_retries_on_state_too_long = 2
 
+[agent_routing]
+default_complexity = "medium"
+max_depth = 4
+
 [cache]
 ttl_hours = 6
-# Gemini 2.5 Pro: min 32 768 Tokens für Cached Content.
-# Bei kleinerem Stable-Payload wird der System-Prompt aufgefüllt.
 min_cache_tokens = 32768
 
 [git]
@@ -29,3 +48,4 @@ auto_push = true
 
 [ui]
 verbose = true
+
