@@ -21,6 +21,12 @@ Adds a sparsity term:
     conservation gate.
 
 Final fitness = total_displacement × mean_sparsity_score
+
+CumulativeDisplacementFitness:
+  - Measures displacement from t=0 to final step only.
+  - Immune to "phase-sampling" exploits where an oscillator moves once
+    then oscillates in place — the net displacement from start to finish
+    will be small for such stationary oscillators.
 """
 
 import math
@@ -80,7 +86,7 @@ def _make_particle_grid(
 
 
 # ---------------------------------------------------------------------------
-# Fitness class
+# Fitness classes
 # ---------------------------------------------------------------------------
 
 class SparseGliderFitness:
@@ -236,6 +242,107 @@ class SparseGliderFitness:
 
 
 # ---------------------------------------------------------------------------
+# CumulativeDisplacementFitness — phase-sampling exploit resistant
+# ---------------------------------------------------------------------------
+
+class CumulativeDisplacementFitness:
+    """Fitness that measures *net* displacement from t=0 to t=max_steps.
+
+    Unlike SparseGliderFitness, which accumulates inter-checkpoint
+    displacements (making it vulnerable to a stationary oscillator that
+    moves once then oscillates in place), this class computes a single
+    Euclidean distance between the centre-of-mass at the initial state
+    (t=0) and the centre-of-mass at the final state (t=max_steps).
+
+    A stationary oscillator that moves once and then oscillates around its
+    final position will have a *net* displacement close to zero — the
+    oscillations cancel out over the full run.  This renders the "phase-
+    sampling" exploit (iter_201) ineffective.
+
+    fitness = displacement / (1.0 + final_bit_count)
+
+    The denominator ensures that a rule with many bits still gets a
+    suppressed score unless it also achieves meaningful displacement.
+
+    Parameters
+    ----------
+    grid_size : int
+        Side length of the square toroidal grid (default 128).
+    simulation_steps : int
+        Total simulation steps (default 200).
+    particle : list of (int, int)
+        Seed particle as (dr, dc) offsets from grid centre.
+        Defaults to the 4-cell T-tromino.
+    """
+
+    name = "CumulativeDisplacementFitness"
+
+    def __init__(
+        self,
+        grid_size:        int              = 128,
+        simulation_steps: int              = 200,
+        particle:         list | None      = None,
+    ) -> None:
+        self.grid_size        = int(grid_size)
+        self.simulation_steps = int(simulation_steps)
+        self.particle         = particle if particle is not None else T_TROMINO
+
+    # ------------------------------------------------------------------
+
+    def evaluate(self, rule_dict: dict) -> dict:
+        """Evaluate *rule_dict* and return a metrics dict.
+
+        Returns
+        -------
+        dict
+            - ``"fitness"``           : float ≥ 0
+            - ``"reason"``            : "ok"
+            - ``"initial_com"``       : [row, col] of CoM at t=0
+            - ``"final_com"``         : [row, col] of CoM at t=max_steps
+            - ``"displacement"``      : Euclidean distance (initial→final CoM)
+            - ``"initial_bits"``      : seed bit count
+            - ``"final_bits"``        : bit count at t=max_steps
+        """
+        lut  = rule_dict_to_lut(rule_dict)
+        grid = _make_particle_grid(self.particle, self.grid_size)
+
+        initial_com  = center_of_mass(grid)
+        initial_bits = int(grid.sum())
+
+        for _step in range(self.simulation_steps):
+            grid = step_grid(grid, lut)
+
+        final_com    = center_of_mass(grid)
+        final_bits   = int(grid.sum())
+
+        dx = final_com[0] - initial_com[0]
+        dy = final_com[1] - initial_com[1]
+        displacement = math.sqrt(dx * dx + dy * dy)
+
+        fitness = displacement / (1.0 + float(final_bits))
+
+        return {
+            "fitness":         float(fitness),
+            "reason":          "ok",
+            "initial_com":     list(initial_com),
+            "final_com":       list(final_com),
+            "displacement":    float(displacement),
+            "initial_bits":    initial_bits,
+            "final_bits":      final_bits,
+        }
+
+    def __call__(self, rule_dict: dict) -> tuple[float, dict]:
+        """Convenience callable returning (fitness, metrics_dict)."""
+        m = self.evaluate(rule_dict)
+        result: tuple[float, dict] = (float(m["fitness"]), m)
+        assert isinstance(result, tuple) and len(result) == 2, (
+            "CumulativeDisplacementFitness.__call__ must return a 2-tuple "
+            "(fitness: float, metrics: dict)."
+        )
+        return result
+
+
+# ---------------------------------------------------------------------------
 # Self-test (run with: ``python src/fitness_v2.py``)
 # ---------------------------------------------------------------------------
 
@@ -264,7 +371,21 @@ def _self_test() -> None:
     assert isinstance(fitness, float)
     assert isinstance(metrics, dict)
 
-    print("SparseGliderFitness contract OK: evaluate() -> dict, __call__ -> (float, dict)")
+    # 4. CumulativeDisplacementFitness must also satisfy the contract.
+    cdf = CumulativeDisplacementFitness(grid_size=32, simulation_steps=10)
+    m2 = cdf.evaluate({})
+    assert isinstance(m2, dict),       f"CDF evaluate() must return dict, got {type(m2).__name__}"
+    assert "fitness" in m2,            "CDF evaluate() result must contain 'fitness' key"
+
+    r2 = cdf({})
+    assert isinstance(r2, tuple),      f"CDF __call__ must return tuple, got {type(r2).__name__}"
+    assert len(r2) == 2,               f"CDF __call__ must return 2-tuple, got length {len(r2)}"
+
+    fitness2, metrics2 = cdf({})
+    assert isinstance(fitness2, float)
+    assert isinstance(metrics2, dict)
+
+    print("SparseGliderFitness + CumulativeDisplacementFitness contract OK")
 
 
 if __name__ == "__main__":
