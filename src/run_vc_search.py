@@ -19,6 +19,7 @@ Outputs (archive/iter_204/results/):
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import random
@@ -325,6 +326,27 @@ def write_results(result: dict) -> list[str]:
 
 
 def main() -> int:
+    global OUTPUT_DIR, CHAMPION_JSON, EVOLUTION_CSV, CHAMPION_GIF
+
+    parser = argparse.ArgumentParser(description="v<c glider evolutionary search")
+    parser.add_argument(
+        "--output_file",
+        type=str,
+        default=None,
+        help="Override champion output path (e.g. archive/iter_213.10/results/champion_rule.json)",
+    )
+    args = parser.parse_args()
+
+    if args.output_file:
+        champion_path = Path(args.output_file)
+        if not champion_path.is_absolute():
+            champion_path = PROJECT_ROOT / champion_path
+        OUTPUT_DIR   = champion_path.parent
+        CHAMPION_JSON = champion_path
+        EVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"
+        CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     result    = run_search()
     artifacts = write_results(result)
 
