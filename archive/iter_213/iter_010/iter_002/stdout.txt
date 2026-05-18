@@ -1,0 +1,63 @@
+I'll start by reading the project structure and the champion rule file to understand what I'm working with.
+Now let me look at the evolution script and recent iteration scripts to understand the rule format and simulation engine used for iter_213.
+Now let me look at the iter_213.10 related scripts to understand the specific search setup.
+Now let me check the fitness_functions and evolution modules to understand the simulation engine.
+I now have a thorough understanding of the simulation engine. Let me write the `src/characterize_rule.py` script.
+Now let me run the characterization script:
+The script ran successfully. Let me verify the output file exists:
+The GIF was generated (496 KB, 201 frames). The characterization is complete. Here are the key findings:
+
+**The champion is a compact oscillator, NOT a glider.** The evidence:
+- Net displacement of only 0.471 cells across 1000 steps — the entire shift occurred in the first 100 steps as a transient
+- Drift per 100-step window: `[0.471, 0.0, 0.0, 0.0, …]` — zero drift from step 100 onward
+- Bit count fluctuates between 3 and 4 (not perfectly stable), but returns to 3 — a sign of oscillation
+- Average velocity: 0.00047 cells/step — essentially stationary
+
+The fitness score of 0.118 captured this initial transient CoM shift, not sustained translation. The search found a structure that briefly shifts after initialization and then oscillates in place.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_213.10/results/long_run.gif
+  - src/characterize_rule.py
+metrics:
+  net_displacement: 0.471405
+  avg_velocity_cells_per_step: 0.0004714
+  bit_stable: false
+  bit_min: 3
+  bit_max: 4
+  bit_final: 3
+  mean_step_displacement: 0.00059359
+  last100_mean_step_disp: 0.0
+  drift_per_100_steps: "[0.471405, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"
+log_excerpt: |
+  initial_com: [64.333333, 64.666667]
+  final_com: [64.0, 65.0]
+  net_displacement: 0.471405
+  avg_velocity: 0.0004714 cells/step
+  bit_stable: False
+  stability: unstable (oscillates 3-4 bits)
+  classification: unstable_or_annihilated
+  drift_per_100: [0.471405, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  GIF saved: archive/iter_213.10/results/long_run.gif  (201 frames)
+experimenter_view: |
+  The champion is definitively NOT a glider. The 1000-step long-run reveals:
+  1. NET DISPLACEMENT: Only 0.471 cells total over 1000 steps. The entire
+     CoM shift happened in the first 100 steps (drift_per_100[0]=0.471),
+     with zero net displacement in all subsequent 100-step windows. This is
+     a transient settling effect, not sustained locomotion.
+  2. BIT OSCILLATION: The bit count fluctuates between 3 and 4 (min=3,
+     max=4, final=3). The structure is a compact oscillator — it breathes
+     between 3 and 4 cells but returns to 3 on each cycle.
+  3. VELOCITY: Average velocity of 0.00047 cells/step (~0.47 cells across
+     1000 steps) is orders of magnitude below any glider threshold. The
+     last-100-step mean step displacement is exactly 0.0.
+  4. VERDICT: The champion is a compact oscillator with an initial transient
+     CoM shift. The fitness of 0.118 was achieved by exploiting the
+     measurement window (initial vs. final CoM at t=250) — the structure
+     shifted during its settling transient and then froze in place. This is
+     a fitness function exploit, not a genuine glider. Future search should
+     use a fitness function that measures sustained motion (e.g., mean CoM
+     velocity over a sliding window, excluding the first N settling steps).
+notes: Champion confirmed as compact oscillator with transient CoM shift; not a glider
+```
