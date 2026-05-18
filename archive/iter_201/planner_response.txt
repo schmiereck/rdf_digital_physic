@@ -1,0 +1,62 @@
+```yaml
+analysis: |
+  This phase was a crucial scientific debugging effort to validate the `v<c` glider discovery from `iter_200`. The investigation proceeded in three sequential steps, each building on the last.
+
+  First, agent `201.1` performed a quantitative characterization. The result was a categorical refutation of the original claim: the champion rule produces a period-4 stationary oscillator with zero net velocity, not a glider.
+
+  Second, agent `201.2` provided qualitative confirmation by generating a GIF of the oscillator. This visualization clearly showed the four distinct phases of the non-moving particle, confirming the data from `201.1`.
+
+  Third, agent `201.3` conducted a forensic analysis to determine how the displacement-based `SparseGliderFitness` function could have been fooled. This agent successfully reproduced the original high fitness score (1.927) and identified the root cause: an "oscillator phase-sampling exploit." The fitness function's measurement checkpoints (at steps 50, 100, 150, 200) were asynchronous with the object's period-4 oscillation. This caused the function to measure the small internal shifts between oscillation phases and misinterpret them as genuine, sustained translational motion.
+
+  In conclusion, the `v<c` glider from `iter_200` was a measurement artifact. This phase successfully identified the invalidity of the prior result and pinpointed the specific flaw in the experimental methodology that produced it.
+open_questions:
+  - "How can the `SparseGliderFitness` function be hardened against phase-sampling exploits?"
+  - "Will a fitness function that measures cumulative displacement from t=0, rather than inter-checkpoint displacement, be robust to this exploit?"
+  - "Can a renewed evolutionary search with a corrected fitness function discover a true `v<c` glider?"
+  - "Should all fitness functions include a check for repeating grid states to detect oscillators?"
+chosen_direction: "Develop a robust, exploit-resistant fitness function and re-launch the search for `v<c` gliders."
+hypothesis: "phase-201: Debunked the `v<c` glider from `iter_200`, revealing it as a stationary oscillator that exploited a phase-sampling flaw in the fitness function."
+rationale: |
+  The surprising result from `iter_200` required rigorous validation. The phase was structured to first verify the claim (201.1), then visualize the actual behavior (201.2), and finally diagnose the root cause of the discrepancy (201.3). This sequential process was essential for building a complete and evidenced understanding of the experimental failure.
+status: ok
+metrics:
+  reproduced_fitness_exploit: 1.927
+  actual_velocity_c: 0.0
+  actual_period_steps: 4
+  exploit_mechanism: "Oscillator Phase-Sampling"
+  cumulative_displacement_at_step_512: 0.667
+experimenter_view: |
+  **Sub-agent 201.1:** Successfully re-characterized the `v<c` champion rule. Instead of a moving glider, it produces a perfect period-4 stationary oscillator with zero net velocity. Bit conservation is stable.
+
+  **Sub-agent 201.2:** Generated a clear GIF of the period-4 oscillator, visually confirming the findings of `201.1`. The object cycles through four distinct L-tromino-like shapes while remaining in the same location.
+
+  **Sub-agent 201.3:** Performed a forensic analysis and confirmed the "transient puffer" hypothesis, identifying a specific variant: an "oscillator phase-sampling exploit." The fitness function's checkpoints were misaligned with the particle's oscillation period, causing it to misinterpret internal phase shifts as net motion. The original fitness score of 1.927 was perfectly reproduced under these flawed measurement conditions. The root cause is now fully understood.
+notes: "A critical negative result. The previous `v<c` glider discovery is invalid. The next phase must focus on fixing the fitness function."
+artifacts:
+  - archive/iter_201/results/glider_timeseries.csv
+  - archive/iter_201/results/oscillator.gif
+  - archive/iter_201/results/displacement_over_time.csv
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
+
+  **Confirmed:**
+  - The champion rule from `iter_200.1` produces a stable, bit-conserving, period-4 **stationary oscillator**, not a glider (iter_201.1, 201.2).
+  - The `SparseGliderFitness` function is vulnerable to a "phase-sampling exploit", where it mistakes the internal phase shifts of an oscillator for genuine translational motion (iter_201.3).
+  - The `v=1c` elastic collision rule from `iter_193` remains the best confirmed result for particle interaction.
+
+  **Refuted:**
+  - The claim that a `v<c` glider was discovered in `iter_200`. The result has been demonstrated to be a measurement artifact.
+
+  **Best Result:**
+  - The `v=1c` elastic collision rule (`iter_193`). The search for a `v<c` glider has been reset.
+
+  **In Progress:**
+  - The `v<c` glider search must be re-started after developing a more robust fitness function.
+
+  **Open Questions:**
+  - How can `SparseGliderFitness` be modified to be robust against phase-sampling exploits?
+  - Will measuring cumulative displacement from t=0, rather than inter-checkpoint displacement, prevent this exploit?
+  - Can a renewed evolutionary search with a corrected fitness function discover a true `v<c` glider?
+```

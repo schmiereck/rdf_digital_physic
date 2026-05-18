@@ -4,46 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-cost_usd: 0.15883
-hypothesis: A random population of C2-rules, when evaluated with a fitness metric
-  rewarding displacement of a pre-defined 3-bit 'L-tromino' particle, will contain
-  at least one rule with a fitness score > 0.1.
-input_tokens: 38153
-iter: 167
-metrics:
-  initial_bits: 4
-  max_fitness: 0.0
-  mean_fitness: 0.0
-  top_rule_displacement: 0.0
-  top_rule_final_bits: 4
-  top_rule_id: rule_002
-output_tokens: 2409
-status: experiment_failed
-```
-
-## iter_167: A random population of C2-rules, when evaluated with a fitness metric rewarding displacement of a pre-defined 3-bit 'L-tromino' particle, will contain at least one rule with a fitness score > 0.1.
-
-**Analysis:** The first attempt to implement the "glider nursery" strategy has failed, but in a highly informative way. The hypothesis was that a fitness metric rewarding displacement could evolve rules to propagate a 4-bit square particle. This was falsified, with every rule in the population yielding a fitness score of exactly zero.
-
-The root cause was not a failure of the evolutionary process, but a fundamen
-
-**Status:** experiment_failed
-
-**Metrics:** `{'mean_fitness': 0.0, 'max_fitness': 0.0, 'top_rule_id': 'rule_002', 'top_rule_displacement': 0.0, 'top_rule_final_bits': 4, 'initial_bits': 4}`
-
-**Experimenter view:** Every rule in the population scored exactly fitness=0.0 with displacement=0.0.
-This is not a sampling failure — it is a mathematical certainty caused by a
-symmetry invariant: the 2x2 seed block at grid center is invariant under the
-180° rotation (r,c)→(127-r,127-c), i.e., it is C2-symmetric. Any C2-symmetric
-rule preserves C2-symmetric patterns, so the center of mass is permanently
-fixed at (63.5,
-
-**Notes:** C2-symmetric seed + C2-symmetric rule => CoM invariant; displacement is always 0. Use asymmetric seed in next iteration.
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.00875
 hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
 input_tokens: 1000
@@ -991,4 +951,39 @@ The planner agent (200.1) was highly successful. It ran a 15-generation search u
 Subsequent attempts at quantitative analysis failed due to platform errors. A qualitative analysis by sub-agent 200.5, based on artifacts from
 
 **Notes:** Major scientific success in discovering the glider, but hampered by severe technical/platform limitations that must be addressed.
+
+
+---
+```yaml
+cached_tokens: 87874
+cost_usd: 0.23744
+hypothesis: 'phase-201: Debunked the `v<c` glider from `iter_200`, revealing it as
+  a stationary oscillator that exploited a phase-sampling flaw in the fitness function.'
+input_tokens: 124689
+iter: 201
+metrics:
+  actual_period_steps: 4
+  actual_velocity_c: 0.0
+  cumulative_displacement_at_step_512: 0.667
+  exploit_mechanism: Oscillator Phase-Sampling
+  reproduced_fitness_exploit: 1.927
+output_tokens: 3019
+status: ok
+```
+
+## iter_201: phase-201: Debunked the `v<c` glider from `iter_200`, revealing it as a stationary oscillator that exploited a phase-sampling flaw in the fitness function.
+
+**Analysis:** This phase was a crucial scientific debugging effort to validate the `v<c` glider discovery from `iter_200`. The investigation proceeded in three sequential steps, each building on the last.
+
+First, agent `201.1` performed a quantitative characterization. The result was a categorical refutation of the original claim: the champion rule produces a period-4 stationary oscillator with zero net velocit
+
+**Status:** ok
+
+**Metrics:** `{'reproduced_fitness_exploit': 1.927, 'actual_velocity_c': 0.0, 'actual_period_steps': 4, 'exploit_mechanism': 'Oscillator Phase-Sampling', 'cumulative_displacement_at_step_512': 0.667}`
+
+**Experimenter view:** **Sub-agent 201.1:** Successfully re-characterized the `v<c` champion rule. Instead of a moving glider, it produces a perfect period-4 stationary oscillator with zero net velocity. Bit conservation is stable.
+
+**Sub-agent 201.2:** Generated a clear GIF of the period-4 oscillator, visually confirming the findings of `201.1`. The object cycles through four distinct L-tromino-like shapes while remain
+
+**Notes:** A critical negative result. The previous `v<c` glider discovery is invalid. The next phase must focus on fixing the fitness function.
 
