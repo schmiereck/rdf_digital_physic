@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-run_vc_search.py  —  Evolutionary search for v<c gliders using SparseGliderFitness.
+run_vc_search.py  —  Evolutionary search for v<c gliders using NetDisplacementFitness.
 
 Setup
 -----
-* Fitness     : SparseGliderFitness (exploit-resistant; bit conservation + sparsity)
+* Fitness     : NetDisplacementFitness (exploit-resistant; bit conservation
+                + net displacement + bounding-box penalty)
 * Population  : 50 random C2-symmetric rules
 * Generations : 15
 * Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid
-* Simulation  : 250 steps, checkpoint every 50 steps (5 checkpoints total)
+* Simulation  : 250 steps
 
-Outputs (archive/iter_200/results/):
+Outputs (archive/iter_204/results/):
   champion_vc_rule.json    : champion rule + metrics
   evolution_log.csv        : generation,champion_fitness per generation
   champion_vc_glider.gif   : 250-step animation of the champion pattern
@@ -33,13 +34,13 @@ from evolution import (
     rule_dict_to_lut,
     step_grid,
 )
-from fitness_v2 import SparseGliderFitness, _make_particle_grid
+from fitness_functions import NetDisplacementFitness, _make_particle_grid
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_200" / "results"
+OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_204" / "results"
 CHAMPION_JSON = OUTPUT_DIR / "champion_vc_rule.json"
 EVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"
 CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"
@@ -56,7 +57,6 @@ LUT_SIZE         = 128
 RNG_SEED         = 200_001
 GRID_SIZE        = 128
 SIMULATION_STEPS = 250
-CHECKPOINT_EVERY = 50
 DENSITY          = 6
 
 ELITE_COUNT = max(2, int(POPULATION_SIZE * ELITE_FRACTION))
@@ -96,10 +96,9 @@ def generate_c2_rule(rng: random.Random, density: int = DENSITY, max_attempts: i
 
 # ── Fitness evaluation ─────────────────────────────────────────────────────────
 
-_FITNESS = SparseGliderFitness(
+_FITNESS = NetDisplacementFitness(
     grid_size=GRID_SIZE,
     simulation_steps=SIMULATION_STEPS,
-    checkpoint_every=CHECKPOINT_EVERY,
     particle=SEED_PARTICLE,
 )
 
@@ -155,7 +154,7 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
             frames.append((step, grid.copy()))
 
     fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
-    ax.set_title("iter_200 SparseGliderFitness champion (v<c search)")
+    ax.set_title("iter_204 NetDisplacementFitness champion (v<c search)")
     ax.set_xlabel("col")
     ax.set_ylabel("row")
     img = ax.imshow(
@@ -184,7 +183,7 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
 # ── Evolutionary search ────────────────────────────────────────────────────────
 
 def run_search() -> dict:
-    print("=== iter_200 v<c Glider Search (SparseGliderFitness) ===")
+    print("=== iter_204 v<c Glider Search (NetDisplacementFitness) ===")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(RNG_SEED)
 
@@ -192,9 +191,9 @@ def run_search() -> dict:
     print(f"  Generations     : {NUM_GENERATIONS}")
     print(f"  Elite count     : {ELITE_COUNT}")
     print(f"  Grid size       : {GRID_SIZE}x{GRID_SIZE}")
-    print(f"  Sim steps       : {SIMULATION_STEPS}  (checkpoints every {CHECKPOINT_EVERY})")
+    print(f"  Sim steps       : {SIMULATION_STEPS}")
     print(f"  Seed particle   : {SEED_PARTICLE}")
-    print(f"  Fitness         : SparseGliderFitness\n")
+    print(f"  Fitness         : NetDisplacementFitness\n")
 
     # Initial random population
     population = [
@@ -279,15 +278,14 @@ def write_results(result: dict) -> list[str]:
     rule_dict = chromosome_to_rule_dict(result["best_chrom"])
     m         = result["best_metrics"] or {}
     payload = {
-        "iteration":          "iter_200",
-        "fitness_function":   "SparseGliderFitness",
+        "iteration":          "iter_204",
+        "fitness_function":   "NetDisplacementFitness",
         "fitness":            result["best_fitness"],
         "generation_of_best": result["best_generation"],
         "num_generations":    NUM_GENERATIONS,
         "population_size":    POPULATION_SIZE,
         "grid_size":          GRID_SIZE,
         "simulation_steps":   SIMULATION_STEPS,
-        "checkpoint_every":   CHECKPOINT_EVERY,
         "seed_particle":      SEED_PARTICLE,
         "metrics":            m,
         "rule_dict":          {str(k): int(v) for k, v in rule_dict.items()},
@@ -319,9 +317,9 @@ def write_results(result: dict) -> list[str]:
     print(f"  max_ever        = {result['max_ever']:.6f}")
     print(f"  best_generation = {result['best_generation']}")
     if m:
-        print(f"  total_disp      = {m.get('total_displacement', 'n/a')}")
-        print(f"  mean_sparsity   = {m.get('mean_sparsity', 'n/a')}")
-        print(f"  reason          = {m.get('reason', 'n/a')}")
+        print(f"  net_displacement = {m.get('net_displacement', 'n/a')}")
+        print(f"  final_bb_area    = {m.get('final_bb_area', 'n/a')}")
+        print(f"  reason           = {m.get('reason', 'n/a')}")
 
     return artifacts
 
