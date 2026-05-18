@@ -1,0 +1,1 @@
+The diagnosis in iter_213.6 found that the simulation library `automata-lib` must be imported as `automata`. Your task is to apply this fix across the entire `src/` directory. Recursively search for all Python files in `src/` that contain the string "import automata_lib" and replace it with "import automata". List all modified files in the result.
