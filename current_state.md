@@ -1,18 +1,17 @@
 # Current Research State
-Phase: Platform Diagnosis Complete
+Phase: v<c Search Exploit Identified
 
 ## Goal
 Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
 
-## In Progress
-This entire research track is **BLOCKED** by a critical platform instability.
-
 ## Confirmed
-- The platform failure initially perceived as a "silent crash" is definitively a `ModuleNotFoundError` (iter_213.3).
-- The required dependency `automata-lib` is a pip package, not a local directory (iter_213.5).
-- The root cause of the `ModuleNotFoundError` is a name mismatch: the pip package `automata-lib` must be imported using `import automata` (iter_213.6).
-- Executor-class agents (`low`, `medium`, `high`) are non-functional and fail to start. Planner-class agents are functional (iter_213.2, 213.4, 213.7).
+- The platform is stable. The root cause of previous execution errors was an incorrect import statement, which has been fixed and verified (`iter_213.8`, `iter_213.9`).
+- The `NetDisplacementFitness` function, designed to defeat "puffer" and "oscillator" exploits, is vulnerable to a new "transient drift" exploit. A pattern can achieve a non-zero fitness score by shifting its center-of-mass during an initial settling phase without any subsequent, sustained motion (`iter_213.10`).
+
+## Refuted
+- The champion rule discovered in `iter_213.10` does not produce a `v<c` glider. It produces a compact oscillator.
 
 ## Open Questions
-- Why are executor agents failing?
-- Can the known scientific fix be applied as a workaround using a planner?
+- How can a fitness function be designed to reward *sustained* motion while ignoring initial, transient settling effects?
+- Is measuring displacement over a later window (e.g., steps 500-1000) sufficient to defeat the "transient drift" exploit?
+- Could a metric based on velocity consistency be more robust?
