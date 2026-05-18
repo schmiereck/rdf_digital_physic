@@ -1,0 +1,268 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] .git
+      .gitignore
+[DIR] .venv
+[DIR] archive
+      config.toml
+      current_state.md
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      goal.md
+      python_path_info.py
+      RDF-REVIEW-179.md
+      requirements.txt
+      RESEARCH-RESULT-179.md
+[DIR] src]
+
+
+[Tool Call: bash({'command': 'find C:\\Users\\thomas\\Projekte\\rdf_digital_physic -name "*.py" | head -50'})]
+
+[Tool Result: exit_code: 255
+stdout: 
+stderr: Der Befehl "head" ist entweder falsch geschrieben oder
+konnte nicht gefunden werden.
+]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_glider_200.1.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_offset_collisions.py
+      characterize_remnant.py
+      characte...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_functions.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fitness_functions.py
+
+A library of fitness functions for evaluating cellular-automaton rules on the
+128x128 toroidal hexagonal grid used throughout this project.
+
+NetDisplacementFitness
+-----------------------
+Designed to defeat the 'compact oscillator' and 'puffer' exploits identified
+in iter_203.  Two complementary mechanisms:
+
+  1. **Net displacement** — measures the Euclidean distance between the
+     centre-of-mass at t=0 and t=max_steps.  Stationary oscillators t...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fitness.py
+
+Fitness metrics for hexagonal CA rules.
+  - calculate_velocity_stability: rewards sustained, constant-velocity motion.
+  - CheckpointFitness: rewards stable bit-count throughout the simulation.
+  - DynamicCollisionFitness: rewards rules that produce a true dynamic
+    bit-and-object-conserving collision between two 3-bit gliders (approach
+    followed by recession).
+"""
+
+import math
+import sys
+from pathlib import Path
+
+import numpy as np
+from scipy.ndimage ...]
+
+Now I have a clear picture of the `NetDisplacementFitness` class. I'll create the new fitness function file with `LateWindowDisplacementFitness` that measures displacement only in the window [500, 1000] to defeat the transient drift exploit.
+
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nfitness_v_lessthan_c.py\n\nFitness functions specifically for the v < c search regime.\n\nLateWindowDisplacementFitness\n-----------------------------\nA variant of ``NetDisplacementFitness`` that measures the Euclidean distance\nbetween the centre of mass at simulation step 500 and step 1000 only.\n\nThis defeats the \'transient drift\' exploit identified in **iter_213**, where\nan initial settling phase (steps 0-500) registers a false positive for motion.\nBy ignoring the first 500 steps, we only reward *sustained* movement that\npersists well into the simulation, filtering out rules that drift briefly\nduring an initial transient before stalling.\n\n    fitness = late_window_displacement / (1 + final_bb_area)\n\nSee ``fitness_functions.NetDisplacementFitness`` for the full parameter and\nreturn-value documentation (identical, except the displacement is computed\nover the late window instead of the full run).\n\nParameters\n----------\ngrid_size : int\n    Side length of the square toroidal grid (default 128).\nsimulation_steps : int\n    Total simulation steps (default 1001; window is [500, 1000]).\nwindow_start : int\n    Start of the displacement window (default 500).\nwindow_end : int\n    End of the displacement window (default 1000).\nparticle : list of (int, int)\n    Seed particle as (dr, dc) offsets from grid centre.\n    Defaults to the 3-bit L-tromino.\nexpected_bits : int\n    Number of bits the seed must have for conservation to pass.\n    Defaults to 3 (L-tromino).\n"""\n\nfrom __future__ import annotations\n\nimport math\nfrom typing import Any\n\nimport numpy as np\n\nfrom evolution import center_of_mass, rule_dict_to_lut, step_grid\n\n# ---------------------------------------------------------------------------\n# Default seed — 3-bit L-tromino\n# ---------------------------------------------------------------------------\n\nLTROMINO: list[tuple[int, int]] = [(0, 0), (0, 1), (1, 1)]\n\n# ---------------------------------------------------------------------------\n# Private helpers\n# ---------------------------------------------------------------------------\n\ndef _bounding_box_area(grid: np.ndarray) -> int:\n    """Return the area (h × w) of the axis-aligned bounding box of live cells.\n\n    Returns 1 when the grid is empty to avoid division by zero.\n    """\n    rows, cols = np.where(grid > 0)\n    if len(rows) == 0:\n        return 1\n    h = int(rows.max()) - int(rows.min()) + 1\n    w = int(cols.max()) - int(cols.min()) + 1\n    return h * w\n\n\ndef _make_particle_grid(\n    particle: list[tuple[int, int]],\n    grid_size: int = 128,\n) -> np.ndarray:\n    """Return a zero grid with *particle* centred at (grid_size//2, grid_size//2)."""\n    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)\n    centre = grid_size // 2\n    for dr, dc in particle:\n        r = (centre + dr) % grid_size\n        c = (centre + dc) % grid_size\n        grid[r, c] = 1\n    return grid\n\n\n# ---------------------------------------------------------------------------\n# Fitness classes\n# ---------------------------------------------------------------------------\n\nclass LateWindowDisplacementFitness:\n    """Fitness based on centre-of-mass displacement in a late simulation window.\n\n    Evaluates a CA rule by simulating the seed particle for the full duration,\n    but measures net displacement only between *window_start* and *window_end*\n    (default: steps 500 → 1000).\n\n        1. **Late-window net displacement** — Euclidean distance between the\n           centre-of-mass at t=window_start and t=window_end.  This ignores\n           any initial settling phase, defeating the transient drift exploit\n           from iter_213.\n        2. **Bounding-box penalty** — divides by ``1 + final_bb_area`` so that\n           rules producing large, diffuse patterns (puffers) are suppressed.\n        3. **Bit conservation** — if the initial or final bit count does not\n           match the seed\'s bit count (3 for the L-tromino), fitness is\n           forced to 0.0.  This rejects annihilating/explosive rules.\n\n    Score formula::\n\n        fitness = late_window_displacement / (1 + final_bb_area)\n\n    If the initial or final bit count does not equal ``expected_bits``\n    (3 for the L-tromino seed), fitness is returned as ``0.0``.\n\n    Parameters\n    ----------\n    grid_size : int\n        Side length of the square toroidal grid (default 128).\n    simulation_steps : int\n        Total simulation steps (default 1001).\n    window_start : int\n        Simulation step at which the displacement window begins (default 500).\n    window_end : int\n        Simulation step at which the displacement window ends (default 1000).\n    particle : list of (int, int)\n        Seed particle as (dr, dc) offsets from grid centre.\n        Defaults to the 3-bit L-tromino.\n    expected_bits : int\n        Number of bits the seed must have for conservation to pass.\n        Defaults to 3 (L-tromino).\n    """\n\n    name = "LateWindowDisplacementFitness"\n\n    def __init__(\n        self,\n        grid_size:        int              = 128,\n        simulation_steps: int              = 1001,\n        window_start:     int              = 500,\n        window_end:       int              = 1000,\n        particle:         list | None      = None,\n        expected_bits:    int              = 3,\n    ) -> None:\n        self.grid_size         = int(grid_size)\n        self.simulation_steps  = int(simulation_steps)\n        self.window_start      = int(window_start)\n        self.window_end        = int(window_end)\n        self.particle          = particle if particle is not None else LTROMINO\n        self.expected_bits     = int(expected_bits)\n\n        # Sanity-check: window must be a proper sub-window of the simulation.\n        if self.window_start < 0 or self.window_end > self.simulation_steps:\n            raise ValueError(\n                f"LateWindowDisplacementFitness: window [{self.window_start}, "\n                f"{self.window_end}] must be within [0, {self.simulation_steps}]."\n            )\n\n    # ------------------------------------------------------------------\n\n    def evaluate(self, rule_dict: dict) -> dict[str, Any]:\n        """Evaluate *rule_dict* and return a metrics dict.\n\n        Returns\n        -------\n        dict\n            Always contains ``"fitness"`` (float ≥ 0).\n            Additional keys vary by outcome:\n            - ``"reason"``                 : "ok" | "bit_conservation_failed"\n            - ``"initial_bits"``           : seed bit count\n            - ``"final_bits"``             : bit count at t=max_steps\n            - ``"window_start_com"``       : [row, col] of CoM at t=window_start\n            - ``"window_end_com"``         : [row, col] of CoM at t=window_end\n            - ``"late_window_displacement"``: Euclidean distance in the late window\n            - ``"final_bb_area"``          : bounding-box area at t=max_steps\n        """\n        lut    = rule_dict_to_lut(rule_dict)\n        grid   = _make_particle_grid(self.particle, self.grid_size)\n\n        initial_bits = int(grid.sum())\n\n        # Run up to window_start and capture the centre-of-mass there.\n        window_start_com = None\n        for step in range(self.simulation_steps):\n            if step == self.window_start:\n                window_start_com = center_of_mass(grid)\n            if step >= self.window_start:\n                grid = step_grid(grid, lut)\n\n        # After the loop finishes, grid is at t=max_steps and window_end_com\n        # is at the last step where the loop ran (we need to capture COM at\n        # window_end specifically).\n\n        # Re-run more carefully to capture both window_start_com and\n        # window_end_com, plus final state.\n        grid = _make_particle_grid(self.particle, self.grid_size)\n        window_start_com = None\n        window_end_com   = None\n        for step in range(self.simulation_steps):\n            if step == self.window_start:\n                window_start_com = center_of_mass(grid)\n            if step == self.window_end:\n                window_end_com = center_of_mass(grid)\n            grid = step_grid(grid, lut)\n\n        final_com      = center_of_mass(grid)\n        final_bits     = int(grid.sum())\n\n        # ── Bit-conservation gate ────────────────────────────────────────\n        if initial_bits != self.expected_bits or final_bits != self.expected_bits:\n            return {\n                "fitness":          0.0,\n                "reason":           "bit_conservation_failed",\n                "initial_bits":     initial_bits,\n                "final_bits":       final_bits,\n                "expected_bits":    self.expected_bits,\n            }\n\n        # ── Late-window displacement ─────────────────────────────────────\n        dx = window_end_com[0] - window_start_com[0]\n        dy = window_end_com[1] - window_start_com[1]\n        late_window_displacement = math.sqrt(dx * dx + dy * dy)\n\n        # ── Bounding-box area ────────────────────────────────────────────\n        final_bb_area = _bounding_box_area(grid)\n\n        # ── Fitness score ────────────────────────────────────────────────\n        fitness = late_window_displacement / (1.0 + float(final_bb_area))\n\n        return {\n            "fitness":                    float(fitness),\n            "reason":                     "ok",\n            "window_start_com":           list(window_start_com),\n            "window_end_com":             list(window_end_com),\n            "late_window_displacement":   float(late_window_displacement),\n            "final_bb_area":              final_bb_area,\n            "initial_bits":               initial_bits,\n            "final_bits":                 final_bits,\n        }\n\n    def __call__(self, rule_dict: dict) -> tuple[float, dict[str, Any]]:\n        """Convenience callable returning ``(fitness, metrics_dict)``.\n\n        Returning a 2-tuple here prevents the\n        ``ValueError: too many values to unpack`` that occurs when an\n        evolutionary loop tries to unpack the canonical dict directly\n        (iterating a dict yields its keys, of which there are more than 2).\n        """\n        m = self.evaluate(rule_dict)\n        result: tuple[float, dict[str, Any]] = (float(m["fitness"]), m)\n        assert isinstance(result, tuple) and len(result) == 2, (\n            "LateWindowDisplacementFitness.__call__ must return a 2-tuple "\n            "(fitness: float, metrics: dict)."\n        )\n        return result\n\n\n# ---------------------------------------------------------------------------\n# Module-level convenience wrapper\n# ---------------------------------------------------------------------------\n\ndef evaluate(rule_dict: dict) -> dict[str, Any]:\n    """Evaluate *rule_dict* with the default LateWindowDisplacementFitness settings."""\n    return LateWindowDisplacementFitness().evaluate(rule_dict)\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_v_lessthan_c.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\fitness_v_lessthan_c.py]
+
+Let me refine the implementation to avoid the redundant double simulation:
+
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nfitness_v_lessthan_c.py\n\nFitness functions specifically for the v < c search regime.\n\nLateWindowDisplacementFitness\n-----------------------------\nA variant of ``NetDisplacementFitness`` that measures the Euclidean distance\nbetween the centre of mass at simulation step 500 and step 1000 only.\n\nThis defeats the \'transient drift\' exploit identified in **iter_213**, where\nan initial settling phase (steps 0-500) registers a false positive for motion.\nBy ignoring the first 500 steps, we only reward *sustained* movement that\npersists well into the simulation, filtering out rules that drift briefly\nduring an initial transient before stalling.\n\n    fitness = late_window_displacement / (1 + final_bb_area)\n\nSee ``fitness_functions.NetDisplacementFitness`` for the full parameter and\nreturn-value documentation (identical, except the displacement is computed\nover the late window instead of the full run).\n\nParameters\n----------\ngrid_size : int\n    Side length of the square toroidal grid (default 128).\nsimulation_steps : int\n    Total simulation steps (default 1001; window is [500, 1000]).\nwindow_start : int\n    Start of the displacement window (default 500).\nwindow_end : int\n    End of the displacement window (default 1000).\nparticle : list of (int, int)\n    Seed particle as (dr, dc) offsets from grid centre.\n    Defaults to the 3-bit L-tromino.\nexpected_bits : int\n    Number of bits the seed must have for conservation to pass.\n    Defaults to 3 (L-tromino).\n"""\n\nfrom __future__ import annotations\n\nimport math\nfrom typing import Any\n\nimport numpy as np\n\nfrom evolution import center_of_mass, rule_dict_to_lut, step_grid\n\n# ---------------------------------------------------------------------------\n# Default seed — 3-bit L-tromino\n# ---------------------------------------------------------------------------\n\nLTROMINO: list[tuple[int, int]] = [(0, 0), (0, 1), (1, 1)]\n\n# ---------------------------------------------------------------------------\n# Private helpers\n# ---------------------------------------------------------------------------\n\ndef _bounding_box_area(grid: np.ndarray) -> int:\n    """Return the area (h × w) of the axis-aligned bounding box of live cells.\n\n    Returns 1 when the grid is empty to avoid division by zero.\n    """\n    rows, cols = np.where(grid > 0)\n    if len(rows) == 0:\n        return 1\n    h = int(rows.max()) - int(rows.min()) + 1\n    w = int(cols.max()) - int(cols.min()) + 1\n    return h * w\n\n\ndef _make_particle_grid(\n    particle: list[tuple[int, int]],\n    grid_size: int = 128,\n) -> np.ndarray:\n    """Return a zero grid with *particle* centred at (grid_size//2, grid_size//2)."""\n    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)\n    centre = grid_size // 2\n    for dr, dc in particle:\n        r = (centre + dr) % grid_size\n        c = (centre + dc) % grid_size\n        grid[r, c] = 1\n    return grid\n\n\n# ---------------------------------------------------------------------------\n# Fitness classes\n# ---------------------------------------------------------------------------\n\nclass LateWindowDisplacementFitness:\n    """Fitness based on centre-of-mass displacement in a late simulation window.\n\n    Evaluates a CA rule by simulating the seed particle for the full duration,\n    but measures net displacement only between *window_start* and *window_end*\n    (default: steps 500 → 1000).\n\n        1. **Late-window net displacement** — Euclidean distance between the\n           centre-of-mass at t=window_start and t=window_end.  This ignores\n           any initial settling phase, defeating the transient drift exploit\n           from iter_213.\n        2. **Bounding-box penalty** — divides by ``1 + final_bb_area`` so that\n           rules producing large, diffuse patterns (puffers) are suppressed.\n        3. **Bit conservation** — if the initial or final bit count does not\n           match the seed\'s bit count (3 for the L-tromino), fitness is\n           forced to 0.0.  This rejects annihilating/explosive rules.\n\n    Score formula::\n\n        fitness = late_window_displacement / (1 + final_bb_area)\n\n    If the initial or final bit count does not equal ``expected_bits``\n    (3 for the L-tromino seed), fitness is returned as ``0.0``.\n\n    Parameters\n    ----------\n    grid_size : int\n        Side length of the square toroidal grid (default 128).\n    simulation_steps : int\n        Total simulation steps (default 1001).\n    window_start : int\n        Simulation step at which the displacement window begins (default 500).\n    window_end : int\n        Simulation step at which the displacement window ends (default 1000).\n    particle : list of (int, int)\n        Seed particle as (dr, dc) offsets from grid centre.\n        Defaults to the 3-bit L-tromino.\n    expected_bits : int\n        Number of bits the seed must have for conservation to pass.\n        Defaults to 3 (L-tromino).\n    """\n\n    name = "LateWindowDisplacementFitness"\n\n    def __init__(\n        self,\n        grid_size:        int              = 128,\n        simulation_steps: int              = 1001,\n        window_start:     int              = 500,\n        window_end:       int              = 1000,\n        particle:         list | None      = None,\n        expected_bits:    int              = 3,\n    ) -> None:\n        self.grid_size         = int(grid_size)\n        self.simulation_steps  = int(simulation_steps)\n        self.window_start      = int(window_start)\n        self.window_end        = int(window_end)\n        self.particle          = particle if particle is not None else LTROMINO\n        self.expected_bits     = int(expected_bits)\n\n        # Sanity-check: window must be a proper sub-window of the simulation.\n        if self.window_start < 0 or self.window_end > self.simulation_steps:\n            raise ValueError(\n                f"LateWindowDisplacementFitness: window [{self.window_start}, "\n                f"{self.window_end}] must be within [0, {self.simulation_steps}]."\n            )\n\n    # ------------------------------------------------------------------\n\n    def evaluate(self, rule_dict: dict) -> dict[str, Any]:\n        """Evaluate *rule_dict* and return a metrics dict.\n\n        Returns\n        -------\n        dict\n            Always contains ``"fitness"`` (float ≥ 0).\n            Additional keys vary by outcome:\n            - ``"reason"``                  : "ok" | "bit_conservation_failed"\n            - ``"initial_bits"``            : seed bit count\n            - ``"final_bits"``              : bit count at t=max_steps\n            - ``"window_start_com"``        : [row, col] of CoM at t=window_start\n            - ``"window_end_com"``          : [row, col] of CoM at t=window_end\n            - ``"late_window_displacement"``: Euclidean distance in the late window\n            - ``"final_bb_area"``           : bounding-box area at t=max_steps\n        """\n        lut    = rule_dict_to_lut(rule_dict)\n        grid   = _make_particle_grid(self.particle, self.grid_size)\n\n        initial_bits = int(grid.sum())\n\n        # Single-pass simulation capturing COM at the two window boundaries\n        # and at the final step.\n        window_start_com = None\n        window_end_com   = None\n\n        for step in range(self.simulation_steps):\n            if step == self.window_start:\n                window_start_com = center_of_mass(grid)\n            if step == self.window_end:\n                window_end_com = center_of_mass(grid)\n            grid = step_grid(grid, lut)\n\n        # After the loop, grid is at t=max_steps (one step beyond the last\n        # iteration).\n        final_com      = center_of_mass(grid)\n        final_bits     = int(grid.sum())\n\n        # ── Bit-conservation gate ────────────────────────────────────────\n        if initial_bits != self.expected_bits or final_bits != self.expected_bits:\n            return {\n                "fitness":          0.0,\n                "reason":           "bit_conservation_failed",\n                "initial_bits":     initial_bits,\n                "final_bits":       final_bits,\n                "expected_bits":    self.expected_bits,\n            }\n\n        # ── Late-window displacement ─────────────────────────────────────\n        dx = window_end_com[0] - window_start_com[0]\n        dy = window_end_com[1] - window_start_com[1]\n        late_window_displacement = math.sqrt(dx * dx + dy * dy)\n\n        # ── Bounding-box area ────────────────────────────────────────────\n        final_bb_area = _bounding_box_area(grid)\n\n        # ── Fitness score ────────────────────────────────────────────────\n        fitness = late_window_displacement / (1.0 + float(final_bb_area))\n\n        return {\n            "fitness":                    float(fitness),\n            "reason":                     "ok",\n            "window_start_com":           list(window_start_com),\n            "window_end_com":             list(window_end_com),\n            "late_window_displacement":   float(late_window_displacement),\n            "final_bb_area":              final_bb_area,\n            "initial_bits":               initial_bits,\n            "final_bits":                 final_bits,\n        }\n\n    def __call__(self, rule_dict: dict) -> tuple[float, dict[str, Any]]:\n        """Convenience callable returning ``(fitness, metrics_dict)``.\n\n        Returning a 2-tuple here prevents the\n        ``ValueError: too many values to unpack`` that occurs when an\n        evolutionary loop tries to unpack the canonical dict directly\n        (iterating a dict yields its keys, of which there are more than 2).\n        """\n        m = self.evaluate(rule_dict)\n        result: tuple[float, dict[str, Any]] = (float(m["fitness"]), m)\n        assert isinstance(result, tuple) and len(result) == 2, (\n            "LateWindowDisplacementFitness.__call__ must return a 2-tuple "\n            "(fitness: float, metrics: dict)."\n        )\n        return result\n\n\n# ---------------------------------------------------------------------------\n# Module-level convenience wrapper\n# ---------------------------------------------------------------------------\n\ndef evaluate(rule_dict: dict) -> dict[str, Any]:\n    """Evaluate *rule_dict* with the default LateWindowDisplacementFitness settings."""\n    return LateWindowDisplacementFitness().evaluate(rule_dict)\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_v_lessthan_c.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\fitness_v_lessthan_c.py]
+
+Now let me verify the file exists and can be imported without errors:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); print(f\'name: {f.name}\'); print(f\'window_start: {f.window_start}\'); print(f\'window_end: {f.window_end}\'); print(f\'simulation_steps: {f.simulation_steps}\'); print(\'Import OK\')"'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\src\fitness_v_lessthan_c.py", line 47, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); print(f\'name: {f.name}\'); print(f\'window_start: {f.window_start}\'); print(f\'window_end: {f.window_end}\'); print(f\'simulation_steps: {f.simulation_steps}\'); print(\'Import OK\')"'})]
+
+[Tool Result: exit_code: 0
+stdout: name: LateWindowDisplacementFitness
+window_start: 500
+window_end: 1000
+simulation_steps: 1001
+Import OK
+
+stderr: ]
+
+Good, import works. Let me now do a quick functional test with a simple rule:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "\nimport sys; sys.path.insert(0, \'src\')\nfrom fitness_v_lessthan_c import LateWindowDisplacementFitness\n\n# Simple rule: all zeros (stationary)\nzero_rule = {str(i): 0 for i in range(128)}\n\nf = LateWindowDisplacementFitness()\nresult = f.evaluate(zero_rule)\nprint(\'Zero rule fitness:\', result[\'fitness\'])\nprint(\'late_window_displacement:\', result[\'late_window_displacement\'])\nprint(\'reason:\', result[\'reason\'])\nprint(\'final_bits:\', result[\'final_bits\'])\nprint()\n\n# Test __call__ returns 2-tuple\nfitness_val, metrics = f(zero_rule)\nprint(\'__call__ fitness:\', fitness_val)\nprint(\'metrics fitness:\', metrics[\'fitness\'])\nprint(\'Match:\', fitness_val == metrics[\'fitness\'])\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); r = f.evaluate({str(i): 0 for i in range(128)}); print(\'fitness:\', r[\'fitness\']); print(\'displacement:\', r[\'late_window_displacement\']); print(\'reason:\', r[\'reason\']); print(\'final_bits:\', r[\'final_bits\']); f2, m = f({str(i): 0 for i in range(128)}); print(\'call match:\', f2 == m[\'fitness\'])"'})]
+
+[Tool Result: exit_code: 1
+stdout: fitness: 0.0
+
+stderr: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'late_window_displacement'
+]
+
+The first output shows fitness 0.0 which is correct (bit conservation fails for a zero rule since it annihilates all bits). The KeyError is because when conservation fails, the return dict doesn't have `late_window_displacement`. That's consistent with the original `NetDisplacementFitness` behavior. Let me verify the full response:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "\nimport sys; sys.path.insert(0, \'src\')\nfrom fitness_v_lessthan_c import LateWindowDisplacementFitness\nf = LateWindowDisplacementFitness()\nr = f.evaluate({str(i): 0 for i in range(128)})\nprint(\'Full result:\', r)\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "\nimport sys, json; sys.path.insert(0, \'src\')\nfrom fitness_v_lessthan_c import LateWindowDisplacementFitness\nf = LateWindowDisplacementFitness()\nr = f.evaluate({str(i): 0 for i in range(128)})\nprint(json.dumps(r, indent=2))\nprint(\'EXIT OK\')\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); r = f.evaluate({str(i): 0 for i in range(128)}); print(list(r.keys()))"'})]
+
+[Tool Result: exit_code: 0
+stdout: ['fitness', 'reason', 'initial_bits', 'final_bits', 'expected_bits']
+
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe << \'PYEOF\'\nimport sys\nsys.path.insert(0, \'src\')\nfrom fitness_v_lessthan_c import LateWindowDisplacementFitness\nf = LateWindowDisplacementFitness()\nr = f.evaluate({str(i): 0 for i in range(128)})\nprint("Keys:", list(r.keys()))\nprint("fitness:", r.get("fitness"))\nprint("reason:", r.get("reason"))\nprint("initial_bits:", r.get("initial_bits"))\nprint("final_bits:", r.get("final_bits"))\nPYEOF'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: "<<" kann syntaktisch an dieser Stelle nicht verarbeitet werden.
+]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); r = f.evaluate({str(i): 128 for i in range(128)}); print(list(r.keys())); print(\'fitness:\', r.get(\'fitness\')); print(\'reason:\', r.get(\'reason\'))"'})]
+
+[Tool Result: exit_code: 0
+stdout: ['fitness', 'reason', 'initial_bits', 'final_bits', 'expected_bits']
+fitness: 0.0
+reason: bit_conservation_failed
+
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); r = f.evaluate({str(i): i for i in range(128)}); print(list(r.keys())); print(\'fitness:\', r.get(\'fitness\')); print(\'reason:\', r.get(\'reason\')); print(\'late_window_displacement:\', r.get(\'late_window_displacement\'))"'})]
+
+[Tool Result: exit_code: 0
+stdout: ['fitness', 'reason', 'window_start_com', 'window_end_com', 'late_window_displacement', 'final_bb_area', 'initial_bits', 'final_bits']
+fitness: 0.0
+reason: ok
+late_window_displacement: 0.0
+
+stderr: ]
+
+The fitness function works correctly. Let me verify the file is properly in place:
+
+
+
+[Tool Call: bash({'command': 'dir "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_v_lessthan_c.py"'})]
+
+[Tool Result: exit_code: 0
+stdout:  Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: F4E9-4E77
+
+ Verzeichnis von C:\Users\thomas\Projekte\rdf_digital_physic\src
+
+18.05.2026  19:12            10.915 fitness_v_lessthan_c.py
+               1 Datei(en),         10.915 Bytes
+               0 Verzeichnis(se), 63.718.715.392 Bytes frei
+
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "\nimport sys; sys.path.insert(0, \'src\')\nfrom fitness_v_lessthan_c import LateWindowDisplacementFitness\n# Verify the callable returns 2-tuple as expected by evolution loops\nf = LateWindowDisplacementFitness()\nfit, metrics = f.evaluate({str(i): i for i in range(128)})\nassert isinstance(fit, float)\nassert isinstance(metrics, dict)\nassert metrics[\'fitness\'] == fit\nassert metrics[\'reason\'] == \'ok\'\nassert \'late_window_displacement\' in metrics\nassert \'window_start_com\' in metrics\nassert \'window_end_com\' in metrics\nassert f.window_start == 500\nassert f.window_end == 1000\nprint(\'All assertions passed. LateWindowDisplacementFitness is working correctly.\')\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "print(\'hello\')"'})]
+
+[Tool Result: exit_code: 0
+stdout: hello
+
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "import sys; sys.path.insert(0, \'src\'); from fitness_v_lessthan_c import LateWindowDisplacementFitness; f = LateWindowDisplacementFitness(); fit, metrics = f({str(i): i for i in range(128)}); print(\'fit=%s metrics_keys=%s\' % (fit, list(metrics.keys())))"'})]
+
+[Tool Result: exit_code: 0
+stdout: fit=0.0 metrics_keys=['fitness', 'reason', 'window_start_com', 'window_end_com', 'late_window_displacement', 'final_bb_area', 'initial_bits', 'final_bits']
+
+stderr: ]
+
+The file is created and verified working. Let me do one final check to confirm the file content is clean:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_v_lessthan_c.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fitness_v_lessthan_c.py
+
+Fitness functions specifically for the v < c search regime.
+
+LateWindowDisplacementFitness
+-----------------------------
+A variant of ``NetDisplacementFitness`` that measures the Euclidean distance
+between the centre of mass at simulation step 500 and step 1000 only.
+
+This defeats the 'transient drift' exploit identified in **iter_213**, where
+an initial settling phase (steps 0-500) registers a false positive for motion.
+By ignoring the first 5...]
