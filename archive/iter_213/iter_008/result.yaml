@@ -1,0 +1,33 @@
+artifacts:
+- src/minimal_crash_example.py
+- src/test_import.py
+experimenter_view: 'Two Python files in src/ contained actual import statements using
+  automata_lib.
+
+  Both used the form `from automata_lib import ca` which was updated to `from automata
+  import ca`.
+
+  A comment on line 14 of minimal_crash_example.py references `import automata_lib`
+  in historical
+
+  diagnostic text — left intact as it documents past failure behavior, not executable
+  code.
+
+  The print string in test_import.py was also updated for consistency.
+
+  Post-fix verification grep confirmed zero remaining automata_lib import statements
+  in src/.
+
+  '
+log_excerpt: "Grep for '(import automata_lib|from automata_lib)' in src/**/*.py:\n\
+  \  src\\minimal_crash_example.py:35:    from automata_lib import ca\n  src\\test_import.py:4:\
+  \    from automata_lib import ca\nApplied replacements:\n  minimal_crash_example.py:35:\
+  \ from automata_lib import ca -> from automata import ca\n  test_import.py:4:  \
+  \         from automata_lib import ca -> from automata import ca\nVerification grep:\
+  \ No matches found (clean)\n"
+metrics:
+  files_modified: 2
+  replacements_made: 2
+notes: Replaced 2 occurrences of `from automata_lib import ca` → `from automata import
+  ca` across src/
+status: ok

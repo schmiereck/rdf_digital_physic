@@ -1,7 +1,7 @@
 import sys
 try:
-    print("Attempting to import from automata_lib.ca...")
-    from automata_lib import ca
+    print("Attempting to import from automata.ca...")
+    from automata import ca
     print("Import successful.")
     sys.exit(0)
 except ImportError as e:

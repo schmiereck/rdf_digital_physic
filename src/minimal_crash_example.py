@@ -32,7 +32,7 @@ print("--- Attempting to run the minimal example that fails. ---")
 print("This script is expected to fail with a ModuleNotFoundError.")
 
 try:
-    from automata_lib import ca
+    from automata import ca
     print("\nSUCCESS: The 'automata_lib' was found. This is unexpected.")
     sys.exit(0)
 except ModuleNotFoundError:
