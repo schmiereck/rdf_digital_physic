@@ -7,31 +7,6 @@ cached_tokens: 0
 cost_usd: 0.00875
 hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
 input_tokens: 1000
-iter: 168
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_168: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 169. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
 iter: 169
 metrics: {}
 output_tokens: 500
@@ -986,4 +961,39 @@ First, agent `201.1` performed a quantitative characterization. The result was a
 **Sub-agent 201.2:** Generated a clear GIF of the period-4 oscillator, visually confirming the findings of `201.1`. The object cycles through four distinct L-tromino-like shapes while remain
 
 **Notes:** A critical negative result. The previous `v<c` glider discovery is invalid. The next phase must focus on fixing the fitness function.
+
+
+---
+```yaml
+cached_tokens: 183308
+cost_usd: 0.56375
+hypothesis: 'phase-202: Developed and validated a robust, exploit-resistant fitness
+  function for v<c glider search.'
+input_tokens: 283671
+iter: 202
+metrics:
+  best_fitness_found: 0.16666666666666785
+  champion_displacement: 0.6666666666666714
+  generations_to_plateau: 3
+  known_exploits_blocked: 2
+output_tokens: 4960
+status: ok
+```
+
+## iter_202: phase-202: Developed and validated a robust, exploit-resistant fitness function for v<c glider search.
+
+**Analysis:** This phase was a critical and successful exercise in scientific debugging and tool hardening. The initial goal to find a `v<c` glider was not met. Instead, the phase pivoted to iteratively identifying and fixing two distinct, critical exploits in the fitness function.
+
+1.  **Sub-goal 202.1:** Addressed the "phase-sampling" exploit by creating `CumulativeDisplacementFitness`. While the agent report
+
+**Status:** ok
+
+**Metrics:** `{'best_fitness_found': 0.16666666666666785, 'champion_displacement': 0.6666666666666714, 'generations_to_plateau': 3, 'known_exploits_blocked': 2}`
+
+**Experimenter view:** This phase successfully hardened the `v<c` fitness function against two distinct exploits.
+
+- **Sub-agent 202.1** developed `CumulativeDisplacementFitness`, which solved the phase-sampling exploit but, as discovered by **sub-agent 202.2**, was vulnerable to an annihilation exploit that produced artificial fitness scores of ~89.8.
+- **Sub-agent 202.3** created the final `RobustCumulativeDisplacemen
+
+**Notes:** The main outcome of this phase is not a new particle, but a reliable tool to continue the search.
 

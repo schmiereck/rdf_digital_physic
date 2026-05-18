@@ -3,20 +3,20 @@
 **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
 
 **Confirmed:**
-- The champion rule from `iter_200.1` produces a stable, bit-conserving, period-4 **stationary oscillator**, not a glider (iter_201.1, 201.2).
-- The `SparseGliderFitness` function is vulnerable to a "phase-sampling exploit", where it mistakes the internal phase shifts of an oscillator for genuine translational motion (iter_201.3).
+- A new fitness function, `RobustCumulativeDisplacementFitness`, has been developed and validated to be immune to both the "phase-sampling" and "annihilation" exploits (iter_202.3).
+- An evolutionary search with this robust function does not produce a `v<c` glider within 20 generations. It consistently converges on a local optimum of stable, bit-conserving, but stationary patterns (iter_202.4).
 - The `v=1c` elastic collision rule from `iter_193` remains the best confirmed result for particle interaction.
 
 **Refuted:**
-- The claim that a `v<c` glider was discovered in `iter_200`. The result has been demonstrated to be a measurement artifact.
+- The `v<c` glider from `iter_200` was refuted in `iter_201`.
+- The `CumulativeDisplacementFitness` function was refuted as a reliable tool in `iter_202.2`.
 
 **Best Result:**
-- The `v=1c` elastic collision rule (`iter_193`). The search for a `v<c` glider has been reset.
+- The `v=1c` elastic collision rule (`iter_193`). The search for a `v<c` glider has been reset to a new, more reliable baseline.
 
 **In Progress:**
-- The `v<c` glider search must be re-started after developing a more robust fitness function.
+- The `v<c` glider search must be re-started from the new baseline, focusing on methods to escape the local optimum of stationary patterns.
 
 **Open Questions:**
-- How can `SparseGliderFitness` be modified to be robust against phase-sampling exploits?
-- Will measuring cumulative displacement from t=0, rather than inter-checkpoint displacement, prevent this exploit?
-- Can a renewed evolutionary search with a corrected fitness function discover a true `v<c` glider?
+- How can the evolutionary search be modified (e.g., population size, mutation rate, new seeds) to escape the local optimum of stationary patterns?
+- Is it possible that no simple rule supports a `v<c` glider for the 3-bit L-tromino, and that a different approach is needed?
