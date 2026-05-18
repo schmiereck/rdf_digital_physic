@@ -1,21 +1,68 @@
-Now let me find the champion rule from iter_200 and understand the project structure better:
+I'll read the relevant files first to understand the codebase structure.
+Both `CumulativeDisplacementFitness` and the CLI argument are already implemented. Now I need to find the champion rule from iter_200 and run the validation.
+The file is `champion_vc_rule.json`, not `champion_rule.txt`. Let me read the full rule and the seed particle used.
+Now I'll write a validation script and run it. The L-tromino seed used in iter_200 is `[(0,0), (0,1), (1,1)]`.
+The fitness is 0.118 with the 3-cell L-tromino, which is above the 0.1 threshold. Let me investigate whether the pattern is truly stationary or if the displacement is due to a one-time shift, and also test with the T_TROMINO (4-cell default seed) to be thorough.
+The pattern becomes static after just 2 steps with the L-tromino. Let me check if there's an iter_201 champion rule that actually is the stationary oscillator being referenced.
+The task refers to the iter_200.1 champion (fitness 1.927, the one debunked as period-4 oscillator). Let me test that rule.
+The true "bad" rule is from iter_200.1 (the period-4 oscillator with SparseGliderFitness score 1.927). The referenced file `champion_rule.txt` doesn't exist - the actual file is `champion_v_lt_c_rule.json`. Let me run the proper validation with this rule and produce the final report.
+The true period-4 oscillator gives fitness = 0.167 (91.4% reduction from 1.927), but still exceeds 0.1. Let me write a comprehensive final validation report.
+The file has encoding issues. Let me write it directly since I've already read it.
+The validation is complete. Here is a summary of findings:
 
+**What was already done (from previous attempt):** `CumulativeDisplacementFitness` and `--fitness` CLI selection were both already correctly implemented in the codebase.
 
-Now I have all the info. Let me check the archive/iter_201 for more context on the exploit, and check the archive/iter_202 directory:
+**Validation results:**
+- The task referenced `archive/iter_200/results/champion_rule.txt` which doesn't exist. The true "bad" rule is from `iter_200.1` (the period-4 oscillator debunked in iter_201, original exploit fitness: **1.927**).
+- With `CumulativeDisplacementFitness` at `simulation_steps=200`, the period-4 oscillator scores **0.167** — a 91.4% reduction, but still above the 0.1 threshold.
+- The reason: the oscillator's initial seed position is not in its stable 4-phase cycle. At step 200 (200 mod 4 = 0), it is at the phase furthest from the initial CoM (0.667 cells away). At step 50 or 150 (mod 4 = 2), it achieves 0.083 < 0.1.
 
+```yaml
+status: experiment_failed
+artifacts:
+  - archive/iter_202/results/validation_report.txt
+  - src/validate_iter202.py
+metrics:
+  fitness_iter200_1_champion_rule_A: 0.16666667
+  fitness_iter200_champion_rule_B: 0.11785113
+  original_exploit_fitness_SparseGlider: 1.927
+  reduction_vs_SparseGlider_rule_A_pct: 91.4
+  reduction_vs_SparseGlider_rule_B_pct: 75.0
+  oscillator_period_steps: 4
+  simulation_steps: 200
+  success_threshold: 0.1
+log_excerpt: |
+  iter_200.1 L-tromino init CoM: (63.667, 63.333), bits: 3
+    step    4: CoM=(64.333, 63.333), bits=3, disp=0.666667, fitness=0.166667
+    step   50: CoM=(63.667, 63.667), bits=3, disp=0.333333, fitness=0.083333
+    step  200: CoM=(64.333, 63.333), bits=3, disp=0.666667, fitness=0.166667
+  === CumulativeDisplacementFitness at step 200 ===
+    fitness:    0.16666667
+    displacement: 0.66666667
+    initial_com: [63.667, 63.333]
+    final_com:   [64.333, 63.333]
+    initial_bits: 3 / final_bits: 3
+    SUCCESS (fitness < 0.1): False
+  Reduction vs SparseGliderFitness: 1.927 -> 0.1667 (91.4% reduction)
+experimenter_view: |
+  The task referenced a non-existent file (archive/iter_200/results/champion_rule.txt).
+  The true "bad" rule is in archive/iter_200.1/results/champion_v_lt_c_rule.json — the
+  period-4 stationary oscillator that was debunked in iter_201 with exploit fitness 1.927.
 
-Now I have all the information I need. Let me create the `CumulativeDisplacementFitness` class and update `main_v2.py`.
+  CumulativeDisplacementFitness (already correctly implemented from the previous low
+  attempt) measures net displacement from t=0 to t=max_steps.  For the period-4
+  oscillator with simulation_steps=200, the final CoM lands at phase-0 of its cycle
+  (200 mod 4 = 0), which is 0.667 cells from the initial position.  This gives
+  fitness = 0.667 / (1+3) = 0.167 > 0.1.
 
-The champion rule from `iter_200` displaced `0.471...` at checkpoint 1, then `0.0` at subsequent checkpoints (50-250). This is the "phase-sampling" exploit — it moved once then oscillated. The new fitness measures displacement from t=0 to final, which should be low for stationary oscillators.
+  The 0.1 threshold IS achievable: at simulation_steps=50 or 150 (mod 4=2, the phase
+  closest to the initial CoM), fitness = 0.083 < 0.1.  The mismatch is a resonance
+  effect between the 200-step window and the oscillator's 4-step period.
 
-Let me first write the updated fitness_v2.py:
-
-
-Now update `main_v2.py` to add the new fitness function to the registry and support the `--fitness` argument:
-
-
-Now let me create a validation script and run it:
-
-
-Self-test passes. Now run the validation:
-
+  Critically, the function still provides ~100x discrimination between the oscillator
+  (0.167) and a hypothetical true glider at v=c/3 (~16.75 fitness).  The fitness
+  function is scientifically sound but the success threshold needs to account for
+  period-window resonance, or the implementation should use a step count coprime to
+  likely oscillator periods (e.g., 201 or 199 instead of 200).
+notes: "Fitness criterion missed due to period-window resonance (200 mod 4 = 0); 91.4% reduction vs original exploit is the key result."
+```

@@ -1,0 +1,78 @@
+iter_202 Validation Report
+==========================
+Date: 2026-05-18
+Purpose: Validate CumulativeDisplacementFitness rejects the iter_200.1 stationary-oscillator exploit.
+
+NOTE: The task referenced "archive/iter_200/results/champion_rule.txt" which does not
+exist.  The correct "bad" rule is the iter_200.1 champion, debunked as a period-4
+stationary oscillator in iter_201 (exploit fitness: 1.927).  The iter_200 champion
+(fitness 0.471) is a different rule (transient mover, not a true oscillator).
+
+Rule A: iter_200.1 champion (the TRUE period-4 stationary oscillator)
+----------------------------------------------------------------------
+  source           : archive/iter_200.1/results/champion_v_lt_c_rule.json
+  seed_particle    : L-tromino [(-1,-1),(0,-1),(0,0)]
+  SparseGliderFitness original fitness: 1.927
+  oscillator_period: 4 steps
+  exploit_mechanism: Oscillator Phase-Sampling
+
+Rule B: iter_200 champion (transient mover, different rule)
+------------------------------------------------------------
+  source           : archive/iter_200/results/champion_vc_rule.json
+  seed_particle    : L-tromino [(0,0),(0,1),(1,1)]
+  SparseGliderFitness original fitness: 0.471
+
+Validation configuration
+------------------------
+  fitness_function : CumulativeDisplacementFitness
+  grid_size        : 128
+  simulation_steps : 200
+
+Results - Rule A (iter_200.1, period-4 oscillator)
+---------------------------------------------------
+  fitness       : 0.16666667
+  displacement  : 0.66666667
+  initial_com   : [63.6667, 63.3333]
+  final_com     : [64.3333, 63.3333]
+  initial_bits  : 3
+  final_bits    : 3
+  Reduction vs SparseGliderFitness: 1.927 -> 0.167 (91.4% reduction)
+
+Results - Rule B (iter_200, transient mover)
+---------------------------------------------
+  fitness       : 0.11785113
+  displacement  : 0.47140452
+  initial_com   : [64.3333, 64.6667]
+  final_com     : [64.0, 65.0]
+  initial_bits  : 3
+  final_bits    : 3
+  Reduction vs SparseGliderFitness: 0.471 -> 0.118 (75.0% reduction)
+
+Success criterion: fitness < 0.1
+Outcome Rule A: FAIL (0.167 > 0.1)
+Outcome Rule B: FAIL (0.118 > 0.1)
+
+Analysis: Why the criterion was not met
+---------------------------------------
+The iter_200.1 oscillator has a period of exactly 4 steps.  Its centre-of-mass
+oscillates between four positions.  The initial position (the L-tromino seed at t=0)
+is NOT one of the four oscillation-cycle positions; after a short transient (steps 0-3)
+the pattern enters its stable 4-phase cycle and never returns to the exact initial CoM.
+
+CumulativeDisplacementFitness measures the Euclidean distance from the initial CoM (t=0)
+to the final CoM (t=200).  Because 200 mod 4 = 0, at step 200 the oscillator is at
+phase-0 of its cycle -- CoM (64.333, 63.333), displaced 0.667 cells from the initial
+(63.667, 63.333).  The fitness is 0.667/(1+3) = 0.167.
+
+At simulation_steps=50 or 150 (50 mod 4 = 2 -- the phase closest to the initial
+position), displacement would be only 0.333 and fitness 0.083 < 0.1.
+
+The iter_200 rule (Rule B) is not a true oscillator but a transient-mover: the pattern
+transforms in 2 steps and then becomes static.  Its net displacement is 0.471 cells.
+
+Effectiveness
+-------------
+A true glider at v=c/3 with 3 bits after 200 steps would displace ~67 cells, giving
+fitness ~16.75.  The oscillator's 0.167 provides a ~100x discrimination margin.
+CumulativeDisplacementFitness is effective as a fitness discriminator even though
+the absolute 0.1 threshold is not met at simulation_steps=200 for this exploit rule.
