@@ -1,0 +1,55 @@
+analysis: 'This planner task aimed to discover a stable, `v<c` glider by leveraging
+  the robust `NetDisplacementFitness` function developed in `iter_204`. The investigation
+  proceeded in two phases: a full evolutionary search, followed by a rigorous characterization
+  of the resulting champion.
+
+
+  1.  **Evolutionary Search (213.10.1):** The search ran for 15 generations and quickly
+  converged on a champion rule with a fitness of `0.1179`. The rapid convergence suggested
+  the search had found a local optimum.
+
+
+  2.  **Champion Characterization (213.10.2):** A 1000-step analysis of the champion
+  rule definitively proved it was **not a glider**. The object is a compact oscillator
+  that undergoes a small, one-time "settling" transient, shifting its center of mass
+  by ~0.47 cells within the first 100 steps. For the remaining 900 steps, its net
+  displacement was zero.
+
+
+  **Conclusion:** The `NetDisplacementFitness` function, while robust against previous
+  "puffer" and "oscillator" exploits, is vulnerable to a new, more subtle exploit:
+  rewarding initial transient drift rather than sustained motion. The search successfully
+  found a pattern that maximizes this exploit. The primary research goal was not achieved,
+  but a critical new failure mode was identified, paving the way for a more robust
+  fitness function in the future.
+
+  '
+chosen_direction: ''
+experimenter_view: "The champion is definitively NOT a glider. The 1000-step long-run\
+  \ reveals:\n1. NET DISPLACEMENT: Only 0.471 cells total over 1000 steps. The entire\n\
+  \   CoM shift happened in the first 100 steps (drift_per_100[0]=0.471),\n   with\
+  \ zero net displacement in all subsequent 100-step windows. This is\n   a transient\
+  \ settling effect, not sustained locomotion.\n2. BIT OSCILLATION: The bit count\
+  \ fluctuates between 3 and 4 (min=3,\n   max=4, final=3). The structure is a compact\
+  \ oscillator — it breathes\n   between 3 and 4 cells but returns to 3 on each cycle.\n\
+  3. VELOCITY: Average velocity of 0.00047 cells/step (~0.47 cells across\n   1000\
+  \ steps) is orders of magnitude below any glider threshold. The\n   last-100-step\
+  \ mean step displacement is exactly 0.0.\n4. VERDICT: The champion is a compact\
+  \ oscillator with an initial transient\n   CoM shift. The fitness of 0.118 was achieved\
+  \ by exploiting the\n   measurement window (initial vs. final CoM at t=250) — the\
+  \ structure\n   shifted during its settling transient and then froze in place. This\
+  \ is\n   a fitness function exploit, not a genuine glider. Future search should\n\
+  \   use a fitness function that measures sustained motion (e.g., mean CoM\n   velocity\
+  \ over a sliding window, excluding the first N settling steps).\n"
+hypothesis: ''
+metrics:
+  avg_velocity_cells_per_step: 0.0004714
+  bit_stable: false
+  last100_mean_step_disp: 0.0
+  net_displacement: 0.471405
+notes: Champion confirmed as compact oscillator with transient CoM shift; not a glider.
+  The current fitness function is exploitable.
+open_questions: []
+rationale: ''
+state_update: ''
+status: experiment_failed
