@@ -3,20 +3,20 @@
 **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
 
 **Confirmed:**
-- A new fitness function, `RobustCumulativeDisplacementFitness`, has been developed and validated to be immune to both the "phase-sampling" and "annihilation" exploits (iter_202.3).
-- An evolutionary search with this robust function does not produce a `v<c` glider within 20 generations. It consistently converges on a local optimum of stable, bit-conserving, but stationary patterns (iter_202.4).
-- The `v=1c` elastic collision rule from `iter_193` remains the best confirmed result for particle interaction.
+- The `RobustCumulativeDisplacementFitness` function is vulnerable to a "puffer" exploit, where particles gain fitness by expanding their bounding box without moving (iter_203.1).
+- A fitness function based on *cumulative* displacement divided by bounding box size (`DisplacementOverBoundingBoxFitness`) successfully defeats the "puffer" exploit but is vulnerable to a "compact oscillator" exploit, where particles accumulate high fitness by oscillating in-place (iter_203.3).
+- The failure to find a `v<c` glider is a systematic issue with the fitness landscape, not an artifact of unlucky initial conditions (iter_203.1).
 
 **Refuted:**
-- The `v<c` glider from `iter_200` was refuted in `iter_201`.
-- The `CumulativeDisplacementFitness` function was refuted as a reliable tool in `iter_202.2`.
+- The hypothesis that the `iter_202` failure was due to an unlucky random seed (iter_203.1).
 
 **Best Result:**
-- The `v=1c` elastic collision rule (`iter_193`). The search for a `v<c` glider has been reset to a new, more reliable baseline.
+- The `v=1c` elastic collision rule (`iter_193`) remains the best confirmed result for particle physics. No progress has been made on finding a `v<c` glider.
 
 **In Progress:**
-- The `v<c` glider search must be re-started from the new baseline, focusing on methods to escape the local optimum of stationary patterns.
+- The `v<c` glider search is stalled, pending the development of a new fitness function based on *net* displacement to defeat the compact oscillator exploit.
 
 **Open Questions:**
-- How can the evolutionary search be modified (e.g., population size, mutation rate, new seeds) to escape the local optimum of stationary patterns?
-- Is it possible that no simple rule supports a `v<c` glider for the 3-bit L-tromino, and that a different approach is needed?
+- Can a fitness function based on *net* displacement (start-to-end distance) finally break the cycle of exploits and discover a true `v<c` glider?
+- Is the 3-bit L-tromino seed too prone to oscillation, and should we explore larger, more rigid seeds?
+- Are there other search techniques besides evolution (e.g., direct construction) that might be better suited for finding `v<c` gliders?

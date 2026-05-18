@@ -4,31 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 169
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_169: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 170. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.22011
 hypothesis: 'phase-170: An asymmetric particle seed enables evolvable motion under
   C2-symmetric rules.'
@@ -996,4 +971,39 @@ status: ok
 - **Sub-agent 202.3** created the final `RobustCumulativeDisplacemen
 
 **Notes:** The main outcome of this phase is not a new particle, but a reliable tool to continue the search.
+
+
+---
+```yaml
+cached_tokens: 21758
+cost_usd: 0.31452
+hypothesis: 'phase-203: Diagnosed and defeated two successive fitness function exploits
+  (''puffer'' and ''compact oscillator''), revealing net displacement as the critical
+  missing metric.'
+input_tokens: 96638
+iter: 203
+metrics:
+  best_exploited_fitness: 38.917421
+  exploit_defeated: puffer
+  new_exploit_discovered: compact oscillator
+  validation_net_displacement: 0.3333
+output_tokens: 3181
+status: experiment_failed
+```
+
+## iter_203: phase-203: Diagnosed and defeated two successive fitness function exploits ('puffer' and 'compact oscillator'), revealing net displacement as the critical missing metric.
+
+**Analysis:** This phase was a systematic investigation into the failure to evolve a `v<c` glider, which was previously getting stuck in a local optimum of stationary patterns. The investigation proceeded in three steps and successfully diagnosed the root cause.
+
+First, sub-agent `203.1` refuted the hypothesis that the failure was due to an unlucky initial population. The re-run of the experiment with a new see
+
+**Status:** experiment_failed
+
+**Metrics:** `{'best_exploited_fitness': 38.917421, 'validation_net_displacement': 0.3333, 'exploit_defeated': 'puffer', 'new_exploit_discovered': 'compact oscillator'}`
+
+**Experimenter view:** Sub-agent `203.1` confirmed that the `v<c` search consistently gets stuck in a local optimum of stationary patterns, regardless of the initial random seed. It also diagnosed a "puffer" exploit, where the `RobustCumulativeDisplacementFitness` function was being tricked by rules that expand a particle's bounding box without achieving net motion.
+
+Sub-agent `203.2` successfully implemented a new fitn
+
+**Notes:** This phase was a classic example of scientific debugging, uncovering two nested failure modes. The path forward is now much clearer.
 

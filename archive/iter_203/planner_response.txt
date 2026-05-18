@@ -1,0 +1,63 @@
+```yaml
+analysis: |
+  This phase was a systematic investigation into the failure to evolve a `v<c` glider, which was previously getting stuck in a local optimum of stationary patterns. The investigation proceeded in three steps and successfully diagnosed the root cause.
+
+  First, sub-agent `203.1` refuted the hypothesis that the failure was due to an unlucky initial population. The re-run of the experiment with a new seed converged to the same stationary outcome, but more importantly, revealed a "puffer" exploit: the fitness function was rewarding rules that expanded a particle's bounding box without any actual travel.
+
+  Second, sub-agent `203.2` engineered a new fitness function, `DisplacementOverBoundingBoxFitness`, specifically to neutralize this exploit by normalizing displacement by the bounding box size.
+
+  Third, sub-agent `203.3` tested this new function. The experiment confirmed that the "puffer" exploit was successfully blocked. However, it immediately uncovered a more subtle, underlying exploit: the "compact oscillator". The new function was rewarding the *cumulative* (step-by-step) displacement of a particle oscillating in place, which resulted in high fitness scores but zero *net* travel.
+
+  The phase did not discover a `v<c` glider, but it was highly successful from a scientific standpoint. It methodically peeled back two layers of failure modes, leading to a critical insight: the search must reward net (start-to-end) displacement, not cumulative path length.
+open_questions:
+  - "Can a fitness function based on *net* displacement (start-to-end distance) finally break the cycle of exploits and discover a true v<c glider?"
+  - "Is the 3-bit L-tromino seed too prone to oscillation, and should we explore larger, more rigid seeds?"
+  - "Are there other search techniques besides evolution (e.g., direct construction) that might be better suited for finding v<c gliders?"
+  - "How can we design a fitness function that explicitly rewards sustained, linear velocity?"
+chosen_direction: "The next phase must focus on implementing and testing a fitness function based on net displacement."
+hypothesis: "phase-203: Diagnosed and defeated two successive fitness function exploits ('puffer' and 'compact oscillator'), revealing net displacement as the critical missing metric."
+rationale: |
+  The plan was executed logically. The control experiment in `203.1` was essential to confirm the problem was systematic, not stochastic. The diagnosis of the "puffer" exploit from that run directly motivated the new fitness function created in `203.2`. Finally, testing this new function in `203.3` was necessary to reveal the deeper "compact oscillator" issue. Although the phase goal was not achieved, the sequential debugging was highly effective and produced a crucial insight for future work.
+status: experiment_failed
+metrics:
+  best_exploited_fitness: 38.917421
+  validation_net_displacement: 0.3333
+  exploit_defeated: puffer
+  new_exploit_discovered: compact oscillator
+experimenter_view: |
+  Sub-agent `203.1` confirmed that the `v<c` search consistently gets stuck in a local optimum of stationary patterns, regardless of the initial random seed. It also diagnosed a "puffer" exploit, where the `RobustCumulativeDisplacementFitness` function was being tricked by rules that expand a particle's bounding box without achieving net motion.
+
+  Sub-agent `203.2` successfully implemented a new fitness function, `DisplacementOverBoundingBoxFitness`, to counter this specific exploit.
+
+  Sub-agent `203.3` tested the new function. It successfully defended against the "puffer" exploit; the champion rule kept the particle in a tiny 2x2 bounding box. However, it immediately fell victim to a "compact oscillator" exploit. The function rewarded the high *cumulative* displacement of a particle oscillating in place, leading to a high fitness score (38.9) but effectively zero *net* displacement (0.33). The root cause is now clear: the fitness function must be based on net displacement (start-point to end-point distance) rather than cumulative path length.
+notes: "This phase was a classic example of scientific debugging, uncovering two nested failure modes. The path forward is now much clearer."
+artifacts:
+  - src/new_fitness.py
+  - archive/iter_203.1/results/champion_rule.json
+  - archive/iter_203.1/results/fitness_log.csv
+  - archive/iter_203.3/results/champion_rule.json
+  - archive/iter_203.3/results/fitness_log.csv
+state_update: |
+  # Current Research State
+
+  **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
+
+  **Confirmed:**
+  - The `RobustCumulativeDisplacementFitness` function is vulnerable to a "puffer" exploit, where particles gain fitness by expanding their bounding box without moving (iter_203.1).
+  - A fitness function based on *cumulative* displacement divided by bounding box size (`DisplacementOverBoundingBoxFitness`) successfully defeats the "puffer" exploit but is vulnerable to a "compact oscillator" exploit, where particles accumulate high fitness by oscillating in-place (iter_203.3).
+  - The failure to find a `v<c` glider is a systematic issue with the fitness landscape, not an artifact of unlucky initial conditions (iter_203.1).
+
+  **Refuted:**
+  - The hypothesis that the `iter_202` failure was due to an unlucky random seed (iter_203.1).
+
+  **Best Result:**
+  - The `v=1c` elastic collision rule (`iter_193`) remains the best confirmed result for particle physics. No progress has been made on finding a `v<c` glider.
+
+  **In Progress:**
+  - The `v<c` glider search is stalled, pending the development of a new fitness function based on *net* displacement to defeat the compact oscillator exploit.
+
+  **Open Questions:**
+  - Can a fitness function based on *net* displacement (start-to-end distance) finally break the cycle of exploits and discover a true `v<c` glider?
+  - Is the 3-bit L-tromino seed too prone to oscillation, and should we explore larger, more rigid seeds?
+  - Are there other search techniques besides evolution (e.g., direct construction) that might be better suited for finding `v<c` gliders?
+```
