@@ -1,0 +1,58 @@
+I'll read the memory index and project structure first, then configure and run the evolutionary search.
+Now let me look at the fitness_v2.py to understand the seed particle and grid size parameters.
+Let me check the evolution.py file to understand the full structure.
+Now I have a clear picture. I'll modify `main_v2.py` with the required configuration and then run it.
+Now update the `run_evolution` function to pass the L-Tromino particle to the fitness class:
+Now update the `parse_args` defaults and the `main` function to write `evolution_summary.txt`:
+Now add `evolution_summary.txt` output to the `main` function:
+Let me verify the final state of the script before running:
+The script looks correct. Now let me run it:
+The run succeeded. Let me read the champion rule to include key details in the report.
+The run completed. Notably, the champion has `final_bits=0` — the rule annihilates the particle, and `center_of_mass` returns `(0.0, 0.0)` for an empty grid, making it look like large displacement. This is a fitness exploit, not a true glider. I'll note this in the experimenter view.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_202.2.1/results/champion_rule.json
+  - archive/iter_202.2.1/results/evolution_summary.txt
+metrics:
+  final_fitness: 89.802871
+log_excerpt: |
+  Output directory: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_202.2.1\results
+  === Evolution: CumulativeDisplacementFitness ===
+    generations=15  population=100  elite=10
+    crossover_rate=0.8  mutation_rate=0.01
+    Gen  0: max=0.269374  mean=0.016706  non_zero=27/100
+    Gen  1: max=0.372678  mean=0.082325  non_zero=87/100  best_so_far=0.372678@gen1
+    Gen  2: max=89.802871  mean=1.060785  non_zero=93/100  best_so_far=89.802871@gen2
+    Gen  3: max=89.802871  mean=11.444157  non_zero=100/100  best_so_far=89.802871@gen2
+    Gen  4: max=89.802871  mean=81.213447  non_zero=100/100  best_so_far=89.802871@gen2
+    Gen  9: max=89.802871  mean=86.589515  non_zero=100/100  best_so_far=89.802871@gen2
+    Gen 15: max=89.802871  mean=84.425578  non_zero=100/100  best_so_far=89.802871@gen2
+  === Run complete in 61.7s ===
+    Best fitness   : 89.802871
+    Best generation: 2
+    Generations completed: 15
+  Saved champion : ...\champion_rule.json
+  Saved summary  : ...\evolution_summary.txt
+experimenter_view: |
+  The run was stable and completed all 15 generations in 61.7 s with no errors.
+  Fitness rose sharply in generation 2 (0.37 → 89.8) and plateaued for the
+  remaining 13 generations; the population mean converged toward the champion
+  value (~84–87 by gen 9–15), indicating strong selection pressure and low
+  diversity.
+
+  EXPLOIT DETECTED — the champion rule is an annihilating rule: it destroys
+  the 3-bit L-Tromino seed within 200 steps (final_bits=0). The
+  CumulativeDisplacementFitness.evaluate() calls center_of_mass() on an empty
+  grid, which returns (0.0, 0.0) by convention. The initial CoM is near
+  (63.67, 63.33), so the Euclidean "displacement" is ≈ 89.8 — but this is not
+  real movement; it is an artifact of the empty-grid CoM sentinel. The
+  denominator (1 + 0 = 1) does not penalise annihilation, so the formula
+  rewards destruction as if it were displacement.
+
+  No genuine glider was discovered. The fitness function needs a
+  bit-conservation gate (similar to SparseGliderFitness) or must treat
+  final_bits=0 as fitness 0.0 to close this exploit.
+notes: Champion rule annihilates the particle; fitness=89.8 is an empty-grid CoM exploit, not a glider.
+```

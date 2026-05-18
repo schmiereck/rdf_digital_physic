@@ -6,7 +6,7 @@ Usage:
     python src/main_v2.py --fitness=SparseGliderFitness --generations=N
     python src/main_v2.py --fitness=CumulativeDisplacementFitness --generations=N
 
-Writes results to archive/iter_200.4/results/.
+Writes results to archive/iter_202.2.1/results/.
 """
 
 from __future__ import annotations
@@ -26,14 +26,23 @@ from evolution import generate_random_c2_rule, rule_dict_to_lut
 from fitness_v2 import SparseGliderFitness, CumulativeDisplacementFitness, T_TROMINO
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_200.4" / "results"
+OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_202.2.1" / "results"
 
-POPULATION_SIZE = 20
-ELITE_FRACTION  = 0.20
+POPULATION_SIZE = 100
+ELITE_FRACTION  = 0.10
 CROSSOVER_RATE  = 0.80
 MUTATION_RATE   = 0.01
 LUT_SIZE        = 128
-RNG_SEED        = 200_4
+RNG_SEED        = 202_21
+
+# 3-bit L-Tromino seed particle (offsets from grid centre)
+#   X .
+#   X X
+L_TROMINO: list[tuple[int, int]] = [
+    (-1, -1),
+    ( 0, -1),
+    ( 0,  0),
+]
 
 REGISTRY = {
     "SparseGliderFitness":          SparseGliderFitness,
@@ -87,7 +96,7 @@ def select_top_k(population, fitnesses, k):
 # ── Evolution loop ────────────────────────────────────────────────────────────
 
 def run_evolution(fitness_cls, generations: int, rng_seed: int = RNG_SEED) -> dict:
-    fitness_fn = fitness_cls()
+    fitness_fn = fitness_cls(particle=L_TROMINO)
     rng        = random.Random(rng_seed)
     elite_k    = max(2, int(POPULATION_SIZE * ELITE_FRACTION))
 
@@ -180,10 +189,10 @@ def run_evolution(fitness_cls, generations: int, rng_seed: int = RNG_SEED) -> di
 
 def parse_args():
     p = argparse.ArgumentParser(description="Evolutionary glider search")
-    p.add_argument("--fitness",     default="SparseGliderFitness",
-                   help="Fitness class name (default: SparseGliderFitness)")
-    p.add_argument("--generations", type=int, default=10,
-                   help="Number of generations (default: 10)")
+    p.add_argument("--fitness",     default="CumulativeDisplacementFitness",
+                   help="Fitness class name (default: CumulativeDisplacementFitness)")
+    p.add_argument("--generations", type=int, default=15,
+                   help="Number of generations (default: 15)")
     return p.parse_args()
 
 
@@ -230,6 +239,27 @@ def main() -> int:
     with open(stats_path, "w") as f:
         json.dump(result["stats"], f, indent=2)
     print(f"Saved stats    : {stats_path}")
+
+    summary_path = OUTPUT_DIR / "evolution_summary.txt"
+    with open(summary_path, "w") as f:
+        f.write(f"Evolution Summary\n")
+        f.write(f"=================\n")
+        f.write(f"Fitness function     : {args.fitness}\n")
+        f.write(f"Seed particle        : 3-bit L-Tromino {L_TROMINO}\n")
+        f.write(f"Grid size            : 128x128 (torus)\n")
+        f.write(f"Population size      : {POPULATION_SIZE}\n")
+        f.write(f"Elite fraction       : {ELITE_FRACTION}\n")
+        f.write(f"Generations completed: {result['generations_completed']}\n")
+        f.write(f"Final fitness (champion): {result['best_fitness']:.6f}\n")
+        f.write(f"Best generation      : {result['best_generation']}\n")
+        f.write(f"Elapsed              : {elapsed:.1f}s\n")
+        f.write(f"\nPer-generation stats:\n")
+        for s in result["stats"]:
+            f.write(
+                f"  gen={s['generation']:3d}  max={s['max']:.6f}  "
+                f"mean={s['mean']:.6f}  non_zero={s['non_zero']}\n"
+            )
+    print(f"Saved summary  : {summary_path}")
 
     return 0
 
