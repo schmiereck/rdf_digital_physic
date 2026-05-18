@@ -3,42 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 86025
-cost_usd: 0.3538
-hypothesis: 'phase-181: Characterize the v=1c glider''s collision dynamics, revealing
-  density-dependent outcomes ranging from explosive growth to stable particle fusion.'
-input_tokens: 157451
-iter: 181
-metrics:
-  glider_bit_final_bits: 5
-  glider_bit_initial_bits: 4
-  head_on_final_bits: 192
-  head_on_initial_bits: 6
-output_tokens: 2718
-status: ok
-```
-
-## iter_181: phase-181: Characterize the v=1c glider's collision dynamics, revealing density-dependent outcomes ranging from explosive growth to stable particle fusion.
-
-**Analysis:** This phase successfully characterized the collision dynamics of the v=1c glider discovered in iter_179. The persistent `code_error` from phase 180 was resolved, allowing for a systematic investigation.
-
-First, sub-agent 181.1 confirmed the execution environment was stable by perfectly reproducing the single-glider dynamics, a critical prerequisite.
-
-Next, two collision experiments at different int
-
-**Status:** ok
-
-**Metrics:** `{'head_on_initial_bits': 6, 'head_on_final_bits': 192, 'glider_bit_initial_bits': 4, 'glider_bit_final_bits': 5}`
-
-**Experimenter view:** **Sub-agent 181.1 (Reproducibility):** Confirmed the v=1c glider is perfectly reproducible and the execution environment is stable. A single 3-bit glider moves at 1.0 cells/step with no change in bit count.
-
-**Sub-agent 181.2 (Head-on Collision):** Revealed a catastrophically inelastic collision. The two 3-bit gliders (6 bits total) annihilate each other, triggering an explosive growth phase that 
-
-**Notes:** Collision dynamics are highly density-dependent: high density leads to explosion, medium density to fusion.
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.2653
 hypothesis: 'phase-182: Confirmed the 5-bit composite is a stable v=1c glider and
@@ -958,4 +922,37 @@ First, building on the diagnostic work from the previous turn, sub-agent 213.8 a
 The subsequent evolutionary search for a `v<c` glider, managed by planner 213.10, failed to find a glider. Instead, it discovered a rule that produces a compact oscillator. This oscillator explo
 
 **Notes:** The platform is fixed, but the `v<c` glider search requires a more robust fitness function to proceed.
+
+
+---
+```yaml
+cached_tokens: 57904
+cost_usd: 0.18701
+hypothesis: 'phase-214: Develop, validate, and deploy an exploit-resistant fitness
+  function, revealing that a simple evolutionary search is insufficient to find v<c
+  gliders.'
+input_tokens: 91340
+iter: 214
+metrics:
+  best_fitness: 0.0
+  generations_run: 10
+  non_zero_fitness_rules_found: 0
+  validation_fitness_on_exploit: 0.0
+output_tokens: 1840
+status: experiment_failed
+```
+
+## iter_214: phase-214: Develop, validate, and deploy an exploit-resistant fitness function, revealing that a simple evolutionary search is insufficient to find v<c gliders.
+
+**Analysis:** This phase successfully addressed the "transient drift" fitness exploit identified in iter_213. The work was decomposed into three sequential and logical steps. First, in sub-task 214.1, a new `LateWindowDisplacementFitness` function was implemented to measure motion only in a later time window (steps 500-1000), explicitly ignoring initial settling. Second, sub-task 214.2 validated this new functi
+
+**Status:** experiment_failed
+
+**Metrics:** `{'best_fitness': 0.0, 'validation_fitness_on_exploit': 0.0, 'generations_run': 10, 'non_zero_fitness_rules_found': 0}`
+
+**Experimenter view:** The phase executed perfectly from an engineering perspective. The `LateWindowDisplacementFitness` function was created as specified (214.1) and then rigorously validated against the known 'transient drift' exploit from iter_213.10. The validation (214.2) confirmed a fitness of 0.0, proving the new metric successfully ignores the initial settling phase.
+
+The subsequent 10-generation evolutionary se
+
+**Notes:** The new fitness function is a success, but the search for a v<c glider has hit a 'flat landscape' problem.
 

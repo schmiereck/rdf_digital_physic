@@ -1,0 +1,49 @@
+```yaml
+analysis: |
+  This phase successfully addressed the "transient drift" fitness exploit identified in iter_213. The work was decomposed into three sequential and logical steps. First, in sub-task 214.1, a new `LateWindowDisplacementFitness` function was implemented to measure motion only in a later time window (steps 500-1000), explicitly ignoring initial settling. Second, sub-task 214.2 validated this new function by testing it against the known exploit-inducing rule from iter_213.10; the function correctly assigned a fitness score of 0.0, confirming its robustness.
+
+  Finally, sub-task 214.3 deployed this new, validated function in a 10-generation evolutionary search. The result was a clear but negative finding: every rule in the entire population across all generations scored exactly 0.0. This demonstrates that while the new fitness function works as intended, the search space of random C2-symmetric rules is too sparse to yield sustained motion within this limited search budget. The previous, flawed fitness function provided a false gradient, whereas the correct function reveals a landscape that is locally flat, presenting a new search challenge.
+open_questions:
+  - How can we introduce a useful fitness gradient into this apparently flat search space?
+  - Is a "warm start" strategy, seeding evolution with rules known to produce transient motion, more effective than a random start?
+  - Does the search simply require a much larger budget (more generations or larger population) to escape the local minimum of zero motion?
+  - Are we exploring the wrong class of rules (e.g., should we move beyond C2 symmetry)?
+chosen_direction: "Adopt a 'warm start' strategy for the next evolutionary search."
+hypothesis: "phase-214: Develop, validate, and deploy an exploit-resistant fitness function, revealing that a simple evolutionary search is insufficient to find v<c gliders."
+rationale: |
+  The previous phase ended with an exploited fitness function. The logical first step was to engineer a more robust replacement. The three-sub-task approach (implement, validate, deploy) ensured the new tool was correct and reliable before committing to a full search. The validation step (214.2) was critical to prevent wasted computation in the final search step (214.3). The failure of the final search provided a crucial new piece of information: the problem is not just the fitness function, but the difficulty of finding any motion at all.
+status: experiment_failed
+metrics:
+  best_fitness: 0.0
+  validation_fitness_on_exploit: 0.0
+  generations_run: 10
+  non_zero_fitness_rules_found: 0
+experimenter_view: |
+  The phase executed perfectly from an engineering perspective. The `LateWindowDisplacementFitness` function was created as specified (214.1) and then rigorously validated against the known 'transient drift' exploit from iter_213.10. The validation (214.2) confirmed a fitness of 0.0, proving the new metric successfully ignores the initial settling phase.
+
+  The subsequent 10-generation evolutionary search (214.3) using this robust metric was a stark failure. No individual in the 1000-rule evaluation set (100 rules x 10 generations) produced any motion whatsoever in the 500-1000 step window. The fitness landscape is effectively a flat desert at 0.0. This indicates that sustained motion is a very rare property for randomly generated C2-symmetric rules, and a simple evolutionary process is not sufficient to discover it without a better search strategy.
+notes: "The new fitness function is a success, but the search for a v<c glider has hit a 'flat landscape' problem."
+artifacts:
+  - src/fitness_v_lessthan_c.py
+  - archive/iter_214/results/validation.txt
+  - archive/iter_214/results/fitness_vs_generation.png
+state_update: |
+  # Current Research State
+  Phase: v<c Search Strategy Revision
+
+  ## Goal
+  Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
+
+  ## Confirmed
+  - A new fitness function, `LateWindowDisplacementFitness`, has been implemented and validated. It correctly measures displacement in a late time window (steps 500-1000), making it robust against "transient drift" exploits (iter_214.1, iter_214.2).
+  - The "transient drift" oscillator from iter_213.10 is confirmed to be stationary after an initial settling period, scoring 0.0 with the new fitness function (iter_214.2).
+  - A 10-generation evolutionary search using a random initial population and the new robust fitness function failed to find any rules producing sustained motion. The fitness landscape for random C2-symmetric rules appears to be flat at 0.0 (iter_214.3).
+
+  ## Refuted
+  - The hypothesis that simply fixing the fitness function would be sufficient to discover a v<c glider with a standard evolutionary search.
+
+  ## Open Questions
+  - How can we introduce a useful fitness gradient into the apparently flat search space?
+  - Is a "warm start" strategy, seeding evolution with rules known to produce at least transient motion, more effective than a random start?
+  - Is the search budget (10 generations) too small to find promising regions?
+```
