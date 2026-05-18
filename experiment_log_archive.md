@@ -8408,3 +8408,28 @@ status: experiment_failed
 
 **Notes:** The primary goal of creating a stable glider was not met, but the secondary goal of creating and validating a non-exploitable fitness metric was a complete success. The foundation for future searches is now much stronger.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 175
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_175: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 176. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner did not call run_agent. Fabricated results discarded.
+

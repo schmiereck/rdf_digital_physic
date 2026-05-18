@@ -4,31 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 175
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_175: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 176. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner did not call run_agent. Fabricated results discarded.
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.24322
 hypothesis: 'phase-174: Extending the evolutionary search breaks the fitness plateau,
   discovering a rule that produces complex, intermittent motion.'
@@ -985,4 +960,29 @@ status: no_execution
 **Experimenter view:** 
 
 **Notes:** No sub-agent ran for iteration 208. Planner may have used wrong iter_id prefix. Results discarded.
+
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.00875
+hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
+input_tokens: 1000
+iter: 209
+metrics: {}
+output_tokens: 500
+status: no_execution
+```
+
+## iter_209: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
+
+**Analysis:** [Mock] Iteration 210. All systems nominal.
+
+**Status:** no_execution
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** No sub-agent ran for iteration 209. Planner may have used wrong iter_id prefix. Results discarded.
 
