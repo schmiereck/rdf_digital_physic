@@ -1,4 +1,4 @@
-**Context:** The `CumulativeDisplacementFitness` function (iter_202.1) fixed the phase-sampling exploit but was shown to be vulnerable to an annihilation exploit (iter_202.2). We need to create a new function that is robust to both.
+**Context:** The `CumulativeDisplacementFitness` function (iter_202.1) fixed the phase-sampling exploit but was shown to be vulnerable to an annihilation exploit (iter_202.2). We need to create a new function that is robust to both. The previous 'low' complexity attempt at this failed.
 
 **Task:**
 1.  Go to `src/fitness_v2.py`.
@@ -9,8 +9,8 @@
     *   If they are equal, it should call the parent class's `evaluate` method (`super().evaluate(...)`) to calculate and return the fitness based on displacement.
 4.  Update `src/main_v2.py` to make this new `RobustCumulativeDisplacementFitness` function available via the `--fitness` command-line argument.
 5.  **Validate the fix against both known exploits:**
-    a.  Run a simulation with the **annihilating rule** discovered in `iter_202.2`. (The rule is in the sub-iteration `archive/iter_202.2/iter_001/results/champion_rule_gen15.json`).
-    b.  Run a simulation with the **stationary oscillator rule** from `iter_200.1`. (The rule is at `archive/iter_200.1/results/champion_v_lt_c_rule.json`).
+    a.  Run a simulation with the **annihilating rule** discovered in `iter_202.2`. The inner planner that ran the evolution was `202.2.1`. The rule is at `archive/iter_202.2/iter_001/results/champion_rule_gen15.json`.
+    b.  Run a simulation with the **stationary oscillator rule** from `iter_200.1`. The rule is at `archive/iter_200.1/results/champion_v_lt_c_rule.json`.
 6.  **Success Criteria:**
     *   The fitness for the annihilating rule must be exactly `0.0`.
     *   The fitness for the stationary oscillator must be less than `0.2`.
