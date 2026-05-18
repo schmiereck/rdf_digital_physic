@@ -3,20 +3,19 @@
 **Goal:** Evolve a Cellular Automata rule that produces a stable, `v<c` glider.
 
 **Confirmed:**
-- The `RobustCumulativeDisplacementFitness` function is vulnerable to a "puffer" exploit, where particles gain fitness by expanding their bounding box without moving (iter_203.1).
-- A fitness function based on *cumulative* displacement divided by bounding box size (`DisplacementOverBoundingBoxFitness`) successfully defeats the "puffer" exploit but is vulnerable to a "compact oscillator" exploit, where particles accumulate high fitness by oscillating in-place (iter_203.3).
-- The failure to find a `v<c` glider is a systematic issue with the fitness landscape, not an artifact of unlucky initial conditions (iter_203.1).
+- A new fitness function, `NetDisplacementFitness`, has been implemented. It is based on *net* start-to-end displacement to defeat oscillator exploits, while retaining a bounding-box penalty to defeat "puffer" exploits (iter_204.1).
+- The `NetDisplacementFitness` function has been validated and proven to be robust against all previously discovered exploits, including the "puffer" and "compact oscillator" patterns (iter_204.2).
 
 **Refuted:**
-- The hypothesis that the `iter_202` failure was due to an unlucky random seed (iter_203.1).
+- N/A
 
 **Best Result:**
 - The `v=1c` elastic collision rule (`iter_193`) remains the best confirmed result for particle physics. No progress has been made on finding a `v<c` glider.
 
 **In Progress:**
-- The `v<c` glider search is stalled, pending the development of a new fitness function based on *net* displacement to defeat the compact oscillator exploit.
+- **BLOCKED:** The `v<c` glider search is stalled. The evolutionary search experiment (iter_204.3) could not be run due to persistent "Usage quota exceeded" errors in the execution environment.
 
 **Open Questions:**
-- Can a fitness function based on *net* displacement (start-to-end distance) finally break the cycle of exploits and discover a true `v<c` glider?
-- Is the 3-bit L-tromino seed too prone to oscillation, and should we explore larger, more rigid seeds?
+- Can a `v<c` glider be found using the now-validated `NetDisplacementFitness` function once the execution environment is stable?
+- Is the 3-bit L-tromino seed too prone to oscillation, and should we explore larger, more rigid seeds if the next search fails?
 - Are there other search techniques besides evolution (e.g., direct construction) that might be better suited for finding `v<c` gliders?

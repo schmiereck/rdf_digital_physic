@@ -8278,3 +8278,37 @@ status: no_execution
 
 **Notes:** Planner did not call run_agent. Fabricated results discarded.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.22011
+hypothesis: 'phase-170: An asymmetric particle seed enables evolvable motion under
+  C2-symmetric rules.'
+input_tokens: 57128
+iter: 170
+metrics:
+  annihilation_exploit_discovered: 1
+  fitness_improvement_factor: 2.42
+  gen0_max_fitness: 0.28327886
+  gen1_max_fitness_non_degenerate: 0.687
+output_tokens: 1920
+status: ok
+```
+
+## iter_170: phase-170: An asymmetric particle seed enables evolvable motion under C2-symmetric rules.
+
+**Analysis:** This phase successfully addressed the critical failure of `iter_167`, where a C2-symmetric rule could not move a C2-symmetric seed. The core idea was to break the seed's symmetry while retaining the rule's symmetry.
+
+Sub-goal 170.1 replaced the symmetric 2x2 block with an asymmetric 3-bit "L-tromino". This single change was sufficient to enable motion, confirming the hypothesis. A founder populati
+
+**Status:** ok
+
+**Metrics:** `{'gen0_max_fitness': 0.28327886, 'gen1_max_fitness_non_degenerate': 0.687, 'fitness_improvement_factor': 2.42, 'annihilation_exploit_discovered': 1}`
+
+**Experimenter view:** **Sub-agent 170.1:** The experiment successfully confirmed that an asymmetric 3-bit L-tromino seed can be moved by C2-symmetric rules. This contrasts sharply with `iter_167`, where a symmetric seed resulted in zero motion across the entire population. The top rule (rule_014) achieved a fitness of 0.283, establishing a new baseline.
+
+**Sub-agent 170.2:** The evolution of a second generation demonst
+
+**Notes:** The 'glider nursery' concept is validated. The immediate next step is to fix the fitness function to prevent annihilation strategies.
+
