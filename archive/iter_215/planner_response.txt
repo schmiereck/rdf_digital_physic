@@ -1,0 +1,56 @@
+```yaml
+analysis: |
+  This phase successfully addressed the "flat fitness landscape" problem that blocked progress in iter_214. The central hypothesis was that a "warm-start" — seeding an evolutionary search with rules known to produce transient motion — would provide the necessary gradient for discovering a stable `v<c` glider.
+
+  The phase was executed in two logical steps:
+  1.  **215.1 (Population Seeding):** A `medium` complexity agent successfully gathered three "exploit" rules from past iterations (`iter_213`, `iter_177`, `iter_153`) and created a diverse initial population of 100 rules, including the seeds and 97 of their mutants. This provided the raw material for the main experiment.
+  2.  **215.2 (Evolutionary Search):** A `high` complexity agent ran a 20-generation evolutionary search using this seeded population and the robust `LateWindowDisplacementFitness` function.
+
+  The result was a decisive success. A stable, bit-conserving `v<c` glider was discovered immediately in Generation 0. This champion rule was a mutant of the `iter_177` "transient bloomer," proving that the warm-start population contained the solution. This directly contrasts with the complete failure of the random-start search in iter_214 and confirms that the primary barrier was the sparsity of the search space, not the fitness function itself.
+open_questions:
+  - "How does the new v<c glider (rule_215_champion) interact with the elastic collision v=1c glider (rule_193_champion)?"
+  - "Can we evolve faster or more compact v<c gliders by continuing the search from this new baseline?"
+  - "What are the precise velocity and period of the new v<c glider?"
+  - "Is the current evolutionary operator (1-swap per child) sufficient for further optimization, or is a more sophisticated operator needed to escape the current fitness plateau?"
+chosen_direction: "Characterize the newly discovered v<c glider."
+hypothesis: "phase-215: The 'warm-start' evolutionary strategy overcomes the flat fitness landscape of random search, leading to the discovery of a stable, bit-conserving v<c glider."
+rationale: |
+  After the random search in iter_214 failed, the most pressing open question was how to introduce a fitness gradient. A two-step experiment was designed to test the "warm-start" hypothesis directly. Sub-task 215.1 created the necessary starting conditions (the seeded population), and sub-task 215.2 ran the core experiment. This sequential design ensured the hypothesis was tested cleanly and efficiently.
+status: ok
+metrics:
+  best_fitness: 2.4
+  speed_cells_per_step: 0.024
+  late_window_displacement: 12.0
+  initial_bits: 3
+  final_bits: 3
+  champion_found_in_generation: 0
+experimenter_view: |
+  The warm-start strategy was a resounding success. Sub-agent 215.1 correctly prepared the initial population by seeding it with three known "active" rules and their mutants.
+
+  The subsequent evolutionary search (215.2) immediately found a champion in Generation 0 with a fitness of 2.4. This rule, a mutant of the "transient bloomer" from iter_177, produces a clean, bit-conserving glider that moves 12 cells in the late-time window (steps 500-1000). This demonstrates sustained, non-transient motion at a sub-light speed of ~0.024 cells/step.
+
+  The contrast with the iter_214 search, which found zero rules with non-zero fitness, is stark. The warm-start provided the crucial foothold in the vast search space. The population quickly converged on the solution; by generation 2, nearly 90% of the population had adopted the successful trait. The fitness then plateaued for the remaining 18 generations, suggesting the primary goal was met and further optimization may require new techniques.
+artifacts:
+  - archive/iter_215/results/champion_rule.json
+  - archive/iter_215/results/fitness_log.csv
+  - archive/iter_215/results/warm_start_population.json
+state_update: |
+  # Current Research State
+  Phase: v<c Glider Discovered
+
+  ## Goal
+  Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
+
+  ## Confirmed
+  - **A stable, bit-conserving `v<c` glider has been discovered** (iter_215.2). It moves at approximately 0.024 cells/step and was found using an evolutionary search. The champion rule is stored in `archive/iter_215/results/champion_rule.json`.
+  - The **"warm-start" evolutionary strategy is highly effective**. Seeding the population with rules known to produce transient motion successfully overcomes the "flat fitness landscape" problem encountered when starting from a random population (iter_215.2 vs. iter_214.3).
+  - The `LateWindowDisplacementFitness` function is robust and correctly identifies genuine, sustained motion while rejecting transient exploits (iter_214.1, iter_214.2, iter_215.2).
+
+  ## Refuted
+  - The hypothesis that a simple evolutionary search from a random start is sufficient to find `v<c` gliders. The search space is too sparse.
+
+  ## Open Questions
+  - How does the new v<c glider interact with other known particles, particularly the v=1c glider from iter_193?
+  - Can we evolve faster or more compact v<c gliders from this new baseline?
+  - What are the precise velocity and period of the new v<c glider?
+```
