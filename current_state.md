@@ -1,5 +1,5 @@
 # Current Research State
-Phase: PLATFORM FAILURE - BLOCKED
+Phase: PLATFORM DEPENDENCY ERROR - BLOCKED
 
 ## Goal
 Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
@@ -7,15 +7,16 @@ Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hex
 ## Confirmed
 - A stable, bit-conserving `v=1c` glider exists (iter_179).
 - A rule supporting perfectly elastic `v=1c` glider collisions exists (iter_193).
-- The `v<c` glider from iter_218 was an exploit of the `LeakyCheckpointFitness` function, which incorrectly rewards slow, persistent drift (iter_220.4).
+- The new `DisplacementConsistencyFitness` function correctly assigns a fitness of 0.0 to the "drifter" exploit rule from iter_218, while assigning positive scores to known glider rules (iter_220.2). The function is validated.
+- The agent execution platform is stable and does not hang on simple tasks (iter_220.1).
 
 ## Refuted
-- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object, not a glider (iter_219.7).
+- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object that exploited a flawed fitness function (iter_219.7, confirmed in 220.2).
 
 ## In Progress
-- A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but remains **unvalidated due to persistent platform errors**. All attempts to run validation scripts in this phase failed (iter_220.1, 220.2, 220.3).
+- **BLOCKED:** The evolutionary search for a `v<c` glider is blocked by a `ModuleNotFoundError` in the sub-planner execution environment. The environment is missing key dependencies like `pandas` (iter_220.3).
 
 ## Open Questions
-- What is causing the `code_error` state that makes agents hang during simulations?
-- Is the new `DisplacementConsistencyFitness` function effective in practice?
-- Can an evolutionary search using this function discover a `v<c` glider?
+- How can we ensure the sub-agent execution environment has all necessary dependencies pre-installed?
+- Does the validated `DisplacementConsistencyFitness` function create a searchable fitness landscape?
+- Can a `v<c` glider be found through evolutionary search?

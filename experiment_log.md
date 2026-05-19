@@ -3,39 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 131462
-cost_usd: 0.44996
-hypothesis: 'phase-197: An attempt to find v<c gliders fails due to a fitness function
-  exploit, and the existing v=1c rule shows instability in 60-degree collisions.'
-input_tokens: 218939
-iter: 197
-metrics:
-  task_197_1_status: timeout_failure
-  task_197_2_status: fitness_exploit_identified
-  v_c_glider_found: false
-output_tokens: 2739
-status: experiment_failed
-```
-
-## iter_197: phase-197: An attempt to find v<c gliders fails due to a fitness function exploit, and the existing v=1c rule shows instability in 60-degree collisions.
-
-**Analysis:** This phase aimed to expand on the recent discovery of a v=1c elastic collision rule. The plan was twofold: further characterize the rule with a 60-degree collision test (197.1) and adapt the evolutionary framework to search for massive, v<c gliders (197.2). Both sub-tasks failed, but for highly informative reasons.
-
-Sub-agent 197.1, the 60-degree collision test, was terminated after running for ov
-
-**Status:** experiment_failed
-
-**Metrics:** `{'task_197_1_status': 'timeout_failure', 'task_197_2_status': 'fitness_exploit_identified', 'v_c_glider_found': False}`
-
-**Experimenter view:** Sub-agent 197.1 failed to complete its simulation of a 60-degree collision, timing out after >900 seconds. This indicates the champion `v=1c` elastic rule may harbor complex, computationally expensive dynamics not observed in head-on collisions.
-
-The sub-planner for 197.2 successfully executed an evolutionary search for `v<c` gliders. However, the search was derailed by a fitness function exploit.
-
-**Notes:** A phase of informative failures. The v=1c rule is less robust than believed, and the v<c fitness function needs significant refinement.
-
-
----
-```yaml
 cached_tokens: 64410
 cost_usd: 0.28593
 hypothesis: 'phase-199: Diagnosed the v=1c rule''s instability as brittleness, not
@@ -941,4 +908,40 @@ Three separate attempts were made to execute sub-tasks. The first two agents (22
 - Sub-ag
 
 **Notes:** Phase completely blocked by a persistent platform-level execution error.
+
+
+---
+```yaml
+cached_tokens: 73094
+cost_usd: 0.28502
+hypothesis: 'phase-220: The platform is stabilized and the new fitness function is
+  validated, but the evolutionary probe search is blocked by environment dependency
+  errors.'
+input_tokens: 128553
+iter: 220
+metrics:
+  fitness_drifter_exploit: 0.0
+  fitness_v1c_glider: 0.0805
+  generations_run_probe_search: 0
+output_tokens: 2567
+status: code_error
+```
+
+## iter_220: phase-220: The platform is stabilized and the new fitness function is validated, but the evolutionary probe search is blocked by environment dependency errors.
+
+**Analysis:** The phase had a clear progression: stabilize, validate, and probe. The first two stages were completed successfully, representing significant progress. We confirmed the platform is no longer hanging and, more importantly, we now have a validated, exploit-resistant fitness function.
+
+The failure of the third sub-goal (220.3) reveals a new, more subtle platform issue: an incomplete Python environmen
+
+**Status:** code_error
+
+**Metrics:** `{'fitness_drifter_exploit': 0.0, 'fitness_v1c_glider': 0.0805, 'generations_run_probe_search': 0}`
+
+**Experimenter view:** This phase successfully recovered from previous platform instability, but ultimately failed due to a different environment error.
+
+Sub-agent 220.1 confirmed that the basic execution environment is stable and responsive, resolving the "hanging agent" problem.
+
+Sub-agent 220.2 successfully validated the new `DisplacementConsistencyFitness` function. It correctly assigned a fitness of 0.0 to the know
+
+**Notes:** Phase failed due to a missing 'pandas' dependency in the sub-planner's execution environment, blocking the main experiment.
 

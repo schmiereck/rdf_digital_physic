@@ -9012,3 +9012,36 @@ Sub-agent 195.1 confirmed that the discovery is highly robust. By re-simulating 
 
 **Notes:** This phase solidifies the v=1c elastic collision discovery. The rule is robust and its interaction dynamics are non-trivial and predictable.
 
+
+---
+```yaml
+cached_tokens: 131462
+cost_usd: 0.44996
+hypothesis: 'phase-197: An attempt to find v<c gliders fails due to a fitness function
+  exploit, and the existing v=1c rule shows instability in 60-degree collisions.'
+input_tokens: 218939
+iter: 197
+metrics:
+  task_197_1_status: timeout_failure
+  task_197_2_status: fitness_exploit_identified
+  v_c_glider_found: false
+output_tokens: 2739
+status: experiment_failed
+```
+
+## iter_197: phase-197: An attempt to find v<c gliders fails due to a fitness function exploit, and the existing v=1c rule shows instability in 60-degree collisions.
+
+**Analysis:** This phase aimed to expand on the recent discovery of a v=1c elastic collision rule. The plan was twofold: further characterize the rule with a 60-degree collision test (197.1) and adapt the evolutionary framework to search for massive, v<c gliders (197.2). Both sub-tasks failed, but for highly informative reasons.
+
+Sub-agent 197.1, the 60-degree collision test, was terminated after running for ov
+
+**Status:** experiment_failed
+
+**Metrics:** `{'task_197_1_status': 'timeout_failure', 'task_197_2_status': 'fitness_exploit_identified', 'v_c_glider_found': False}`
+
+**Experimenter view:** Sub-agent 197.1 failed to complete its simulation of a 60-degree collision, timing out after >900 seconds. This indicates the champion `v=1c` elastic rule may harbor complex, computationally expensive dynamics not observed in head-on collisions.
+
+The sub-planner for 197.2 successfully executed an evolutionary search for `v<c` gliders. However, the search was derailed by a fitness function exploit.
+
+**Notes:** A phase of informative failures. The v=1c rule is less robust than believed, and the v<c fitness function needs significant refinement.
+
