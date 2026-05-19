@@ -10,8 +10,7 @@ Steps:
   2. Initialize a 256x256 hexagonal grid with the standard 3-bit L-tromino
      seed placed at the centre.
   3. Run the simulation for 300 steps.
-  4. At step 299, use flood-fill connected-component analysis to identify the
-     main moving object (the glider) near its current centre of mass.
+  4. At step 300, get the coordinates of all active cells (np.where(grid > 0)).
   5. Normalize the glider's cell coordinates relative to its own centre of mass.
   6. Save the list of relative coordinates as JSON to
      archive/iter_219/results/vc_glider_structure.json.
@@ -26,33 +25,23 @@ import numpy as np
 # ── paths ────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).parent.parent
-CHAMP_PATH   = PROJECT_ROOT / "archive" / "iter_218" / "results" / "champion_rule.json"
-OUT_DIR      = PROJECT_ROOT / "archive" / "iter_219" / "results"
-OUT_PATH     = OUT_DIR / "vc_glider_structure.json"
+CHAMP_PATH = PROJECT_ROOT / "archive" / "iter_218" / "results" / "champion_rule.json"
+OUT_DIR = PROJECT_ROOT / "archive" / "iter_219" / "results"
+OUT_PATH = OUT_DIR / "vc_glider_structure.json"
 
 # ── simulation parameters ────────────────────────────────────────────────────
 
-GRID_SIZE    = 256
-SIM_STEPS    = 300
+GRID_SIZE = 256
+SIM_STEPS = 300
 
 # Standard 3-bit L-tromino seed placed at the grid centre.
-# For a 128×128 grid the seed is [(63,63),(64,63),(64,64)];
-# for 256×256 we offset by +64 in each dimension:
+# For a 128x128 grid the seed is [(63,63),(64,63),(64,64)];
+# for 256x256 we offset by +64 in each dimension:
 LTROMINO_OFFSET = 127  # 256 // 2 - 1
 SEED_CELLS = [
     (LTROMINO_OFFSET + 0, LTROMINO_OFFSET + 0),   # (127, 127)
     (LTROMINO_OFFSET + 0, LTROMINO_OFFSET + 1),   # (127, 128)
     (LTROMINO_OFFSET + 1, LTROMINO_OFFSET + 1),   # (128, 128)
-]
-
-# Hexagonal directions (axial coordinates): E, SE, SW, W, NW, NE
-HEX_DIRS = [
-    ( 1,  0),   # E
-    ( 1, -1),   # SE
-    ( 0, -1),   # SW
-    (-1,  0),   # W
-    (-1,  1),   # NW
-    ( 0,  1),   # NE
 ]
 
 
@@ -68,79 +57,24 @@ def build_lut(rule_dict: dict) -> np.ndarray:
 
 def step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:
     """Advance the 2D grid by one synchronous CA step (toroidal wrapping)."""
-    e  = np.roll(grid, -1, axis=0)
-    w  = np.roll(grid,  1, axis=0)
+    e = np.roll(grid, -1, axis=0)
+    w = np.roll(grid, 1, axis=0)
     ne = np.roll(grid, -1, axis=1)
-    sw = np.roll(grid,  1, axis=1)
-    se = np.roll(e,  1, axis=1)
+    sw = np.roll(grid, 1, axis=1)
+    se = np.roll(e, 1, axis=1)
     nw = np.roll(w, -1, axis=1)
 
     state = (
         (grid.astype(np.uint16) << 6)
-        | (e.astype(np.uint16)  << 5)
+        | (e.astype(np.uint16) << 5)
         | (se.astype(np.uint16) << 4)
         | (sw.astype(np.uint16) << 3)
-        | (w.astype(np.uint16)  << 2)
+        | (w.astype(np.uint16) << 2)
         | (nw.astype(np.uint16) << 1)
-        |  ne.astype(np.uint16)
+        | ne.astype(np.uint16)
     ).astype(np.uint8)
 
     return lut[state]
-
-
-def find_components(grid: np.ndarray) -> list:
-    """Find all 6-connected hexagonal components on a toroidal grid.
-
-    Returns a list of frozensets, each containing (row, col) coordinates.
-    """
-    live = set(map(tuple, np.argwhere(grid == 1)))
-    visited: set = set()
-    components = []
-
-    for start in live:
-        if start in visited:
-            continue
-        component: set = set()
-        stack = [start]
-        while stack:
-            cell = stack.pop()
-            if cell in visited:
-                continue
-            visited.add(cell)
-            component.add(cell)
-            q, r = cell
-            for dq, dr in HEX_DIRS:
-                nb = ((q + dq) % GRID_SIZE, (r + dr) % GRID_SIZE)
-                if nb in live and nb not in visited:
-                    stack.append(nb)
-        components.append(frozenset(component))
-
-    return components
-
-
-def center_of_mass(cells: set) -> tuple[float, float]:
-    """Return the centre of mass of a set of (row, col) cells."""
-    if not cells:
-        return (0.0, 0.0)
-    qs = [q for q, _ in cells]
-    rs = [r for _, r in cells]
-    return (sum(qs) / len(cells), sum(rs) / len(cells))
-
-
-def normalize_coordinates(cells: set) -> list:
-    """Normalize cell coordinates so the centre of mass is at (0, 0).
-
-    Returns a sorted list of [dq, dr] lists rounded to 6 decimal places.
-    """
-    com_q, com_r = center_of_mass(cells)
-    normalized = sorted(
-        [
-            [round(q - com_q, 6), round(r - com_r, 6)]
-            for q, r in cells
-        ],
-        key=lambda p: (p[0], p[1]),
-    )
-    return normalized
 
 
 def unwrap_com_list(com_history, prev_unwrapped, step, n):
@@ -179,8 +113,8 @@ def main() -> int:
     print(f"   Avg velocity      : {rule_data['metrics'].get('avg_velocity', 'N/A')}")
     print(f"   Seed particles    : {rule_data['metrics']['initial_bits']}")
 
-    # 2. Initialize 256×256 grid with L-tromino seed at centre ────────────
-    print(f"\n2. Initializing {GRID_SIZE}×{GRID_SIZE} grid …")
+    # 2. Initialize 256x256 grid with L-tromino seed at centre ────────────
+    print(f"\n2. Initializing {GRID_SIZE}x{GRID_SIZE} grid …")
     grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
     for r, c in SEED_CELLS:
         grid[r % GRID_SIZE, c % GRID_SIZE] = 1
@@ -201,125 +135,87 @@ def main() -> int:
         com_history.append(com)
         if (t + 1) % 50 == 0:
             bc = int(grid.sum())
-            print(f"   Step {t+1:4d}: bits={bc:4d},  CoM≈({com[0]:6.1f}, {com[1]:6.1f})")
+            print(f"   Step {t + 1:4d}: bits={bc:4d},  CoM≈({com[0]:6.1f}, {com[1]:6.1f})")
 
-    # 4. Identify the main moving object at step 299 ──────────────────────
-    print(f"\n4. Identifying main moving object at step {SIM_STEPS} …")
-    final_com = com_history[-1]
-    print(f"   Final (wrapped) CoM: ({final_com[0]:.2f}, {final_com[1]:.2f})")
-
-    # Find all connected components on the toroidal grid
-    components = find_components(grid)
-    print(f"   Total components found: {len(components)}")
-
-    # Show component sizes
-    sizes = [(len(c), c) for c in components]
-    sizes.sort(key=lambda x: x[0], reverse=True)
-    print(f"   Largest {min(5, len(sizes))} component sizes:")
-    for i, (sz, _) in enumerate(sizes[:5]):
-        print(f"     #{i}: {sz} cells")
-
-    # The glider is a small, coherent moving structure.
-    # Strategy: use a clustering approach based on spatial proximity to the final CoM.
-    # We look for a component whose center of mass is close to the grid CoM,
-    # but we also consider that the glider may be embedded in ash.
-    #
-    # Better approach: look at the region around the unwrapped CoM and find
-    # the densest cluster of cells there.
-
-    # Unwrap CoM for velocity estimate
-    unwrapped = list(com_history[0])  # start with wrapped CoM
-    # Re-run unwrapping
+    # Unwrap CoM to handle toroidal wraparound
     unwrapped = list(com_history[0])
     for t in range(1, SIM_STEPS):
         unwrapped = unwrap_com_list(com_history, unwrapped, t, GRID_SIZE)
 
     unwrapped_final = unwrapped
+    final_com = com_history[-1]
+    print(f"\n   Final (wrapped)  CoM: ({final_com[0]:.2f}, {final_com[1]:.2f})")
     print(f"   Unwrapped final CoM: ({unwrapped_final[0]:.2f}, {unwrapped_final[1]:.2f})")
 
-    # Map unwrapped CoM back to grid coordinates
-    grid_com_r = int(unwrapped_final[0]) % GRID_SIZE
-    grid_com_c = int(unwrapped_final[1]) % GRID_SIZE
-    print(f"   Grid CoM location: ({grid_com_r}, {grid_com_c})")
+    # 4. Extract coordinates of all active cells at step 300 ──────────────
+    print(f"\n4. Extracting active cell coordinates at step {SIM_STEPS} …")
+    rows, cols = np.where(grid > 0)
+    active_count = len(rows)
+    print(f"   Total active cells: {active_count}")
 
-    # Strategy: find the component whose centre of mass is closest to the
-    # unwrapped trajectory CoM. The glider is typically the second-largest
-    # compact component (largest may be ash background).
-    #
-    # Sort components by size, exclude very large (>10% of grid) ash blobs,
-    # then pick the one whose CoM is closest to the unwrapped trajectory.
+    if active_count == 0:
+        print("   ERROR: No active cells found at final step!")
+        return 1
 
-    ash_threshold = GRID_SIZE * GRID_SIZE * 0.1  # skip very large blobs
+    # Build list of (row, col) pairs
+    active_cells = list(zip(rows.tolist(), cols.tolist()))
 
-    candidate_components = []
-    for comp in components:
-        comp_com = center_of_mass(comp)
-        # distance from unwrapped CoM
-        dr = comp_com[0] - unwrapped_final[0]
-        dc = comp_com[1] - unwrapped_final[1]
-        # wrap distance
-        if abs(dr) > GRID_SIZE / 2:
-            dr = GRID_SIZE - abs(dr) if dr > 0 else -(GRID_SIZE - abs(dr))
-        if abs(dc) > GRID_SIZE / 2:
-            dc = GRID_SIZE - abs(dc) if dc > 0 else -(GRID_SIZE - abs(dc))
-        dist = (dr ** 2 + dc ** 2) ** 0.5
-
-        candidate_components.append({
-            "cells": comp,
-            "size": len(comp),
-            "co_m": comp_com,
-            "dist_to_trajectory": dist,
-        })
-
-    # Sort by distance to trajectory, then by size (prefer larger but coherent)
-    candidate_components.sort(key=lambda x: (x["dist_to_trajectory"], -x["size"]))
-
-    glider = None
-    for c in candidate_components:
-        if c["size"] > 5 and c["size"] < 200:  # reasonable glider size
-            glider = c
-            break
-
-    if glider is None:
-        # Fallback: pick the component closest to trajectory regardless of size
-        glider = candidate_components[0]
-
-    glider_cells = glider["cells"]
-    print(f"\n   Selected glider: {glider['size']} cells")
-    print(f"   Distance to trajectory CoM: {glider['dist_to_trajectory']:.2f}")
-    print(f"   Glider CoM: ({glider['co_m'][0]:.2f}, {glider['co_m'][1]:.2f})")
-
-    # 5. Normalize coordinates relative to glider centre of mass ──────────
+    # 5. Normalize coordinates relative to centre of mass ─────────────────
     print(f"\n5. Normalizing coordinates relative to centre of mass …")
-    normalized = normalize_coordinates(glider_cells)
-    print(f"   Number of cells in normalized structure: {len(normalized)}")
+    com_r = float(np.mean(rows))
+    com_c = float(np.mean(cols))
+    print(f"   Centre of mass (wrapped): ({com_r:.4f}, {com_c:.4f})")
 
-    # 6. Save to JSON ─────────────────────────────────────────────────────
+    # Unwrap the CoM for the final step to avoid toroidal wrap issues
+    unwrapped_com_r = unwrapped_final[0]
+    unwrapped_com_c = unwrapped_final[1]
+    print(f"   Centre of mass (unwrapped): ({unwrapped_com_r:.4f}, {unwrapped_com_c:.4f})")
+
+    # Calculate relative coordinates using unwrapped CoM
+    # Map unwrapped CoM back to grid-local reference frame
+    grid_com_r = unwrapped_com_r % GRID_SIZE
+    grid_com_c = unwrapped_com_c % GRID_SIZE
+
+    relative_coords = []
+    for r, c in active_cells:
+        # Calculate displacement from unwrapped CoM, accounting for toroidal wrap
+        dr = r - unwrapped_com_r
+        dc = c - unwrapped_com_c
+        # Wrap shortest distance
+        if dr > GRID_SIZE / 2:
+            dr -= GRID_SIZE
+        elif dr < -GRID_SIZE / 2:
+            dr += GRID_SIZE
+        if dc > GRID_SIZE / 2:
+            dc -= GRID_SIZE
+        elif dc < -GRID_SIZE / 2:
+            dc += GRID_SIZE
+        relative_coords.append([round(dr, 6), round(dc, 6)])
+
+    # Sort for deterministic output
+    relative_coords.sort(key=lambda p: (p[0], p[1]))
+
+    print(f"   Number of relative coordinates: {len(relative_coords)}")
+
+    # 6. Save to JSON with key "structure" ────────────────────────────────
     print(f"\n6. Saving to {OUT_PATH} …")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     output = {
-        "glider_structure": normalized,
-        "num_cells": len(normalized),
-        "source_iteration": "iter_218",
-        "source_rule": "champion_rule.json",
-        "simulation_grid_size": GRID_SIZE,
-        "simulation_steps": SIM_STEPS,
-        "extract_step": SIM_STEPS,
-        "glider_bit_count": glider["size"],
-        "glider_com": [round(glider["co_m"][0], 6), round(glider["co_m"][1], 6)],
-        "unwrapped_final_com": [round(unwrapped_final[0], 6), round(unwrapped_final[1], 6)],
+        "structure": relative_coords,
     }
 
     with open(OUT_PATH, "w") as f:
         json.dump(output, f, indent=2)
 
-    print(f"   Done! Wrote {len(normalized)} relative coordinates.")
+    print(f"   Done! Wrote {len(relative_coords)} relative coordinates.")
 
     # Print the structure for verification
-    print(f"\n   Normalized glider structure:")
-    for coord in normalized:
+    print(f"\n   Normalized glider structure (first 20 entries):")
+    for coord in relative_coords[:20]:
         print(f"     [{coord[0]:>8.4f}, {coord[1]:>8.4f}]")
+    if len(relative_coords) > 20:
+        print(f"     ... ({len(relative_coords) - 20} more entries)")
 
     print("\n" + "=" * 70)
     print("Extraction complete.")
