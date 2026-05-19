@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-run_vc_search.py  —  Evolutionary search for v<c gliders using NetDisplacementFitness.
+run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness.
 
 Setup
 -----
-* Fitness     : NetDisplacementFitness (exploit-resistant; bit conservation
-                + net displacement + bounding-box penalty)
-* Population  : 50 random C2-symmetric rules
-* Generations : 15
+* Fitness     : LeakySubLightFitness (leaky bit-conservation gate;
+                rewards displacement with a continuous conservation penalty)
+* Population  : 100 random C2-symmetric rules
+* Generations : 10
 * Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid
-* Simulation  : 250 steps
+* Simulation  : 200 steps, checkpoints at [50, 100, 150]
 
-Outputs (archive/iter_204/results/):
+Outputs (archive/iter_218/results/):
   champion_vc_rule.json    : champion rule + metrics
   evolution_log.csv        : generation,champion_fitness per generation
-  champion_vc_glider.gif   : 250-step animation of the champion pattern
+  champion_vc_glider.gif   : 200-step animation of the champion pattern
 """
 
 from __future__ import annotations
@@ -35,13 +35,14 @@ from evolution import (
     rule_dict_to_lut,
     step_grid,
 )
-from fitness_functions import NetDisplacementFitness, _make_particle_grid
+# from fitness_functions import NetDisplacementFitness, _make_particle_grid
+from leaky_fitness import LeakySubLightFitness
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_204" / "results"
+OUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_218" / "results"
 CHAMPION_JSON = OUTPUT_DIR / "champion_vc_rule.json"
 EVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"
 CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"
@@ -49,21 +50,30 @@ CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"
 
 # ── Search hyper-parameters ───────────────────────────────────────────────────
 
-POPULATION_SIZE  = 50
-NUM_GENERATIONS  = 15
+POPULATION_SIZE  = 100
+NUM_GENERATIONS  = 10
 ELITE_FRACTION   = 0.10
 CROSSOVER_RATE   = 0.8
 MUTATION_RATE    = 0.01
 LUT_SIZE         = 128
 RNG_SEED         = 200_001
 GRID_SIZE        = 128
-SIMULATION_STEPS = 250
+SIMULATION_STEPS = 200
 DENSITY          = 6
 
 ELITE_COUNT = max(2, int(POPULATION_SIZE * ELITE_FRACTION))
 
 # 3-bit L-tromino seed (relative offsets from grid centre)
 SEED_PARTICLE = [(0, 0), (0, 1), (1, 1)]
+
+
+# ── Simple rule wrapper (Simulator expects rule.rule_dict) ────────────────────
+
+class _RuleDict:
+    """Minimal wrapper so that `Simulator(rule)` finds `rule.rule_dict`."""
+    __slots__ = ("rule_dict",)
+    def __init__(self, d: dict):
+        self.rule_dict = d
 
 
 # ── Chromosome <-> rule_dict conversions ──────────────────────────────────────
@@ -97,10 +107,19 @@ def generate_c2_rule(rng: random.Random, density: int = DENSITY, max_attempts: i
 
 # ── Fitness evaluation ─────────────────────────────────────────────────────────
 
-_FITNESS = NetDisplacementFitness(
-    grid_size=GRID_SIZE,
+# Old fitness function (kept for reference — commented out):
+# _FITNESS = NetDisplacementFitness(
+#     grid_size=GRID_SIZE,
+#     simulation_steps=SIMULATION_STEPS,
+#     particle=SEED_PARTICLE,
+# )
+
+# NEW: LeakySubLightFitness with leaky bit-conservation gate
+_FITNESS = LeakySubLightFitness(
+    checkpoints=[50, 100, 150],
     simulation_steps=SIMULATION_STEPS,
-    particle=SEED_PARTICLE,
+    bits_per_cell=1,
+    velocity_threshold=0.9,
 )
 
 
@@ -109,9 +128,10 @@ def evaluate_population(population: list) -> tuple[list[float], list[dict]]:
     metrics_l: list[dict]  = []
     for chrom in population:
         rule_dict = chromosome_to_rule_dict(chrom)
-        m         = _FITNESS.evaluate(rule_dict)
-        fitnesses.append(float(m["fitness"]))
-        metrics_l.append(m)
+        rule      = _RuleDict(rule_dict)           # wrap for Simulator
+        fitness, metrics = _FITNESS(rule, SEED_PARTICLE)
+        fitnesses.append(float(fitness))
+        metrics_l.append(metrics)
     return fitnesses, metrics_l
 
 
@@ -147,7 +167,16 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
     import matplotlib.animation as animation
 
     lut    = rule_dict_to_lut(rule_dict)
-    grid   = _make_particle_grid(SEED_PARTICLE, GRID_SIZE)
+    # Build particle grid from SEED_PARTICLE centred on grid centre
+    centre = GRID_SIZE // 2
+    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+    seed_offset = (centre + SEED_PARTICLE[0][0], centre + SEED_PARTICLE[0][1])
+    for dr, dc in SEED_PARTICLE:
+        r = seed_offset[0] + dr
+        c = seed_offset[1] + dc
+        if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:
+            grid[r, c] = 1
+
     frames = [(0, grid.copy())]
     for step in range(1, steps + 1):
         grid = step_grid(grid, lut)
@@ -155,7 +184,7 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
             frames.append((step, grid.copy()))
 
     fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
-    ax.set_title("iter_204 NetDisplacementFitness champion (v<c search)")
+    ax.set_title("iter_218 LeakySubLightFitness champion (v<c search)")
     ax.set_xlabel("col")
     ax.set_ylabel("row")
     img = ax.imshow(
@@ -184,7 +213,7 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
 # ── Evolutionary search ────────────────────────────────────────────────────────
 
 def run_search() -> dict:
-    print("=== iter_204 v<c Glider Search (NetDisplacementFitness) ===")
+    print("=== iter_218 v<c Glider Search (LeakySubLightFitness) ===")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(RNG_SEED)
 
@@ -194,7 +223,7 @@ def run_search() -> dict:
     print(f"  Grid size       : {GRID_SIZE}x{GRID_SIZE}")
     print(f"  Sim steps       : {SIMULATION_STEPS}")
     print(f"  Seed particle   : {SEED_PARTICLE}")
-    print(f"  Fitness         : NetDisplacementFitness\n")
+    print(f"  Fitness         : LeakySubLightFitness\n")
 
     # Initial random population
     population = [
@@ -279,8 +308,8 @@ def write_results(result: dict) -> list[str]:
     rule_dict = chromosome_to_rule_dict(result["best_chrom"])
     m         = result["best_metrics"] or {}
     payload = {
-        "iteration":          "iter_204",
-        "fitness_function":   "NetDisplacementFitness",
+        "iteration":          "iter_218",
+        "fitness_function":   "LeakySubLightFitness",
         "fitness":            result["best_fitness"],
         "generation_of_best": result["best_generation"],
         "num_generations":    NUM_GENERATIONS,
@@ -318,9 +347,12 @@ def write_results(result: dict) -> list[str]:
     print(f"  max_ever        = {result['max_ever']:.6f}")
     print(f"  best_generation = {result['best_generation']}")
     if m:
-        print(f"  net_displacement = {m.get('net_displacement', 'n/a')}")
-        print(f"  final_bb_area    = {m.get('final_bb_area', 'n/a')}")
-        print(f"  reason           = {m.get('reason', 'n/a')}")
+        print(f"  base_fitness       = {m.get('base_fitness', 'n/a')}")
+        print(f"  total_conservation = {m.get('total_conservation_score', 'n/a')}")
+        print(f"  avg_velocity       = {m.get('avg_velocity', 'n/a')}")
+        print(f"  net_displacement   = {m.get('net_displacement', 'n/a')}")
+        print(f"  initial_bits       = {m.get('initial_bits', 'n/a')}")
+        print(f"  conservation_factors = {m.get('conservation_factors', 'n/a')}")
 
     return artifacts
 
@@ -333,7 +365,7 @@ def main() -> int:
         "--output_file",
         type=str,
         default=None,
-        help="Override champion output path (e.g. archive/iter_213.10/results/champion_rule.json)",
+        help="Override champion output path (e.g. archive/iter_218/results/champion_rule.json)",
     )
     args = parser.parse_args()
 

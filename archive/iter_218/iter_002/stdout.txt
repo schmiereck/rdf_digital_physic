@@ -1,0 +1,420 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] .git
+      .gitignore
+[DIR] .venv
+[DIR] archive
+      config.toml
+      current_state.md
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      goal.md
+      python_path_info.py
+      RDF-REVIEW-179.md
+      requirements.txt
+      RESEARCH-RESULT-179.md
+[DIR] src]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_glider_200.1.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_offset_collisions.py
+      characterize_remnant.py
+      characte...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive'})]
+
+[Tool Result: [DIR] archive
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+[DIR] iter_004
+[DIR] iter_005
+[DIR] iter_006
+[DIR] iter_007
+[DIR] iter_008
+[DIR] iter_009
+[DIR] iter_010
+[DIR] iter_011
+[DIR] iter_012
+[DIR] iter_013
+[DIR] iter_014
+[DIR] iter_015
+[DIR] iter_016
+[DIR] iter_017
+[DIR] iter_018
+[DIR] iter_019
+[DIR] iter_020
+[DIR] iter_021
+[DIR] iter_022
+[DIR] iter_023
+[DIR] iter_024
+[DIR] iter_025
+[DIR] iter_026
+[DIR] iter_027
+[DIR] iter_028
+[DIR] iter_029
+[DIR] iter_030
+[DIR] iter_031
+[DIR] iter_032
+[DIR] ...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_vc_search.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_vc_search.py  —  Evolutionary search for v<c gliders using NetDisplacementFitness.
+
+Setup
+-----
+* Fitness     : NetDisplacementFitness (exploit-resistant; bit conservation
+                + net displacement + bounding-box penalty)
+* Population  : 50 random C2-symmetric rules
+* Generations : 15
+* Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid
+* Simulation  : 250 steps
+
+Outputs (archive/iter_204/results/):
+  champion_vc_rule.json    : cha...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\leaky_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+leaky_fitness.py
+
+A 'leaky' fitness function that rewards displacement while applying a
+continuous penalty for bit-count changes — providing an evolutionary
+gradient toward both motion and conservation simultaneously.
+
+LeakySubLightFitness
+--------------------
+Inherits from ``CheckpointFitness`` but replaces the hard bit-conservation
+fail with a soft penalty (``conservation_factor``).  The fitness function
+still gates on the particle's mean velocity (rejecting any rule...]
+
+Now let me read the `archive/iter_218` directory structure to understand if there's an existing `results` folder:
+
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_218'})]
+
+[Tool Result: [DIR] iter_001
+[DIR] iter_002]
+
+Now I have a clear picture. Let me modify the script to use `LeakySubLightFitness`, update the config (10 generations, pop size 100), and point output to `archive/iter_218/results/`:
+
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_vc_search.py', 'content': '#!/usr/bin/env python3\n"""\nrun_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness.\n\nSetup\n-----\n* Fitness     : LeakySubLightFitness (leaky bit-conservation gate;\n                rewards displacement with a continuous conservation penalty)\n* Population  : 100 random C2-symmetric rules\n* Generations : 10\n* Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid\n* Simulation  : 200 steps, checkpoints at [50, 100, 150]\n\nOutputs (archive/iter_218/results/):\n  champion_vc_rule.json    : champion rule + metrics\n  evolution_log.csv        : generation,champion_fitness per generation\n  champion_vc_glider.gif   : 200-step animation of the champion pattern\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport csv\nimport json\nimport random\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nsys.path.insert(0, str(Path(__file__).parent))\n\nfrom evolution import (\n    _try_build_c2_rule,\n    rule_dict_to_lut,\n    step_grid,\n)\n# from fitness_functions import NetDisplacementFitness, _make_particle_grid\nfrom leaky_fitness import LeakySubLightFitness\n\n\n# ── Paths ─────────────────────────────────────────────────────────────────────\n\nPROJECT_ROOT = Path(__file__).parent.parent\nOUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_218" / "results"\nCHAMPION_JSON = OUTPUT_DIR / "champion_vc_rule.json"\nEVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"\nCHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"\n\n\n# ── Search hyper-parameters ───────────────────────────────────────────────────\n\nPOPULATION_SIZE  = 100\nNUM_GENERATIONS  = 10\nELITE_FRACTION   = 0.10\nCROSSOVER_RATE   = 0.8\nMUTATION_RATE    = 0.01\nLUT_SIZE         = 128\nRNG_SEED         = 200_001\nGRID_SIZE        = 128\nSIMULATION_STEPS = 200\nDENSITY          = 6\n\nELITE_COUNT = max(2, int(POPULATION_SIZE * ELITE_FRACTION))\n\n# 3-bit L-tromino seed (relative offsets from grid centre)\nSEED_PARTICLE = [(0, 0), (0, 1), (1, 1)]\n\n\n# ── Chromosome <-> rule_dict conversions ──────────────────────────────────────\n\ndef rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:\n    lut = np.arange(LUT_SIZE, dtype=np.uint8)\n    for k, v in rule_dict.items():\n        lut[int(k)] = int(v)\n    return ((lut >> 6) & 1).astype(np.uint8)\n\n\ndef chromosome_to_rule_dict(chrom: np.ndarray) -> dict:\n    out: dict = {}\n    for s in range(LUT_SIZE):\n        default_center = (s >> 6) & 1\n        actual_center  = int(chrom[s])\n        if actual_center != default_center:\n            v = (actual_center << 6) | (s & 0b0111111)\n            out[s] = v\n    return out\n\n\ndef generate_c2_rule(rng: random.Random, density: int = DENSITY, max_attempts: int = 10_000) -> dict:\n    for _ in range(max_attempts):\n        pairs = [(rng.randint(1, 127), rng.randint(1, 127)) for _ in range(density)]\n        rule = _try_build_c2_rule(pairs)\n        if rule is not None:\n            return rule\n    raise RuntimeError(f"Failed to generate C2 rule with density {density}")\n\n\n# ── Fitness evaluation ─────────────────────────────────────────────────────────\n\n# Old fitness function (kept for reference — commented out):\n# _FITNESS = NetDisplacementFitness(\n#     grid_size=GRID_SIZE,\n#     simulation_steps=SIMULATION_STEPS,\n#     particle=SEED_PARTICLE,\n# )\n\n# NEW: LeakySubLightFitness with leaky bit-conservation gate\n_FITNESS = LeakySubLightFitness(\n    checkpoints=[50, 100, 150],\n    simulation_steps=SIMULATION_STEPS,\n    bits_per_cell=1,\n    velocity_threshold=0.9,\n)\n\n\ndef evaluate_population(population: list) -> tuple[list[float], list[dict]]:\n    fitnesses: list[float] = []\n    metrics_l: list[dict]  = []\n    for chrom in population:\n        rule_dict = chromosome_to_rule_dict(chrom)\n        m         = _FITNESS.__call__(rule_dict, SEED_PARTICLE)\n        fitnesses.append(float(m[0]))\n        metrics_l.append(m[1])\n    return fitnesses, metrics_l\n\n\n# ── Genetic operators ─────────────────────────────────────────────────────────\n\ndef two_point_crossover(p1: np.ndarray, p2: np.ndarray, rng: random.Random):\n    n    = len(p1)\n    a, b = sorted(rng.sample(range(n + 1), 2))\n    c1, c2 = p1.copy(), p2.copy()\n    c1[a:b] = p2[a:b]\n    c2[a:b] = p1[a:b]\n    return c1, c2\n\n\ndef per_bit_mutation(chrom: np.ndarray, rate: float, rng: random.Random) -> np.ndarray:\n    for i in range(len(chrom)):\n        if rng.random() < rate:\n            chrom[i] ^= 1\n    return chrom\n\n\ndef select_top_k(population: list, fitnesses: list[float], k: int) -> list:\n    order = sorted(range(len(population)), key=lambda i: fitnesses[i], reverse=True)\n    return [population[i].copy() for i in order[:k]]\n\n\n# ── Champion animation ────────────────────────────────────────────────────────\n\ndef render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION_STEPS) -> None:\n    import matplotlib\n    matplotlib.use("Agg")\n    import matplotlib.pyplot as plt\n    import matplotlib.animation as animation\n\n    lut    = rule_dict_to_lut(rule_dict)\n    # Build particle grid from SEED_PARTICLE centred on grid centre\n    centre = GRID_SIZE // 2\n    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\n    seed_offset = (centre + SEED_PARTICLE[0][0], centre + SEED_PARTICLE[0][1])\n    for dr, dc in SEED_PARTICLE:\n        r = seed_offset[0] + dr\n        c = seed_offset[1] + dc\n        if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:\n            grid[r, c] = 1\n\n    frames = [(0, grid.copy())]\n    for step in range(1, steps + 1):\n        grid = step_grid(grid, lut)\n        if step % 5 == 0 or step == steps:\n            frames.append((step, grid.copy()))\n\n    fig, ax = plt.subplots(figsize=(6, 6), dpi=80)\n    ax.set_title("iter_218 LeakySubLightFitness champion (v<c search)")\n    ax.set_xlabel("col")\n    ax.set_ylabel("row")\n    img = ax.imshow(\n        frames[0][1], origin="upper", interpolation="nearest", cmap="hot", vmin=0, vmax=1,\n    )\n    step_text = ax.text(\n        0.02, 0.97, f"step={frames[0][0]}", transform=ax.transAxes,\n        color="white", fontsize=9, va="top",\n    )\n\n    def update(i):\n        s, g = frames[i]\n        img.set_data(g)\n        step_text.set_text(f"step={s}")\n        return img, step_text\n\n    ani = animation.FuncAnimation(\n        fig, update, frames=len(frames), interval=60, blit=True,\n    )\n    gif_path.parent.mkdir(parents=True, exist_ok=True)\n    ani.save(str(gif_path), writer="pillow", fps=15)\n    plt.close(fig)\n    print(f"  GIF saved: {gif_path}")\n\n\n# ── Evolutionary search ────────────────────────────────────────────────────────\n\ndef run_search() -> dict:\n    print("=== iter_218 v<c Glider Search (LeakySubLightFitness) ===")\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    rng = random.Random(RNG_SEED)\n\n    print(f"  Population      : {POPULATION_SIZE}")\n    print(f"  Generations     : {NUM_GENERATIONS}")\n    print(f"  Elite count     : {ELITE_COUNT}")\n    print(f"  Grid size       : {GRID_SIZE}x{GRID_SIZE}")\n    print(f"  Sim steps       : {SIMULATION_STEPS}")\n    print(f"  Seed particle   : {SEED_PARTICLE}")\n    print(f"  Fitness         : LeakySubLightFitness\\n")\n\n    # Initial random population\n    population = [\n        rule_dict_to_chromosome(generate_c2_rule(rng))\n        for _ in range(POPULATION_SIZE)\n    ]\n\n    fitnesses, metrics_l = evaluate_population(population)\n    best_idx        = int(np.argmax(fitnesses))\n    best_fitness    = float(fitnesses[best_idx])\n    best_chrom      = population[best_idx].copy()\n    best_metrics    = metrics_l[best_idx]\n    best_generation = 0\n    max_ever        = best_fitness\n\n    gen_log: list[tuple[int, float]] = [(0, best_fitness)]\n\n    n_nonzero = sum(1 for f in fitnesses if f > 0.0)\n    print(\n        f"  Gen  0: champion={best_fitness:.4f}  mean={np.mean(fitnesses):.4f}"\n        f"  non_zero={n_nonzero}"\n    )\n\n    for gen in range(1, NUM_GENERATIONS + 1):\n        elite   = select_top_k(population, fitnesses, ELITE_COUNT)\n        new_pop = [e.copy() for e in elite]\n\n        while len(new_pop) < POPULATION_SIZE:\n            p1, p2 = rng.sample(elite, 2)\n            if rng.random() < CROSSOVER_RATE:\n                c1, c2 = two_point_crossover(p1, p2, rng)\n            else:\n                c1, c2 = p1.copy(), p2.copy()\n            c1 = per_bit_mutation(c1, MUTATION_RATE, rng)\n            c2 = per_bit_mutation(c2, MUTATION_RATE, rng)\n            new_pop.append(c1)\n            if len(new_pop) < POPULATION_SIZE:\n                new_pop.append(c2)\n\n        population = new_pop\n        fitnesses, metrics_l = evaluate_population(population)\n\n        gen_best_idx = int(np.argmax(fitnesses))\n        gen_best     = float(fitnesses[gen_best_idx])\n        gen_mean     = float(np.mean(fitnesses))\n        n_nonzero    = sum(1 for f in fitnesses if f > 0.0)\n\n        if gen_best > best_fitness:\n            best_fitness    = gen_best\n            best_chrom      = population[gen_best_idx].copy()\n            best_metrics    = metrics_l[gen_best_idx]\n            best_generation = gen\n\n        if best_fitness > max_ever:\n            max_ever = best_fitness\n\n        gen_log.append((gen, best_fitness))\n\n        print(\n            f"  Gen {gen:2d}: champion={best_fitness:.4f}  gen_best={gen_best:.4f}"\n            f"  mean={gen_mean:.4f}  non_zero={n_nonzero}"\n        )\n\n    return {\n        "best_fitness":    best_fitness,\n        "max_ever":        max_ever,\n        "best_chrom":      best_chrom,\n        "best_metrics":    best_metrics,\n        "best_generation": best_generation,\n        "gen_log":         gen_log,\n    }\n\n\n# ── Reporting ─────────────────────────────────────────────────────────────────\n\ndef write_results(result: dict) -> list[str]:\n    print("\\n=== Writing artifacts ===")\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    artifacts: list[str] = []\n\n    # 1. champion_vc_rule.json\n    rule_dict = chromosome_to_rule_dict(result["best_chrom"])\n    m         = result["best_metrics"] or {}\n    payload = {\n        "iteration":          "iter_218",\n        "fitness_function":   "LeakySubLightFitness",\n        "fitness":            result["best_fitness"],\n        "generation_of_best": result["best_generation"],\n        "num_generations":    NUM_GENERATIONS,\n        "population_size":    POPULATION_SIZE,\n        "grid_size":          GRID_SIZE,\n        "simulation_steps":   SIMULATION_STEPS,\n        "seed_particle":      SEED_PARTICLE,\n        "metrics":            m,\n        "rule_dict":          {str(k): int(v) for k, v in rule_dict.items()},\n        "chromosome":         result["best_chrom"].tolist(),\n    }\n    with open(CHAMPION_JSON, "w") as f:\n        json.dump(payload, f, indent=2)\n    rel = str(CHAMPION_JSON.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    print(f"  Champion rule saved: {CHAMPION_JSON}")\n    artifacts.append(rel)\n\n    # 2. evolution_log.csv\n    with open(EVOLUTION_CSV, "w", newline="") as f:\n        writer = csv.writer(f)\n        writer.writerow(["generation", "champion_fitness"])\n        for gen, fit in result["gen_log"]:\n            writer.writerow([gen, fit])\n    rel = str(EVOLUTION_CSV.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    print(f"  Evolution log saved: {EVOLUTION_CSV}")\n    artifacts.append(rel)\n\n    # 3. champion_vc_glider.gif  (always render, regardless of fitness)\n    print("  Rendering champion GIF ...")\n    render_champion_gif(rule_dict, CHAMPION_GIF, steps=SIMULATION_STEPS)\n    rel = str(CHAMPION_GIF.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    artifacts.append(rel)\n\n    print(f"\\n  best_fitness    = {result[\'best_fitness\']:.6f}")\n    print(f"  max_ever        = {result[\'max_ever\']:.6f}")\n    print(f"  best_generation = {result[\'best_generation\']}")\n    if m:\n        print(f"  base_fitness       = {m.get(\'base_fitness\', \'n/a\')}")\n        print(f"  total_conservation = {m.get(\'total_conservation_score\', \'n/a\')}")\n        print(f"  avg_velocity       = {m.get(\'avg_velocity\', \'n/a\')}")\n        print(f"  net_displacement   = {m.get(\'net_displacement\', \'n/a\')}")\n        print(f"  initial_bits       = {m.get(\'initial_bits\', \'n/a\')}")\n        print(f"  conservation_factors = {m.get(\'conservation_factors\', \'n/a\')}")\n\n    return artifacts\n\n\ndef main() -> int:\n    global OUTPUT_DIR, CHAMPION_JSON, EVOLUTION_CSV, CHAMPION_GIF\n\n    parser = argparse.ArgumentParser(description="v<c glider evolutionary search")\n    parser.add_argument(\n        "--output_file",\n        type=str,\n        default=None,\n        help="Override champion output path (e.g. archive/iter_218/results/champion_rule.json)",\n    )\n    args = parser.parse_args()\n\n    if args.output_file:\n        champion_path = Path(args.output_file)\n        if not champion_path.is_absolute():\n            champion_path = PROJECT_ROOT / champion_path\n        OUTPUT_DIR   = champion_path.parent\n        CHAMPION_JSON = champion_path\n        EVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"\n        CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"\n        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n\n    result    = run_search()\n    artifacts = write_results(result)\n\n    print("\\n=== Summary ===")\n    print(f"  best_fitness    = {result[\'best_fitness\']:.6f}")\n    print(f"  max_ever        = {result[\'max_ever\']:.6f}")\n    print(f"  best_generation = {result[\'best_generation\']}")\n    print(f"  artifacts       = {artifacts}")\n    return 0\n\n\nif __name__ == "__main__":\n    sys.exit(main())\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\run_vc_search.py]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\python_path_info.py'})]
+
+[Tool Result: import sys
+import os
+import json
+
+data = {
+    "sys_path": sys.path,
+    "pythonpath": os.environ.get("PYTHONPATH")
+}
+
+print(json.dumps(data, indent=2))
+]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe --version'})]
+
+[Tool Result: exit_code: 0
+stdout: Python 3.12.10
+
+stderr: ]
+
+
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe src\\run_vc_search.py 2>&1'})]
+
+[Tool Result: exit_code: 1
+stdout: === iter_218 v<c Glider Search (LeakySubLightFitness) ===
+  Population      : 100
+  Generations     : 10
+  Elite count     : 10
+  Grid size       : 128x128
+  Sim steps       : 200
+  Seed particle   : [(0, 0), (0, 1), (1, 1)]
+  Fitness         : LeakySubLightFitness
+
+Traceback (most recent call last):
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\src\run_vc_search.py", line 384, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\thomas\Pr...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulator.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+simulator.py — Particle and Simulator classes for the hexagonal CA.
+
+The legacy 1-bit pipeline (128-entry LUT, 2D grids) is preserved as the
+default fast path so existing callers keep working unchanged.  Passing
+``bits_per_cell > 1`` enables the multi-bit engine in ``engine.py``, where
+grids carry shape ``(H, W, bits_per_cell)``.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+from engine import (
+    BITS_PER_CELL,
+    HexagonalGrid,
+    build_lut,
+    oc...]
+
+The `LeakySubLightFitness` internally passes `rule` to `Simulator`, which expects `rule.rule_dict`. We need a wrapper since we're passing raw dicts. Let me fix the script:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_vc_search.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness.
+
+Setup
+-----
+* Fitness     : LeakySubLightFitness (leaky bit-conservation gate;
+                rewards displacement with a continuous conservation penalty)
+* Population  : 100 random C2-symmetric rules
+* Generations : 10
+* Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid
+* Simulation  : 200 steps, checkpoints at [50, 100, 150]
+
+Outputs (archive/iter_218/resu...]
+
+The `Simulator` expects `rule.rule_dict` but we're passing a raw dict. Let me check how other similar scripts handle this and fix the approach:
+
+
+
+[Tool Call: read_file({})]
+
+[Tool Result: Error: 'path']
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_iter_192_leaky_evolution.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_iter_192_leaky_evolution.py  —  iter_192 leaky-conservation evolutionary search.
+
+Strategy A: Evolve a motion-first population towards bit conservation using a
+soft penalty (LeakyConservationCollisionFitness).
+
+Setup
+-----
+* Warm start : archive/iter_191/results/warm_start_population.json
+               (100 mutants of g10_rule_001)
+* Fitness    : LeakyConservationCollisionFitness
+               fitness = staged_score / (1.0 + bit_error)
+* Generations: 10
+* Elite  ...]
+
+Now I see the issue — `LeakySubLightFitness` internally uses `Simulator(rule, ...)` which expects `rule.rule_dict` as an attribute, but we pass a plain dict. I need to either create a wrapper or check if there's a way to pass directly. Let me look at how the fitness.py approach works for comparison and fix the script:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe -c "from src.leaky_fitness import LeakySubLightFitness; print(dir(LeakySubLightFitness))"'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\src\leaky_fitness.py", line 58, in <module>
+    from simulator import Particle, Simulator
+ModuleNotFoundError: No module named 'simulator'
+]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src && ..\\.venv\\Scripts\\python.exe -c "from leaky_fitness import LeakySubLightFitness; print(dir(LeakySubLightFitness))"'})]
+
+[Tool Result: exit_code: 0
+stdout: ['__call__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_build_metrics', 'evaluate', 'name']
+
+stderr: ]
+
+The problem is that `LeakySubLightFitness` passes `rule` to `Simulator`, which expects `rule.rule_dict` as an attribute, but we're passing raw dicts. I need to wrap the dict in a simple object. Let me fix the script:
+
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nrun_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness.\n\nSetup\n-----\n* Fitness     : LeakySubLightFitness (leaky bit-conservation gate;\n                rewards displacement with a continuous conservation penalty)\n* Population  : 100 random C2-symmetric rules\n* Generations : 10\n* Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid\n* Simulation  : 200 steps, checkpoints at [50, 100, 150]\n\nOutputs (archive/iter_218/results/):\n  champion_vc_rule.json    : champion rule + metrics\n  evolution_log.csv        : generation,champion_fitness per generation\n  champion_vc_glider.gif   : 200-step animation of the champion pattern\n"""\n\nfrom __future__ import annotations\n\nimport argparse\nimport csv\nimport json\nimport random\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nsys.path.insert(0, str(Path(__file__).parent))\n\nfrom evolution import (\n    _try_build_c2_rule,\n    rule_dict_to_lut,\n    step_grid,\n)\n# from fitness_functions import NetDisplacementFitness, _make_particle_grid\nfrom leaky_fitness import LeakySubLightFitness\n\n\n# ── Paths ─────────────────────────────────────────────────────────────────────\n\nPROJECT_ROOT = Path(__file__).parent.parent\nOUTPUT_DIR   = PROJECT_ROOT / "archive" / "iter_218" / "results"\nCHAMPION_JSON = OUTPUT_DIR / "champion_vc_rule.json"\nEVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"\nCHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"\n\n\n# ── Search hyper-parameters ───────────────────────────────────────────────────\n\nPOPULATION_SIZE  = 100\nNUM_GENERATIONS  = 10\nELITE_FRACTION   = 0.10\nCROSSOVER_RATE   = 0.8\nMUTATION_RATE    = 0.01\nLUT_SIZE         = 128\nRNG_SEED         = 200_001\nGRID_SIZE        = 128\nSIMULATION_STEPS = 200\nDENSITY          = 6\n\nELITE_COUNT = max(2, int(POPULATION_SIZE * ELITE_FRACTION))\n\n# 3-bit L-tromino seed (relative offsets from grid centre)\nSEED_PARTICLE = [(0, 0), (0, 1), (1, 1)]\n\n\n# ── Simple rule wrapper (Simulator expects rule.rule_dict) ────────────────────\n\nclass _RuleDict:\n    """Minimal wrapper so that `Simulator(rule)` finds `rule.rule_dict`."""\n    __slots__ = ("rule_dict",)\n    def __init__(self, d: dict):\n        self.rule_dict = d\n\n\n# ── Chromosome <-> rule_dict conversions ──────────────────────────────────────\n\ndef rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:\n    lut = np.arange(LUT_SIZE, dtype=np.uint8)\n    for k, v in rule_dict.items():\n        lut[int(k)] = int(v)\n    return ((lut >> 6) & 1).astype(np.uint8)\n\n\ndef chromosome_to_rule_dict(chrom: np.ndarray) -> dict:\n    out: dict = {}\n    for s in range(LUT_SIZE):\n        default_center = (s >> 6) & 1\n        actual_center  = int(chrom[s])\n        if actual_center != default_center:\n            v = (actual_center << 6) | (s & 0b0111111)\n            out[s] = v\n    return out\n\n\ndef generate_c2_rule(rng: random.Random, density: int = DENSITY, max_attempts: int = 10_000) -> dict:\n    for _ in range(max_attempts):\n        pairs = [(rng.randint(1, 127), rng.randint(1, 127)) for _ in range(density)]\n        rule = _try_build_c2_rule(pairs)\n        if rule is not None:\n            return rule\n    raise RuntimeError(f"Failed to generate C2 rule with density {density}")\n\n\n# ── Fitness evaluation ─────────────────────────────────────────────────────────\n\n# Old fitness function (kept for reference — commented out):\n# _FITNESS = NetDisplacementFitness(\n#     grid_size=GRID_SIZE,\n#     simulation_steps=SIMULATION_STEPS,\n#     particle=SEED_PARTICLE,\n# )\n\n# NEW: LeakySubLightFitness with leaky bit-conservation gate\n_FITNESS = LeakySubLightFitness(\n    checkpoints=[50, 100, 150],\n    simulation_steps=SIMULATION_STEPS,\n    bits_per_cell=1,\n    velocity_threshold=0.9,\n)\n\n\ndef evaluate_population(population: list) -> tuple[list[float], list[dict]]:\n    fitnesses: list[float] = []\n    metrics_l: list[dict]  = []\n    for chrom in population:\n        rule_dict = chromosome_to_rule_dict(chrom)\n        rule      = _RuleDict(rule_dict)           # wrap for Simulator\n        fitness, metrics = _FITNESS(rule, SEED_PARTICLE)\n        fitnesses.append(float(fitness))\n        metrics_l.append(metrics)\n    return fitnesses, metrics_l\n\n\n# ── Genetic operators ─────────────────────────────────────────────────────────\n\ndef two_point_crossover(p1: np.ndarray, p2: np.ndarray, rng: random.Random):\n    n    = len(p1)\n    a, b = sorted(rng.sample(range(n + 1), 2))\n    c1, c2 = p1.copy(), p2.copy()\n    c1[a:b] = p2[a:b]\n    c2[a:b] = p1[a:b]\n    return c1, c2\n\n\ndef per_bit_mutation(chrom: np.ndarray, rate: float, rng: random.Random) -> np.ndarray:\n    for i in range(len(chrom)):\n        if rng.random() < rate:\n            chrom[i] ^= 1\n    return chrom\n\n\ndef select_top_k(population: list, fitnesses: list[float], k: int) -> list:\n    order = sorted(range(len(population)), key=lambda i: fitnesses[i], reverse=True)\n    return [population[i].copy() for i in order[:k]]\n\n\n# ── Champion animation ────────────────────────────────────────────────────────\n\ndef render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION_STEPS) -> None:\n    import matplotlib\n    matplotlib.use("Agg")\n    import matplotlib.pyplot as plt\n    import matplotlib.animation as animation\n\n    lut    = rule_dict_to_lut(rule_dict)\n    # Build particle grid from SEED_PARTICLE centred on grid centre\n    centre = GRID_SIZE // 2\n    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\n    seed_offset = (centre + SEED_PARTICLE[0][0], centre + SEED_PARTICLE[0][1])\n    for dr, dc in SEED_PARTICLE:\n        r = seed_offset[0] + dr\n        c = seed_offset[1] + dc\n        if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:\n            grid[r, c] = 1\n\n    frames = [(0, grid.copy())]\n    for step in range(1, steps + 1):\n        grid = step_grid(grid, lut)\n        if step % 5 == 0 or step == steps:\n            frames.append((step, grid.copy()))\n\n    fig, ax = plt.subplots(figsize=(6, 6), dpi=80)\n    ax.set_title("iter_218 LeakySubLightFitness champion (v<c search)")\n    ax.set_xlabel("col")\n    ax.set_ylabel("row")\n    img = ax.imshow(\n        frames[0][1], origin="upper", interpolation="nearest", cmap="hot", vmin=0, vmax=1,\n    )\n    step_text = ax.text(\n        0.02, 0.97, f"step={frames[0][0]}", transform=ax.transAxes,\n        color="white", fontsize=9, va="top",\n    )\n\n    def update(i):\n        s, g = frames[i]\n        img.set_data(g)\n        step_text.set_text(f"step={s}")\n        return img, step_text\n\n    ani = animation.FuncAnimation(\n        fig, update, frames=len(frames), interval=60, blit=True,\n    )\n    gif_path.parent.mkdir(parents=True, exist_ok=True)\n    ani.save(str(gif_path), writer="pillow", fps=15)\n    plt.close(fig)\n    print(f"  GIF saved: {gif_path}")\n\n\n# ── Evolutionary search ────────────────────────────────────────────────────────\n\ndef run_search() -> dict:\n    print("=== iter_218 v<c Glider Search (LeakySubLightFitness) ===")\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    rng = random.Random(RNG_SEED)\n\n    print(f"  Population      : {POPULATION_SIZE}")\n    print(f"  Generations     : {NUM_GENERATIONS}")\n    print(f"  Elite count     : {ELITE_COUNT}")\n    print(f"  Grid size       : {GRID_SIZE}x{GRID_SIZE}")\n    print(f"  Sim steps       : {SIMULATION_STEPS}")\n    print(f"  Seed particle   : {SEED_PARTICLE}")\n    print(f"  Fitness         : LeakySubLightFitness\\n")\n\n    # Initial random population\n    population = [\n        rule_dict_to_chromosome(generate_c2_rule(rng))\n        for _ in range(POPULATION_SIZE)\n    ]\n\n    fitnesses, metrics_l = evaluate_population(population)\n    best_idx        = int(np.argmax(fitnesses))\n    best_fitness    = float(fitnesses[best_idx])\n    best_chrom      = population[best_idx].copy()\n    best_metrics    = metrics_l[best_idx]\n    best_generation = 0\n    max_ever        = best_fitness\n\n    gen_log: list[tuple[int, float]] = [(0, best_fitness)]\n\n    n_nonzero = sum(1 for f in fitnesses if f > 0.0)\n    print(\n        f"  Gen  0: champion={best_fitness:.4f}  mean={np.mean(fitnesses):.4f}"\n        f"  non_zero={n_nonzero}"\n    )\n\n    for gen in range(1, NUM_GENERATIONS + 1):\n        elite   = select_top_k(population, fitnesses, ELITE_COUNT)\n        new_pop = [e.copy() for e in elite]\n\n        while len(new_pop) < POPULATION_SIZE:\n            p1, p2 = rng.sample(elite, 2)\n            if rng.random() < CROSSOVER_RATE:\n                c1, c2 = two_point_crossover(p1, p2, rng)\n            else:\n                c1, c2 = p1.copy(), p2.copy()\n            c1 = per_bit_mutation(c1, MUTATION_RATE, rng)\n            c2 = per_bit_mutation(c2, MUTATION_RATE, rng)\n            new_pop.append(c1)\n            if len(new_pop) < POPULATION_SIZE:\n                new_pop.append(c2)\n\n        population = new_pop\n        fitnesses, metrics_l = evaluate_population(population)\n\n        gen_best_idx = int(np.argmax(fitnesses))\n        gen_best     = float(fitnesses[gen_best_idx])\n        gen_mean     = float(np.mean(fitnesses))\n        n_nonzero    = sum(1 for f in fitnesses if f > 0.0)\n\n        if gen_best > best_fitness:\n            best_fitness    = gen_best\n            best_chrom      = population[gen_best_idx].copy()\n            best_metrics    = metrics_l[gen_best_idx]\n            best_generation = gen\n\n        if best_fitness > max_ever:\n            max_ever = best_fitness\n\n        gen_log.append((gen, best_fitness))\n\n        print(\n            f"  Gen {gen:2d}: champion={best_fitness:.4f}  gen_best={gen_best:.4f}"\n            f"  mean={gen_mean:.4f}  non_zero={n_nonzero}"\n        )\n\n    return {\n        "best_fitness":    best_fitness,\n        "max_ever":        max_ever,\n        "best_chrom":      best_chrom,\n        "best_metrics":    best_metrics,\n        "best_generation": best_generation,\n        "gen_log":         gen_log,\n    }\n\n\n# ── Reporting ─────────────────────────────────────────────────────────────────\n\ndef write_results(result: dict) -> list[str]:\n    print("\\n=== Writing artifacts ===")\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    artifacts: list[str] = []\n\n    # 1. champion_vc_rule.json\n    rule_dict = chromosome_to_rule_dict(result["best_chrom"])\n    m         = result["best_metrics"] or {}\n    payload = {\n        "iteration":          "iter_218",\n        "fitness_function":   "LeakySubLightFitness",\n        "fitness":            result["best_fitness"],\n        "generation_of_best": result["best_generation"],\n        "num_generations":    NUM_GENERATIONS,\n        "population_size":    POPULATION_SIZE,\n        "grid_size":          GRID_SIZE,\n        "simulation_steps":   SIMULATION_STEPS,\n        "seed_particle":      SEED_PARTICLE,\n        "metrics":            m,\n        "rule_dict":          {str(k): int(v) for k, v in rule_dict.items()},\n        "chromosome":         result["best_chrom"].tolist(),\n    }\n    with open(CHAMPION_JSON, "w") as f:\n        json.dump(payload, f, indent=2)\n    rel = str(CHAMPION_JSON.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    print(f"  Champion rule saved: {CHAMPION_JSON}")\n    artifacts.append(rel)\n\n    # 2. evolution_log.csv\n    with open(EVOLUTION_CSV, "w", newline="") as f:\n        writer = csv.writer(f)\n        writer.writerow(["generation", "champion_fitness"])\n        for gen, fit in result["gen_log"]:\n            writer.writerow([gen, fit])\n    rel = str(EVOLUTION_CSV.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    print(f"  Evolution log saved: {EVOLUTION_CSV}")\n    artifacts.append(rel)\n\n    # 3. champion_vc_glider.gif  (always render, regardless of fitness)\n    print("  Rendering champion GIF ...")\n    render_champion_gif(rule_dict, CHAMPION_GIF, steps=SIMULATION_STEPS)\n    rel = str(CHAMPION_GIF.relative_to(PROJECT_ROOT)).replace("\\\\", "/")\n    artifacts.append(rel)\n\n    print(f"\\n  best_fitness    = {result[\'best_fitness\']:.6f}")\n    print(f"  max_ever        = {result[\'max_ever\']:.6f}")\n    print(f"  best_generation = {result[\'best_generation\']}")\n    if m:\n        print(f"  base_fitness       = {m.get(\'base_fitness\', \'n/a\')}")\n        print(f"  total_conservation = {m.get(\'total_conservation_score\', \'n/a\')}")\n        print(f"  avg_velocity       = {m.get(\'avg_velocity\', \'n/a\')}")\n        print(f"  net_displacement   = {m.get(\'net_displacement\', \'n/a\')}")\n        print(f"  initial_bits       = {m.get(\'initial_bits\', \'n/a\')}")\n        print(f"  conservation_factors = {m.get(\'conservation_factors\', \'n/a\')}")\n\n    return artifacts\n\n\ndef main() -> int:\n    global OUTPUT_DIR, CHAMPION_JSON, EVOLUTION_CSV, CHAMPION_GIF\n\n    parser = argparse.ArgumentParser(description="v<c glider evolutionary search")\n    parser.add_argument(\n        "--output_file",\n        type=str,\n        default=None,\n        help="Override champion output path (e.g. archive/iter_218/results/champion_rule.json)",\n    )\n    args = parser.parse_args()\n\n    if args.output_file:\n        champion_path = Path(args.output_file)\n        if not champion_path.is_absolute():\n            champion_path = PROJECT_ROOT / champion_path\n        OUTPUT_DIR   = champion_path.parent\n        CHAMPION_JSON = champion_path\n        EVOLUTION_CSV = OUTPUT_DIR / "evolution_log.csv"\n        CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"\n        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n\n    result    = run_search()\n    artifacts = write_results(result)\n\n    print("\\n=== Summary ===")\n    print(f"  best_fitness    = {result[\'best_fitness\']:.6f}")\n    print(f"  max_ever        = {result[\'max_ever\']:.6f}")\n    print(f"  best_generation = {result[\'best_generation\']}")\n    print(f"  artifacts       = {artifacts}")\n    return 0\n\n\nif __name__ == "__main__":\n    sys.exit(main())\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_vc_search.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\run_vc_search.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe src\\run_vc_search.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: === iter_218 v<c Glider Search (LeakySubLightFitness) ===
+  Population      : 100
+  Generations     : 10
+  Elite count     : 10
+  Grid size       : 128x128
+  Sim steps       : 200
+  Seed particle   : [(0, 0), (0, 1), (1, 1)]
+  Fitness         : LeakySubLightFitness
+
+  Gen  0: champion=42.3333  mean=2.1400  non_zero=60
+  Gen  1: champion=71.0133  gen_best=71.0133  mean=14.6616  non_zero=78
+  Gen  2: champion=71.0133  gen_best=71.0133  mean=35.7129  non_zero=92
+  G...]
+
+The search completed successfully. Let me verify the artifacts and examine the results:
+
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_218\\results'})]
+
+[Tool Result:       champion_vc_glider.gif
+      champion_vc_rule.json
+      evolution_log.csv]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_218\\results\\evolution_log.csv'})]
+
+[Tool Result: generation,champion_fitness
+0,42.33333333333333
+1,71.01331301242043
+2,71.01331301242043
+3,84.11294581882737
+4,84.33926197869597
+5,84.33926197869597
+6,84.33926197869597
+7,84.33926197869597
+8,84.33926197869597
+9,84.33926197869597
+10,84.33926197869597
+]
+
+The evolutionary search completed successfully. Let me provide the final summary:
+
+## Results Summary
+
+The `LeakySubLightFitness` function created a highly searchable evolutionary landscape for the `v<c` glider search.
+
+**Key Metrics:**
+- **Best Fitness:** 84.339 (achieved at Generation 4)
+- **Initial Fitness (Gen 0):** 42.33
+- **Population Size:** 100, **Generations:** 10
+- **Seed:** 3-bit L-tromino
+
+**Evolutionary Progress:**
+| Generation | Champion Fitness | Population Mean | Non-Zero |
+|---|---|---|---|
+| 0 | 42.33 | 2.14 | 60 |
+| 1 | 71.01 | 14.66 | 78 |
+| 4 | **84.34** | 49.57 | 82 |
+| 10 | **84.34** | 61.32 | 93 |
+
+**Champion Rule Quality:**
+- **Total Conservation Score:** 1.0 (perfect bit conservation at all 3 checkpoints)
+- **Average Velocity:** 0.639 cells/step (well below the 0.9 sub-light threshold)
+- **Net Displacement:** 84.34 cells over 200 steps
+- **Conservation Factors:** [1.0, 1.0, 1.0] — the particle maintained all 3 bits at steps 50, 100, and 150
+
+**Landscape Quality:** By Gen 10, 93% of the population had non-zero fitness, demonstrating the leaky approach provides a rich, continuous gradient that guides evolution toward high-quality solutions.
+
+**Artifacts saved to `archive/iter_218/results/`:**
+- `champion_vc_rule.json` — champion rule, metrics, and chromosome
+- `evolution_log.csv` — per-generation champion fitness
+- `champion_vc_glider.gif` — 200-step animation of the champion pattern
+
+```yaml
+status: ok
+artifacts:
+  - src/run_vc_search.py
+  - archive/iter_218/results/champion_vc_rule.json
+  - archive/iter_218/results/evolution_log.csv
+  - archive/iter_218/results/champion_vc_glider.gif
+metrics:
+  best_fitness: 84.339262
+  max_ever: 84.339262
+  best_generation: 4
+  net_displacement: 84.339262
+  total_conservation_score: 1.0
+  avg_velocity: 0.639464
+  initial_bits: 3
+  non_zero_final_gen: 93
+  population_size: 100
+  num_generations: 10
+log_excerpt: |
+  === iter_218 v<c Glider Search (LeakySubLightFitness) ===
+    Population      : 100
+    Generations     : 10
+    Elite count     : 10
+    Grid size       : 128x128
+    Sim steps       : 200
+    Seed particle   : [(0, 0), (0, 1), (1, 1)]
+    Fitness         : LeakySubLightFitness
+
+    Gen  0: champion=42.3333  mean=2.1400  non_zero=60
+    Gen  1: champion=71.0133  gen_best=71.0133  mean=14.6616  non_zero=78
+    Gen  2: champion=71.0133  gen_best=71.0133  mean=35.7129  non_zero=92
+    Gen  3: champion=84.1129  gen_best=84.1129  mean=38.1520  non_zero=81
+    Gen  4: champion=84.3393  gen_best=84.3393  mean=49.5672  non_zero=82
+    Gen  5: champion=84.3393  gen_best=84.3393  mean=51.4463  non_zero=86
+    Gen  6: champion=84.3393  gen_best=84.3393  mean=59.4509  non_zero=87
+    Gen  7: champion=84.3393  gen_best=84.3393  mean=65.4549  non_zero=93
+    Gen  8: champion=84.3393  gen_best=84.3393  mean=66.6658  non_zero=95
+    Gen  9: champion=84.3393  gen_best=84.3393  mean=65.9649  non_zero=95
+    Gen 10: champion=84.3393  gen_best=84.3393  mean=61.3201  non_zero=93
+
+    best_fitness    = 84.339262
+    max_ever        = 84.339262
+    best_generation = 4
+    total_conservation = 1.0
+    avg_velocity       = 0.6394635177142391
+    net_displacement   = 84.33926197869597
+    conservation_factors = [1.0, 1.0, 1.0]
+  artifacts       = ['archive/iter_218/results/champion_vc_rule.json', 'archive/iter_218/results/evolution_log.csv', 'archive/iter_218/results/champion_vc_glider.gif']
+experimenter_view: |
+  The LeakySubLightFitness function proved highly effective for the v<c glider search.
+  Key observations:
+  1. The fitness landscape is highly searchable — champion improved from 42.3 to 84.3 in just 4 generations.
+  2. By Gen 10, 93% of the population had non-zero fitness, showing the leaky approach creates a rich
+     continuous gradient (vs hard gates that eliminate most of the population).
+  3. The champion achieved perfect bit conservation (conservation score = 1.0) with strong displacement
+     (net displacement = 84.3 cells over 200 steps), yielding a fitness of 84.34.
+  4. The average velocity of 0.639 cells/step indicates the glider moves well below the sub-light
+     threshold of 0.9, confirming valid v<c behavior.
+  5. The evolutionary pressure from the leaky conservation penalty successfully steered the population
+     toward rules that both move and conserve bits simultaneously.
+  6. Population mean fitness grew from 2.14 to 61.3, showing broad improvement across the entire population,
+     not just the elite.
+notes: "LeakySubLightFitness creates an excellent searchable landscape for v<c glider discovery"
+```
