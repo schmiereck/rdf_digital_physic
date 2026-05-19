@@ -1,10 +1,9 @@
-The goal is to extract and save the precise structure of the v<c glider discovered in iter_218.
+The goal is to programmatically extract the structure of the v<c glider discovered in iter_218. The champion rule is stored in `archive/iter_218/results/champion_rule.json`.
 
-1.  Read the champion rule `g4_rule_083` from `archive/iter_218/results/champion_rule.json`.
-2.  Use the `src/run_simulation.py` script.
-3.  Configure the simulation with the champion rule, the standard 3-bit L-tromino seed (`--seed_name l_tromino`), and run for 150 steps.
-4.  Use the `find_objects` utility (already in the codebase) at step 100 to identify the coordinates of the moving glider.
-5.  Normalize the coordinates so the top-left-most bit is at (0,0).
-6.  Save the final list of relative coordinates to `archive/iter_219/results/vc_glider_g4_rule_083_structure.json`.
-7.  The final JSON should be a simple list of lists, e.g., `[[0,0], [1,0], [1,1]]`.
-8.  Add a metric `glider_bit_count` to the result with the number of bits in the glider.
+Create a Python script `src/extract_vc_glider_structure.py` that:
+1. Loads the rule from `archive/iter_218/results/champion_rule.json`.
+2. Initializes a 256x256 hexagonal grid with the standard 3-bit L-tromino seed at the center.
+3. Runs the simulation for 300 steps.
+4. Implements a clustering algorithm (e.g., DBSCAN or a simple flood-fill) to identify the main moving object's coordinates at step 299.
+5. Normalizes these coordinates relative to the object's center of mass.
+6. Saves the list of relative coordinates as a JSON file to `archive/iter_219/results/vc_glider_structure.json`.
