@@ -1,9 +1,9 @@
-This is a re-run of the diagnostic task 219.4. The goal is to check for a hang in the core simulation script, using the cleaned rule file.
+This task is to re-run the v<c glider simulation with the **correct seed** discovered from `iter_218`. All previous runs in this phase used the wrong seed.
 
-1.  Use the cleaned rule file located at `archive/iter_219/results/g4_rule_083_cleaned.json`.
-2.  Execute `src/run_simulation.py` with this rule file.
-3.  **CRITICAL:** Set a very short number of steps: `--num_steps 20`.
-4.  Set a hard timeout for the entire process to 60 seconds.
-5.  The goal is to verify that a short simulation completes without hanging.
-6.  If it completes successfully, report `status: ok` and a metric `completed_in_time: true`.
-7.  If it hangs or times out, report `status: experiment_failed`, a metric `completed_in_time: false`, and summarize any logs from `stderr.txt` in the `experimenter_view`.
+**Create a Python script `src/run_and_save_state_corrected.py` that:**
+1.  **Load Rule:** Loads the rule from `archive/iter_218/results/champion_rule.json`.
+2.  **Initialize Grid:** Creates a 256x256 numpy array for the grid.
+3.  **Center the CORRECT Seed:** The seed from the discovery file is `[[0, 0], [0, 1], [1, 1]]`. Place this seed relative to the grid center (128, 128).
+4.  **Simulate:** Runs the simulation for 300 steps.
+5.  **Save Final Grid:** Saves the entire 256x256 grid to `archive/iter_219/results/final_grid_state_corrected.npy`.
+6.  **Log Final Bit Count:** After the simulation, count the number of active cells and print it clearly to stdout. This is expected to be 10.
