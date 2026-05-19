@@ -1,14 +1,13 @@
-**CRITICAL RE-ATTEMPT:** The previous agent failed to perform this task. Your goal is to empirically validate the `DisplacementConsistencyFitness` function.
+**Goal:** Empirically validate the new `DisplacementConsistencyFitness` function.
 
 **Task:**
-1.  **Delete any old diagnostic scripts.**
-2.  Create a new Python script `src/validate_fitness.py`.
-3.  In this script, import the `DisplacementConsistencyFitness` function and the necessary rule-loading and simulation components.
-4.  Create a "validation gallery" of rules to test:
-    *   **Good Glider:** The `v=1c` elastic glider rule from `iter_193`. Path: `archive/iter_193/results/champion_rule.json`. Label this "v=1c elastic".
-    *   **Drifter Exploit:** The stationary "drifter" object from `iter_218`. Path: `archive/iter_218/results/champion_g4_rule_083.json`. Label this "drifter".
-    *   **Stationary Object:** A rule known to produce only stable, non-moving objects. Use the rule from `iter_056`. Path: `archive/iter_056/results/rule_1.json`. Label this "still_life".
-5.  For each rule, initialize `DisplacementConsistencyFitness` and evaluate the rule's performance on the standard 3-bit L-tromino seed over 500 steps on a 128x128 grid.
-6.  Print the results in a clear, formatted table showing the rule label and its final fitness score.
-
-**Success Criterion:** The script runs successfully and prints a table where the "v=1c elastic" rule has a significantly positive score, while the "drifter" and "still_life" rules have scores at or very near zero. This will confirm the function's ability to distinguish coherent motion from exploits.
+1.  Create a new Python script `src/validate_fitness.py`.
+2.  In this script, import `DisplacementConsistencyFitness` and the relevant rule-loading utilities.
+3.  Load the following three rules for testing:
+    *   The known-good `v=1c` elastic collision rule from `iter_193` (`g10_f_rule_034_c2`). This should get a high score.
+    *   The `v=1c` glider rule from `iter_179` (`g10_rule_001`). This should also get a high score.
+    *   The "drifter" exploit rule from `iter_218` (`g4_rule_083`). This MUST get a very low or zero score.
+4.  For each rule, initialize the fitness function and evaluate the rule with the standard 3-bit L-tromino seed on a 128x128 grid for 500 steps.
+5.  Print the resulting fitness score for each rule to stdout, clearly labeled.
+6.  The script should exit with a non-zero error code if the "drifter" rule scores higher than either of the glider rules.
+7.  Execute the script. The success criterion is a clean exit with the drifter rule scoring significantly lower than the glider rules.
