@@ -1,13 +1,14 @@
-**Goal:** Programmatically reproduce the fitness function exploit identified in `iter_219`.
+**CRITICAL RE-ATTEMPT:** The previous agent failed to perform this task. Your goal is to empirically validate the `DisplacementConsistencyFitness` function.
 
 **Task:**
-1.  Create a Python script named `src/reproduce_exploit.py`.
-2.  The script must perform the following steps:
-    a. Load the rule from `archive/iter_218/results/champion_rule.json`.
-    b. Load the `LeakyCheckpointFitness` function from `src/fitness.py`.
-    c. Initialize a 128x128 hexagonal grid with the standard 3-bit L-tromino seed.
-    d. Run the simulation for 500 steps.
-    e. Calculate the fitness score using the `LeakyCheckpointFitness` function.
-    f. Calculate the final net displacement of the center of mass (distance from its starting position).
-    g. Print the final fitness score and the net displacement.
-3.  The task is successful if the script runs and reports a high fitness score (e.g., > 10.0) and a near-zero displacement (e.g., < 0.1).
+1.  **Delete any old diagnostic scripts.**
+2.  Create a new Python script `src/validate_fitness.py`.
+3.  In this script, import the `DisplacementConsistencyFitness` function and the necessary rule-loading and simulation components.
+4.  Create a "validation gallery" of rules to test:
+    *   **Good Glider:** The `v=1c` elastic glider rule from `iter_193`. Path: `archive/iter_193/results/champion_rule.json`. Label this "v=1c elastic".
+    *   **Drifter Exploit:** The stationary "drifter" object from `iter_218`. Path: `archive/iter_218/results/champion_g4_rule_083.json`. Label this "drifter".
+    *   **Stationary Object:** A rule known to produce only stable, non-moving objects. Use the rule from `iter_056`. Path: `archive/iter_056/results/rule_1.json`. Label this "still_life".
+5.  For each rule, initialize `DisplacementConsistencyFitness` and evaluate the rule's performance on the standard 3-bit L-tromino seed over 500 steps on a 128x128 grid.
+6.  Print the results in a clear, formatted table showing the rule label and its final fitness score.
+
+**Success Criterion:** The script runs successfully and prints a table where the "v=1c elastic" rule has a significantly positive score, while the "drifter" and "still_life" rules have scores at or very near zero. This will confirm the function's ability to distinguish coherent motion from exploits.
