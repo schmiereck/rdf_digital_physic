@@ -1,0 +1,326 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] -p
+[DIR] .git
+      .gitignore
+[DIR] .venv
+[DIR] archive
+      config.toml
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      goal.md
+      python_path_info.py
+      RDF-REVIEW-179.md
+      requirements.txt
+      RESEARCH-RESULT-179.md
+[DIR] src
+      stdout.txt
+      verify_output.py]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_218\\results\\champion_rule.json'})]
+
+[Tool Result: {
+  "iteration": "iter_218",
+  "fitness_function": "LeakySubLightFitness",
+  "fitness": 84.33926197869597,
+  "generation_of_best": 4,
+  "num_generations": 10,
+  "population_size": 100,
+  "grid_size": 128,
+  "simulation_steps": 200,
+  "seed_particle": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "metrics": {
+    "fitness": 84.33926197869597,
+    "base_fitness": 84.33926197869597,
+    "total_conservation_score": 1.0,
+    "conservation_factors": ...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_glider_200.1.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_offset_collisions.py
+      characterize_remnant.py
+      characte...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fitness.py
+
+Fitness metrics for hexagonal CA rules.
+  - calculate_velocity_stability: rewards sustained, constant-velocity motion.
+  - CheckpointFitness: rewards stable bit-count throughout the simulation.
+  - DynamicCollisionFitness: rewards rules that produce a true dynamic
+    bit-and-object-conserving collision between two 3-bit gliders (approach
+    followed by recession).
+"""
+
+import math
+import sys
+from pathlib import Path
+
+import numpy as np
+from scipy.ndimage ...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulator.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+simulator.py — Particle and Simulator classes for the hexagonal CA.
+
+The legacy 1-bit pipeline (128-entry LUT, 2D grids) is preserved as the
+default fast path so existing callers keep working unchanged.  Passing
+``bits_per_cell > 1`` enables the multi-bit engine in ``engine.py``, where
+grids carry shape ``(H, W, bits_per_cell)``.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+from engine import (
+    BITS_PER_CELL,
+    HexagonalGrid,
+    build_lut,
+    oc...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulate_hex.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+iter_041: dynamics-next-kernel
+Synchronous CA using the symmetric rule from the second valid kernel (A=96, B=40 in MSB encoding;
+derived from LSB kernel A=3, B=10 found by find_center_flipping_kernel.py).
+Tests whether a 2-bit seed produces a stable oscillator or glider.
+
+Neighborhood encoding (7 bits, MSB = center):
+  state = center*64 + b1*32 + b2*16 + b3*8 + b4*4 + b5*2 + b6
+Directions: b1=E, b2=SE, b3=SW, b4=W, b5=NW, b6=NE
+"""
+
+import json
+import sys
+import yaml
+i...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\leaky_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+leaky_fitness.py
+
+A 'leaky' fitness function that rewards displacement while applying a
+continuous penalty for bit-count changes — providing an evolutionary
+gradient toward both motion and conservation simultaneously.
+
+LeakySubLightFitness
+--------------------
+Inherits from ``CheckpointFitness`` but replaces the hard bit-conservation
+fail with a soft penalty (``conservation_factor``).  The fitness function
+still gates on the particle's mean velocity (rejecting any rule...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+engine.py — Multi-bit hexagonal CA engine.
+
+Generalises the historic 1-bit step (encoded by simulator.py and evolution.py)
+to grids whose cells carry N bits.  The grid is represented as a NumPy array of
+shape ``(height, width, bits_per_cell)`` where each entry along the last axis
+is a single bit (0/1).  Cell value = base-2 with index 0 as the most
+significant bit.
+
+For ``bits_per_cell == 1`` the math reduces exactly to the legacy fast path:
+state encoding ``(c<<6)|(e<<...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+
+Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+
+This penalises annihilation: a rule that destroys the seed gets a ratio near
+zero even if the centre-of-mass technically moves before the grid goes dark.
+Rules that move the particle while preserving its bit count score highest.
+"""
+
+import math
+import random
+
+import numpy as np
+
+# Small constant to guard against the (very unli...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\seeds.py'})]
+
+[Tool Result: """
+seeds.py — Standard initial seeds for CA evolution experiments.
+"""
+
+import numpy as np
+
+_GRID = 128
+
+
+def _make_seed(cells, grid_size=_GRID):
+    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
+    for r, c in cells:
+        grid[r % grid_size, c % grid_size] = 1
+    return grid
+
+
+# 3-cell L-tromino centred near the middle of a 128x128 grid
+L_TROMINO_SEED = _make_seed([(63, 63), (64, 63), (64, 64)])
+]
+
+Now let me check if there's anything else relevant, then write the script:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evaluate.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+evaluate.py — General-purpose rule evaluator.
+
+Usage:
+    python evaluate.py [--fitness-metric METRIC] rule.json [rule2.json ...]
+
+Fitness metrics:
+    conservation        displacement * (final_bits / initial_bits)  [default]
+    velocity_stability  1 / (1 + std_dev_velocity)  over 3 windows
+    StableVelocityFitness
+                        (mean_v / (1 + std_v)) * (initial_bits / final_bits)
+                        over 4 post-settling windows of 2000 total steps
+"""
+...]
+
+Now I have a thorough understanding of the codebase. Let me create the reproduction script.
+
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\reproduce_exploit.py', 'content': '#!/usr/bin/env python3\n"""\nreproduce_exploit.py — Reproduce the fitness-function exploit from iter_218.\n\nThis script demonstrates how the LeakySubLightFitness function can award a\nhigh score to a *stationary* (or near-stationary) object simply because it\naccumulates a large net displacement over a long simulation without ever\nexceeding the sub-light velocity threshold (0.9 cells/step).\n\nThe champion rule from iter_218 produces a pattern that barely moves each\nstep (avg_velocity stays below 0.9) but over hundreds of steps its centre\nof mass drifts far from the start, producing a large base_fitness (net\ndisplacement) — and with near-perfect bit conservation the final score is\nalmost identical to that displacement.  This is the "exploit": the fitness\nfunction rewards slow drift of any persistent object, stationary or not,\nas long as it never gets too fast per step and keeps its bits.\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport math\nfrom pathlib import Path\n\nimport numpy as np\n\n# ---------------------------------------------------------------------------\n# 1. Load the champion rule\n# ---------------------------------------------------------------------------\n\nPROJECT_ROOT = Path(__file__).parent.parent\nCHAMPION_PATH = PROJECT_ROOT / "archive" / "iter_218" / "results" / "champion_rule.json"\n\nwith open(CHAMPION_PATH) as fh:\n    champion = json.load(fh)\n\nrule_dict = champion["rule_dict"]\nprint(f"Loaded champion rule from {CHAMPION_PATH} "\n      f"({len(rule_dict)} mappings)")\nprint()\n\n# ---------------------------------------------------------------------------\n# 2. Import simulation & fitness components\n# ---------------------------------------------------------------------------\n\nfrom simulator import Particle, Simulator\nfrom engine import HexGrid\nfrom fitness import LeakySubLightFitness\n\n# ---------------------------------------------------------------------------\n# 3. Define simulation parameters\n# ---------------------------------------------------------------------------\n\nGRID_SIZE = 128\nSEED_BITS = [(0, 0), (0, 1), (1, 1)]          # 3-bit L-tromino seed\nSTEPS = 500\nVELOCITY_THRESHOLD = 0.9\nCHECKPOINTS = [100, 200, 300, 400, 500]        # sample every 100 steps\n\n# ---------------------------------------------------------------------------\n# 4. Run the simulation\n# ---------------------------------------------------------------------------\n\nprint(f"{\'=\' * 60}")\nprint(f"Simulation parameters")\nprint(f"{\'=\' * 60}")\nprint(f"  Grid size       : {GRID_SIZE} x {GRID_SIZE}")\nprint(f"  Seed            : L-tromino at {SEED_BITS}")\nprint(f"  Steps           : {STEPS}")\nprint(f"  Velocity threshold: {VELOCITY_THRESHOLD}")\nprint(f"  Checkpoints     : {CHECKPOINTS}")\nprint()\n\n# Build the initial grid\ngrid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\nfor r, c in SEED_BITS:\n    grid[r, c] = 1\n\n# Wrap the rule dict in a minimal object so that Simulator can use it.\n# Simulator expects either a Rule instance (with .rule_dict) or a plain dict\n# when bits_per_cell == 1.\nrule_obj = type("Rule", (), {"rule_dict": rule_dict})()\n\n# ---------------------------------------------------------------------------\n# 5. Calculate fitness using LeakySubLightFitness\n# ---------------------------------------------------------------------------\n\nfitness_fn = LeakySubLightFitness(\n    checkpoints=CHECKPOINTS,\n    simulation_steps=STEPS,\n    bits_per_cell=1,\n    velocity_threshold=VELOCITY_THRESHOLD,\n)\n\n# evaluate() returns a plain float; __call__ returns (fitness, metrics)\nfitness_value, metrics = fitness_fn(rule_obj, SEED_BITS)\n\n# ---------------------------------------------------------------------------\n# 6. Manually compute net displacement for comparison\n# ---------------------------------------------------------------------------\n\ninitial_com = metrics["initial_com"]\nfinal_com   = metrics["final_com"]\nnet_dx = final_com[0] - initial_com[0]\nnet_dy = final_com[1] - initial_com[1]\nnet_displacement = math.sqrt(net_dx * net_dx + net_dy * net_dy)\n\n# ---------------------------------------------------------------------------\n# 7. Print results\n# ---------------------------------------------------------------------------\n\nprint(f"{\'=\' * 60}")\nprint(f"Results")\nprint(f"{\'=\' * 60}")\nprint(f"  Final fitness             : {fitness_value:.6f}")\nprint(f"  Base fitness (net disp.)  : {metrics[\'base_fitness\']:.6f}")\nprint(f"  Net displacement          : {net_displacement:.6f}")\nprint(f"  Total conservation score  : {metrics[\'total_conservation_score\']:.6f}")\nprint(f"  Conservation factors      : {metrics[\'conservation_factors\']}")\nprint(f"  Avg velocity (per step)   : {metrics[\'avg_velocity\']:.6f}")\nprint(f"  Velocity threshold        : {metrics[\'velocity_threshold\']:.6f}")\nprint(f"  Velocity rejected?        : {metrics[\'velocity_rejected\']}")\nprint(f"  Initial bit count         : {metrics[\'initial_bits\']}")\nprint(f"  Initial centre of mass    : ({initial_com[0]:.6f}, {initial_com[1]:.6f})")\nprint(f"  Final   centre of mass    : ({final_com[0]:.6f}, {final_com[1]:.6f})")\nprint()\n\n# ---------------------------------------------------------------------------\n# 8. Explain the exploit\n# ---------------------------------------------------------------------------\n\nprint(f"{\'=\' * 60}")\nprint(f"Exploit analysis")\nprint(f"{\'=\' * 60}")\n\nif metrics["velocity_rejected"]:\n    print("  >>> Velocity gate REJECTED this rule (avg_velocity >= threshold).")\n    print("      This rule would NOT be exploitable under these settings.")\nelse:\n    print("  >>> Velocity gate PASSED (avg_velocity < threshold).")\n\nif metrics["total_conservation_score"] > 0.99:\n    print("  >>> Conservation is nearly perfect — no bit-loss penalty.")\n\nif net_displacement > 50:\n    print(f"  >>> NET DISPLACEMENT is {net_displacement:.1f} cells!")\n    print("      Even though the pattern may appear stationary or")\n    print("      semi-stationary at each step, the accumulated drift")\n    print("      over many steps yields a large fitness score.")\n\nprint()\nprint("  SUMMARY:")\nprint(f"  - fitness = {fitness_value:.4f}")\nprint(f"  - base_fitness (net_displacement) = {metrics[\'base_fitness\']:.4f}")\nprint(f"  - conservation_score = {metrics[\'total_conservation_score\']:.4f}")\nprint()\nprint("  The LeakySubLightFitness formula is:")\nprint("    fitness = net_displacement * total_conservation_score")\nprint()\nprint("  A \'stationary\' or slow-drifting object that preserves its bits")\nprint("  will score almost as much as a true glider, because the fitness")\nprint("  function only gates on per-step velocity (avg_velocity < 0.9)")\nprint("  and does not distinguish between a fast glider and a slow drift.")\nprint()\nprint("  This is the exploit: the fitness landscape rewards persistence")\nprint("  with ANY displacement above zero, making it easy for evolution")\nprint("  to find near-stationary rules that \'cheat\' by drifting slowly.")\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\reproduce_exploit.py]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\reproduce_exploit.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+reproduce_exploit.py — Reproduce the fitness-function exploit from iter_218.
+
+This script demonstrates how the LeakySubLightFitness function can award a
+high score to a *stationary* (or near-stationary) object simply because it
+accumulates a large net displacement over a long simulation without ever
+exceeding the sub-light velocity threshold (0.9 cells/step).
+
+The champion rule from iter_218 produces a pattern that barely moves each
+step (avg_velocity stays below 0.9) ...]
+
+Now let me verify the script has no syntax errors by having Python parse it:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -m py_compile src\\reproduce_exploit.py'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+The script has been created and verified. Here's a summary:
+
+**`src/reproduce_exploit.py`** has been written and passes Python's syntax check (`py_compile`). The script:
+
+1. **Loads the champion rule** from `archive/iter_218/results/champion_rule.json`
+2. **Imports** `LeakySubLightFitness` from `src/fitness.py`, along with `HexGrid`, `Particle`, and `Simulator`
+3. **Defines simulation parameters**: 128×128 grid, 3-bit L-tromino seed at `[(0,0), (0,1), (1,1)]`, 500 simulation steps
+4. **Runs the simulation** by calling `LeakySubLightFitness.__call__()` on the champion rule
+5. **Calculates fitness and net displacement**, extracting all intermediate metrics (conservation factors, velocity, conservation score)
+6. **Prints clear results** showing:
+   - Final fitness score
+   - Base fitness (net displacement)
+   - Conservation score
+   - Average velocity and whether it was rejected
+   - Centre of mass at start vs. end
+   
+   Plus an analysis section explaining the exploit — how the fitness function rewards slow drift of persistent objects (stationary or not) as long as they don't exceed the per-step velocity threshold and preserve their bits.
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts:
+  - src/reproduce_exploit.py
+metrics:
+  champion_fitness: 84.339
+  champion_net_displacement: 84.339
+  champion_avg_velocity: 0.639
+  champion_velocity_threshold: 0.9
+  champion_conservation_score: 1.0
+  champion_initial_bits: 3
+  champion_initial_com: [0.333, 0.667]
+  champion_final_com: [84.667, 1.667]
+  champion_simulation_steps: 200
+  script_simulation_steps: 500
+  script_grid_size: 128
+  script_seed: L-tromino_3bit
+  script_checkpoints: 5
+experimenter_view: |
+  The LeakySubLightFitness exploit was successfully documented. The champion rule
+  from iter_218 achieves fitness ~84.34 despite moving the centre of mass only
+  ~0.639 cells per step (below the 0.9 velocity threshold). Its net displacement
+  over 200 steps equals ~84.34 cells — nearly identical to its final fitness
+  because bit conservation is perfect (score = 1.0). The fitness formula
+  fitness = net_displacement * total_conservation_score means that ANY persistent
+  object with slow, steady drift scores almost as well as a true glider. Evolution
+  can "exploit" this by finding stationary or semi-stationary patterns that drift
+  slowly over time while preserving their bits, rather than discovering genuine
+  glider structures. This is a fundamental flaw in the fitness landscape design:
+  it conflates "movement over many steps" with "glider behaviour".
+notes: "Exploit script written and syntax-verified; script not executed per instructions."
+```
