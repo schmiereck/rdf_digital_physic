@@ -1,0 +1,41 @@
+```yaml
+analysis: |
+  The previous phase (217) conclusively refuted the hypothesis that a 'warm-start' population could find a `v<c` glider using the strict `SubLightFitness` function. The result was a completely flat, all-zero fitness landscape, providing no gradient for evolution. The root cause is the punitive nature of the fitness function: any single failure in bit conservation or displacement at any checkpoint results in a score of zero.
+
+  This phase aims to solve this "flat landscape" problem by creating a gradient. The strategy is to first introduce a "leaky" fitness function that gives partial credit, and then use this new function in a fresh evolutionary search.
+
+  1.  **Sub-goal 218.1:** A focused, low-complexity task to implement the new `LeakySubLightFitness` function. This function will replace the binary penalty for bit non-conservation with a continuous penalty term, `1 / (1 + bit_delta)`. This should create a smooth gradient that allows the evolutionary search to reward rules that are "almost" correct.
+
+  2.  **Sub-goal 218.2:** A planner-driven task to run a new evolutionary search. Critically, this will start from a *random* population, as the 'warm-start' population proved to be a dead end. The primary goal is to determine if the new leaky fitness function successfully creates a searchable gradient, which would be indicated by a rising average fitness across generations. Finding a perfect glider at this stage is a secondary objective.
+open_questions:
+  - "Will a 'leaky' fitness function that penalizes (but doesn't zero out) bit non-conservation create a searchable gradient?"
+  - "Is a random starting population more effective than a 'warm-start' when searching for v<c gliders?"
+  - "What new failure modes or exploits will emerge from the leaky fitness function?"
+  - "Can evolution simultaneously optimize for both motion and conservation with this new function?"
+chosen_direction: "Create a non-punitive, 'leaky' fitness function to provide a gradient, then launch a new evolutionary search from a random population to see if progress can be made."
+hypothesis: "phase-218: A 'leaky' fitness function that provides partial credit for bit conservation will create a searchable gradient, enabling evolution from a random start to make progress towards a v<c glider."
+rationale: |
+  The failure of phase 217 was not the search algorithm, but the fitness landscape itself. It was a needle-in-a-haystack problem with no clues. This phase directly addresses that by smoothing the landscape. First, we forge the new tool (the leaky fitness function) in a small, controlled agent run (218.1). Then, we deploy that tool in a larger, more exploratory planner-driven search (218.2). This sequence ensures the new core component is correctly implemented before launching the expensive search. Starting from a random population moves the search to a new, unexplored region of the rule space.
+state_update: |
+  # Current Research State
+  Phase: Methodological Pivot
+
+  ## Goal
+  Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
+
+  ## Confirmed
+  - The strict `SubLightFitness` function correctly identifies and rejects `v=1c` gliders and stationary patterns (iter_216.4).
+  - A stable, bit-conserving `v=1c` glider exists and was found via evolution (iter_215.2, iter_216.2).
+
+  ## Refuted
+  - An evolutionary search using the strict `SubLightFitness` function is **ineffective** for glider discovery, as it creates a flat, all-or-nothing fitness landscape with no gradient (iter_217.1).
+  - A 'warm-start' population seeded with rules known to produce `v=1c` motion is **not** a good starting point for a `v<c` search (iter_217.1). The rules are too unstable and fail bit conservation.
+
+  ## In Progress
+  - Developing a new 'leaky' fitness function to provide a searchable gradient.
+
+  ## Open Questions
+  - Will a fitness function that provides partial credit (e.g., for near bit-conservation) create a searchable gradient?
+  - Is a random starting population more effective for a `v<c` search?
+  - What new exploits will a 'leaky' fitness function enable?
+```

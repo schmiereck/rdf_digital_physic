@@ -1,23 +1,21 @@
 # Current Research State
-Phase: Methodological Correction Complete
+Phase: Methodological Pivot
 
 ## Goal
 Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
 
 ## Confirmed
-- **A stable, bit-conserving `v=1c` glider was discovered** via warm-start evolution (iter_215.2) and its properties were confirmed (iter_216.2). It moves at exactly 1.0 cell/step.
-- The **"warm-start" evolutionary strategy** is effective for finding `v=1c` gliders (iter_215.2).
-- The `LateWindowDisplacementFitness` is structurally biased towards `v=1c` particles and unsuitable for `v<c` search (iter_216.3).
-- A new, more robust `SubLightFitness` function with velocity and period gates has been implemented (iter_216.4).
-- The execution platform is currently stable (iter_216.2).
+- The strict `SubLightFitness` function correctly identifies and rejects `v=1c` gliders and stationary patterns (iter_216.4).
+- A stable, bit-conserving `v=1c` glider exists and was found via evolution (iter_215.2, iter_216.2).
 
 ## Refuted
-- The particle discovered in iter_215 is NOT a `v<c` glider.
+- An evolutionary search using the strict `SubLightFitness` function is **ineffective** for glider discovery, as it creates a flat, all-or-nothing fitness landscape with no gradient (iter_217.1).
+- A 'warm-start' population seeded with rules known to produce `v=1c` motion is **not** a good starting point for a `v<c` search (iter_217.1). The rules are too unstable and fail bit conservation.
 
 ## In Progress
-- The search for a true `v<c` glider is being reset, now using the new `SubLightFitness` function.
+- Developing a new 'leaky' fitness function to provide a searchable gradient.
 
 ## Open Questions
-- Can the new `SubLightFitness` function guide a 'warm-start' evolution to find a true `v<c` glider?
-- What is the fitness landscape like under the new `SubLightFitness`?
-- Does the period-detection mechanism correctly identify and reward complex internal oscillators?
+- Will a fitness function that provides partial credit (e.g., for near bit-conservation) create a searchable gradient?
+- Is a random starting population more effective for a `v<c` search?
+- What new exploits will a 'leaky' fitness function enable?
