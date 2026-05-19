@@ -1,0 +1,83 @@
+Let me extract sample frames to look at what's actually in the GIF.
+Let me view one of the saved frames to see what's actually depicted.
+Now I have ground truth. The GIF shows a 128×128 cellular automaton grid where the "champion glider" consists of just ~2–4 active cells clustered around position (col=64, row=64) — and they barely move at all across the 200 simulation steps (41 animation frames). This is NOT a propagating glider; it's a near-stationary micro-pattern.
+
+Key observations:
+- **Dimensions:** 480×480 image (matplotlib figure); plot interior is the 128×128 CA grid
+- **Frames:** 41 frames total (labeled step=0, 5, 10, …, 200)
+- **Background:** The most-common color is `(10,0,0)` — the near-black plot interior (58.9% of frame 0). The second cluster `(255,255,255)` is matplotlib chrome (title, axes, margins)
+- **"Non-bg" pixel counts** (frames 0 / 40 only — GIF has no frame 50/100/150): 94786 / 94847 — essentially constant (min 94785, max 94847, variation ≤ 62 pixels across the entire animation)
+- **Centroid motion:** (229.94, 234.94) → (229.87, 234.83) — net displacement of (−0.08, −0.11) image-pixels ≈ −0.03 grid cells. **Zero coherent translation.**
+- **Inter-frame diffs:** ~200–300 pixels change per step, scattered across the full plot area (anti-aliasing flicker around the few live cells), bbox spans the whole plot — *not* a localized moving blob
+- **Visible structure:** A tiny cluster of 2–4 active (white) cells around grid coordinate (64, 64), stuck in place
+
+**Conclusion:** The iter_218 "champion v<c glider" is **not a glider** — it is a near-stationary pattern (still life or low-amplitude oscillator) of roughly 2–4 cells. It is neither a 10-bit nor a 3-bit translating glider. Reproduction attempts have failed because there is no propagating structure to reproduce; the v<c fitness signal in iter_218 was a false positive picked up on a static blob.
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_219/iter_007/analyze_gif.py
+  - archive/iter_219/iter_007/extract_frames.py
+  - archive/iter_219/iter_007/frames/frame_000.png
+  - archive/iter_219/iter_007/frames/frame_010.png
+  - archive/iter_219/iter_007/frames/frame_020.png
+  - archive/iter_219/iter_007/frames/frame_030.png
+  - archive/iter_219/iter_007/frames/frame_040.png
+metrics:
+  width: 480
+  height: 480
+  frame_count: 41
+  grid_size: 128
+  background_color_rgb: "(10,0,0)"
+  background_count_frame0: 135614
+  non_bg_count_frame0: 94786
+  non_bg_count_frame40: 94847
+  non_bg_count_min: 94785
+  non_bg_count_max: 94847
+  non_bg_count_variation: 62
+  centroid_x_frame0: 229.94
+  centroid_y_frame0: 234.94
+  centroid_x_frame40: 229.87
+  centroid_y_frame40: 234.83
+  net_centroid_dx_px: -0.08
+  net_centroid_dy_px: -0.11
+  net_centroid_dx_cells_approx: -0.03
+  frame0_vs_final_changed_px: 308
+  mean_consecutive_frame_diff_px: 225
+  distinct_non_bg_colors: 525
+  visible_active_cells_estimate: 3
+log_excerpt: |
+  Dimensions: 480 x 480
+  Total frames: 41
+  Mode: RGB
+  Background color (most common in frame 0): (10, 0, 0)  count=135614/230400
+  Top 5 colors frame 0: [((10, 0, 0), 135614), ((255, 255, 255), 90259), ((27, 27, 27), 824), ((1, 0, 0), 730), ((0, 0, 0), 130)]
+  --- Reported frames ---
+   frame   non_bg       cx       cy  bbox
+       0    94786   229.94   234.94  (0, 0, 479, 479)
+      40    94847   229.87   234.83  (0, 0, 479, 479)
+  Non-bg pixel count stats: min=94785 max=94847 mean=94819.76
+  Net centroid displacement (frame 0 -> last): dx=-0.08, dy=-0.11
+  Distinct non-bg colors across all frames: 525
+  Frame 0 vs frame 40: changed=308  bbox=(20, 42, 426, 457)
+experimenter_view: |
+  Ground truth established: the iter_218 "champion v<c glider" GIF does NOT show a translating glider.
+  - The visualization is a matplotlib figure (480x480) of a 128x128 cellular-automaton grid,
+    title "iter_218 LeakySubLightFitness champion (v<c search)", with step labels 0..200 in steps of 5.
+  - Only 41 animation frames exist (requested frames 50/100/150 do not exist; reported frames 0 and 40 instead).
+  - The "background" detected from frame-0 palette is (10,0,0) (the dark plot interior, 58.9%). The second-largest
+    cluster is white (39.2%) — that is matplotlib chrome (title, ticks, margins), not the CA.
+  - "Non-background" pixel count is dominated by chrome and is essentially constant across all 41 frames
+    (94785..94847, variation only 62 px out of 230400) — proving the live cell count is nearly invariant.
+  - Centroid of non-background pixels moves by (-0.08, -0.11) image pixels over the whole animation,
+    which is ~0.03 grid cells. Zero coherent translation.
+  - Visual inspection of frames 0, 10, 20, 30, 40 confirms: a tiny cluster of 2-4 white cells around
+    grid position (col=64, row=64), stuck in place. No glider, no propagation, no streak.
+  - Inter-frame diffs (~200-300 px) are anti-aliasing flicker around the static cluster; the diff bbox
+    spans the entire plot area, which is consistent with scattered chrome noise rather than a moving object.
+  - Verdict: not a 10-bit glider, not a 3-bit glider. It is a near-stationary micro-pattern
+    (still life or low-amplitude oscillator) of ~2-4 active cells. The iter_218 v<c fitness signal
+    was a false positive on a static blob, which explains why later attempts to "reproduce the glider"
+    have all failed -- there is no propagating object to reproduce.
+notes: iter_218 "v<c glider" is a static 2-4 cell blob, not a translating glider; reproduction failures explained.
+```
