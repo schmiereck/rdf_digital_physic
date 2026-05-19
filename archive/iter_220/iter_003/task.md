@@ -1,14 +1,13 @@
-**Goal:** Write a Python script to reproduce the fitness function exploit. **Do not execute the script.**
+**Goal:** Diagnose the simulation environment with a minimal task.
 
 **Task:**
-1.  Create a Python script named `src/reproduce_exploit.py`.
-2.  The script's purpose is to run a simulation and calculate fitness to demonstrate the exploit where a stationary object gets a high score.
-3.  The script must contain the necessary logic to:
-    a. Load the rule from `archive/iter_218/results/champion_rule.json`.
-    b. Import `LeakyCheckpointFitness` from `src/fitness.py`.
-    c. Import necessary simulation components like `HexGrid` and `Simulator`.
-    d. Define the simulation parameters (128x128 grid, 3-bit L-tromino seed, 500 steps).
-    e. Run the simulation.
-    f. Calculate the fitness and net displacement.
-    g. Print the final results in a clear format.
-4.  The task is successful once the file `src/reproduce_exploit.py` is written and appears correct upon visual inspection.
+1.  Create a new Python script `src/diag_sim.py`.
+2.  The script should perform the simplest possible simulation run:
+    *   Load the "still_life" rule from `archive/iter_056/results/rule_1.json`.
+    *   Initialize a `Simulation` object with this rule on a small 32x32 grid.
+    *   Run the simulation for only **10 steps**.
+    *   Use the standard 3-bit L-tromino as the seed.
+    *   Print "Minimal simulation diagnostic complete." upon successful completion.
+3.  Execute the script.
+
+**Success Criterion:** The script must run quickly (under 30 seconds) and terminate with the success message. If it hangs or fails, it points to a fundamental problem in the core simulation libraries.
