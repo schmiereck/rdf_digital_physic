@@ -1,13 +1,18 @@
-**Goal:** Empirically validate the new `DisplacementConsistencyFitness` function.
+**Goal:** Characterize the champion rule found by the evolutionary search in sub-task 220.1 to determine if it produces a true `v<c` glider.
+
+**Context:** The planner in 220.1 found a champion rule in `archive/iter_220/results/champion_rule.json`. However, since this rule was found in generation 0 and never surpassed, we must verify if it represents genuine progress or just a stable, non-moving particle.
 
 **Task:**
-1.  Create a new Python script `src/validate_fitness.py`.
-2.  In this script, import `DisplacementConsistencyFitness` and the relevant rule-loading utilities.
-3.  Load the following three rules for testing:
-    *   The known-good `v=1c` elastic collision rule from `iter_193` (`g10_f_rule_034_c2`). This should get a high score.
-    *   The `v=1c` glider rule from `iter_179` (`g10_rule_001`). This should also get a high score.
-    *   The "drifter" exploit rule from `iter_218` (`g4_rule_083`). This MUST get a very low or zero score.
-4.  For each rule, initialize the fitness function and evaluate the rule with the standard 3-bit L-tromino seed on a 128x128 grid for 500 steps.
-5.  Print the resulting fitness score for each rule to stdout, clearly labeled.
-6.  The script should exit with a non-zero error code if the "drifter" rule scores higher than either of the glider rules.
-7.  Execute the script. The success criterion is a clean exit with the drifter rule scoring significantly lower than the glider rules.
+1.  **Create a new Python script:** `src/characterize_champion_220.py`.
+2.  **Load the Champion Rule:** The script must load the rule from `archive/iter_220/results/champion_rule.json`.
+3.  **Run a Long Simulation:**
+    *   Grid size: 256x256 (torus).
+    *   Seed: Standard 3-bit L-tromino.
+    *   Duration: 2000 steps.
+4.  **Perform Analysis:**
+    *   **Bit Conservation:** Verify that the bit count remains exactly 3 for all 2000 steps.
+    *   **Velocity:** Calculate the particle's velocity over multiple 400-step windows to check for consistency and ensure `v < 1.0`.
+    *   **Behavior:** Describe the particle's motion qualitatively. Is it a glider, an oscillator, or something else?
+5.  **Produce Outputs:**
+    *   **Report:** Write the analysis results (bit conservation status, average velocity, qualitative description) to `archive/iter_220/results/characterization_report.txt`.
+    *   **Animation:** Generate an animation of the first 500 steps of the simulation and save it as `archive/iter_220/results/champion_animation.gif`.
