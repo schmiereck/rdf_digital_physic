@@ -3,41 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 41906
-cost_usd: 0.16901
-hypothesis: 'phase-187: Develop and validate an evolutionary framework to discover
-  rules with bit-conserving, two-body collision dynamics.'
-input_tokens: 69858
-iter: 187
-metrics:
-  best_fitness_corrected_fn: 1.0
-  best_fitness_initial_flawed_fn: 12.0
-  final_bit_count: 6
-  final_object_count: 2
-  generations_to_find_solution: 0
-output_tokens: 3287
-status: ok
-```
-
-## iter_187: phase-187: Develop and validate an evolutionary framework to discover rules with bit-conserving, two-body collision dynamics.
-
-**Analysis:** This phase successfully pivoted the project from analyzing a single non-conserving rule back to evolutionary discovery, with a new focus on elastic collisions.
-
-The phase began by creating a new evolutionary framework with a `CollisionFitness` function (187.1). This initial step immediately revealed a critical flaw in the specified fitness formula: it rewarded particle annihilation far more than e
-
-**Status:** ok
-
-**Metrics:** `{'best_fitness_initial_flawed_fn': 12.0, 'best_fitness_corrected_fn': 1.0, 'generations_to_find_solution': 0, 'final_bit_count': 6, 'final_object_count': 2}`
-
-**Experimenter view:** **Sub-agent 187.1:** Successfully built the evolutionary framework. Crucially, its `experimenter_view` identified that the specified fitness function `(initial/final) * (2/objects)` was flawed, as it rewarded annihilation (shrinking 6 bits to 1 yielded a score of 12.0). This was an excellent example of an agent providing critical feedback on the task's own design.
-
-**Sub-agent 187.2:** Successfull
-
-**Notes:** The key outcome of this phase is methodological: we have a robust, validated fitness function for finding conserving collisions. The discovered rule is a candidate that requires further validation.
-
-
----
-```yaml
 cached_tokens: 18603
 cost_usd: 0.20656
 hypothesis: 'phase-188: Exposed and diagnosed two successive failure modes in the
@@ -961,4 +926,38 @@ A second, more cautious diagnostic attempt (216.1, re-run) failed immediately wi
 **Experimenter view:** The attempt to characterize the v<c glider was completely blocked by platform instability. An initial long-running simulation attempt (216.1) was manually stopped after it ran for over 700 seconds (estimated 300s), suggesting it was hung. A follow-up diagnostic run with a shorter 250-step simulation failed instantly with a `token_limit` error. This indicates a critical issue with the execution env
 
 **Notes:** The platform appears unstable. Deferring all scientific goals to first validate the environment's reliability.
+
+
+---
+```yaml
+cached_tokens: 163218
+cost_usd: 0.34765
+hypothesis: 'phase-216: Resolve platform instability, re-characterize the supposed
+  v<c glider as v=1c, and implement a new, velocity-gated fitness function.'
+input_tokens: 213017
+iter: 216
+metrics:
+  glider_avg_velocity: 1.0
+  glider_bit_conservation: true
+  new_fitness_period_gate: true
+  new_fitness_velocity_threshold: 0.9
+output_tokens: 2908
+status: ok
+```
+
+## iter_216: phase-216: Resolve platform instability, re-characterize the supposed v<c glider as v=1c, and implement a new, velocity-gated fitness function.
+
+**Analysis:** This phase served as a critical platform and methodology reset. It began by addressing the platform instability that blocked iter_216.1. The successful retry in 216.2 not only confirmed platform stability but also yielded a crucial, unexpected scientific result: the particle discovered in iter_215 and believed to be a `v<c` glider is, in fact, a `v=1c` (speed of light) glider.
+
+This discovery imme
+
+**Status:** ok
+
+**Metrics:** `{'glider_avg_velocity': 1.0, 'glider_bit_conservation': True, 'new_fitness_velocity_threshold': 0.9, 'new_fitness_period_gate': True}`
+
+**Experimenter view:** The platform is now stable; a 500-step simulation completed in under a second (216.2). The primary finding of this phase is that the `v<c` glider from iter_215 is actually a `v=1c` glider, moving at exactly 1.0 cell/step with perfect 3-bit conservation.
+
+The analysis in 216.3 confirmed that the fitness function used for its discovery was structurally biased towards maximum speed, making this outco
+
+**Notes:** Course correction complete. Platform stable, v<c claim refuted, and a new, more robust fitness function is ready for the next search.
 

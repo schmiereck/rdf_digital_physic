@@ -1,54 +1,61 @@
-The diagnostic run (216.1) also failed, this time with a `token_limit` error indicating an issue with the execution environment's resource quotas. This, combined with the previous timeout, makes it clear that the platform is currently unstable.
-
-It is unproductive to continue pursuing scientific goals until the underlying execution environment is reliable. The immediate priority must shift from research to platform validation. I need to determine if any computation can be reliably performed.
-
-Therefore, this phase is now dedicated to diagnosing the platform's health. I will do this by attempting to reproduce a known, successful, non-trivial experiment from the past. The elastic collision from `iter_193` is the ideal candidate. Its success or failure will provide a clear signal about the state of the platform.
-
-My original scientific plan is now blocked. The `v<c` glider remains uncharacterized.
-
-I will now generate the report for this phase, documenting the platform failures and updating the research state to reflect this new blocker. The next phase will be dedicated to the platform validation task.
-
 ```yaml
 analysis: |
-  This phase was intended to characterize the newly discovered v<c glider. However, all attempts were blocked by severe platform instability.
+  This phase served as a critical platform and methodology reset. It began by addressing the platform instability that blocked iter_216.1. The successful retry in 216.2 not only confirmed platform stability but also yielded a crucial, unexpected scientific result: the particle discovered in iter_215 and believed to be a `v<c` glider is, in fact, a `v=1c` (speed of light) glider.
 
-  The first attempt (216.1, initial run) was stopped after exceeding its estimated runtime by over 130%, indicating a potential performance issue or a hung process.
+  This discovery immediately pivoted the phase's focus from characterization to root-cause analysis. Sub-agent 216.3 correctly analyzed the `LateWindowDisplacementFitness` function and concluded that it was structurally flawed, as its score is monotonically increasing with particle speed, thus guaranteeing that a `v=1c` glider represents a local optimum.
 
-  A second, more cautious diagnostic attempt (216.1, re-run) failed immediately with a `token_limit` and "Usage quota exceeded" error. This is a critical platform-level failure, not a scientific one.
-
-  Given that no scientific experiment can proceed under these conditions, the phase goal has been re-scoped to diagnose and confirm the stability of the execution environment. The original plan to characterize the v<c glider is blocked until the platform issues are resolved.
+  Finally, sub-agent 216.4 implemented the proposed solution: a new `SubLightFitness` function. This function is specifically designed to overcome the flaw by incorporating a hard velocity gate (rejecting particles with v >= 0.9c) and a period-detection bonus to reward the internal complexity required for sub-light-speed motion. The phase successfully resolved the platform issues, corrected a significant scientific misinterpretation, and produced the necessary tooling for a methodologically sound search for true `v<c` gliders.
 open_questions:
-  - "Is the execution platform stable enough to run non-trivial simulations?"
-  - "What are the precise velocity and period of the new v<c glider?"
-  - "How does the v<c glider interact with another v<c glider in head-on and angled collisions?"
-chosen_direction: "Platform stability validation"
-hypothesis: "phase-216: All scientific progress was blocked by critical platform errors (timeout and token limits), forcing a pivot to platform stability diagnosis."
+  - "Can the new `SubLightFitness` function guide a 'warm-start' evolution to find a true v<c glider?"
+  - "What is the fitness landscape like under the new `SubLightFitness`? Are there deceptive local optima?"
+  - "Does the period-detection mechanism correctly identify and reward complex internal oscillators?"
+chosen_direction: "Launch a new evolutionary search for a v<c glider using the `SubLightFitness` function."
+hypothesis: "phase-216: Resolve platform instability, re-characterize the supposed v<c glider as v=1c, and implement a new, velocity-gated fitness function."
 rationale: |
-  It is impossible to conduct research on an unstable platform. The initial characterization experiment timed out, and a subsequent diagnostic run hit a hard quota limit. Before any further progress can be made on the v<c glider, the basic reliability of the execution environment must be verified. The next logical step is to run a known-good experiment from a previous iteration to see if it can be reproduced.
-status: code_error
+  The phase followed a logical troubleshooting and correction sequence.
+  1.  **216.2:** A stability-check simulation was the necessary first step after prior failures.
+  2.  The surprising result from this check (particle is v=1c) made further characterization pointless and necessitated an immediate pivot to a methodological investigation.
+  3.  **216.3:** An analysis of the fitness function was required to understand the root cause of the incorrect discovery.
+  4.  **216.4:** Implementing the newly designed fitness function was the final step to arm the project with the correct tools for the next phase.
+status: ok
 metrics:
-  platform_errors_encountered: 2
-  successful_simulations: 0
+  glider_avg_velocity: 1.0
+  glider_bit_conservation: true
+  new_fitness_velocity_threshold: 0.9
+  new_fitness_period_gate: true
 experimenter_view: |
-  The attempt to characterize the v<c glider was completely blocked by platform instability. An initial long-running simulation attempt (216.1) was manually stopped after it ran for over 700 seconds (estimated 300s), suggesting it was hung. A follow-up diagnostic run with a shorter 250-step simulation failed instantly with a `token_limit` error. This indicates a critical issue with the execution environment, possibly related to resource allocation or quotas, making any scientific progress impossible. The v<c glider remains an unverified discovery until it can be properly characterized.
-notes: "The platform appears unstable. Deferring all scientific goals to first validate the environment's reliability."
-artifacts: []
+  The platform is now stable; a 500-step simulation completed in under a second (216.2). The primary finding of this phase is that the `v<c` glider from iter_215 is actually a `v=1c` glider, moving at exactly 1.0 cell/step with perfect 3-bit conservation.
+
+  The analysis in 216.3 confirmed that the fitness function used for its discovery was structurally biased towards maximum speed, making this outcome inevitable.
+
+  The new `SubLightFitness` function (216.4) directly addresses this. It uses a robust method for calculating unwrapped center-of-mass to avoid toroidal boundary errors. Crucially, it incorporates two "hard gates": one rejects any particle moving at or above 90% of the speed of light, and another rejects particles with a simple internal period of 1. This clears the way for a more targeted search for true `v<c` particles with internal oscillations.
+notes: "Course correction complete. Platform stable, v<c claim refuted, and a new, more robust fitness function is ready for the next search."
+artifacts:
+  - archive/iter_216/results/characterization.json
+  - archive/iter_216/results/fitness_analysis.md
+  - src/fitness_functions.py
 state_update: |
   # Current Research State
-  Phase: Blocked by Platform Instability
+  Phase: Methodological Correction Complete
 
   ## Goal
   Discover a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
 
   ## Confirmed
-  - **A stable, bit-conserving `v<c` glider was discovered** in iter_215.2. The rule is stored in `archive/iter_215/results/champion_rule.json`.
-  - The **"warm-start" evolutionary strategy** is effective for overcoming flat fitness landscapes (iter_215.2).
+  - **A stable, bit-conserving `v=1c` glider was discovered** via warm-start evolution (iter_215.2) and its properties were confirmed (iter_216.2). It moves at exactly 1.0 cell/step.
+  - The **"warm-start" evolutionary strategy** is effective for finding `v=1c` gliders (iter_215.2).
+  - The `LateWindowDisplacementFitness` is structurally biased towards `v=1c` particles and unsuitable for `v<c` search (iter_216.3).
+  - A new, more robust `SubLightFitness` function with velocity and period gates has been implemented (iter_216.4).
+  - The execution platform is currently stable (iter_216.2).
+
+  ## Refuted
+  - The particle discovered in iter_215 is NOT a `v<c` glider.
 
   ## In Progress
-  - **`v<c` Glider Characterization:** BLOCKED. All attempts to run simulations (iter_216.1) to measure the glider's velocity and period have failed due to platform instability (excessive runtimes and quota errors). The particle's properties remain unknown.
+  - The search for a true `v<c` glider is being reset, now using the new `SubLightFitness` function.
 
   ## Open Questions
-  - Is the execution platform stable enough to run non-trivial simulations?
-  - What are the precise velocity and period of the new v<c glider?
-  - How does the new v<c glider interact with other known particles?
+  - Can the new `SubLightFitness` function guide a 'warm-start' evolution to find a true `v<c` glider?
+  - What is the fitness landscape like under the new `SubLightFitness`?
+  - Does the period-detection mechanism correctly identify and reward complex internal oscillators?
 ```
