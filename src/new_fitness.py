@@ -2,195 +2,388 @@
 """
 new_fitness.py
 
-Fitness functions robust to the "puffer" exploit identified in iter_203.1.
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-DisplacementOverBoundingBoxFitness (formula class)
----------------------------------------------------
-Takes pre-computed grids and metrics dict. Implements the core formula:
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillations in place (stationary
+drifters) or drift through the grid via random-walk behaviour (thermal
+drifters).
 
-    fitness = cumulative_displacement / (1 + max_bounding_box_diagonal)
+Such objects exhibit the following characteristics:
 
-Bit conservation is enforced: if the initial and final bit counts differ,
-the fitness is 0.0.
+  * They occupy a small area (small bounding box) — satisfying bounding-box
+    penalties.
+  * They preserve their bit count throughout the simulation — satisfying
+    bit-conservation gates.
+  * Their centre of mass may drift slowly over long distances, but their
+    *velocity vectors* change direction unpredictably from one time window
+    to the next.
 
-DisplacementOverBoundingBoxEvaluator (evolutionary loop evaluator)
-------------------------------------------------------------------
-Full-simulation wrapper around the formula. Compatible with run_evosg.py.
-Runs the CA for `simulation_steps` steps, accumulating cumulative_displacement
-and tracking max_bounding_box_diagonal at each step, then delegates to the
-formula class. Registered as "DisplacementOverBoundingBoxFitness" in REGISTRY.
+Classic displacement-based fitness metrics (net displacement, cumulative
+distance) can be gamed by such drifters because they accumulate large total
+distances through random-walk excursions, even though the motion is not
+directional or coherent.
+
+How this fitness function defeats drifters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+By dividing the simulation into multiple time windows and computing a
+velocity vector for each window, then measuring the *standard deviation* of
+those velocity magnitudes, this metric creates a clear separation:
+
+  * A true v<c glider exhibits near-identical velocity vectors in every
+    window — its direction and speed are stable. This produces a **low
+    standard deviation**.
+  * A drifter exhibits wildly varying velocity vectors — its direction and
+    speed fluctuate. This produces a **high standard deviation**.
+
+The core fitness formula:
+
+    fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+
+  * The numerator rewards high average speed across all windows.
+  * The denominator (1 + std_dev) suppresses fitness when velocities
+    are inconsistent, regardless of how large the mean velocity happens
+    to be.
+
+Together with the "leaky" bit-conservation multiplier from LeakyCheckpointFitness,
+this creates a robust score that only rewards objects that are simultaneously:
+
+  1. Moving consistently in one direction (low std dev of windowed velocities).
+  2. Preserving their mass (bit count) throughout the simulation.
+
+Parameters
+----------
+num_windows : int
+    Number of time windows to divide the simulation into. Default 5.
+    More windows give finer-grained detection of velocity fluctuations.
+bits_per_cell : int
+    Bits per cell (used for future multi-bit extensions). Default 1.
+
+Calling convention
+------------------
+    fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+    score = fitness_fn(sim_history)
+
+    sim_history : list of dict
+        Each dict must contain:
+          - 'step'    : int — simulation step index
+          - 'com'     : tuple[float, float] — centre of mass (row, col)
+          - 'bit_count': int   — live cell count at that step
 """
 
 from __future__ import annotations
 
 import math
-import sys
-from pathlib import Path
+from typing import Any
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).parent))
 
-from evolution import center_of_mass, rule_dict_to_lut, step_grid
-from fitness_simple_motion import BaseFitness
+class DisplacementConsistencyFitness:
+    """Fitness function that rewards consistent, directional motion.
 
+    This fitness function defeats the *drifter* exploit by analysing the
+    consistency of velocity across multiple time windows of a simulation.
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+    Design rationale
+    ----------------
+    The drifter exploit occurs when a cellular-automaton object exhibits
+    random-walk or oscillating behaviour with occasional long displacements.
+    Such objects may achieve high cumulative displacement but their motion
+    is *inconsistent* — they change direction frequently or oscillate in
+    place.
 
-# Default seed: 3-bit L-tromino (offsets from grid centre)
-L_TROMINO: list[tuple[int, int]] = [(-1, -1), (0, -1), (0, 0)]
+    By dividing the simulation into windows and computing per-window velocity
+    vectors, then measuring the standard deviation of velocity magnitudes,
+    we create a metric where:
 
+      - True gliders (consistent directional motion) have **low** std dev
+        → high fitness.
+      - Drifters (inconsistent / oscillating motion) have **high** std dev
+        → low fitness, even if their mean velocity is moderate.
+      - Stationary objects have near-zero velocity in every window
+        → near-zero fitness.
 
-def _make_particle_grid(
-    particle: list[tuple[int, int]],
-    grid_size: int = 128,
-) -> np.ndarray:
-    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
-    centre = grid_size // 2
-    for dr, dc in particle:
-        r = (centre + dr) % grid_size
-        c = (centre + dc) % grid_size
-        grid[r, c] = 1
-    return grid
+    Scoring pipeline
+    ----------------
+    1. Divide ``sim_history`` into ``num_windows`` equal-duration windows.
+    2. For each window, compute the displacement vector (ΔCOM) and its
+       magnitude (velocity proxy, since all windows are equal length).
+    3. Compute the mean of the per-window velocity *vectors* (not just
+       magnitudes) — this gives the net directional drift.
+    4. Compute the standard deviation of the per-window velocity *magnitudes*
+       — this measures consistency of motion speed.
+    5. Apply the core formula::
 
+           base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
 
-def _bounding_box_diagonal(grid: np.ndarray) -> float:
-    rows, cols = np.where(grid > 0)
-    if len(rows) == 0:
-        return 0.0
-    h = int(rows.max()) - int(rows.min()) + 1
-    w = int(cols.max()) - int(cols.min()) + 1
-    return math.sqrt(h * h + w * w)
+       A perfectly consistent glider has std_dev ≈ 0, so
+       base_fitness ≈ mean_velocity_magnitude.
+       A drifter with the same mean but high std_dev gets heavily penalised.
 
+    6. Multiply by the "leaky" bit-conservation score to enforce mass
+       conservation (see ``_compute_conservation_score``).
 
-# ---------------------------------------------------------------------------
-# Formula class (takes pre-computed grids + metrics dict)
-# ---------------------------------------------------------------------------
+        final_fitness = base_fitness * total_conservation_score
 
-class DisplacementOverBoundingBoxFitness(BaseFitness):
-    """Fitness that rewards displacement while penalising structural bloat.
+    Parameters
+    ----------
+    num_windows : int
+        Number of windows to divide the simulation into. Default 5.
+        At least 2 windows are needed to measure velocity consistency.
+    bits_per_cell : int
+        Bits per cell (reserved for future multi-bit support). Default 1.
 
-    The score is the ratio of cumulative displacement to the maximum
-    bounding-box diagonal observed across all simulation steps.  The
-    ``+1`` in the denominator prevents division by zero.
-
-    Bit conservation is mandatory — a mismatch in live-cell count between
-    initial and final grids immediately yields a fitness of ``0.0``.
-
-    Parameters / contract
-    ---------------------
-    ``__call__(initial_grid, final_grid, metrics) -> float``
-        *initial_grid* – 2-D ``np.ndarray`` of the seed configuration.
-        *final_grid*   – 2-D ``np.ndarray`` after simulation completes.
-        *metrics*      – dict with at least the keys
-                         ``'cumulative_displacement'`` and
-                         ``'max_bounding_box_diagonal'``.
-
-    Returns
-    -------
-    float
-        The fitness value (higher is better).
+    Attributes
+    ----------
+    name : str
+        Display name for registration purposes.
     """
 
-    name = "DisplacementOverBoundingBoxFitness"
-
-    def __call__(
-        self,
-        initial_grid: np.ndarray,
-        final_grid: np.ndarray,
-        metrics: dict,
-    ) -> float:
-        """Compute the fitness value from grid snapshots and pre-computed metrics."""
-
-        initial_bits = int(initial_grid.sum())
-        final_bits = int(final_grid.sum())
-
-        if initial_bits != final_bits:
-            return 0.0
-
-        cumulative_displacement = metrics["cumulative_displacement"]
-        max_bounding_box_diagonal = metrics["max_bounding_box_diagonal"]
-
-        fitness = cumulative_displacement / (1 + max_bounding_box_diagonal)
-
-        return float(fitness)
-
-
-# ---------------------------------------------------------------------------
-# Evolutionary loop evaluator (takes rule_dict, runs full simulation)
-# ---------------------------------------------------------------------------
-
-class DisplacementOverBoundingBoxEvaluator:
-    """Full-simulation evaluator compatible with run_evosg.py.
-
-    Runs the CA for ``simulation_steps`` steps, accumulating
-    ``cumulative_displacement`` (sum of per-step CoM movements) and tracking
-    ``max_bounding_box_diagonal`` at every step.  Delegates to
-    ``DisplacementOverBoundingBoxFitness`` for the final score.
-
-    Registered as ``"DisplacementOverBoundingBoxFitness"`` in the REGISTRY
-    so it can be selected via ``--fitness DisplacementOverBoundingBoxFitness``.
-
-    Calling convention (matches fitness_v2.py classes):
-        fitness, metrics = evaluator(rule_dict)   # 2-tuple
-        metrics_dict = evaluator.evaluate(rule_dict)  # dict
-    """
-
-    name = "DisplacementOverBoundingBoxFitness"
+    name = "DisplacementConsistencyFitness"
 
     def __init__(
         self,
-        grid_size: int = 128,
-        simulation_steps: int = 200,
-        particle: list | None = None,
+        num_windows: int = 5,
+        bits_per_cell: int = 1,
     ) -> None:
-        self.grid_size = int(grid_size)
-        self.simulation_steps = int(simulation_steps)
-        self.particle = particle if particle is not None else L_TROMINO
-        self._formula = DisplacementOverBoundingBoxFitness()
+        """Initialise the fitness function.
 
-    def evaluate(self, rule_dict: dict) -> dict:
-        lut = rule_dict_to_lut(rule_dict)
-        grid = _make_particle_grid(self.particle, self.grid_size)
-        initial_grid = grid.copy()
-        initial_bits = int(grid.sum())
+        Parameters
+        ----------
+        num_windows : int
+            Number of time windows. Must be >= 2 for meaningful velocity
+            consistency measurement.
+        bits_per_cell : int
+            Bits per cell (reserved).
+        """
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
 
-        prev_com = center_of_mass(grid)
-        cumulative_displacement = 0.0
-        max_bbox_diagonal = _bounding_box_diagonal(grid)
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
 
-        for _step in range(self.simulation_steps):
-            grid = step_grid(grid, lut)
+        Parameters
+        ----------
+        sim_history : list of dict
+            Simulation history recorded at various steps. Each element
+            must be a dict with the following keys:
 
-            current_com = center_of_mass(grid)
-            dx = current_com[0] - prev_com[0]
-            dy = current_com[1] - prev_com[1]
-            cumulative_displacement += math.sqrt(dx * dx + dy * dy)
-            prev_com = current_com
+            - ``'step'`` : int — simulation step index (0-based).
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
 
-            diag = _bounding_box_diagonal(grid)
-            if diag > max_bbox_diagonal:
-                max_bbox_diagonal = diag
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
 
-        final_bits = int(grid.sum())
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
 
-        metrics = {
-            "cumulative_displacement": cumulative_displacement,
-            "max_bounding_box_diagonal": max_bbox_diagonal,
-        }
-        fitness = self._formula(initial_grid, grid, metrics)
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
 
-        return {
-            "fitness": fitness,
-            "reason": "ok" if initial_bits == final_bits else "bit_conservation_failed",
-            "cumulative_displacement": float(cumulative_displacement),
-            "max_bounding_box_diagonal": float(max_bbox_diagonal),
-            "initial_bits": initial_bits,
-            "final_bits": final_bits,
-        }
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
 
-    def __call__(self, rule_dict: dict) -> tuple[float, dict]:
-        m = self.evaluate(rule_dict)
-        return (float(m["fitness"]), m)
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
+
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+
+            # Find the first and last entries in this window's step range.
+            # The history is sorted, so we iterate and break early for
+            # efficiency once we pass the window boundary.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                # Skip entries before this window
+                if s < window_start:
+                    continue
+
+                # Stop processing once we're past this window's end
+                # (the very last entry of the global history belongs to
+                #  the last window only, so we clamp window_end to
+                #  final_step for the final window to avoid excluding it).
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+
+                if s > effective_window_end:
+                    break
+
+                # This entry falls within the current window.
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry  # overwrite on every match → last one wins
+
+            if first_entry is None or last_entry is None:
+                # No data points in this window — zero velocity.
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # ------------------------------------------------------------------
+        # 3. Calculate mean of windowed velocity vectors (directional drift)
+        # ------------------------------------------------------------------
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(
+            mean_dx * mean_dx + mean_dy * mean_dy
+        )
+
+        # ------------------------------------------------------------------
+        # 4. Calculate standard deviation of windowed velocity magnitudes
+        # ------------------------------------------------------------------
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        # ------------------------------------------------------------------
+        # 5. Core fitness formula
+        # ------------------------------------------------------------------
+        if mean_velocity_magnitude == 0.0:
+            # No net directional displacement — nothing to reward.
+            base_fitness = 0.0
+        else:
+            # Standard formula: mean velocity / (1 + std dev of magnitudes).
+            # The "+1" in the denominator prevents division by zero when
+            # std_dev is also zero (perfect consistency).
+            base_fitness = mean_velocity_magnitude / (
+                1.0 + std_dev_velocity_magnitudes
+            )
+
+        # ------------------------------------------------------------------
+        # 6. Leaky bit-conservation score (from LeakyCheckpointFitness)
+        # ------------------------------------------------------------------
+        total_conservation_score = self._compute_conservation_score(
+            sorted_history
+        )
+
+        # ------------------------------------------------------------------
+        # 7. Final fitness: consistency score × conservation score
+        # ------------------------------------------------------------------
+        fitness = base_fitness * total_conservation_score
+
+        return float(fitness)
+
+    # ── Private helpers ────────────────────────────────────────────────────
+
+    def _compute_conservation_score(
+        self, sim_history: list[dict[str, Any]]
+    ) -> float:
+        """Compute the 'leaky' bit-conservation score from simulation history.
+
+        This mirrors the conservation scoring logic from
+        ``LeakySubLightFitness`` in ``leaky_fitness.py``.  Instead of hard-
+        failing on bit-count changes, it applies a continuous penalty factor
+        proportional to how closely the particle's mass tracks the original
+        mass.
+
+        For each step *i* in the history:
+
+            if bit_count[i] == initial_bit_count:
+                conservation_factor[i] = 1.0
+            else:
+                conservation_factor[i] = min(bit_count[i], initial_bits)
+                                         / max(bit_count[i], initial_bits)
+
+        The total conservation score is the mean of all per-step factors.
+
+        Parameters
+        ----------
+        sim_history : list of dict
+            Sorted simulation history (must contain ``'bit_count'`` keys).
+
+        Returns
+        -------
+        float
+            Conservation score in the range [0, 1]. A value of 1.0 means
+            perfect bit-count conservation throughout the simulation.
+            Lower values indicate bit loss or gain.
+
+        Why "leaky" ?
+        -------------
+        Unlike ``CheckpointFitness``, which hard-fails on any bit-count
+        change at a checkpoint, the leaky variant applies a *fractional*
+        penalty.  This preserves evolutionary gradient: a rule that gains
+        or loses a few bits still earns partial fitness, guiding evolution
+        toward perfect conservation rather than rejecting the candidate
+        outright.
+        """
+        if not sim_history:
+            return 1.0
+
+        initial_bits = sim_history[0]["bit_count"]
+
+        # Guard against degenerate empty particle.
+        if initial_bits == 0:
+            return 1.0
+
+        conservation_factors: list[float] = []
+        for entry in sim_history:
+            bit_count = entry["bit_count"]
+            if bit_count == initial_bits:
+                conservation_factors.append(1.0)
+            else:
+                # Fractional penalty: closer to 1.0 when bit_count is close
+                # to initial_bits, approaching 0 as it diverges.
+                conservation_factors.append(
+                    min(bit_count, initial_bits)
+                    / max(bit_count, initial_bits)
+                )
+
+        total_conservation_score = sum(conservation_factors) / len(
+            conservation_factors
+        )
+        return float(total_conservation_score)
