@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Quick test: compare wrong seed vs correct seed"""
 import numpy as np
 import json
 
@@ -23,49 +24,24 @@ def step(g):
          ne.astype(np.uint16)).astype(np.uint8)
     return lut[s]
 
-# Test seed orientation A: (0,0),(0,1),(1,1) - from JSON seed_particle
-# Test seed orientation B: (0,0),(1,0),(1,1) - from task description
-# Test seed orientation C: (63,63),(64,63),(64,64) - from evolution.py
+GS = 256
 
-print("=== Seed A: (0,0),(0,1),(1,1) on 128x128 ===")
-g = np.zeros((128,128), dtype=np.uint8)
-g[0,0]=1; g[0,1]=1; g[1,1]=1
-for t in range(1, 201):
-    g = step(g)
-r, c = np.where(g > 0)
-print(f"Bits: {len(r)}")
-if len(r) > 0:
-    print(f"Cells: {list(zip(r.tolist(), c.tolist()))}")
+# WRONG seed: [[0,0],[1,0],[1,1]] at center (128,128)
+g_wrong = np.zeros((GS, GS), dtype=np.uint8)
+for dr, dc in [[0,0],[1,0],[1,1]]:
+    g_wrong[128+dr, 128+dc] = 1
+for t in range(300):
+    g_wrong = step(g_wrong)
+print(f"WRONG seed [[0,0],[1,0],[1,1]] at (128,128): bits={int(g_wrong.sum())}")
+r, c = np.where(g_wrong > 0)
+print(f"  cells: {list(zip(r.tolist(), c.tolist()))}")
 
-print()
-print("=== Seed B: (0,0),(1,0),(1,1) on 128x128 ===")
-g = np.zeros((128,128), dtype=np.uint8)
-g[0,0]=1; g[1,0]=1; g[1,1]=1
-for t in range(1, 201):
-    g = step(g)
-r, c = np.where(g > 0)
-print(f"Bits: {len(r)}")
-if len(r) > 0:
-    print(f"Cells: {list(zip(r.tolist(), c.tolist()))}")
-
-print()
-print("=== Seed C: (63,63),(64,63),(64,64) on 128x128 ===")
-g = np.zeros((128,128), dtype=np.uint8)
-g[63,63]=1; g[64,63]=1; g[64,64]=1
-for t in range(1, 201):
-    g = step(g)
-r, c = np.where(g > 0)
-print(f"Bits: {len(r)}")
-if len(r) > 0:
-    print(f"Cells: {list(zip(r.tolist(), c.tolist()))}")
-
-print()
-print("=== Seed D: (127,127),(128,127),(128,128) on 256x256 ===")
-g = np.zeros((256,256), dtype=np.uint8)
-g[127,127]=1; g[128,127]=1; g[128,128]=1
-for t in range(1, 301):
-    g = step(g)
-r, c = np.where(g > 0)
-print(f"Bits: {len(r)}")
-if len(r) > 0:
-    print(f"Cells: {list(zip(r.tolist(), c.tolist()))}")
+# CORRECT seed: [[0,0],[0,1],[1,1]] at center (128,128)
+g_correct = np.zeros((GS, GS), dtype=np.uint8)
+for dr, dc in [[0,0],[0,1],[1,1]]:
+    g_correct[128+dr, 128+dc] = 1
+for t in range(300):
+    g_correct = step(g_correct)
+print(f"CORRECT seed [[0,0],[0,1],[1,1]] at (128,128): bits={int(g_correct.sum())}")
+r, c = np.where(g_correct > 0)
+print(f"  cells: {list(zip(r.tolist(), c.tolist()))}")
