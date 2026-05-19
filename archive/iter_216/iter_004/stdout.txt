@@ -1,0 +1,67 @@
+I'll add the `SubLightFitness` class to `src/fitness_functions.py`. Let me first understand the structure (no actual base class — they're plain classes following the same pattern), then implement.
+Now add helper functions and the `SubLightFitness` class. I'll insert them before the module-level `evaluate` wrapper at the end:
+Now add the `SubLightFitness` class. I'll insert it before the module-level `evaluate` wrapper:
+Now let me verify it imports cleanly and run a quick smoke test:
+Implementation complete. The `SubLightFitness` class is added to `src/fitness_functions.py` with:
+
+- **Unwrapped CoM** via wrap-aware circular-mean `_toroidal_center_of_mass` + minimum-image delta integration
+- **Period detection** via translation-invariant `_normalize_config` fingerprints + smallest-`k` repeat scan in `_detect_period`
+- **Hard gates** for bit conservation, zero displacement, `avg_velocity >= v_threshold` (default 0.9), and `period <= 1`
+- **Formula** `fitness = displacement * (1 - 1/period)` exactly as the task specifies
+- **Same plain-class pattern** as `NetDisplacementFitness`/`LateWindowDisplacementFitness` (matching `name`/`__init__`/`evaluate`/`__call__` signature) so existing evolution scripts can import and use it as a drop-in fitness function
+
+Smoke tests confirm: import works, gates fire on degenerate rules, translation- and wrap-invariance of the configuration fingerprint, and correct period detection for periods 1, 2, and chaotic.
+
+```yaml
+status: ok
+artifacts:
+  - src/fitness_functions.py
+metrics:
+  v_threshold: 0.9
+  default_simulation_steps: 1200
+  default_window_start: 600
+  default_window_end: 1000
+  default_period_window_start: 600
+  default_period_window_end: 800
+  default_max_period: 64
+log_excerpt: |
+  import OK
+  name: SubLightFitness
+  identity rule fitness: 0.0 reason: bit_conservation_failed
+  still-life rule: 0.0 reason: no_displacement
+  translation-invariant: True
+  wrap-invariant: True
+  period 2: 2
+  period 1: 1
+  chaotic: 0
+experimenter_view: |
+  Added the SubLightFitness class to src/fitness_functions.py alongside the
+  existing NetDisplacementFitness, using the same plain-class structure
+  (no shared base class exists in this module — the other classes are also
+  plain classes, so the new class follows the same pattern with matching
+  name / __init__ / evaluate / __call__ surface, making it a drop-in
+  replacement for evolution loops).
+
+  Key design choices:
+    * Per-step CoM uses a circular-mean formula (_toroidal_center_of_mass)
+      rather than the naive arithmetic mean in evolution.center_of_mass.
+      The naive mean is discontinuous when a multi-cell particle crosses
+      the toroidal boundary (one wrapped cell jolts the CoM by
+      grid_size/n_cells, which the naive "|delta| > grid_size/2" wrap test
+      misses entirely for n_cells > 2). The circular mean is continuous
+      so cumulative delta integration gives a correct unwrapped trajectory.
+    * Period fingerprint (_normalize_config) is CoM-relative with
+      minimum-image offset wrapping, making it translation- and
+      wrap-invariant — verified by direct test.
+    * Hard gates: bit-conservation, zero displacement, velocity
+      >= v_threshold (default 0.9c), period <= 1. Each returns
+      fitness 0 with a distinct "reason" so evolution-monitoring code
+      can categorise rejections.
+    * Final fitness = displacement * (1 - 1/period), per the task spec.
+      bb_area is still recorded in the metrics dict for diagnostics but
+      no longer divides the score (matching task formula, not the
+      analysis sketch's "/ (1+bb_area)" variant).
+  No changes were made to evolution.py or any evolution scripts — the
+  class is importable via `from fitness_functions import SubLightFitness`.
+notes: SubLightFitness added with v_threshold=0.9 and period gate; smoke tests pass.
+```

@@ -1,0 +1,52 @@
+artifacts:
+- src/fitness_functions.py
+experimenter_view: "Added the SubLightFitness class to src/fitness_functions.py alongside\
+  \ the\nexisting NetDisplacementFitness, using the same plain-class structure\n(no\
+  \ shared base class exists in this module — the other classes are also\nplain classes,\
+  \ so the new class follows the same pattern with matching\nname / __init__ / evaluate\
+  \ / __call__ surface, making it a drop-in\nreplacement for evolution loops).\n\n\
+  Key design choices:\n  * Per-step CoM uses a circular-mean formula (_toroidal_center_of_mass)\n\
+  \    rather than the naive arithmetic mean in evolution.center_of_mass.\n    The\
+  \ naive mean is discontinuous when a multi-cell particle crosses\n    the toroidal\
+  \ boundary (one wrapped cell jolts the CoM by\n    grid_size/n_cells, which the\
+  \ naive \"|delta| > grid_size/2\" wrap test\n    misses entirely for n_cells > 2).\
+  \ The circular mean is continuous\n    so cumulative delta integration gives a correct\
+  \ unwrapped trajectory.\n  * Period fingerprint (_normalize_config) is CoM-relative\
+  \ with\n    minimum-image offset wrapping, making it translation- and\n    wrap-invariant\
+  \ — verified by direct test.\n  * Hard gates: bit-conservation, zero displacement,\
+  \ velocity\n    >= v_threshold (default 0.9c), period <= 1. Each returns\n    fitness\
+  \ 0 with a distinct \"reason\" so evolution-monitoring code\n    can categorise\
+  \ rejections.\n  * Final fitness = displacement * (1 - 1/period), per the task spec.\n\
+  \    bb_area is still recorded in the metrics dict for diagnostics but\n    no longer\
+  \ divides the score (matching task formula, not the\n    analysis sketch's \"/ (1+bb_area)\"\
+  \ variant).\nNo changes were made to evolution.py or any evolution scripts — the\n\
+  class is importable via `from fitness_functions import SubLightFitness`.\n"
+log_excerpt: 'import OK
+
+  name: SubLightFitness
+
+  identity rule fitness: 0.0 reason: bit_conservation_failed
+
+  still-life rule: 0.0 reason: no_displacement
+
+  translation-invariant: True
+
+  wrap-invariant: True
+
+  period 2: 2
+
+  period 1: 1
+
+  chaotic: 0
+
+  '
+metrics:
+  default_max_period: 64
+  default_period_window_end: 800
+  default_period_window_start: 600
+  default_simulation_steps: 1200
+  default_window_end: 1000
+  default_window_start: 600
+  v_threshold: 0.9
+notes: SubLightFitness added with v_threshold=0.9 and period gate; smoke tests pass.
+status: ok
