@@ -8803,3 +8803,38 @@ Sub-agent 188.1 immediately and definitively proved this was a "stasis exploit."
 
 **Notes:** The phase successfully peeled back two layers of exploits in the fitness function. The next phase must implement a margin-based check for motion.
 
+
+---
+```yaml
+cached_tokens: 38007
+cost_usd: 0.15307
+hypothesis: 'phase-189: A margin-based fitness function, while correctly rejecting
+  floating-point exploits, creates a flat fitness landscape that prevents successful
+  evolutionary search.'
+input_tokens: 66048
+iter: 189
+metrics:
+  evolution_best_fitness: 0.0
+  evolution_champion_found: false
+  evolution_generations_ran: 10
+  validation_fitness_for_exploit: 0.0
+output_tokens: 2064
+status: experiment_failed
+```
+
+## iter_189: phase-189: A margin-based fitness function, while correctly rejecting floating-point exploits, creates a flat fitness landscape that prevents successful evolutionary search.
+
+**Analysis:** This phase successfully addressed the "micro-jitter" exploit from iter_188 but revealed a deeper methodological problem in the evolutionary search.
+
+Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` function. By requiring particles to move by a margin of at least 1.0 grid units, it correctly assigned a fitness of 0.0 to the previous exploit, confirming the fix was suc
+
+**Status:** experiment_failed
+
+**Metrics:** `{'validation_fitness_for_exploit': 0.0, 'evolution_generations_ran': 10, 'evolution_best_fitness': 0.0, 'evolution_champion_found': False}`
+
+**Experimenter view:** **Sub-agent 189.1 (Validation):** Succeeded. The `MarginalDynamicCollisionFitness` function correctly assigned a fitness of 0.0 to the "micro-jitter" exploit rule from iter_188. The required margin of 1.0 was far greater than the observed floating-point noise movement (~2.7e-5), validating the logic.
+
+**Sub-agent 189.2 (Evolution):** Failed. The evolutionary search ran for 10 generations, evaluati
+
+**Notes:** The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there.
+

@@ -3,41 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 38007
-cost_usd: 0.15307
-hypothesis: 'phase-189: A margin-based fitness function, while correctly rejecting
-  floating-point exploits, creates a flat fitness landscape that prevents successful
-  evolutionary search.'
-input_tokens: 66048
-iter: 189
-metrics:
-  evolution_best_fitness: 0.0
-  evolution_champion_found: false
-  evolution_generations_ran: 10
-  validation_fitness_for_exploit: 0.0
-output_tokens: 2064
-status: experiment_failed
-```
-
-## iter_189: phase-189: A margin-based fitness function, while correctly rejecting floating-point exploits, creates a flat fitness landscape that prevents successful evolutionary search.
-
-**Analysis:** This phase successfully addressed the "micro-jitter" exploit from iter_188 but revealed a deeper methodological problem in the evolutionary search.
-
-Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` function. By requiring particles to move by a margin of at least 1.0 grid units, it correctly assigned a fitness of 0.0 to the previous exploit, confirming the fix was suc
-
-**Status:** experiment_failed
-
-**Metrics:** `{'validation_fitness_for_exploit': 0.0, 'evolution_generations_ran': 10, 'evolution_best_fitness': 0.0, 'evolution_champion_found': False}`
-
-**Experimenter view:** **Sub-agent 189.1 (Validation):** Succeeded. The `MarginalDynamicCollisionFitness` function correctly assigned a fitness of 0.0 to the "micro-jitter" exploit rule from iter_188. The required margin of 1.0 was far greater than the observed floating-point noise movement (~2.7e-5), validating the logic.
-
-**Sub-agent 189.2 (Evolution):** Failed. The evolutionary search ran for 10 generations, evaluati
-
-**Notes:** The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there.
-
-
----
-```yaml
 cached_tokens: 58780
 cost_usd: 0.35129
 hypothesis: 'phase-190: A staged fitness function, while correctly implemented, fails
@@ -953,4 +918,41 @@ status: unknown
 **Experimenter view:** 
 
 **Notes:** 
+
+
+---
+```yaml
+cached_tokens: 43034
+cost_usd: 0.25018
+hypothesis: 'phase-218: A ''leaky'' fitness function, which penalizes rather than
+  rejects imperfect bit conservation, creates a searchable gradient that enables the
+  evolutionary discovery of a stable v<c glider.'
+input_tokens: 97866
+iter: 218
+metrics:
+  avg_velocity: 0.639
+  best_fitness: 84.339
+  generations_to_champion: 4
+  total_conservation_score: 1.0
+output_tokens: 1963
+status: ok
+```
+
+## iter_218: phase-218: A 'leaky' fitness function, which penalizes rather than rejects imperfect bit conservation, creates a searchable gradient that enables the evolutionary discovery of a stable v<c glider.
+
+**Analysis:** This phase successfully tested and confirmed the core hypothesis: that a 'leaky' fitness function could provide the necessary gradient to discover a `v<c` glider.
+
+Sub-agent 218.1 successfully implemented the `LeakySubLightFitness` function, which replaces the hard-rejection of imperfect bit-conservation with a smooth penalty factor.
+
+Sub-agent 218.2 immediately put this function to the test in a 
+
+**Status:** ok
+
+**Metrics:** `{'best_fitness': 84.339, 'avg_velocity': 0.639, 'total_conservation_score': 1.0, 'generations_to_champion': 4}`
+
+**Experimenter view:** The 'leaky' fitness function, implemented in sub-task 218.1, proved highly effective. It transformed the search for a `v<c` glider from an impossible search on a flat, punitive landscape into a tractable optimization problem.
+
+The evolutionary search in 218.2 was a resounding success. The fitness of the champion rule rose from 42.3 to 84.3 in just four generations, demonstrating a strong evolution
+
+**Notes:** Major breakthrough: The 'leaky' fitness function solved the search problem, leading to the first stable v<c glider.
 
