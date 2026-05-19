@@ -8873,3 +8873,37 @@ However, the subsequent evolutionary run (190.2) completely failed,
 
 **Notes:** The staged fitness function is likely a necessary, but not sufficient, condition for success. The immediate next step must be to solve the 'bootstrap problem' by seeding the initial population with rules that are already known to produce motion.
 
+
+---
+```yaml
+cached_tokens: 18669
+cost_usd: 0.22372
+hypothesis: 'phase-191: The ''warm-start'' evolutionary strategy fails because single-particle
+  glider rules do not generalize to conserve bits in multi-particle collision scenarios.'
+input_tokens: 68634
+iter: 191
+metrics:
+  champion_fitness: 0.0
+  parent_rule_initial_bits_on_collision_seed: 6
+  parent_rule_midpoint_bits_on_collision_seed: 256
+  warm_start_members_conserving_bits: 0
+output_tokens: 3096
+status: experiment_failed
+```
+
+## iter_191: phase-191: The 'warm-start' evolutionary strategy fails because single-particle glider rules do not generalize to conserve bits in multi-particle collision scenarios.
+
+**Analysis:** This phase aimed to solve the "bootstrap problem" (iter_190) where evolutionary search fails due to a lack of motion in random rule populations. The strategy was to "warm-start" the search using mutated variants of a known glider rule, `g10_rule_001`.
+
+Sub-agent 191.1 successfully implemented this strategy, creating a population of 100 rules clustered around the parent glider rule. This part of th
+
+**Status:** experiment_failed
+
+**Metrics:** `{'champion_fitness': 0.0, 'warm_start_members_conserving_bits': 0, 'parent_rule_initial_bits_on_collision_seed': 6, 'parent_rule_midpoint_bits_on_collision_seed': 256}`
+
+**Experimenter view:** **Sub-agent 191.1:** Succeeded. A new script, `src/create_mutated_population.py`, was created and used to generate `archive/iter_191/results/warm_start_population.json`. The population consists of 100 rules, with 47 being unique, single-mutation variants of the parent glider rule `g10_rule_001`. This successfully prepared the conditions for the main experiment.
+
+**Sub-agent 191.2:** Failed. The ev
+
+**Notes:** The phase was a crucial diagnostic. We solved the 'no motion' problem and immediately discovered the more subtle 'no generalization' problem. The parent rule is a specialist, not a generalist.
+
