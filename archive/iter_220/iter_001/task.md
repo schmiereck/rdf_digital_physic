@@ -1,22 +1,13 @@
-**Goal:** Empirically validate the new `DisplacementConsistencyFitness` function against a gallery of known rules to confirm it distinguishes true motion from exploits.
+**Goal:** Empirically validate the new `DisplacementConsistencyFitness` function.
 
 **Task:**
+1.  Create a new Python script `src/validate_fitness.py`.
+2.  In this script, import the `DisplacementConsistencyFitness` function and the necessary rule-loading and simulation components.
+3.  Create a "validation gallery" of rules to test:
+    *   **Good Glider:** The `v=1c` elastic glider rule from `iter_193`. Path: `archive/iter_193/results/champion_rule.json`. Label this "v=1c elastic".
+    *   **Drifter Exploit:** The stationary "drifter" object from `iter_218` that exploited the previous fitness function. Path: `archive/iter_218/results/champion_g4_rule_083.json`. Label this "drifter".
+    *   **Stationary Object:** A rule known to produce only stable, non-moving objects. Use the rule from `iter_056`. Path: `archive/iter_056/results/rule_1.json`. Label this "still_life".
+4.  For each rule, initialize the fitness function and evaluate the rule's performance on the standard 3-bit L-tromino seed over 500 steps on a 128x128 grid.
+5.  Print the results in a clear, formatted table showing the rule label and its final fitness score.
 
-1.  **Create a validation script:** Write a new Python script named `src/validate_fitness.py`.
-
-2.  **Import necessary components:** Inside the script, import `DisplacementConsistencyFitness` from `src/fitness_functions.py` and the required simulation environment components from `src/game_of_life.py`.
-
-3.  **Load the rules for testing:**
-    *   Load the stable `v=1c` glider rule (`g10_rule_001`) from `archive/iter_179/results/champion_glider.json`.
-    *   Load the `v=1c` elastic collision rule (`g1_rule_001`) from `archive/iter_193/results/champion_rule.json`.
-    *   Load the 'drifter' exploit rule (`g4_rule_083`) from `archive/iter_218/results/champion_rule.json`.
-
-4.  **Instantiate and run the fitness function:**
-    *   For each of the three rules, instantiate `DisplacementConsistencyFitness`.
-    *   Evaluate each rule using the standard 3-bit L-tromino seed on a 128x128 grid for 400 simulation steps.
-
-5.  **Output the results:**
-    *   Print the final fitness scores for all three rules clearly to standard output.
-    *   Save the results in a structured JSON file at `archive/iter_220/results/validation_scores.json`. The JSON should map rule names to their scores, like `{"v1c_glider": score1, "elastic_glider": score2, "drifter_exploit": score3}`.
-
-**Success Criterion:** The script executes successfully and the output shows a high score for the two `v=1c` gliders and a very low (near-zero) score for the drifter exploit, confirming the function works as designed.
+**Success Criterion:** The script runs successfully and prints a table where the "v=1c elastic" rule has a significantly positive score, and both the "drifter" and "still_life" rules have scores at or very near zero. This will confirm the function's ability to distinguish coherent motion from exploits.
