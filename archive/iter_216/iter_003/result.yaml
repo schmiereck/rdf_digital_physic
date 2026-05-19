@@ -1,0 +1,61 @@
+artifacts:
+- archive/iter_216/results/fitness_analysis.md
+experimenter_view: 'The LateWindowDisplacementFitness failure is a clean theoretical
+  result: the
+
+  fitness formula is monotonically increasing in particle speed, so the global
+
+  maximum is always the fastest compact particle — the v=1c glider. No amount
+
+  of window-shifting or bounding-box penalization can fix this; the speed bias
+
+  is structural. The toroidal CoM wrapping artefact is a secondary bug that
+
+  compresses measured displacement when particles cross the boundary, but it
+
+  didn''t prevent the search from finding v=1c.
+
+
+  The proposed SubLightFitness addresses both issues: (1) unwrapped CoM tracking
+
+  for accurate velocity measurement, (2) a hard velocity gate rejecting v>=0.9c,
+
+  and (3) a period-bonus term that makes internal oscillation fitness-relevant.
+
+  The period_bonus = 1 - 1/period gives zero to period-1 gliders and grows
+
+  toward 1.0 for longer periods, naturally rewarding the complex internal
+
+  structure that v<c gliders require. Combined with displacement, the fitness
+
+  peak is shifted away from v=1c toward intermediate speeds (~0.25c–0.5c range).
+
+  '
+log_excerpt: 'Analyzed src/fitness_v_lessthan_c.py: LateWindowDisplacementFitness
+
+  Formula: fitness = late_window_displacement / (1 + final_bb_area)
+
+  Characterization data: avg_velocity_magnitude = 1.000 cells/step (v=1c)
+
+  Measured displacement 500->250 window: 250.0 cells in 250 steps = 1.0 c
+
+  Champion fitness score: 2.4 (displacement=12, bb_area=4, window=200 steps)
+
+  Root cause: fitness ∝ speed, no ceiling → v=1c is always optimal
+
+  Wrapping artefact: raw CoM discontinuous across toroidal boundary
+
+  Period of champion glider: T=1 (no internal oscillation)
+
+  Proposed SubLightFitness: hard-rejects v>=0.9c and period<=1
+
+  Period bonus: 1 - 1/period (0 for T=1, 0.5 for T=2, 0.75 for T=4)
+
+  Output written: archive/iter_216/results/fitness_analysis.md
+
+  '
+metrics: {}
+notes: Root cause confirmed — LateWindowDisplacementFitness is proportional to speed
+  with no upper limit, guaranteeing v=1c convergence; SubLightFitness proposed with
+  period-gate and velocity-gate fixes
+status: ok

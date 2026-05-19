@@ -1,0 +1,51 @@
+I'll read the fitness functions file and relevant context before writing the analysis.
+I don't see `LateWindowDisplacementFitness` in the current file. Let me search for it and gather more context.
+Now let me read the characterization results and iter_215 context.
+Now I have enough context. Let me check the iter_215 champion results briefly, then write the analysis.
+Now I have enough context to write the analysis. Let me check that the output directory exists.
+Good, the directory exists. Now I'll write the analysis document.
+The analysis document is written. Here's a summary of the key findings:
+
+**Root cause:** `LateWindowDisplacementFitness` computes `fitness = displacement / (1 + bb_area)`. Since displacement is directly proportional to speed, the v=1c glider always scores the highest for any compact particle — it's mathematically the optimal solution for this objective. A v<c glider with speed 1/k earns only 1/k of the fitness of an equivalent v=c glider.
+
+**Secondary issue:** The raw `center_of_mass` function wraps discontinuously on the toroidal grid, compressing the measured displacement when the particle crosses the boundary. This artefact partially obscured the true v=1c nature during iter_215, but didn't prevent convergence to it.
+
+**The `SubLightFitness` design** fixes this with two mechanisms:
+1. Hard rejection gates: `measured_velocity >= 0.9` → fitness=0; `period <= 1` → fitness=0
+2. `period_bonus = 1 - 1/period` multiplier that makes internal oscillation fitness-relevant — a period-4 glider gets a 0.75× bonus vs. 0 for v=1c
+
+```yaml
+status: ok
+artifacts:
+  - archive/iter_216/results/fitness_analysis.md
+metrics: {}
+log_excerpt: |
+  Analyzed src/fitness_v_lessthan_c.py: LateWindowDisplacementFitness
+  Formula: fitness = late_window_displacement / (1 + final_bb_area)
+  Characterization data: avg_velocity_magnitude = 1.000 cells/step (v=1c)
+  Measured displacement 500->250 window: 250.0 cells in 250 steps = 1.0 c
+  Champion fitness score: 2.4 (displacement=12, bb_area=4, window=200 steps)
+  Root cause: fitness ∝ speed, no ceiling → v=1c is always optimal
+  Wrapping artefact: raw CoM discontinuous across toroidal boundary
+  Period of champion glider: T=1 (no internal oscillation)
+  Proposed SubLightFitness: hard-rejects v>=0.9c and period<=1
+  Period bonus: 1 - 1/period (0 for T=1, 0.5 for T=2, 0.75 for T=4)
+  Output written: archive/iter_216/results/fitness_analysis.md
+experimenter_view: |
+  The LateWindowDisplacementFitness failure is a clean theoretical result: the
+  fitness formula is monotonically increasing in particle speed, so the global
+  maximum is always the fastest compact particle — the v=1c glider. No amount
+  of window-shifting or bounding-box penalization can fix this; the speed bias
+  is structural. The toroidal CoM wrapping artefact is a secondary bug that
+  compresses measured displacement when particles cross the boundary, but it
+  didn't prevent the search from finding v=1c.
+  
+  The proposed SubLightFitness addresses both issues: (1) unwrapped CoM tracking
+  for accurate velocity measurement, (2) a hard velocity gate rejecting v>=0.9c,
+  and (3) a period-bonus term that makes internal oscillation fitness-relevant.
+  The period_bonus = 1 - 1/period gives zero to period-1 gliders and grows
+  toward 1.0 for longer periods, naturally rewarding the complex internal
+  structure that v<c gliders require. Combined with displacement, the fitness
+  peak is shifted away from v=1c toward intermediate speeds (~0.25c–0.5c range).
+notes: Root cause confirmed — LateWindowDisplacementFitness is proportional to speed with no upper limit, guaranteeing v=1c convergence; SubLightFitness proposed with period-gate and velocity-gate fixes
+```
