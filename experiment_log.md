@@ -3,40 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 18931
-cost_usd: 0.23246
-hypothesis: 'phase-192: A comparative experiment will show that evolving a ''leaky''
-  motion-first population towards conservation is more effective than evolving a pre-screened
-  conservation-first population towards motion.'
-input_tokens: 70946
-iter: 192
-metrics:
-  strategy_A_best_bit_error: 2
-  strategy_A_best_fitness: 0.3333
-  strategy_A_best_staged_score: 1.0
-  strategy_B_best_fitness: 0.0
-  strategy_B_conserving_rules_found: 3268
-output_tokens: 3223
-status: ok
-```
-
-## iter_192: phase-192: A comparative experiment will show that evolving a 'leaky' motion-first population towards conservation is more effective than evolving a pre-screened conservation-first population towards motion.
-
-**Analysis:** This phase executed a crucial comparative experiment to break the "motion vs. conservation" impasse that had halted progress. Two opposing strategies were tested.
-
-Sub-agent 192.1 tested Strategy A: starting with a known "mover" rule (`g10_rule_001`) and evolving it with a "leaky" fitness function that penalized, but did not forbid, bit non-conservation. This was a resounding success. It broke the
-
-**Status:** ok
-
-**Metrics:** `{'strategy_A_best_fitness': 0.3333, 'strategy_A_best_staged_score': 1.0, 'strategy_A_best_bit_error': 2, 'strategy_B_best_fitness': 0.0, 'strategy_B_conserving_rules_found': 3268}`
-
-**Experimenter view:** **Sub-agent 192.1 (Strategy A - Leaky Conservation):** Succeeded. The introduction of a soft penalty for bit non-conservation immediately created a viable fitness gradient. The warm-start population, previously scoring zero, rapidly evolved a champion that achieves the "approach" part of a collision. The particles fuse, resulting in a `staged_score` of 1.0 and a `bit_error` of 2. The evolution pla
-
-**Notes:** This phase was highly successful and decisive. The 'leaky conservation' approach is validated as the way forward.
-
-
----
-```yaml
 cached_tokens: 81430
 cost_usd: 0.23144
 hypothesis: 'phase-193: A recession-biased fitness function successfully guides evolution
@@ -953,4 +919,33 @@ Initial attempts to extract the glider's structure (219.1-219.6) were chaotic, b
 The final sub-agent (219.7) performed a direct analysis o
 
 **Notes:** Phase successfully debunked the v<c glider from iter_218, revealing it as a fitness function exploit.
+
+
+---
+```yaml
+cached_tokens: 121299
+cost_usd: 0.4476
+hypothesis: 'phase-220: All scientific progress was blocked by a persistent, unrecoverable
+  platform error.'
+input_tokens: 209880
+iter: 220
+metrics:
+  failed_agents_in_phase: 4
+output_tokens: 2993
+status: code_error
+```
+
+## iter_220: phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error.
+
+**Analysis:** The scientific goal for this phase was to develop and validate a robust fitness function for `v<c` glider discovery, directly addressing the exploit that was uncovered in `iter_219`. The plan was to first reproduce the exploit, then develop a new function, and finally validate it against a gallery of known failure modes.
+
+This plan was immediately blocked. Four consecutive attempts to launch a sub
+
+**Status:** code_error
+
+**Metrics:** `{'failed_agents_in_phase': 4}`
+
+**Experimenter view:** This phase was defined by a complete failure of the agent execution platform. All attempts to run a sub-agent, including a minimal diagnostic task (`220.1_diag`), failed immediately with the same error: "Stop requested." No code could be written or executed, and no scientific progress was possible. The platform appears to be in an unrecoverable state.
+
+**Notes:** Phase completely blocked by a persistent platform-level execution error.
 
