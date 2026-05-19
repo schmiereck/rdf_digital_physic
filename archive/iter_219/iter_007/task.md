@@ -1,13 +1,12 @@
-**Goal:** Extract the v<c glider structure. This is a re-attempt of a previously failed task (219.3), but with new information.
+All attempts to reproduce the v<c glider from iter_218 have failed. The goal of this task is to analyze the original animation from that iteration to establish a ground truth.
 
-**Diagnosis:** The core simulator is fine (per 219.6), but the analysis code probably hung the last agent. Your task is to extract the glider structure using a simpler, more robust method.
+**Task: Analyze `archive/iter_218/results/champion_vc_glider.gif`**
 
-**Instructions:**
-1.  Use the cleaned rule file: `archive/iter_219/results/g4_rule_083_cleaned.json`.
-2.  Run `src/run_simulation.py` for 150 steps with the standard L-tromino seed.
-3.  At step 150, get the grid state.
-4.  **Use a simple extraction logic:** Instead of complex motion tracking, find all contiguous objects on the grid. Assume the **largest** object by bit count is the glider. Discard all smaller objects as debris.
-5.  Take the coordinates of this largest object and normalize them (so the top-left-most bit is at `[0,0]`).
-6.  Save the normalized coordinates to `archive/iter_219/results/vc_glider_g4_rule_083_structure.json`.
-7.  Report the `glider_bit_count` metric (the number of bits in the final structure).
-8.  Report the `debris_object_count` metric (the number of other, smaller objects you discarded).
+Write and execute a Python script using the Pillow library (`PIL`) to inspect the GIF file. The script must:
+1.  Open `archive/iter_218/results/champion_vc_glider.gif`.
+2.  Count and report the total number of frames in the animation.
+3.  Get and report the dimensions (width, height) of the GIF.
+4.  Iterate through the frames and, for each frame, count the number of non-background pixels. Assume the background is the most common color in the first frame's palette.
+5.  Report the pixel count for frames 0, 50, 100, 150, and the final frame.
+6.  Describe the motion of the non-background pixels. Does a coherent object move across the frame?
+7.  Summarize the findings. Does the GIF show a 10-bit glider, a 3-bit object, or something else entirely? This is the most important output.
