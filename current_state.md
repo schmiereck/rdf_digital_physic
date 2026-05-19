@@ -1,5 +1,5 @@
 # Current Research State
-Phase: v<c Glider Fitness Function Developed
+Phase: PLATFORM FAILURE - BLOCKED
 
 ## Goal
 Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
@@ -13,10 +13,9 @@ Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hex
 - The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object, not a glider (iter_219.7).
 
 ## In Progress
-- A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but is **pending empirical validation** (iter_220.5). The validation attempts (iter_220.6, 220.7) were blocked by platform errors.
+- A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but remains **unvalidated due to persistent platform errors**. All attempts to run validation scripts in this phase failed (iter_220.1, 220.2, 220.3).
 
 ## Open Questions
-- Is the new `DisplacementConsistencyFitness` function effective in practice at distinguishing gliders from drifters?
-- Can a full evolutionary search using `DisplacementConsistencyFitness` successfully discover a true `v<c` glider?
-- Is the 'leaky' conservation principle still a valuable component for `v<c` glider fitness?
-- What is causing the `token_limit` errors that are blocking validation?
+- What is causing the `code_error` state that makes agents hang during simulations?
+- Is the new `DisplacementConsistencyFitness` function effective in practice?
+- Can an evolutionary search using this function discover a `v<c` glider?

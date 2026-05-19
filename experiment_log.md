@@ -3,43 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 18998
-cost_usd: 0.22294
-hypothesis: 'phase-195: Characterize the elastic collision rule, confirming its robustness
-  and physics-like scattering properties.'
-input_tokens: 70052
-iter: 195
-metrics:
-  bit_error_at_max_offset: 0
-  elastic_rules_in_top_5: 5
-  max_offset_tested: 3
-  offset_scattering_confirmed: 1.0
-  robustness_check_total_rules: 5
-output_tokens: 2631
-status: ok
-```
-
-## iter_195: phase-195: Characterize the elastic collision rule, confirming its robustness and physics-like scattering properties.
-
-**Analysis:** This phase successfully transitioned from discovering an elastic collision (iter_193) to rigorously characterizing it. The two sub-goals were designed to answer the most critical follow-up questions: is the discovery a fluke, and how does it behave under imperfect conditions?
-
-Sub-agent 195.1 confirmed that the discovery is highly robust. By re-simulating the top 5 rules from the previous evolutio
-
-**Status:** ok
-
-**Metrics:** `{'elastic_rules_in_top_5': 5, 'robustness_check_total_rules': 5, 'max_offset_tested': 3, 'bit_error_at_max_offset': 0, 'offset_scattering_confirmed': 1.0}`
-
-**Experimenter view:** The characterization in this phase yielded results that exceeded expectations.
-
-**Sub-agent 195.1:** Confirmed that all 5 of the top-performing rules from iter_193's final population exhibit perfect, bit-conserving elastic collisions. The discovery is not a fragile, one-off result but represents a robust solution space.
-
-**Sub-agent 195.2:** Demonstrated that the champion rule's behavior is remark
-
-**Notes:** This phase solidifies the v=1c elastic collision discovery. The rule is robust and its interaction dynamics are non-trivial and predictable.
-
-
----
-```yaml
 cached_tokens: 131462
 cost_usd: 0.44996
 hypothesis: 'phase-197: An attempt to find v<c gliders fails due to a fitness function
@@ -945,4 +908,37 @@ status: experiment_failed
 A new, exploit-resistant fitness function, `DisplacementCon
 
 **Notes:** Developed a promising new fitness function, but final validation was blocked by repeated platform errors.
+
+
+---
+```yaml
+cached_tokens: 281151
+cost_usd: 0.60653
+hypothesis: 'phase-220: All scientific progress was blocked by a persistent, unrecoverable
+  platform error.'
+input_tokens: 372808
+iter: 220
+metrics:
+  failed_agents_in_phase: 3
+  successful_agents_in_phase: 0
+output_tokens: 3783
+status: code_error
+```
+
+## iter_220: phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error.
+
+**Analysis:** The goal for this phase was to validate the new `DisplacementConsistencyFitness` function and then launch an evolutionary search for a `v<c` glider. This plan was completely blocked by a series of platform failures.
+
+Three separate attempts were made to execute sub-tasks. The first two agents (220.1, 220.2) hung indefinitely while trying to run the validation script, requiring manual termination. 
+
+**Status:** code_error
+
+**Metrics:** `{'failed_agents_in_phase': 3, 'successful_agents_in_phase': 0}`
+
+**Experimenter view:** This phase was a complete failure of the execution platform. No scientific progress was possible.
+- Sub-agent 220.1, tasked with validation, became unresponsive and had to be manually stopped after prolonged polling. It appears to have run the wrong script.
+- Sub-agent 220.2, a re-attempt of the validation, also became unresponsive and was manually stopped after timing out multiple times.
+- Sub-ag
+
+**Notes:** Phase completely blocked by a persistent platform-level execution error.
 
