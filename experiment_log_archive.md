@@ -8941,3 +8941,37 @@ Sub-agent 192.1 tested Strategy A: starting with a known "mover" rule (`g10_rule
 
 **Notes:** This phase was highly successful and decisive. The 'leaky conservation' approach is validated as the way forward.
 
+
+---
+```yaml
+cached_tokens: 81430
+cost_usd: 0.23144
+hypothesis: 'phase-193: A recession-biased fitness function successfully guides evolution
+  to discover a rule supporting perfect, bit-conserving elastic glider collisions.'
+input_tokens: 116961
+iter: 193
+metrics:
+  champion_bit_error: 0
+  champion_fitness: 2.0
+  champion_staged_score: 2.0
+  final_recession_score: 1.0
+output_tokens: 3412
+status: ok
+```
+
+## iter_193: phase-193: A recession-biased fitness function successfully guides evolution to discover a rule supporting perfect, bit-conserving elastic glider collisions.
+
+**Analysis:** This phase successfully resolved the "particle fusion" local optimum that halted progress in iter_192. The root cause was identified as a cliff-edge fitness gradient in the `StagedCollisionFitness` function, which rewarded particle approach but offered no incentive for recession.
+
+The strategy was to engineer a new fitness function with a continuous gradient. Sub-agent 193.1 implemented `Recession
+
+**Status:** ok
+
+**Metrics:** `{'champion_fitness': 2.0, 'champion_staged_score': 2.0, 'champion_bit_error': 0, 'final_recession_score': 1.0}`
+
+**Experimenter view:** **Sub-agent 193.1:** Successfully implemented the `RecessionBiasedFitness` class in `src/fitness.py`. The new function provides a continuous score for post-collision separation (from 1.0 for fusion to 2.0 for perfect recession) and incorporates the "leaky" conservation penalty from iter_192.
+
+**Sub-agent 193.2:** The evolutionary search using the new fitness function yielded a breakthrough result.
+
+**Notes:** This phase marks a significant success, achieving the primary goal of the 2D hexagonal simulation stage: finding a rule that supports stable, elastic collisions.
+

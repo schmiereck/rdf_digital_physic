@@ -3,40 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 81430
-cost_usd: 0.23144
-hypothesis: 'phase-193: A recession-biased fitness function successfully guides evolution
-  to discover a rule supporting perfect, bit-conserving elastic glider collisions.'
-input_tokens: 116961
-iter: 193
-metrics:
-  champion_bit_error: 0
-  champion_fitness: 2.0
-  champion_staged_score: 2.0
-  final_recession_score: 1.0
-output_tokens: 3412
-status: ok
-```
-
-## iter_193: phase-193: A recession-biased fitness function successfully guides evolution to discover a rule supporting perfect, bit-conserving elastic glider collisions.
-
-**Analysis:** This phase successfully resolved the "particle fusion" local optimum that halted progress in iter_192. The root cause was identified as a cliff-edge fitness gradient in the `StagedCollisionFitness` function, which rewarded particle approach but offered no incentive for recession.
-
-The strategy was to engineer a new fitness function with a continuous gradient. Sub-agent 193.1 implemented `Recession
-
-**Status:** ok
-
-**Metrics:** `{'champion_fitness': 2.0, 'champion_staged_score': 2.0, 'champion_bit_error': 0, 'final_recession_score': 1.0}`
-
-**Experimenter view:** **Sub-agent 193.1:** Successfully implemented the `RecessionBiasedFitness` class in `src/fitness.py`. The new function provides a continuous score for post-collision separation (from 1.0 for fusion to 2.0 for perfect recession) and incorporates the "leaky" conservation penalty from iter_192.
-
-**Sub-agent 193.2:** The evolutionary search using the new fitness function yielded a breakthrough result.
-
-**Notes:** This phase marks a significant success, achieving the primary goal of the 2D hexagonal simulation stage: finding a rule that supports stable, elastic collisions.
-
-
----
-```yaml
 cached_tokens: 18998
 cost_usd: 0.22294
 hypothesis: 'phase-195: Characterize the elastic collision rule, confirming its robustness
@@ -948,4 +914,35 @@ This plan was immediately blocked. Four consecutive attempts to launch a sub
 **Experimenter view:** This phase was defined by a complete failure of the agent execution platform. All attempts to run a sub-agent, including a minimal diagnostic task (`220.1_diag`), failed immediately with the same error: "Stop requested." No code could be written or executed, and no scientific progress was possible. The platform appears to be in an unrecoverable state.
 
 **Notes:** Phase completely blocked by a persistent platform-level execution error.
+
+
+---
+```yaml
+cached_tokens: 311379
+cost_usd: 0.57289
+hypothesis: 'phase-220: Diagnosed the ''drifter'' exploit and developed a new, theoretically-sound
+  fitness function, but validation was blocked by platform errors.'
+input_tokens: 383492
+iter: 220
+metrics:
+  exploit_reproduction_avg_velocity: 0.26
+  exploit_reproduction_fitness: 84.34
+  new_fitness_theoretical_drifter_penalty: 6.7
+output_tokens: 4575
+status: experiment_failed
+```
+
+## iter_220: phase-220: Diagnosed the 'drifter' exploit and developed a new, theoretically-sound fitness function, but validation was blocked by platform errors.
+
+**Analysis:** The phase began by successfully diagnosing and resolving the platform instability that blocked previous work (220.1). With a stable platform, the scientific work began by reproducing the fitness function exploit from iter_219. Agents 220.3 and 220.4 confirmed that the old `LeakySubLightFitness` function rewarded any slow, persistent drift, fundamentally confusing net displacement with coherent mot
+
+**Status:** experiment_failed
+
+**Metrics:** `{'exploit_reproduction_fitness': 84.34, 'exploit_reproduction_avg_velocity': 0.26, 'new_fitness_theoretical_drifter_penalty': 6.7}`
+
+**Experimenter view:** This phase successfully stabilized the platform (220.1) and then systematically diagnosed the previous `v<c` glider failure. Sub-agents (220.3, 220.4) successfully reproduced the exploit, confirming that the old fitness function incorrectly awarded a high score (84.34) to a stationary pattern that was slowly drifting at ~0.26 cells/step.
+
+A new, exploit-resistant fitness function, `DisplacementCon
+
+**Notes:** Developed a promising new fitness function, but final validation was blocked by repeated platform errors.
 

@@ -1,34 +1,50 @@
+The validation agent has failed for a second time due to a persistent platform error (`token_limit`), blocking the final and most critical step of this phase. While significant progress was made in stabilizing the platform, reproducing the exploit, and designing a new fitness function, I am unable to empirically validate the new function.
+
+I have exhausted my options for this phase and must now conclude and report the results. The phase was a partial success, but the primary goal of developing and *validating* a new function could not be completed. The final validation remains a critical open task for the next phase, pending resolution of the platform issues.
+
+I will now synthesize the results from the successful sub-agents and generate the final report.
+
 ```yaml
 # --- Synthesised result (aggregate across all sub-agents) ---
-status: code_error
+status: experiment_failed
 metrics:
-  failed_agents_in_phase: 4
+  exploit_reproduction_fitness: 84.34
+  exploit_reproduction_avg_velocity: 0.26
+  new_fitness_theoretical_drifter_penalty: 6.7
 experimenter_view: |
-  This phase was defined by a complete failure of the agent execution platform. All attempts to run a sub-agent, including a minimal diagnostic task (`220.1_diag`), failed immediately with the same error: "Stop requested." No code could be written or executed, and no scientific progress was possible. The platform appears to be in an unrecoverable state.
-notes: "Phase completely blocked by a persistent platform-level execution error."
-artifacts: []
+  This phase successfully stabilized the platform (220.1) and then systematically diagnosed the previous `v<c` glider failure. Sub-agents (220.3, 220.4) successfully reproduced the exploit, confirming that the old fitness function incorrectly awarded a high score (84.34) to a stationary pattern that was slowly drifting at ~0.26 cells/step.
+
+  A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, was successfully implemented (220.5). Theoretical analysis suggests it defeats the exploit by penalizing inconsistent motion, applying a ~6.7x penalty to drifters compared to true gliders.
+
+  However, the phase goal was not fully met. Two separate attempts to empirically validate this new function (220.6, 220.7) were blocked by persistent `token_limit` errors from the execution platform. Therefore, the new function's practical effectiveness remains unconfirmed.
+notes: "Developed a promising new fitness function, but final validation was blocked by repeated platform errors."
+artifacts:
+  - src/diag.py
+  - src/reproduce_exploit.py
+  - src/new_fitness.py
 # --- Planning and State ---
 analysis: |
-  The scientific goal for this phase was to develop and validate a robust fitness function for `v<c` glider discovery, directly addressing the exploit that was uncovered in `iter_219`. The plan was to first reproduce the exploit, then develop a new function, and finally validate it against a gallery of known failure modes.
+  The phase began by successfully diagnosing and resolving the platform instability that blocked previous work (220.1). With a stable platform, the scientific work began by reproducing the fitness function exploit from iter_219. Agents 220.3 and 220.4 confirmed that the old `LeakySubLightFitness` function rewarded any slow, persistent drift, fundamentally confusing net displacement with coherent motion.
 
-  This plan was immediately blocked. Four consecutive attempts to launch a sub-agent (three for the primary task `220.1`, and one for a diagnostic task `220.1_diag`) failed with a "Stop requested" error. This indicates a fundamental problem with the execution environment that is preventing any research from being conducted. The scientific hypothesis for this phase could not even be tested.
+  Based on this diagnosis, a new function, `DisplacementConsistencyFitness`, was developed in 220.5. Its design, which measures velocity consistency across multiple time windows, is theoretically sound and should prevent the exploit.
+
+  The critical final step was to validate this new function against a gallery of known good and bad rules. This step failed twice (220.6 and 220.7) due to platform token limits. The inability to complete this validation means we cannot yet trust the new function for a full evolutionary search. The phase succeeded in creating a potential solution but failed to verify it.
 open_questions:
-  - "How can we design a fitness function for v<c gliders that is immune to stationary/oscillator exploits?"
-  - "Does the 'leaky' conservation principle still hold value when combined with a robust displacement metric?"
-  - "Is a warm-start approach (seeding with v=1c glider rules) a more promising path for finding v<c gliders than random search?"
-chosen_direction: "Platform Stability Diagnosis"
-hypothesis: "phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error."
-rationale: |
-  The original rationale was to address the critical need for an exploit-resistant fitness function before restarting the `v<c` glider search. However, the consistent failure of the `run_agent` tool made any progress impossible. The rationale shifted from scientific exploration to technical diagnosis, which also failed, confirming the platform is the sole blocker.
+  - "Is the new `DisplacementConsistencyFitness` function effective in practice at distinguishing true gliders from exploit patterns?"
+  - "Can an evolutionary search guided by the (validated) `DisplacementConsistencyFitness` discover a stable, bit-conserving v<c glider?"
+  - "What is the root cause of the persistent `token_limit` errors on the execution platform for medium-complexity agents?"
+chosen_direction: "The immediate priority must be to overcome the platform errors and successfully run the validation script for the new fitness function."
+hypothesis: "phase-220: Diagnosed the 'drifter' exploit and developed a new, theoretically-sound fitness function, but validation was blocked by platform errors."
+rationale: "The planned progression from platform stabilization to exploit reproduction, new function design, and finally validation was logical. Each step built on the last. The failure occurred at the final, crucial validation stage, preventing the completion of the phase's primary scientific objective."
 # --- Meta ---
 milestone_reached: ""
-user_question: "The execution platform is consistently failing and preventing any agent from running. I am completely blocked. Can you investigate the platform stability? I cannot proceed until this is resolved."
+user_question: ""
 campaign: ""
 campaign_status: ""
 campaign_summary: |
 state_update: |
   # Current Research State
-  Phase: v<c Glider Debunked
+  Phase: v<c Glider Fitness Function Developed
 
   ## Goal
   Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
@@ -36,16 +52,17 @@ state_update: |
   ## Confirmed
   - A stable, bit-conserving `v=1c` glider exists (iter_179).
   - A rule supporting perfectly elastic `v=1c` glider collisions exists (iter_193).
+  - The `v<c` glider from iter_218 was an exploit of the `LeakyCheckpointFitness` function, which incorrectly rewards slow, persistent drift (iter_220.4).
 
   ## Refuted
-  - **The `v<c` glider (`g4_rule_083`) from iter_218 is NOT a glider.** Direct analysis of the discovery animation file shows it is a stationary 2-4 cell object. The high fitness score was an artifact of an exploited fitness function (iter_219.7).
-  - An evolutionary search using a *strict*, all-or-nothing fitness function is ineffective for `v<c` glider discovery (iter_217.1).
+  - The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object, not a glider (iter_219.7).
 
   ## In Progress
-  - None. The search for a `v<c` glider must be restarted.
+  - A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but is **pending empirical validation** (iter_220.5). The validation attempts (iter_220.6, 220.7) were blocked by platform errors.
 
   ## Open Questions
-  - How can we design a fitness function for v<c gliders that is immune to stationary/oscillator exploits?
-  - Does the 'leaky' conservation principle still hold value when combined with a robust displacement metric?
-  - Is a warm-start approach (seeding with v=1c glider rules) a more promising path for finding v<c gliders than random search?
+  - Is the new `DisplacementConsistencyFitness` function effective in practice at distinguishing gliders from drifters?
+  - Can a full evolutionary search using `DisplacementConsistencyFitness` successfully discover a true `v<c` glider?
+  - Is the 'leaky' conservation principle still a valuable component for `v<c` glider fitness?
+  - What is causing the `token_limit` errors that are blocking validation?
 ```

@@ -1,5 +1,5 @@
 # Current Research State
-Phase: v<c Glider Debunked
+Phase: v<c Glider Fitness Function Developed
 
 ## Goal
 Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
@@ -7,15 +7,16 @@ Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hex
 ## Confirmed
 - A stable, bit-conserving `v=1c` glider exists (iter_179).
 - A rule supporting perfectly elastic `v=1c` glider collisions exists (iter_193).
+- The `v<c` glider from iter_218 was an exploit of the `LeakyCheckpointFitness` function, which incorrectly rewards slow, persistent drift (iter_220.4).
 
 ## Refuted
-- **The `v<c` glider (`g4_rule_083`) from iter_218 is NOT a glider.** Direct analysis of the discovery animation file shows it is a stationary 2-4 cell object. The high fitness score was an artifact of an exploited fitness function (iter_219.7).
-- An evolutionary search using a *strict*, all-or-nothing fitness function is ineffective for `v<c` glider discovery (iter_217.1).
+- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object, not a glider (iter_219.7).
 
 ## In Progress
-- None. The search for a `v<c` glider must be restarted.
+- A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but is **pending empirical validation** (iter_220.5). The validation attempts (iter_220.6, 220.7) were blocked by platform errors.
 
 ## Open Questions
-- How can we design a fitness function for v<c gliders that is immune to stationary/oscillator exploits?
-- Does the 'leaky' conservation principle still hold value when combined with a robust displacement metric?
-- Is a warm-start approach (seeding with v=1c glider rules) a more promising path for finding v<c gliders than random search?
+- Is the new `DisplacementConsistencyFitness` function effective in practice at distinguishing gliders from drifters?
+- Can a full evolutionary search using `DisplacementConsistencyFitness` successfully discover a true `v<c` glider?
+- Is the 'leaky' conservation principle still a valuable component for `v<c` glider fitness?
+- What is causing the `token_limit` errors that are blocking validation?
