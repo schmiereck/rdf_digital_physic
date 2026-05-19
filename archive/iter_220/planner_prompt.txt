@@ -288,6 +288,7 @@ Einfache lokale Regeln im 2D-Hex-Gitter (Bit-Rotation, Nachbar-Swap) sind typisc
   220  | code_error      | phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error.
   220  | experiment_failed| phase-220: Diagnosed the 'drifter' exploit and developed a new, theoretically-sound fitness function, but validation was blocked by platform errors.
   220  | code_error      | phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error.
+  220  | code_error      | phase-220: The platform is stabilized and the new fitness function is validated, but the evolutionary probe search is blocked by environment dependency errors.
 
 [Phase 3 - 2D Symmetric Interactions] active
   iter | status          | hypothesis
@@ -436,7 +437,7 @@ Einfache lokale Regeln im 2D-Hex-Gitter (Bit-Rotation, Nachbar-Swap) sind typisc
 
 ## Current State
 # Current Research State
-Phase: PLATFORM FAILURE - BLOCKED
+Phase: PLATFORM DEPENDENCY ERROR - BLOCKED
 
 ## Goal
 Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
@@ -444,50 +445,22 @@ Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hex
 ## Confirmed
 - A stable, bit-conserving `v=1c` glider exists (iter_179).
 - A rule supporting perfectly elastic `v=1c` glider collisions exists (iter_193).
-- The `v<c` glider from iter_218 was an exploit of the `LeakyCheckpointFitness` function, which incorrectly rewards slow, persistent drift (iter_220.4).
+- The new `DisplacementConsistencyFitness` function correctly assigns a fitness of 0.0 to the "drifter" exploit rule from iter_218, while assigning positive scores to known glider rules (iter_220.2). The function is validated.
+- The agent execution platform is stable and does not hang on simple tasks (iter_220.1).
 
 ## Refuted
-- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object, not a glider (iter_219.7).
+- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object that exploited a flawed fitness function (iter_219.7, confirmed in 220.2).
 
 ## In Progress
-- A new, exploit-resistant fitness function, `DisplacementConsistencyFitness`, has been developed but remains **unvalidated due to persistent platform errors**. All attempts to run validation scripts in this phase failed (iter_220.1, 220.2, 220.3).
+- **BLOCKED:** The evolutionary search for a `v<c` glider is blocked by a `ModuleNotFoundError` in the sub-planner execution environment. The environment is missing key dependencies like `pandas` (iter_220.3).
 
 ## Open Questions
-- What is causing the `code_error` state that makes agents hang during simulations?
-- Is the new `DisplacementConsistencyFitness` function effective in practice?
-- Can an evolutionary search using this function discover a `v<c` glider?
+- How can we ensure the sub-agent execution environment has all necessary dependencies pre-installed?
+- Does the validated `DisplacementConsistencyFitness` function create a searchable fitness landscape?
+- Can a `v<c` glider be found through evolutionary search?
 
 
 ## Recent Log (last 3 entries)
-```yaml
-cached_tokens: 121299
-cost_usd: 0.4476
-hypothesis: 'phase-220: All scientific progress was blocked by a persistent, unrecoverable
-  platform error.'
-input_tokens: 209880
-iter: 220
-metrics:
-  failed_agents_in_phase: 4
-output_tokens: 2993
-status: code_error
-```
-
-## iter_220: phase-220: All scientific progress was blocked by a persistent, unrecoverable platform error.
-
-**Analysis:** The scientific goal for this phase was to develop and validate a robust fitness function for `v<c` glider discovery, directly addressing the exploit that was uncovered in `iter_219`. The plan was to first reproduce the exploit, then develop a new function, and finally validate it against a gallery of known failure modes.
-
-This plan was immediately blocked. Four consecutive attempts to launch a sub
-
-**Status:** code_error
-
-**Metrics:** `{'failed_agents_in_phase': 4}`
-
-**Experimenter view:** This phase was defined by a complete failure of the agent execution platform. All attempts to run a sub-agent, including a minimal diagnostic task (`220.1_diag`), failed immediately with the same error: "Stop requested." No code could be written or executed, and no scientific progress was possible. The platform appears to be in an unrecoverable state.
-
-**Notes:** Phase completely blocked by a persistent platform-level execution error.
-
-
----
 ```yaml
 cached_tokens: 311379
 cost_usd: 0.57289
@@ -551,12 +524,51 @@ Three separate attempts were made to execute sub-tasks. The first two agents (22
 **Notes:** Phase completely blocked by a persistent platform-level execution error.
 
 
+---
+```yaml
+cached_tokens: 73094
+cost_usd: 0.28502
+hypothesis: 'phase-220: The platform is stabilized and the new fitness function is
+  validated, but the evolutionary probe search is blocked by environment dependency
+  errors.'
+input_tokens: 128553
+iter: 220
+metrics:
+  fitness_drifter_exploit: 0.0
+  fitness_v1c_glider: 0.0805
+  generations_run_probe_search: 0
+output_tokens: 2567
+status: code_error
+```
+
+## iter_220: phase-220: The platform is stabilized and the new fitness function is validated, but the evolutionary probe search is blocked by environment dependency errors.
+
+**Analysis:** The phase had a clear progression: stabilize, validate, and probe. The first two stages were completed successfully, representing significant progress. We confirmed the platform is no longer hanging and, more importantly, we now have a validated, exploit-resistant fitness function.
+
+The failure of the third sub-goal (220.3) reveals a new, more subtle platform issue: an incomplete Python environmen
+
+**Status:** code_error
+
+**Metrics:** `{'fitness_drifter_exploit': 0.0, 'fitness_v1c_glider': 0.0805, 'generations_run_probe_search': 0}`
+
+**Experimenter view:** This phase successfully recovered from previous platform instability, but ultimately failed due to a different environment error.
+
+Sub-agent 220.1 confirmed that the basic execution environment is stable and responsive, resolving the "hanging agent" problem.
+
+Sub-agent 220.2 successfully validated the new `DisplacementConsistencyFitness` function. It correctly assigned a fitness of 0.0 to the know
+
+**Notes:** Phase failed due to a missing 'pandas' dependency in the sub-planner's execution environment, blocking the main experiment.
+
+
 
 ## Decompose and Execute
 Plan and execute the next research phase. Break it into sub-tasks:
 - run_agent(complexity='planner') — for sub-goals requiring multi-step analysis (the inner Planner can itself spawn sub-agents)
 - run_agent(complexity='medium'/'high') — for bounded, direct experiments
 Run sub-tasks sequentially. Each result informs the next. Synthesise all results into your final YAML report.
+
+## User Hint
+The utf-8 codec error was a framework bug and has been fixed. The platform is stable. The 'dependency errors' were misdiagnosed; the environment is functional. Please ensure your Python scripts use the project's virtual environment by calling .venv\Scripts\python on Windows or using the standard project entry points. Resume the evolutionary probe for the v<c glider.
 
 ## Interrupted Sub-Agents (Resume Context)
 
