@@ -8838,3 +8838,38 @@ Sub-agent 189.1 implemented and validated the `MarginalDynamicCollisionFitness` 
 
 **Notes:** The project has hit a well-known pitfall in evolutionary computing: designing a fitness function that provides a smooth gradient towards a solution is as important as defining what the solution is. The current function is a perfect description of the goal, but a terrible map to get there.
 
+
+---
+```yaml
+cached_tokens: 58780
+cost_usd: 0.35129
+hypothesis: 'phase-190: A staged fitness function, while correctly implemented, fails
+  to guide evolution from a random start due to the rarity of motion-inducing rules.'
+input_tokens: 132993
+iter: 190
+metrics:
+  best_fitness: 0.0
+  gen10_mean_fitness: 0.0
+  generations_ran: 10
+  initial_pop_bit_conserving_rules: 37
+  initial_pop_motion_rules: 0
+output_tokens: 3820
+status: experiment_failed
+```
+
+## iter_190: phase-190: A staged fitness function, while correctly implemented, fails to guide evolution from a random start due to the rarity of motion-inducing rules.
+
+**Analysis:** This phase aimed to solve the "flat fitness landscape" problem identified in iter_189 by introducing a `StagedCollisionFitness` function designed to provide a continuous gradient. Sub-agent 190.1 successfully implemented this function, which awards partial credit for achieving the 'approach' and 'recession' stages of a collision.
+
+However, the subsequent evolutionary run (190.2) completely failed,
+
+**Status:** experiment_failed
+
+**Metrics:** `{'best_fitness': 0.0, 'generations_ran': 10, 'gen10_mean_fitness': 0.0, 'initial_pop_bit_conserving_rules': 37, 'initial_pop_motion_rules': 0}`
+
+**Experimenter view:** **Sub-agent 190.1:** Successfully implemented the `StagedCollisionFitness` function in `src/fitness.py`. The function correctly assigns discrete scores of 0.0, 1.0, or 2.0 based on whether particles approach and recede, while strictly enforcing bit conservation. A smoke test with an identity rule correctly yielded a fitness of 0.0, confirming the logic.
+
+**Sub-agent 190.2:** The evolutionary searc
+
+**Notes:** The staged fitness function is likely a necessary, but not sufficient, condition for success. The immediate next step must be to solve the 'bootstrap problem' by seeding the initial population with rules that are already known to produce motion.
+
