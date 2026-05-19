@@ -1,13 +1,11 @@
-This is a retry of failed task 219.1. The goal is to extract and save the structure of the v<c glider from iter_218.
+Agent 219.1 confirmed the v<c glider is stable. This task is to programmatically extract its structure.
 
-**CRITICAL:** Do NOT write new debugging scripts. Use the existing `src/run_simulation.py` and its built-in analysis features.
+Create a new Python script `src/extract_vc_glider_structure.py` that re-uses the simulation logic from 219.1.
 
-1.  Locate the champion rule from `iter_218`. The file is `archive/iter_218/results/champion_rule.json`, and the rule is named `g4_rule_083`.
-2.  Execute `src/run_simulation.py` with this rule (`--rule_path archive/iter_218/results/champion_rule.json`).
-3.  Use the standard 3-bit L-tromino seed (`--seed_name l_tromino`).
-4.  Run the simulation for 150 steps. The script has features to find and log objects. Ensure this is enabled.
-5.  At step 100, the script should identify the glider. From the logs or output files, extract the glider's coordinates.
-6.  Post-process these coordinates: normalize them so that the minimum row and column values are zero.
-7.  Save the resulting list of relative coordinates into a new file at `archive/iter_219/results/vc_glider_g4_rule_083_structure.json`.
-8.  The JSON file must contain a single list of lists (e.g., `[[0, 1], [1, 0], [1, 1], [2, 0]]`).
-9.  Report the number of bits in the glider as the `glider_bit_count` metric.
+**Script Requirements:**
+1.  **Load Rule:** Load the rule from `archive/iter_218/results/champion_rule.json`.
+2.  **Initialize Grid:** Use a 256x256 hexagonal grid with the standard 3-bit L-tromino seed.
+3.  **Simulate:** Run the simulation for exactly 300 steps to get the glider into a stable state.
+4.  **Extract Coordinates:** At the final step (300), get the coordinates of all active cells (`np.where(grid > 0)`).
+5.  **Normalize Coordinates:** Calculate the center of mass of the active cells. Subtract the center of mass from each coordinate to get a list of relative coordinate pairs.
+6.  **Save Structure:** Save the list of relative coordinates to a JSON file at `archive/iter_219/results/vc_glider_structure.json`. The JSON should contain a single key "structure" with the list of `[row, col]` pairs.
