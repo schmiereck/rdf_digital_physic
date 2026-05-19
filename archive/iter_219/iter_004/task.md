@@ -1,11 +1,10 @@
-The previous agent (219.3) hung and was stopped. This task is a diagnostic to determine if `src/run_simulation.py` has a bug that causes it to hang with the rule from iter_218.
+This task has one simple goal: run the v<c glider simulation and save the final grid state.
 
-1.  Load the champion rule `g4_rule_083` from `archive/iter_218/results/champion_rule.json`.
-2.  Execute `src/run_simulation.py` using this rule.
-3.  **CRITICAL:** Set a very short number of steps: `--num_steps 20`.
-4.  Add verbose logging to the execution command if possible.
-5.  Set a hard timeout for the process to 60 seconds to prevent another hang.
-6.  The primary goal is to see if the run completes successfully.
-7.  If it completes, report `status: ok` and a metric `completed_in_time: true`.
-8.  If it hangs and times out, report `status: experiment_failed` and a metric `completed_in_time: false`.
-9.  Examine `stdout.txt` and `stderr.txt` for any error messages or clues about a possible infinite loop. Summarize findings in the `experimenter_view`.
+**Create a Python script `src/run_and_save_state.py` that performs ONLY the following actions:**
+1.  **Load Rule:** Loads the rule from `archive/iter_218/results/champion_rule.json`.
+2.  **Initialize Grid:** Creates a 256x256 numpy array for the grid.
+3.  **Center the Seed:** Places the 3-bit L-tromino seed `((0,0), (1,0), (1,1))` relative to the grid center (128, 128).
+4.  **Simulate:** Runs the simulation for exactly 300 steps.
+5.  **Save Final Grid:** At the end of the simulation, it saves the entire 256x256 numpy grid array to a binary file at `archive/iter_219/results/final_grid_state.npy` using `numpy.save()`.
+
+Do not perform any analysis, extraction, or JSON creation. Just run the simulation and save the raw final grid.
