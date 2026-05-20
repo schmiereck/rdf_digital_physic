@@ -1,0 +1,41 @@
+Write and execute a Python script `src/search_mixed_glider_rules.py` that searches through specified hexagonal CA rules to find rules supporting BOTH a sub-light glider (v<c) and a light-speed glider (v=1c).
+
+### Files to scan:
+1. `archive/iter_215/results/champion_rule.json`
+2. All rules in `archive/iter_215/results/final_population.json`
+3. All rules in `archive/iter_215/results/warm_start_population.json`
+4. `archive/iter_218/results/champion_rule.json`
+5. `archive/iter_218/results/champion_vc_rule.json`
+6. `archive/iter_221/results/champion_rule.json`
+7. `archive/iter_221/results/champion_rule_perfect.json`
+8. `archive/iter_221/results/champion_rule_unwrapped.json`
+9. `archive/iter_221/results/champion_vc_rule.json`
+10. `archive/iter_222/results/champion_rule_perfect.json`
+
+### Extraction Logic:
+Make sure to extract rule dictionaries from these files properly. Rules are mapped as nested dictionaries containing `"rule_dict"`, or list of rules, or raw rule dicts where keys are stringified integers.
+Deduplicate the rules by standardizing them: a dictionary with keys 0..127 mapping to integer values (default to identity map `i: i`).
+
+### Glider Search and Criteria:
+For each unique rule, test all 11 contiguous 3-bit seeds and 44 contiguous 4-bit seeds for 200 steps on a 128x128 grid (using the fast NumPy hexagonal simulator `step_grid` from `src/probe_gliders_223.py`).
+A seed/trajectory is classified as a glider if:
+1. Perfect or near-perfect size conservation (final_bit_count == initial_bit_count, or within +-1).
+2. Stable period is detected and <= 20. Use the `detect_period(canonical_history, bit_counts, t_start=150, t_end=200)` function (max period = 20).
+3. Consistent velocity: velocity magnitude std_dev across 5 windows of length 40 steps is < 0.05.
+4. Classification:
+   - v<c glider: mean speed between 0.1 and 0.9.
+   - v=1c glider: mean speed > 0.9.
+
+### Outputs:
+1. If you find any rules supporting BOTH glider types, save the details to `archive/iter_223/results/found_mixed_rules.json`.
+   - Include: the rule dict, the source files it was found in, the seed(s) and velocity (mean speed, period, direction) of the v<c glider, and the seed(s) and velocity of the v=1c glider.
+2. If any such matching rules are found, run collision simulations between the two gliders!
+   - Select a v<c glider and a v=1c glider supported by the same rule.
+   - Determine their velocity vectors (dr/dt, dc/dt) from the 200-step simulation.
+   - Choose a collision time T (e.g. 50 or 60 steps) and place Glider 1 at (64, 64) and Glider 2 at (64 + T * v_rel_r, 64 + T * v_rel_c) to orient them for a head-on/intersecting collision.
+   - Run the simulation for 300 steps.
+   - Test different offsets (e.g., adding small shifts like -2, -1, 0, 1, 2 to row or column of Glider 2's starting position) to find different collision regimes.
+   - Track bit count over 300 steps. Record results: does it conserve bits? does it scatter elastically, scatter inelasticly, merge/fuse, annihilate, or explode?
+   - Save these collision results to `archive/iter_223/results/mixed_collision_results.json`.
+
+Write and run `src/search_mixed_glider_rules.py` now, and make sure to capture and print out the summary of findings in detail so I can report it in the final response.
