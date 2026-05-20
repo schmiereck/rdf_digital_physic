@@ -1,1 +1,1 @@
-Print the __init__ and __call__ methods of DisplacementConsistencyFitness in src/new_fitness.py. Also explain how we can instantiate it with max_bit_threshold=12.
+Write a python script src/inspect_fixed_run.py that opens src/run_evolution_exp_220_fixed.py, extracts and prints the functions chromosome_to_rule_dict, and the main function or any other conversion functions so we know how they map. Run this script.
