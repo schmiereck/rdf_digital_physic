@@ -1,1 +1,1 @@
-List all files in archive/iter_221/results/. If archive/iter_221/results/trajectory_analysis.txt exists, print its contents.
+Write a python script to open src/new_fitness.py and print the entire code of DisplacementConsistencyFitness.__call__ to stdout so we can see how the velocity vector is calculated and why a rule with speed ~1.0 was allowed when we have a max_velocity_threshold of 0.9. Run this script.
