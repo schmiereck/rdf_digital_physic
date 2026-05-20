@@ -1,0 +1,2 @@
+1. Execute 'python src/read_new_results.py' to see if the files are found.
+2. In the same run, search the entire workspace for any files modified/created in the last 60 minutes. Print their relative paths and sizes. This will help find any files written by the warm start evolution.
