@@ -1,1 +1,1 @@
-Read src/run_evolution_exp_221.py and print the part where DisplacementConsistencyFitness is instantiated. Is max_velocity_threshold passed to it?
+Write a python script to open src/new_fitness.py and print the remaining part of the DisplacementConsistencyFitness.__call__ method, from line 350 to the end of the method (around line 400). Run this script.
