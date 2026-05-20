@@ -1,38 +1,20 @@
 artifacts:
-- run_champion_eval.py
-experimenter_view: "The champion rule from iter_221 was evaluated using DisplacementConsistencyFitness\n\
-  with the specified thresholds (num_windows=5, max_bit_threshold=12, max_velocity_threshold=0.9).\n\
-  \nKey findings:\n1. The particle achieves PERFECT bit conservation (all 501 steps\
-  \ have bit_count=3), yielding\n   a leaky conservation score of 1.0.\n2. Window\
-  \ 2 reveals anomalous behavior: the COM jumps from (120.33, 63.33) to (20.33, 63.33),\n\
-  \   a dx of -1.0 cells/step. This is a toroidal wrap-around, indicating the particle\
-  \ moves\n   rapidly and hits the grid boundary, then reappears on the opposite side.\n\
-  3. The mean velocity magnitude is very low (0.025) because the large reversal in\
-  \ Window 2\n   cancels out the forward motion in the other four windows.\n4. The\
-  \ std dev of velocity magnitudes (0.287) is dominated by the spike in Window 2.\n\
-  5. Final fitness = 0.01968, matching the champion's reported fitness value.\n\n\
-  This object is NOT a true glider — it is a fast-moving particle that wraps around\
-  \ the\ntoroidal grid, with inconsistent velocity profiles across windows.\n"
-log_excerpt: "FINAL RESULTS:\n======================================================================\n\
-  \  mean_velocity_magnitude      : 0.02533333\n  std_dev_velocity_magnitudes  : 0.28734493\n\
-  \  leaky_bit_conservation_score : 1.00000000\n  base_fitness                 : 0.01967875\n\
-  \  final_fitness                : 0.01967875\n======================================================================\n\
-  \n  fitness_fn(history) = 0.01967875\n"
+- src/read_lines.py
+experimenter_view: "Successfully extracted and displayed the two requested code sections\
+  \ from\nsrc/new_fitness.py (461 lines total):\n\n1. Lines 230-270: Center-of-mass\
+  \ unwrapping logic for toroidal grid boundaries.\n   The code sorts simulation history\
+  \ by step, then unwraps consecutive COM deltas\n   by checking if dx/dy exceeds\
+  \ half the grid size (64 on a 128-wide grid) and\n   correcting by ±128.0 to remove\
+  \ artificial discontinuities from wrapping.\n   Replaces raw COMs with unwrapped\
+  \ COMs for downstream calculations.\n\n2. Lines 340-365: Mean velocity threshold\
+  \ check and standard deviation calculation.\n   Computes the mean velocity vector\
+  \ across all windows, calculates its magnitude,\n   and zeros out fitness if mean_velocity_magnitude\
+  \ >= max_velocity_threshold.\n   This acts as a ceiling filter for objects moving\
+  \ too fast.\n\nBoth mechanisms are fitness penalty/termination checks: one for bit\
+  \ count\nconservation, one for excessive velocity.\n"
 metrics:
-  base_fitness: 0.01967875
-  final_bit_count: 3
-  final_fitness: 0.01967875
-  initial_bit_count: 3
-  leaky_bit_conservation_score: 1.0
-  mean_velocity_magnitude: 0.02533333
-  std_dev_velocity_magnitudes: 0.28734493
-  total_steps: 500
-  window_velocities:
-  - 0.2867
-  - 0.28
-  - 1.0
-  - 0.28
-  - 0.28
-notes: Champion evaluated; low mean velocity due to toroidal wrap-around in Window
-  2.
+  lines_printed_1: 41
+  lines_printed_2: 26
+  total_lines_in_file: 461
+notes: Unwrapping and velocity threshold code successfully extracted and verified.
 status: ok
