@@ -1,0 +1,450 @@
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+Looking at the file, I need to find the line numbers for `__init__` and `__call__` in the `DisplacementConsistencyFitness` class. From the file I already read:
+
+**`__init__`** starts at line 153 and **`__call__`** starts at line 176.
+
+Here are the exact lines:
+
+```python
+    def __init__(
+        self,
+        num_windows: int = 5,
+        bits_per_cell: int = 1,
+        strict_conservation: bool = False,
+        max_bit_threshold: int | None = None,
+        max_velocity_threshold: float | None = None,
+    ) -> None:
+        """Initialise the fitness function.
+
+        Parameters
+        ----------
+        num_windows : int
+            Number of time windows. Must be >= 2 for meaningful velocity
+            consistency measurement.
+        bits_per_cell : int
+            Bits per cell (reserved).
+        strict_conservation : bool
+            Whether to enforce perfect, non-leaky mass conservation.
+        max_bit_threshold : int, optional
+            Maximum allowed bit count at any step.
+        max_velocity_threshold : float, optional
+            Maximum allowed mean velocity magnitude.
+        """
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
+
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
+
+        Parameters
+        ----------
+        sim_history : list of dict
+            Simulation history recorded at various steps. Each element
+            must be a dict with the following keys:
+
+            - ``'step'`` : int — simulation step index (0-based).
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
+
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
+
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+
+            # Find the first and last entries in this window's step range.
+            # The history is sorted, so we iterate and break early for
+            # efficiency once we pass the window boundary.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                # Skip entries before this window
+                if s < window_start:
+                    continue
+
+                # Stop processing once we're past this window's end
+                # (the very last entry of the global history belongs to
+                #  the last window only, so we clamp window_end to
+                #  final_step for the final window to avoid excluding it).
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+
+                if s > effective_window_end:
+                    break
+
+                # This entry falls within the current window.
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry  # overwrite on every match → last one wins
+
+            if first_entry is None or last_entry is None:
+                # No data points in this window — zero velocity.
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            window_steps = last_entry["step"] - first_entry["step"]
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # ------------------------------------------------------------------
+        # 3. Calculate mean of windowed velocity vectors (directional drift)
+        # ------------------------------------------------------------------
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(
+            mean_dx * mean_dx + mean_dy * mean_dy
+        )
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 4. Calculate standard deviation of windowed velocity magnitudes
+        # ------------------------------------------------------------------
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        # ------------------------------------------------------------------
+        # 5. Core fitness formula
+        # ------------------------------------------------------------------
+        if mean_velocity_magnitude == 0.0:
+            # No net directional displacement — nothing to reward.
+            base_fitness = 0.0
+        else:
+            # Standard formula: mean velocity / (1 + std dev of magnitudes).
+            # The "+1" in the denominator prevents division by zero when
+            # std_dev is also zero (perfect consistency).
+            base_fitness = mean_velocity_magnitude / (
+                1.0 + std_dev_velocity_magnitudes
+            )
+
+        # ------------------------------------------------------------------
+        # 6. Leaky bit-conservation score (from LeakyCheckpointFitness)
+        # ------------------------------------------------------------------
+        total_conservation_score = self._compute_conservation_score(
+            sorted_history
+        )
+
+        # ------------------------------------------------------------------
+        # 7. Final fitness: consistency score × conservation score
+        # ------------------------------------------------------------------
+        fitness = base_fitness * total_conservation_score
+
+        return float(fitness)
+```
+
+[NUDGE RESPONSE]
+Here are the exact lines for `__init__` and `__call__` in the `DisplacementConsistencyFitness` class:
+
+```python
+    def __init__(
+        self,
+        num_windows: int = 5,
+        bits_per_cell: int = 1,
+        strict_conservation: bool = False,
+        max_bit_threshold: int | None = None,
+        max_velocity_threshold: float | None = None,
+    ) -> None:
+        """Initialise the fitness function.
+
+        Parameters
+        ----------
+        num_windows : int
+            Number of time windows. Must be >= 2 for meaningful velocity
+            consistency measurement.
+        bits_per_cell : int
+            Bits per cell (reserved).
+        strict_conservation : bool
+            Whether to enforce perfect, non-leaky mass conservation.
+        max_bit_threshold : int, optional
+            Maximum allowed bit count at any step.
+        max_velocity_threshold : float, optional
+            Maximum allowed mean velocity magnitude.
+        """
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
+
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
+
+        Parameters
+        ----------
+        sim_history : list of dict
+            Simulation history recorded at various steps. Each element
+            must be a dict with the following keys:
+
+            - ``'step'`` : int — simulation step index (0-based).
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
+
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
+
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+
+            # Find the first and last entries in this window's step range.
+            # The history is sorted, so we iterate and break early for
+            # efficiency once we pass the window boundary.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                # Skip entries before this window
+                if s < window_start:
+                    continue
+
+                # Stop processing once we're past this window's end
+                # (the very last entry of the global history belongs to
+                #  the last window only, so we clamp window_end to
+                #  final_step for the final window to avoid excluding it).
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+
+                if s > effective_window_end:
+                    break
+
+                # This entry falls within the current window.
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry  # overwrite on every match → last one wins
+
+            if first_entry is None or last_entry is None:
+                # No data points in this window — zero velocity.
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            window_steps = last_entry["step"] - first_entry["step"]
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # ------------------------------------------------------------------
+        # 3. Calculate mean of windowed velocity vectors (directional drift)
+        # ------------------------------------------------------------------
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(
+            mean_dx * mean_dx + mean_dy * mean_dy
+        )
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 4. Calculate standard deviation of windowed velocity magnitudes
+        # ------------------------------------------------------------------
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        # ------------------------------------------------------------------
+        # 5. Core fitness formula
+        # ------------------------------------------------------------------
+        if mean_velocity_magnitude == 0.0:
+            # No net directional displacement — nothing to reward.
+            base_fitness = 0.0
+        else:
+            # Standard formula: mean velocity / (1 + std dev of magnitudes).
+            # The "+1" in the denominator prevents division by zero when
+            # std_dev is also zero (perfect consistency).
+            base_fitness = mean_velocity_magnitude / (
+                1.0 + std_dev_velocity_magnitudes
+            )
+
+        # ------------------------------------------------------------------
+        # 6. Leaky bit-conservation score (from LeakyCheckpointFitness)
+        # ------------------------------------------------------------------
+        total_conservation_score = self._compute_conservation_score(
+            sorted_history
+        )
+
+        # ------------------------------------------------------------------
+        # 7. Final fitness: consistency score × conservation score
+        # ------------------------------------------------------------------
+        fitness = base_fitness * total_conservation_score
+
+        return float(fitness)
+```
+
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  Successfully extracted __init__ and __call__ methods from DisplacementConsistencyFitness class in src/new_fitness.py.
+  The implementation divides simulation history into windows, calculates per-window velocity vectors, computes mean magnitude and standard deviation, and applies the core formula: mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes). It multiplies the result by a leaky bit-conservation score.
+experimenter_view: |
+  The fitness function effectively addresses the "drifter" exploit in CA glider discovery by penalizing inconsistent motion. By using windowed velocity standard deviation, it distinguishes coherent v<c gliders from stationary or random-walk drifters. The integration of a continuous (leaky) bit-conservation metric ensures mass conservation is rewarded gradually rather than rejected outright.
+notes: "Code extraction complete; no files modified."
+```
