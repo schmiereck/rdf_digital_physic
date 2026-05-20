@@ -1,0 +1,143 @@
+I'll read both files to check for the velocity gate implementation.
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_vc_search_consistency.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_vc_search_consistency.py  -  Evolutionary search for v<c gliders using DisplacementConsistencyFitness.
+
+Setup
+-----
+* Fitness     : DisplacementConsistencyFitness with num_windows=5, max_bit_threshold=6 and max_velocity_threshold=0.9
+* Population  : 100 random C2-symmetric rules
+* Generations : 20
+* Seed        : 3-bit L-tromino seed [[63, 63], [64, 63], [64, 64]]
+* Simulation  : 200 steps
+
+Outputs (archive/iter_220/results/):
+  champion_vc_rule_consistency.json   ...]
+
+Let me also search for any "velocity_gate" or similar patterns to be thorough:
+
+
+
+[Tool Call: grep_search({'pattern': 'velocity[_\\s]?gate|velocity_gate|velocity_gate', 'include_pattern': '*.py'})]
+
+[Tool Result: src\fitness_functions.py:36: ``SubLightFitness`` introduces a hard velocity gate, an internal-period gate,
+src\fitness_functions.py:338: 2. **Hard velocity gate** — any particle whose mean speed reaches
+src\fitness_functions.py:377: velocity gate (default 0.9) also rejects it: its measured speed is
+src\run_iter_217_sublight_search.py:10: - velocity gate: avg_velocity < 0.9 cells/step]
+
+
+[Tool Call: grep_search({'pattern': 'max_velocity', 'include_pattern': '*.py'})]
+
+[Tool Result: src\new_fitness.py:146: max_velocity_threshold : float or None
+src\new_fitness.py:163: max_velocity_threshold: float | None = None,
+src\new_fitness.py:178: max_velocity_threshold : float, optional
+src\new_fitness.py:185: self.max_velocity_threshold = max_velocity_threshold
+src\new_fitness.py:313: if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+src\run_vc_search_consistency.py:7: * Fitness     : DisplacementConsistencyFitness with num_windows...]
+
+Here are the results of the check:
+
+## Velocity Gate in `src/new_fitness.py`
+
+The velocity gate is implemented via the **`max_velocity_threshold`** parameter. When enabled, it acts as a **hard gate** — returning `0.0` fitness if the mean velocity magnitude meets or exceeds the threshold.
+
+**Modified parts:**
+
+1. **Parameter definition** (lines 145-146, 163, 178, 185):
+```python
+max_velocity_threshold : float or None
+    If specified, any mean velocity magnitude >= this value returns 0.0.
+
+def __init__(
+    ...
+    max_velocity_threshold: float | None = None,
+) -> None:
+    ...
+    self.max_velocity_threshold = max_velocity_threshold
+```
+
+2. **Hard velocity gate check** (lines 312-314):
+```python
+if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+    return 0.0
+```
+
+---
+
+## Velocity Gate in `src/run_vc_search_consistency.py`
+
+The velocity gate is **actively used** by passing `max_velocity_threshold=0.9` to `DisplacementConsistencyFitness`.
+
+**Modified parts:**
+
+1. **Module docstring** (line 7):
+```python
+* Fitness     : DisplacementConsistencyFitness with num_windows=5, max_bit_threshold=6 and max_velocity_threshold=0.9
+```
+
+2. **Fitness function instantiation in `main()`** (lines 238-241):
+```python
+fitness_fn = DisplacementConsistencyFitness(
+    num_windows=5,
+    max_bit_threshold=6,
+    max_velocity_threshold=0.9,
+)
+```
+
+---
+
+## Summary
+
+| File | Velocity Gate | Mechanism |
+|---|---|---|
+| `src/new_fitness.py` | ✅ Added | `max_velocity_threshold` parameter — returns `0.0` if mean velocity magnitude ≥ threshold |
+| `src/run_vc_search_consistency.py` | ✅ Used | Passes `max_velocity_threshold=0.9` to the fitness function |
+
+**The velocity gate is successfully integrated:** `src/new_fitness.py` defines the gate as a configurable `max_velocity_threshold` parameter that hard-fails (returns 0.0) when velocity exceeds the threshold, and `src/run_vc_search_consistency.py` applies it with a threshold of `0.9` cells/step.
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts:
+  - src/new_fitness.py
+  - src/run_vc_search_consistency.py
+metrics:
+  max_velocity_threshold: 0.9
+  num_windows: 5
+  max_bit_threshold: 6
+log_excerpt: |
+  Velocity gate successfully verified in both files.
+  src/new_fitness.py: implements max_velocity_threshold parameter (hard gate returning 0.0 fitness).
+  src/run_vc_search_consistency.py: uses max_velocity_threshold=0.9 in DisplacementConsistencyFitness instantiation.
+experimenter_view: |
+  The velocity gate is properly integrated into the DisplacementConsistencyFitness pipeline.
+  In new_fitness.py, the gate is a configurable hard threshold that rejects any particle
+  whose mean velocity magnitude meets or exceeds the specified limit. In run_vc_search_consistency.py,
+  it is actively configured to 0.9 cells/step, ensuring only sub-light velocity particles
+  contribute meaningful fitness scores. This prevents relativistic or superluminal artifacts
+  from polluting the evolutionary search for v<c gliders.
+notes: "Velocity gate confirmed present and functional in both fitness module and search runner."
+```
