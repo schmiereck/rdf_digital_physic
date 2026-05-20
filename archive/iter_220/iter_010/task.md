@@ -1,1 +1,1 @@
-Check if python is working by running a simple diagnostic command. List the files in the `src/` directory. Check which files contain pandas imports.
+List all python files in src/ with their sizes and docstrings/main classes. Also check what packages are installed in the python environment (run 'pip list' or check imports of numpy, pandas, matplotlib, scipy) and write this to a summary.
