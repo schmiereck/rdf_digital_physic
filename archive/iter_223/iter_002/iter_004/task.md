@@ -1,0 +1,1 @@
+Run the Python script `src/search_mixed_gliders_final.py` from the project root and print its full output.
