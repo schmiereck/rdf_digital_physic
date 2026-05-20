@@ -1,1 +1,1 @@
-List all files in `archive/iter_220/results/` and read the last 15 lines of any `.csv` or log files there (like `evolution_summary.csv` or `evolution_log.csv`). Print them so we can analyze the evolution progress.
+Read and output src/run_evolution_exp_220.py (or the parts of it that set up the evolutionary search, the population, and the fitness function). Output how the fitness function is instantiated.
