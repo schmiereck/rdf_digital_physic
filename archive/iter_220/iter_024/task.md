@@ -1,0 +1,1 @@
+Run a python script to search for any files containing 'v2' or 'warm_start' in 'src/', 'archive/', or project root. Print their relative paths and sizes, and if there are any JSON or CSV files under 'archive/iter_220/results/' or similar, print their content (or summary) to see if the warm start evolution run completed and what it found.
