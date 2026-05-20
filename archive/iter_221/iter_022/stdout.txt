@@ -1,0 +1,131 @@
+
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 180, 'end_line': 240})]
+
+[Tool Result: --- lines 180 to 240 of 430 ---
+        """
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
+
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
+
+        Parameters
+        ---------...]
+
+Here are lines 180–240 of `src/new_fitness.py`:
+
+```python
+        """
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
+
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
+
+        Parameters
+        ----------
+        sim_history : list of dict
+            Simulation history recorded at various steps. Each element
+            must be a dict with the following keys:
+
+            - ``'step'`` : int — simulation step index (0-based).
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
+
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+```
+
+**Note:** Line 240 appears to be the end of the `if self.strict_conservation:` block — the file continues beyond that point (it has 430 lines total). The method `DisplacementConsistencyFitness.__call__` is still open at line 240.
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
+
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
+
+        Parameters
+        ----------
+        sim_history : list of dict
+            Simulation history recorded at various steps. Each element
+            must be a dict with the following keys:
+
+            - ``'step'`` : int — simulation step index (0-based).
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+        ...
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+experimenter_view: |
+  The retrieved code (lines 180-240) implements the `DisplacementConsistencyFitness` class, specifically the logic used to evaluate a simulation's fitness.
+  
+  Key observations:
+  1. **Inputs**: It processes a chronological list of dictionaries containing the simulation step, center of mass (com), and live cell count (bit_count).
+  2. **Pre-checks**: 
+     - It sorts the history by step defensively.
+     - It supports a `max_bit_threshold` that returns 0.0 if exceeded.
+     - It supports `strict_conservation`, ensuring the number of live cells remains constant throughout the simulation.
+  3. **Structure**: This appears to be part of a cellular automata (likely Game of Life based) evaluation system where stability and conservation are critical metrics for fitness.
+notes: "Retrieved lines 180-240 of src/new_fitness.py showing DisplacementConsistencyFitness logic."
+```
