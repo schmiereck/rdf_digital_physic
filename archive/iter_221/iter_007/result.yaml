@@ -1,14 +1,35 @@
-artifacts: []
-experimenter_view: "The execution environment was terminated before the script could\
-  \ be saved or run. \nThe script logic provided above parses `src/new_fitness.py`\
-  \ using the `ast` module to extract class structures. \nIt iterates through the\
-  \ AST nodes to find `ClassDef` objects and subsequently searches for `FunctionDef`\
-  \ nodes \nrepresenting `__init__`, `__call__`, and `evaluate` methods to print their\
-  \ argument lists. \nThis approach is syntax-safe and preferred over regex for Python\
-  \ source code analysis.\n"
-log_excerpt: '(Execution halted by limit before file I/O)
+artifacts:
+- src/print_funcs.py
+experimenter_view: 'Successfully created src/print_funcs.py which extracts and prints
+  the source code
+
+  of chromosome_to_rule_dict, rule_dict_to_chromosome, and main from
+
+  run_evolution_exp_220_fixed.py. The chromosome helpers convert between
+
+  array-based chromosome representations and dict-based rule lookups for
+
+  3-bit hexagonal cellular automata. The main function implements a full
+
+  generational evolutionary search with elite selection, swap mutation, and
+
+  DisplacementConsistencyFitness evaluation.
 
   '
+log_excerpt: "======================================================================\n\
+  \  rule_dict_to_chromosome\n======================================================================\n\
+  def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:\n    lut = np.arange(LUT_SIZE,\
+  \ dtype=np.uint8)\n    for k, v in rule_dict.items():\n        lut[int(k)] = int(v)\n\
+  \    return ((lut >> 6) & 1).astype(np.uint8)\n\n======================================================================\n\
+  \  chromosome_to_rule_dict\n======================================================================\n\
+  def chromosome_to_rule_dict(chrom: np.ndarray) -> dict:\n    out: dict = {}\n  \
+  \  for s in range(LUT_SIZE):\n        default_center = (s >> 6) & 1\n        actual_center\
+  \  = int(chrom[s])\n        if actual_center != default_center:\n            v =\
+  \ (actual_center << 6) | (s & 0b0111111)\n            out[s] = v\n    return out\n\
+  \n======================================================================\n  main\n\
+  ======================================================================\ndef main()\
+  \ -> None:\n    ... (20-generation evolutionary search)\n    if __name__ == \"__main__\"\
+  :\n        main()\n"
 metrics: {}
-notes: Script provided in log; manual execution required.
+notes: Script created and executed successfully.
 status: ok

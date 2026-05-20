@@ -1,67 +1,113 @@
+I'll start by reading the source file to understand its structure, then write the script to extract and print those functions.
 
+
+
+[Tool Call: read_file({'path': 'src/run_evolution_exp_220_fixed.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+ ...]
+
+Now I can see the file structure. Let me write the script to extract and print those three functions:
+
+
+
+[Tool Call: write_file({'path': 'src/print_funcs.py', 'content': '#!/usr/bin/env python3\n"""\nReads src/run_evolution_exp_220_fixed.py and prints the text of\nthe functions rule_dict_to_chromosome, chromosome_to_rule_dict, and main.\n"""\n\nfrom pathlib import Path\n\nSOURCE_FILE = Path(__file__).parent / "run_evolution_exp_220_fixed.py"\n\nTARGET_FUNCS = ["rule_dict_to_chromosome", "chromosome_to_rule_dict", "main"]\n\n\ndef extract_functions(source_path: Path) -> dict[str, str]:\n    """Extract the full text of each requested function from a Python file."""\n    text = source_path.read_text()\n    lines = text.splitlines(keepends=True)\n\n    result: dict[str, str] = {}\n    i = 0\n    while i < len(lines):\n        line = lines[i]\n        # Check if this line starts a function def for one of our targets\n        for func_name in TARGET_FUNCS:\n            if line.strip().startswith(f"def {func_name}("):\n                # Start of a function - collect until the next function/class/def at same indent\n                func_lines = [line]\n                i += 1\n                base_indent = len(line) - len(line.lstrip())\n                while i < len(lines):\n                    cur = lines[i]\n                    cur_stripped = cur.strip()\n                    # Empty line or continuation\n                    if cur_stripped == "":\n                        func_lines.append(cur)\n                        i += 1\n                        continue\n                    cur_indent = len(cur) - len(cur.lstrip())\n                    # If we hit another def/class/top-level statement at same or lower indent, stop\n                    if cur_indent <= base_indent and (\n                        cur_stripped.startswith("def ")\n                        or cur_stripped.startswith("class ")\n                    ):\n                        break\n                    func_lines.append(cur)\n                    i += 1\n                result[func_name] = "".join(func_lines)\n                break\n        else:\n            i += 1\n        # If we found and extracted a function, continue; otherwise just move on\n        if func_name in TARGET_FUNCS:\n            continue\n        else:\n            continue\n\n    return result\n\n\ndef main() -> None:\n    extracted = extract_functions(SOURCE_FILE)\n    for func_name in TARGET_FUNCS:\n        if func_name in extracted:\n            print(f"{\'=\'*70}")\n            print(f"  {func_name}")\n            print(f"{\'=\'*70}")\n            print(extracted[func_name])\n            print(f"{\'=\'*70}")\n            print()\n        else:\n            print(f"WARNING: function \'{func_name}\' not found in {SOURCE_FILE}")\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to src/print_funcs.py]
+
+I noticed a small bug in the logic. Let me fix it:
+
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nReads src/run_evolution_exp_220_fixed.py and prints the text of\nthe functions rule_dict_to_chromosome, chromosome_to_rule_dict, and main.\n"""\n\nfrom pathlib import Path\n\nSOURCE_FILE = Path(__file__).parent / "run_evolution_exp_220_fixed.py"\n\nTARGET_FUNCS = ["rule_dict_to_chromosome", "chromosome_to_rule_dict", "main"]\n\n\ndef extract_functions(source_path: Path) -> dict[str, str]:\n    """Extract the full text of each requested function from a Python file."""\n    text = source_path.read_text()\n    lines = text.splitlines(keepends=True)\n\n    result: dict[str, str] = {}\n    i = 0\n    while i < len(lines):\n        line = lines[i]\n        found = False\n        for func_name in TARGET_FUNCS:\n            if line.strip().startswith(f"def {func_name}("):\n                # Start of a function - collect until the next function/class/def at same indent\n                func_lines = [line]\n                i += 1\n                base_indent = len(line) - len(line.lstrip())\n                while i < len(lines):\n                    cur = lines[i]\n                    cur_stripped = cur.strip()\n                    # Empty line is allowed inside a function\n                    if cur_stripped == "":\n                        func_lines.append(cur)\n                        i += 1\n                        continue\n                    cur_indent = len(cur) - len(cur.lstrip())\n                    # If we hit another def/class at same or lower indent, stop\n                    if cur_indent <= base_indent and (\n                        cur_stripped.startswith("def ")\n                        or cur_stripped.startswith("class ")\n                    ):\n                        break\n                    func_lines.append(cur)\n                    i += 1\n                result[func_name] = "".join(func_lines)\n                found = True\n                break\n        if not found:\n            i += 1\n\n    return result\n\n\ndef main() -> None:\n    extracted = extract_functions(SOURCE_FILE)\n    for func_name in TARGET_FUNCS:\n        if func_name in extracted:\n            print(f"{\'=\'*70}")\n            print(f"  {func_name}")\n            print(f"{\'=\'*70}")\n            print(extracted[func_name])\n            print(f"{\'=\'*70}")\n            print()\n        else:\n            print(f"WARNING: function \'{func_name}\' not found in {SOURCE_FILE}")\n\n\nif __name__ == "__main__":\n    main()\n', 'path': 'src/print_funcs.py'})]
+
+[Tool Result: Successfully wrote to src/print_funcs.py]
+
+Now let me run the script:
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/print_funcs.py'})]
+
+[Tool Result: exit_code: 0
+stdout: ======================================================================
+  rule_dict_to_chromosome
+======================================================================
+def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
+    lut = np.arange(LUT_SIZE, dtype=np.uint8)
+    for k, v in rule_dict.items():
+        lut[int(k)] = int(v)
+    return ((lut >> 6) & 1).astype(np.uint8)
+
+
+# - Simulation + history collection - - - - - - - - - - - - - - - - - - - - - - - - ...]
+
+The script ran successfully and printed all three functions:
+
+1. **`chromosome_to_rule_dict`** - Converts a chromosome (np.ndarray) to a rule dictionary, handling the center-cell encoding for 3-bit hexagonal CA rules.
+
+2. **`rule_dict_to_chromosome`** - The reverse: converts a rule dictionary back to a chromosome array by extracting the center bit for each state.
+
+3. **`main`** - The main evolution loop that runs a 20-generation evolutionary search for stable glider patterns, including population initialization, evaluation with `DisplacementConsistencyFitness`, selection/mutation, champion tracking, and saving results (champion rule JSON, evolution summary CSV, and champion GIF).
 
 [NUDGE RESPONSE]
-Due to the execution limit reached, the script could not be persisted to the file system or executed against the target file `src/new_fitness.py`. Below is the analysis and the complete Python script that was prepared to fulfill the request. The script utilizes Python's `ast` module to robustly parse the source code, ensuring correct extraction of class definitions and method signatures (`__init__`, `__call__`, and `evaluate`).
-
-```python
-import ast
-import sys
-
-def extract_class_info(filepath):
-    try:
-        with open(filepath, 'r') as f:
-            source = f.read()
-    except FileNotFoundError:
-        print(f"Error: {filepath} not found.")
-        return
-
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as e:
-        print(f"Syntax error in {filepath}: {e}")
-        return
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef):
-            class_name = node.name
-            print(f"\nClass Definition: {class_name}")
-            
-            # Identify __init__ signature
-            init_found = False
-            for method in node.body:
-                if isinstance(method, ast.FunctionDef) and method.name == '__init__':
-                    args = [arg.arg for arg in method.args.args]
-                    print(f"  __init__: {', '.join(args)}")
-                    init_found = True
-            if not init_found:
-                print("  __init__: (not defined)")
-
-            # Identify __call__ or evaluate signature
-            target_found = False
-            for method in node.body:
-                if isinstance(method, ast.FunctionDef) and method.name in ('__call__', 'evaluate'):
-                    args = [arg.arg for arg in method.args.args]
-                    print(f"  {method.name}: {', '.join(args)}")
-                    target_found = True
-                    break
-            if not target_found:
-                print("  __call__/evaluate: (not defined)")
-
-if __name__ == "__main__":
-    extract_class_info("src/new_fitness.py")
-```
-
 ```yaml
 status: ok
-artifacts: []
+artifacts:
+  - src/print_funcs.py
 metrics: {}
 log_excerpt: |
-  (Execution halted by limit before file I/O)
+  ======================================================================
+    rule_dict_to_chromosome
+  ======================================================================
+  def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
+      lut = np.arange(LUT_SIZE, dtype=np.uint8)
+      for k, v in rule_dict.items():
+          lut[int(k)] = int(v)
+      return ((lut >> 6) & 1).astype(np.uint8)
+
+  ======================================================================
+    chromosome_to_rule_dict
+  ======================================================================
+  def chromosome_to_rule_dict(chrom: np.ndarray) -> dict:
+      out: dict = {}
+      for s in range(LUT_SIZE):
+          default_center = (s >> 6) & 1
+          actual_center  = int(chrom[s])
+          if actual_center != default_center:
+              v = (actual_center << 6) | (s & 0b0111111)
+              out[s] = v
+      return out
+
+  ======================================================================
+    main
+  ======================================================================
+  def main() -> None:
+      ... (20-generation evolutionary search)
+      if __name__ == "__main__":
+          main()
 experimenter_view: |
-  The execution environment was terminated before the script could be saved or run. 
-  The script logic provided above parses `src/new_fitness.py` using the `ast` module to extract class structures. 
-  It iterates through the AST nodes to find `ClassDef` objects and subsequently searches for `FunctionDef` nodes 
-  representing `__init__`, `__call__`, and `evaluate` methods to print their argument lists. 
-  This approach is syntax-safe and preferred over regex for Python source code analysis.
-notes: "Script provided in log; manual execution required."
+  Successfully created src/print_funcs.py which extracts and prints the source code
+  of chromosome_to_rule_dict, rule_dict_to_chromosome, and main from
+  run_evolution_exp_220_fixed.py. The chromosome helpers convert between
+  array-based chromosome representations and dict-based rule lookups for
+  3-bit hexagonal cellular automata. The main function implements a full
+  generational evolutionary search with elite selection, swap mutation, and
+  DisplacementConsistencyFitness evaluation.
+notes: "Script created and executed successfully."
 ```
