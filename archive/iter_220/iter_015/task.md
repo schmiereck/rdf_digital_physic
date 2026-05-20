@@ -1,1 +1,1 @@
-Print the source code of _try_build_c2_rule in src/evolution.py to see exactly how the 'pairs' argument is structured and how it builds the rule.
+Inspect the exact python implementation of `DisplacementConsistencyFitness` in `src/new_fitness.py` (specifically `evaluate` and `_compute_conservation_score`). Check if there is a parameter or an easy way to enable strict bit conservation (i.e., returning 0 fitness if the bit count is ever not equal to 3).
