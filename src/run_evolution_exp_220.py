@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-run_evolution_exp_220.py  —  20-generation evolutionary search for a stable glider
+run_evolution_exp_220.py  -  20-generation evolutionary search for a stable glider
 
 Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
 seed to search for hexagonal CA rules that produce consistent, directional motion.
@@ -19,6 +19,7 @@ Outputs:
 
 from __future__ import annotations
 
+import csv
 import json
 import random
 import sys
@@ -26,7 +27,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -45,7 +45,7 @@ LUT_SIZE        = 128
 RNG_SEED        = 220
 
 
-# ── Chromosome helpers ────────────────────────────────────────────────────────
+# - Chromosome helpers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def chromosome_to_rule_dict(chrom: np.ndarray) -> dict:
     out: dict = {}
@@ -65,7 +65,7 @@ def rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:
     return ((lut >> 6) & 1).astype(np.uint8)
 
 
-# ── Simulation + history collection ──────────────────────────────────────────
+# - Simulation + history collection - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def simulate_with_history(rule_dict: dict) -> list:
     lut  = rule_dict_to_lut(rule_dict)
@@ -89,7 +89,7 @@ def simulate_with_history(rule_dict: dict) -> list:
     return hist
 
 
-# ── Fitness evaluator ─────────────────────────────────────────────────────────
+# - Fitness evaluator - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 _fitness_fn = DisplacementConsistencyFitness(num_windows=5)
 
@@ -100,7 +100,7 @@ def evaluate_rule(rule_dict: dict) -> float:
     return float(score)
 
 
-# ── Population helpers ────────────────────────────────────────────────────────
+# - Population helpers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:
     pop: list[np.ndarray] = []
@@ -135,7 +135,43 @@ def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.nda
     return out
 
 
-# ── Main evolution loop ───────────────────────────────────────────────────────
+# - CSV writer (replaces pandas) - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def write_evolution_summary_csv(gen_log: list[dict], path: Path) -> None:
+    """Write the evolution summary to a CSV file using the standard csv module.
+
+    Parameters
+    ----------
+    gen_log : list of dict
+        Each dict has keys: 'generation', 'best_fitness', 'mean_fitness'.
+    path : Path
+        Destination file path.
+    """
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["generation", "best_fitness", "mean_fitness"])
+        writer.writeheader()
+        for entry in gen_log:
+            writer.writerow({
+                "generation":   entry["generation"],
+                "best_fitness": f'{entry["best_fitness"]:.6f}',
+                "mean_fitness": f'{entry["mean_fitness"]:.6f}',
+            })
+
+
+def print_evolution_summary(gen_log: list[dict]) -> None:
+    """Print a plain-text table of the evolution summary (no pandas)."""
+    # Header
+    print(f"{'Gen':>5s}  {'Best Fitness':>15s}  {'Mean Fitness':>15s}")
+    print(f"{'-'*5}  {'-'*15}  {'-'*15}")
+    for entry in gen_log:
+        print(
+            f'{entry["generation"]:>5d}  '
+            f'{entry["best_fitness"]:>15.6f}  '
+            f'{entry["mean_fitness"]:>15.6f}'
+        )
+
+
+# - Main evolution loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -153,7 +189,8 @@ def main() -> None:
     champion_fitness: float             = -1.0
     gen_log: list[dict] = []
 
-    # ── Evaluate generation 0 ────────────────────────────────────────────────
+    # - Evaluate generation 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     scores = evaluate_population(population)
     best_idx = int(np.argmax(scores))
     if scores[best_idx] > champion_fitness:
@@ -168,7 +205,8 @@ def main() -> None:
     print(f"  Gen  0: best={gen_log[-1]['best_fitness']:.6f}  "
           f"mean={gen_log[-1]['mean_fitness']:.6f}")
 
-    # ── Generational loop ─────────────────────────────────────────────────────
+    # - Generational loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     for gen in range(1, GENERATIONS + 1):
         elites   = select_top_k(population, scores, ELITE_SIZE)
         next_pop = [e.copy() for e in elites]
@@ -199,7 +237,8 @@ def main() -> None:
     print(f"\n=== Search complete in {elapsed:.1f}s ===")
     print(f"  Champion fitness: {champion_fitness:.6f}")
 
-    # ── Save champion rule ────────────────────────────────────────────────────
+    # - Save champion rule - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     champ_rd = chromosome_to_rule_dict(champion_chrom)
     payload  = {
         "fitness":          champion_fitness,
@@ -221,15 +260,16 @@ def main() -> None:
         json.dump(payload, f, indent=2)
     print(f"Saved champion rule  -> {champion_path}")
 
-    # ── Save evolution summary CSV ─────────────────────────────────────────────
-    summary_df   = pd.DataFrame(gen_log)[["generation", "best_fitness", "mean_fitness"]]
+    # - Save evolution summary CSV (pandas-free, using csv module) - - - - - - - - -
+
     summary_path = OUTPUT_DIR / "evolution_summary.csv"
-    summary_df.to_csv(summary_path, index=False)
+    write_evolution_summary_csv(gen_log, summary_path)
     print(f"Saved evolution summary -> {summary_path}")
 
-    # ── Print summary table ────────────────────────────────────────────────────
+    # - Print summary table (pandas-free, using plain print) - - - - - - - - - - - -
+
     print("\n=== Evolution Summary ===")
-    print(summary_df.to_string(index=False))
+    print_evolution_summary(gen_log)
 
     # Check for plateau: compare last 5 gens vs first 5 gens
     gen0_mean  = gen_log[0]["mean_fitness"]

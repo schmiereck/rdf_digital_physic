@@ -1,503 +1,323 @@
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py'})]
 
-[Tool Result:       $null
-[DIR] -p
-[DIR] .git
-      .gitignore
-[DIR] .venv
-[DIR] archive
-      config.toml
-      current_state.md
-      debug_output.txt
-      debug_output2.txt
-      debug_sim_vc.py
-      experiment_log.md
-      experiment_log_archive.md
-      experiment_report.yaml
-      goal.md
-      python_path_info.py
-      RDF-REVIEW-179.md
-      requirements.txt
-      RESEARCH-RESULT-179.md
-[DIR] src
-      stdout.txt
-      verify_output.py]
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220.py  —  20-generation evolutionary search for a stable glider
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+  archive/iter_220/results/evoluti...]
+
+Now let me check the `DisplacementConsistencyFitness` implementation to understand how it evaluates sub-light speed gliders:
 
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
 
-[Tool Result: [DIR] __pycache__
-      analyze_glider_200.1.py
-      analyze_long_run_dynamics.py
-      analyze_median_elite_rule.py
-      analyze_top_elite_rule.py
-      analyze_top_stabilizing_rule.py
-      ash_pattern.json
-      asymmetric_collision.py
-      breed_next_generation.py
-      characterize_5bit_glider.py
-      characterize_champion_174.py
-      characterize_glider_200.py
-      characterize_iter_197_2_champion.py
-      characterize_offset_collisions.py
-      characterize_remnant.py
-      characte...]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
 
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\rule_1.json'})]
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-[Tool Result: Error: [Errno 2] No such file or directory: 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\rule_1.json']
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
 
-[Tool Result: [DIR] archive
-[DIR] iter_001
-[DIR] iter_002
-[DIR] iter_003
-[DIR] iter_004
-[DIR] iter_005
-[DIR] iter_006
-[DIR] iter_007
-[DIR] iter_008
-[DIR] iter_009
-[DIR] iter_010
-[DIR] iter_011
-[DIR] iter_012
-[DIR] iter_013
-[DIR] iter_014
-[DIR] iter_015
-[DIR] iter_016
-[DIR] iter_017
-[DIR] iter_018
-[DIR] iter_019
-[DIR] iter_020
-[DIR] iter_021
-[DIR] iter_022
-[DIR] iter_023
-[DIR] iter_024
-[DIR] iter_025
-[DIR] iter_026
-[DIR] iter_027
-[DIR] iter_028
-[DIR] iter_029
-[DIR] iter_030
-[DIR] iter_031
-[DIR] iter_032
-[DIR] ...]
+[Tool Result: #!/usr/bin/env python3
+"""
+evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+
+Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+
+This penalises annihilation: a rule that destroys the seed gets a ratio near
+zero even if the centre-of-mass technically moves before the grid goes dark.
+Rules that move the particle while preserving its bit count score highest.
+"""
+
+import math
+import random
+
+import numpy as np
+
+# Small constant to guard against the (very unli...]
+
+Now I have the full picture. Let me provide the explanation and create a pandas-free version.
+
+---
+
+## How the Script Works for Sub-Light Speed Glider Search
+
+### Architecture Overview
+
+The script runs a **generational evolutionary algorithm** over a population of 100 hexagonal cellular automaton rules, searching for rules that produce stable v<c gliders (moving objects that preserve their structure and direction) from an L-tromino 3-bit seed.
+
+### Key Components
+
+1. **Chromosome representation** — Each rule is a 128-bit gene vector. The rule encodes a hexagonal (7-neighbor) CA where 7 of the 8 neighbors define a 7-bit index (0–127), and the output bit (birth/survive) is at bit 6. The chromosome stores just the 128 output bits.
+
+2. **LUT (Look-Up Table) encoding** — `rule_dict_to_lut()` converts the sparse `rule_dict` into a 128-entry lookup table mapping each hex-neighbourhood state to a single output bit.
+
+3. **Simulation** — The L-tromino seed `{(63,63), (64,63), (64,64)}` is placed on a 128×128 toroidal grid. The grid is stepped forward for `STEPS=500` iterations, and at each step the centre-of-mass (COM) and live-cell count ("bits") are recorded.
+
+4. **`DisplacementConsistencyFitness`** — This is the **validated fitness function**. It divides the 500-step history into 5 equal time windows, computes a velocity vector (ΔCOM) per window, then rewards:
+   - **High mean displacement** (true gliders travel far)
+   - **Low std dev of velocity magnitudes** (the motion is *consistent* — not a drifter)
+   - **Bit conservation** via a "leaky" score that gives partial credit even when bits are lost
+
+The formula:
+```
+fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes) × conservation_score
+```
+
+5. **Evolution loop** — Each generation: keep the top-10 elite rules, mutate the rest via random-swap (1 swap per child at `mutation_rate=0.01`), evaluate, and track the global champion.
+
+### How to Run It (with the pandas fix)
+
+The only pandas usage is in the `main()` function where it builds and saves a summary CSV. Here's the **pandas-free version**:
 
 
-[Tool Call: bash({'command': 'Get-ChildItem -Path "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive" -Recurse -Filter "rule_1.json" | Select-Object -First 10 FullName'})]
 
-[Tool Result: exit_code: 255
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nrun_evolution_exp_220.py  —  20-generation evolutionary search for a stable glider\n\nUses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino\nseed to search for hexagonal CA rules that produce consistent, directional motion.\n\nParameters:\n  population_size : 100\n  generations     : 20\n  elite_size      : 10\n  mutation_rate   : 0.01\n  horizon         : 500 steps\n\nOutputs:\n  archive/iter_220/results/champion_rule.json\n  archive/iter_220/results/evolution_summary.csv\n"""\n\nfrom __future__ import annotations\n\nimport csv\nimport json\nimport random\nimport sys\nimport time\nfrom pathlib import Path\n\nimport numpy as np\n\nPROJECT_ROOT = Path(__file__).parent.parent\nsys.path.insert(0, str(PROJECT_ROOT / "src"))\n\nfrom evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid  # noqa: E402\nfrom new_fitness import DisplacementConsistencyFitness                       # noqa: E402\n\nOUTPUT_DIR      = PROJECT_ROOT / "archive" / "iter_220" / "results"\nPOPULATION_SIZE = 100\nGENERATIONS     = 20\nELITE_SIZE      = 10\nMUTATION_RATE   = 0.01\nGRID_SIZE       = 128\nSTEPS           = 500\nLUT_SIZE        = 128\nRNG_SEED        = 220\n\n\n# ── Chromosome helpers ────────────────────────────────────────────────────────\n\ndef chromosome_to_rule_dict(chrom: np.ndarray) -> dict:\n    out: dict = {}\n    for s in range(LUT_SIZE):\n        default_center = (s >> 6) & 1\n        actual_center  = int(chrom[s])\n        if actual_center != default_center:\n            v = (actual_center << 6) | (s & 0b0111111)\n            out[s] = v\n    return out\n\n\ndef rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:\n    lut = np.arange(LUT_SIZE, dtype=np.uint8)\n    for k, v in rule_dict.items():\n        lut[int(k)] = int(v)\n    return ((lut >> 6) & 1).astype(np.uint8)\n\n\n# ── Simulation + history collection ──────────────────────────────────────────\n\ndef simulate_with_history(rule_dict: dict) -> list:\n    lut  = rule_dict_to_lut(rule_dict)\n    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\n    grid[63, 63] = 1\n    grid[64, 63] = 1\n    grid[64, 4] = 1\n\n    def com_and_bits(g):\n        rows, cols = np.where(g > 0)\n        if len(rows) == 0:\n            return (0.0, 0.0), 0\n        return (float(np.mean(rows)), float(np.mean(cols))), int(g.sum())\n\n    c0, b0 = com_and_bits(grid)\n    hist = [{"step": 0, "com": c0, "bit_count": b0}]\n    for t in range(1, STEPS + 1):\n        grid = step_grid(grid, lut)\n        c, b = com_and_bits(grid)\n        hist.append({"step": t, "com": c, "bit_count": b})\n    return hist\n\n\n# ── Fitness evaluator ─────────────────────────────────────────────────────────\n\n_fitness_fn = DisplacementConsistencyFitness(num_windows=5)\n\n\ndef evaluate_rule(rule_dict: dict) -> float:\n    hist  = simulate_with_history(rule_dict)\n    score = _fitness_fn(hist)\n    return float(score)\n\n\n# ── Population helpers ────────────────────────────────────────────────────────\n\ndef generate_population(size: int, rng: random.Random) -> list[np.ndarray]:\n    pop: list[np.ndarray] = []\n    while len(pop) < size:\n        rule = generate_random_c2_rule(rng)\n        pop.append(rule_dict_to_chromosome(rule))\n    return pop[:size]\n\n\ndef evaluate_population(population: list[np.ndarray]) -> list[float]:\n    scores: list[float] = []\n    for i, chrom in enumerate(population):\n        rd    = chromosome_to_rule_dict(chrom)\n        score = evaluate_rule(rd)\n        scores.append(score)\n        if (i + 1) % 25 == 0:\n            print(f"    ... evaluated {i + 1}/{len(population)}")\n    return scores\n\n\ndef select_top_k(population, scores, k):\n    order = sorted(range(len(population)), key=lambda i: scores[i], reverse=True)\n    return [population[i].copy() for i in order[:k]]\n\n\ndef swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:\n    out = chrom.copy()\n    n   = len(out)\n    for _ in range(num_swaps):\n        i, j     = rng.sample(range(n), 2)\n        out[i], out[j] = out[j], out[i]\n    return out\n\n\n# ── CSV writer (replaces pandas) ─────────────────────────────────────────────\n\ndef write_evolution_summary_csv(gen_log: list[dict], path: Path) -> None:\n    """Write the evolution summary to a CSV file using the standard csv module.\n\n    Parameters\n    ----------\n    gen_log : list of dict\n        Each dict has keys: \'generation\', \'best_fitness\', \'mean_fitness\'.\n    path : Path\n        Destination file path.\n    """\n    with open(path, "w", newline="") as f:\n        writer = csv.DictWriter(f, fieldnames=["generation", "best_fitness", "mean_fitness"])\n        writer.writeheader()\n        for entry in gen_log:\n            writer.writerow({\n                "generation":   entry["generation"],\n                "best_fitness": f\'{entry["best_fitness"]:.6f}\',\n                "mean_fitness": f\'{entry["mean_fitness"]:.6f}\',\n            })\n\n\ndef print_evolution_summary(gen_log: list[dict]) -> None:\n    """Print a plain-text table of the evolution summary (no pandas)."""\n    # Header\n    print(f"{\'Gen\':>5s}  {\'Best Fitness\':>15s}  {\'Mean Fitness\':>15s}")\n    print(f"{\'-\'*5}  {\'-\'*15}  {\'-\'*15}")\n    for entry in gen_log:\n        print(\n            f\'{entry["generation"]:>5d}  \'\n            f\'{entry["best_fitness"]:>15.6f}  \'\n            f\'{entry["mean_fitness"]:>15.6f}\'\n        )\n\n\n# ── Main evolution loop ───────────────────────────────────────────────────────\n\ndef main() -> None:\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    rng       = random.Random(RNG_SEED)\n    num_swaps = max(1, round(MUTATION_RATE * LUT_SIZE))\n\n    print("=== run_evolution_exp_220 ===")\n    print(f"  population={POPULATION_SIZE}  generations={GENERATIONS}  "\n          f"elite={ELITE_SIZE}  swaps/child={num_swaps}  horizon={STEPS}")\n\n    t0         = time.time()\n    population = generate_population(POPULATION_SIZE, rng)\n\n    champion_chrom:   np.ndarray | None = None\n    champion_fitness: float             = -1.0\n    gen_log: list[dict] = []\n\n    # ── Evaluate generation 0 ────────────────────────────────────────────────\n    scores = evaluate_population(population)\n    best_idx = int(np.argmax(scores))\n    if scores[best_idx] > champion_fitness:\n        champion_fitness = float(scores[best_idx])\n        champion_chrom   = population[best_idx].copy()\n\n    gen_log.append({\n        "generation":   0,\n        "best_fitness": float(np.max(scores)),\n        "mean_fitness": float(np.mean(scores)),\n    })\n    print(f"  Gen  0: best={gen_log[-1][\'best_fitness\']:.6f}  "\n          f"mean={gen_log[-1][\'mean_fitness\']:.6f}")\n\n    # ── Generational loop ─────────────────────────────────────────────────────\n    for gen in range(1, GENERATIONS + 1):\n        elites   = select_top_k(population, scores, ELITE_SIZE)\n        next_pop = [e.copy() for e in elites]\n        while len(next_pop) < POPULATION_SIZE:\n            parent = rng.choice(elites)\n            child  = swap_mutate(parent, num_swaps, rng)\n            next_pop.append(child)\n        population = next_pop\n\n        scores   = evaluate_population(population)\n        best_idx = int(np.argmax(scores))\n\n        if scores[best_idx] > champion_fitness:\n            champion_fitness = float(scores[best_idx])\n            champion_chrom   = population[best_idx].copy()\n            print(f"    ** new champion @ gen {gen}: {champion_fitness:.6f} **")\n\n        gen_log.append({\n            "generation":   gen,\n            "best_fitness": float(np.max(scores)),\n            "mean_fitness": float(np.mean(scores)),\n        })\n        print(f"  Gen {gen:2d}: best={gen_log[-1][\'best_fitness\']:.6f}  "\n              f"mean={gen_log[-1][\'mean_fitness\']:.6f}  "\n              f"champion={champion_fitness:.6f}")\n\n    elapsed = time.time() - t0\n    print(f"\\n=== Search complete in {elapsed:.1f}s ===")\n    print(f"  Champion fitness: {champion_fitness:.6f}")\n\n    # ── Save champion rule ────────────────────────────────────────────────────\n    champ_rd = chromosome_to_rule_dict(champion_chrom)\n    payload  = {\n        "fitness":          champion_fitness,\n        "fitness_function": "DisplacementConsistencyFitness",\n        "generations":      GENERATIONS,\n        "population_size":  POPULATION_SIZE,\n        "elite_size":       ELITE_SIZE,\n        "mutation_rate":    MUTATION_RATE,\n        "horizon":          STEPS,\n        "grid_size":        GRID_SIZE,\n        "seed_particle":    "L_TROMINO_3bit",\n        "seed_cells":       [[63, 63], [64, 63], [64, 64]],\n        "elapsed_sec":      round(elapsed, 2),\n        "rule_dict":        {str(k): int(v) for k, v in champ_rd.items()},\n        "chromosome":       [int(b) for b in champion_chrom],\n    }\n    champion_path = OUTPUT_DIR / "champion_rule.json"\n    with open(champion_path, "w") as f:\n        json.dump(payload, f, indent=2)\n    print(f"Saved champion rule  -> {champion_path}")\n\n    # ── Save evolution summary CSV  (pandas-free, using csv module) ──────────\n    summary_path = OUTPUT_DIR / "evolution_summary.csv"\n    write_evolution_summary_csv(gen_log, summary_path)\n    print(f"Saved evolution summary -> {summary_path}")\n\n    # ── Print summary table  (pandas-free, using plain print) ────────────────\n    print("\\n=== Evolution Summary ===")\n    print_evolution_summary(gen_log)\n\n    # Check for plateau: compare last 5 gens vs first 5 gens\n    gen0_mean  = gen_log[0]["mean_fitness"]\n    gen_n_mean = gen_log[-1]["mean_fitness"]\n    improved   = gen_n_mean > gen0_mean * 1.5\n    print(f"\\n  mean_fitness gen0:  {gen0_mean:.6f}")\n    print(f"  mean_fitness genN:  {gen_n_mean:.6f}")\n    print(f"  Fitness improved significantly: {improved}")\n\n\nif __name__ == "__main__":\n    main()\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\run_evolution_exp_220.py]
+
+I noticed a typo in the file I just wrote — `grid[64, 64]` was accidentally changed to `grid[64, 4]`. Let me fix that:
+
+
+
+[Tool Call: bash({'command': 'sed -i \'s/grid\\[64, 4\\] = 1/grid[64, 64] = 1/\' "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py"'})]
+
+[Tool Result: exit_code: 1
 stdout: 
-stderr: Der Befehl "Get-ChildItem" ist entweder falsch geschrieben oder
+stderr: Der Befehl "sed" ist entweder falsch geschrieben oder
 konnte nicht gefunden werden.
 ]
 
+Let me fix the typo with a Python command:
 
-[Tool Call: bash({'command': 'dir C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056 /s /b | findstr "rule_1"'})]
 
-[Tool Result: exit_code: 1
+
+[Tool Call: bash({'command': 'python -c "p=r\'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py\'; open(p,\'w\').write(open(p).read().replace(\'[64, 4] = 1\',\'[64, 64] = 1\'))"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+Let me verify the fix:
+
+
+
+[Tool Call: bash({'command': 'python -c "\nimport re\np = r\'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py\'\ncontent = open(p).read()\n# Check the seed placement lines\nlines = content.split(\'\\n\')\nfor i, line in enumerate(lines):\n    if \'grid[63\' in line or \'grid[64\' in line:\n        print(f\'Line {i}: {line}\')\n"'})]
+
+[Tool Result: exit_code: 0
 stdout: 
 stderr: ]
 
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py'})]
 
-[Tool Result:       result.yaml
-[DIR] results
-      stderr.txt
-      stdout.txt
-      task.md]
+[Tool Result: ]
+
+The file appears empty. Let me rewrite it completely and correctly:
 
 
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\*.json'})]
 
-[Tool Result: exit_code: 1
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py', 'content': '#!/usr/bin/env python3\n"""\nrun_evolution_exp_220.py  -  20-generation evolutionary search for a stable glider\n\nUses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino\nseed to search for hexagonal CA rules that produce consistent, directional motion.\n\nParameters:\n  population_size : 100\n  generations     : 20\n  elite_size      : 10\n  mutation_rate   : 0.01\n  horizon         : 500 steps\n\nOutputs:\n  archive/iter_220/results/champion_rule.json\n  archive/iter_220/results/evolution_summary.csv\n"""\n\nfrom __future__ import annotations\n\nimport csv\nimport json\nimport random\nimport sys\nimport time\nfrom pathlib import Path\n\nimport numpy as np\n\nPROJECT_ROOT = Path(__file__).parent.parent\nsys.path.insert(0, str(PROJECT_ROOT / "src"))\n\nfrom evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid  # noqa: E402\nfrom new_fitness import DisplacementConsistencyFitness                       # noqa: E402\n\nOUTPUT_DIR      = PROJECT_ROOT / "archive" / "iter_220" / "results"\nPOPULATION_SIZE = 100\nGENERATIONS     = 20\nELITE_SIZE      = 10\nMUTATION_RATE   = 0.01\nGRID_SIZE       = 128\nSTEPS           = 500\nLUT_SIZE        = 128\nRNG_SEED        = 220\n\n\n# - Chromosome helpers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\ndef chromosome_to_rule_dict(chrom: np.ndarray) -> dict:\n    out: dict = {}\n    for s in range(LUT_SIZE):\n        default_center = (s >> 6) & 1\n        actual_center  = int(chrom[s])\n        if actual_center != default_center:\n            v = (actual_center << 6) | (s & 0b0111111)\n            out[s] = v\n    return out\n\n\ndef rule_dict_to_chromosome(rule_dict: dict) -> np.ndarray:\n    lut = np.arange(LUT_SIZE, dtype=np.uint8)\n    for k, v in rule_dict.items():\n        lut[int(k)] = int(v)\n    return ((lut >> 6) & 1).astype(np.uint8)\n\n\n# - Simulation + history collection - - - - - - - - - - - - - - - - - - - - - - - - -\n\ndef simulate_with_history(rule_dict: dict) -> list:\n    lut  = rule_dict_to_lut(rule_dict)\n    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\n    grid[63, 63] = 1\n    grid[64, 63] = 1\n    grid[64, 64] = 1\n\n    def com_and_bits(g):\n        rows, cols = np.where(g > 0)\n        if len(rows) == 0:\n            return (0.0, 0.0), 0\n        return (float(np.mean(rows)), float(np.mean(cols))), int(g.sum())\n\n    c0, b0 = com_and_bits(grid)\n    hist = [{"step": 0, "com": c0, "bit_count": b0}]\n    for t in range(1, STEPS + 1):\n        grid = step_grid(grid, lut)\n        c, b = com_and_bits(grid)\n        hist.append({"step": t, "com": c, "bit_count": b})\n    return hist\n\n\n# - Fitness evaluator - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n_fitness_fn = DisplacementConsistencyFitness(num_windows=5)\n\n\ndef evaluate_rule(rule_dict: dict) -> float:\n    hist  = simulate_with_history(rule_dict)\n    score = _fitness_fn(hist)\n    return float(score)\n\n\n# - Population helpers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\ndef generate_population(size: int, rng: random.Random) -> list[np.ndarray]:\n    pop: list[np.ndarray] = []\n    while len(pop) < size:\n        rule = generate_random_c2_rule(rng)\n        pop.append(rule_dict_to_chromosome(rule))\n    return pop[:size]\n\n\ndef evaluate_population(population: list[np.ndarray]) -> list[float]:\n    scores: list[float] = []\n    for i, chrom in enumerate(population):\n        rd    = chromosome_to_rule_dict(chrom)\n        score = evaluate_rule(rd)\n        scores.append(score)\n        if (i + 1) % 25 == 0:\n            print(f"    ... evaluated {i + 1}/{len(population)}")\n    return scores\n\n\ndef select_top_k(population, scores, k):\n    order = sorted(range(len(population)), key=lambda i: scores[i], reverse=True)\n    return [population[i].copy() for i in order[:k]]\n\n\ndef swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:\n    out = chrom.copy()\n    n   = len(out)\n    for _ in range(num_swaps):\n        i, j     = rng.sample(range(n), 2)\n        out[i], out[j] = out[j], out[i]\n    return out\n\n\n# - CSV writer (replaces pandas) - - - - - - - - - - - - - - - - - - - - - - - - - -\n\ndef write_evolution_summary_csv(gen_log: list[dict], path: Path) -> None:\n    """Write the evolution summary to a CSV file using the standard csv module.\n\n    Parameters\n    ----------\n    gen_log : list of dict\n        Each dict has keys: \'generation\', \'best_fitness\', \'mean_fitness\'.\n    path : Path\n        Destination file path.\n    """\n    with open(path, "w", newline="") as f:\n        writer = csv.DictWriter(f, fieldnames=["generation", "best_fitness", "mean_fitness"])\n        writer.writeheader()\n        for entry in gen_log:\n            writer.writerow({\n                "generation":   entry["generation"],\n                "best_fitness": f\'{entry["best_fitness"]:.6f}\',\n                "mean_fitness": f\'{entry["mean_fitness"]:.6f}\',\n            })\n\n\ndef print_evolution_summary(gen_log: list[dict]) -> None:\n    """Print a plain-text table of the evolution summary (no pandas)."""\n    # Header\n    print(f"{\'Gen\':>5s}  {\'Best Fitness\':>15s}  {\'Mean Fitness\':>15s}")\n    print(f"{\'-\'*5}  {\'-\'*15}  {\'-\'*15}")\n    for entry in gen_log:\n        print(\n            f\'{entry["generation"]:>5d}  \'\n            f\'{entry["best_fitness"]:>15.6f}  \'\n            f\'{entry["mean_fitness"]:>15.6f}\'\n        )\n\n\n# - Main evolution loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\ndef main() -> None:\n    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)\n    rng       = random.Random(RNG_SEED)\n    num_swaps = max(1, round(MUTATION_RATE * LUT_SIZE))\n\n    print("=== run_evolution_exp_220 ===")\n    print(f"  population={POPULATION_SIZE}  generations={GENERATIONS}  "\n          f"elite={ELITE_SIZE}  swaps/child={num_swaps}  horizon={STEPS}")\n\n    t0         = time.time()\n    population = generate_population(POPULATION_SIZE, rng)\n\n    champion_chrom:   np.ndarray | None = None\n    champion_fitness: float             = -1.0\n    gen_log: list[dict] = []\n\n    # - Evaluate generation 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n    scores = evaluate_population(population)\n    best_idx = int(np.argmax(scores))\n    if scores[best_idx] > champion_fitness:\n        champion_fitness = float(scores[best_idx])\n        champion_chrom   = population[best_idx].copy()\n\n    gen_log.append({\n        "generation":   0,\n        "best_fitness": float(np.max(scores)),\n        "mean_fitness": float(np.mean(scores)),\n    })\n    print(f"  Gen  0: best={gen_log[-1][\'best_fitness\']:.6f}  "\n          f"mean={gen_log[-1][\'mean_fitness\']:.6f}")\n\n    # - Generational loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n    for gen in range(1, GENERATIONS + 1):\n        elites   = select_top_k(population, scores, ELITE_SIZE)\n        next_pop = [e.copy() for e in elites]\n        while len(next_pop) < POPULATION_SIZE:\n            parent = rng.choice(elites)\n            child  = swap_mutate(parent, num_swaps, rng)\n            next_pop.append(child)\n        population = next_pop\n\n        scores   = evaluate_population(population)\n        best_idx = int(np.argmax(scores))\n\n        if scores[best_idx] > champion_fitness:\n            champion_fitness = float(scores[best_idx])\n            champion_chrom   = population[best_idx].copy()\n            print(f"    ** new champion @ gen {gen}: {champion_fitness:.6f} **")\n\n        gen_log.append({\n            "generation":   gen,\n            "best_fitness": float(np.max(scores)),\n            "mean_fitness": float(np.mean(scores)),\n        })\n        print(f"  Gen {gen:2d}: best={gen_log[-1][\'best_fitness\']:.6f}  "\n              f"mean={gen_log[-1][\'mean_fitness\']:.6f}  "\n              f"champion={champion_fitness:.6f}")\n\n    elapsed = time.time() - t0\n    print(f"\\n=== Search complete in {elapsed:.1f}s ===")\n    print(f"  Champion fitness: {champion_fitness:.6f}")\n\n    # - Save champion rule - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n    champ_rd = chromosome_to_rule_dict(champion_chrom)\n    payload  = {\n        "fitness":          champion_fitness,\n        "fitness_function": "DisplacementConsistencyFitness",\n        "generations":      GENERATIONS,\n        "population_size":  POPULATION_SIZE,\n        "elite_size":       ELITE_SIZE,\n        "mutation_rate":    MUTATION_RATE,\n        "horizon":          STEPS,\n        "grid_size":        GRID_SIZE,\n        "seed_particle":    "L_TROMINO_3bit",\n        "seed_cells":       [[63, 63], [64, 63], [64, 64]],\n        "elapsed_sec":      round(elapsed, 2),\n        "rule_dict":        {str(k): int(v) for k, v in champ_rd.items()},\n        "chromosome":       [int(b) for b in champion_chrom],\n    }\n    champion_path = OUTPUT_DIR / "champion_rule.json"\n    with open(champion_path, "w") as f:\n        json.dump(payload, f, indent=2)\n    print(f"Saved champion rule  -> {champion_path}")\n\n    # - Save evolution summary CSV (pandas-free, using csv module) - - - - - - - - -\n\n    summary_path = OUTPUT_DIR / "evolution_summary.csv"\n    write_evolution_summary_csv(gen_log, summary_path)\n    print(f"Saved evolution summary -> {summary_path}")\n\n    # - Print summary table (pandas-free, using plain print) - - - - - - - - - - - -\n\n    print("\\n=== Evolution Summary ===")\n    print_evolution_summary(gen_log)\n\n    # Check for plateau: compare last 5 gens vs first 5 gens\n    gen0_mean  = gen_log[0]["mean_fitness"]\n    gen_n_mean = gen_log[-1]["mean_fitness"]\n    improved   = gen_n_mean > gen0_mean * 1.5\n    print(f"\\n  mean_fitness gen0:  {gen0_mean:.6f}")\n    print(f"  mean_fitness genN:  {gen_n_mean:.6f}")\n    print(f"  Fitness improved significantly: {improved}")\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\run_evolution_exp_220.py]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220.py  -  20-generation evolutionary search for a stable glider
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+  archive/iter_220/results/evoluti...]
+
+The file is correct. Let me verify it runs without errors (quick syntax + import check):
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport ast, sys\nwith open(\'src/run_evolution_exp_220.py\') as f:\n    ast.parse(f.read())\nprint(\'Syntax OK\')\n\n# Check imports work\nimport sys; sys.path.insert(0, \'src\')\nfrom evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid\nfrom new_fitness import DisplacementConsistencyFitness\nprint(\'Imports OK\')\n"'})]
+
+[Tool Result: exit_code: 0
 stdout: 
-stderr: Datei nicht gefunden
-]
+stderr: ]
 
 
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\*.json'})]
-
-[Tool Result: exit_code: 1
-stdout: 
-stderr: Datei nicht gefunden
-]
-
-
-[Tool Call: bash({'command': 'dir C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results'})]
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "import ast; ast.parse(open(\'src/run_evolution_exp_220.py\').read()); print(\'Syntax OK\')"'})]
 
 [Tool Result: exit_code: 0
-stdout:  Volume in Laufwerk C: hat keine Bezeichnung.
- Volumeseriennummer: F4E9-4E77
-
- Verzeichnis von C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\results
-
-11.05.2026  11:04    <DIR>          .
-11.05.2026  11:04    <DIR>          ..
-11.05.2026  11:04               654 bit_count_trace.yaml
-               1 Datei(en),            654 Bytes
-               2 Verzeichnis(se), 64.055.566.336 Bytes frei
+stdout: Syntax OK
 
 stderr: ]
 
 
-[Tool Call: bash({'command': 'dir C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\*.json 2>nul || echo no json files'})]
+[Tool Call: bash({'command': 'cd "C:\\Users\\thomas\\Projekte\\rdf_digital_physic" && python -c "import ast; print(\'Syntax OK\')" && python -c "import sys; sys.path.insert(0, \'src\'); from evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid; from new_fitness import DisplacementConsistencyFitness; print(\'Imports OK\')"'})]
 
 [Tool Result: exit_code: 0
-stdout:  Volume in Laufwerk C: hat keine Bezeichnung.
- Volumeseriennummer: F4E9-4E77
-
- Verzeichnis von C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\results
-
-no json files
+stdout: Syntax OK
+Imports OK
 
 stderr: ]
 
-
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\*.json'})]
-
-[Tool Result: exit_code: 1
-stdout: 
-stderr: Datei nicht gefunden
-]
+Let me verify there are no remaining pandas references in the file:
 
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\bit_count_trace.yaml'})]
 
-[Tool Result: {bit_counts: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    6, ...]
+[Tool Call: grep_search({'pattern': 'pandas|pd\\.', 'include_pattern': 'src/run_evolution_exp_220.py'})]
 
+[Tool Result: src\run_evolution_exp_220.py:138: # - CSV writer (replaces pandas) - - - - - - - - - - - - - - - - - - - - - - - - - -
+src\run_evolution_exp_220.py:162: """Print a plain-text table of the evolution summary (no pandas)."""
+src\run_evolution_exp_220.py:263: # - Save evolution summary CSV (pandas-free, using csv module) - - - - - - - - -
+src\run_evolution_exp_220.py:269: # - Print summary table (pandas-free, using plain print) - - - - - - - - - - - -]
 
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\'})]
+Good — the only mentions of "pandas" are in comments explaining the changes. No actual pandas code remains. Let me provide the full explanation.
 
-[Tool Result: exit_code: 0
-stdout: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\result.yaml
-C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\results
-C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\stderr.txt
-C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\stdout.txt
-C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\task.md
-C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\results\bit_count_trace.yaml
+---
 
-stderr: ]
+## Complete Explanation
 
+### How the Evolutionary Search Finds v<c Gliders
 
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\results\\'})]
+The script runs a **generational (1+1)-evolutionary algorithm** to discover hexagonal cellular automaton rules that make the L-tromino seed (`{(63,63), (64,63), (64,64)}`) travel as a **v<c glider** — a coherent object that moves at constant velocity while preserving its structure.
 
-[Tool Result: exit_code: 0
-stdout: C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_056\results\bit_count_trace.yaml
+### Architecture (step by step)
 
-stderr: ]
+#### 1. Rule Representation
+Each hexagonal CA rule is encoded as a **128-entry look-up table (LUT)**. A hexagonal neighborhood has 7 neighbors, giving 2⁷ = 128 possible neighbor configurations. The LUT maps each configuration to a 0/1 output (cell dies or lives). The chromosome is a 128-bit binary vector storing these output values.
 
+#### 2. Initialization
+100 random **C₂-symmetric rules** are generated (rotating 180° leaves the rule unchanged, a physical constraint that keeps objects from spiraling away).
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\result.yaml'})]
+#### 3. Simulation (`simulate_with_history`)
+For each rule:
+- The L-tromino 3-cell seed is placed on a 128×128 toroidal grid
+- The grid is evolved for 500 steps
+- At each step, the **centre of mass (COM)** and **bit count** (live cell count) are recorded
+- This produces a history of 501 data points
 
-[Tool Result: artifacts:
-- archive/iter_056/result.yaml
-- archive/iter_056/results/bit_count_trace.yaml
-- src/simulate_iter056.py
-experimenter_view: 'Placing two 3-bit straight-line still lifes immediately adjacent
-  (no gap,
+#### 4. Fitness Evaluation (`DisplacementConsistencyFitness`)
 
-  positions (20-22,50) and (23-25,50)) produces a stable 6-bit STILL_LIFE.
+This is the core of the glider search. The fitness function divides the 500-step history into **5 equal time windows** and computes:
 
-  The composite is bit-conserving throughout all 200 steps, with the center
+| Component | Formula | Purpose |
+|-----------|---------|---------|
+| Per-window velocity | ΔCOM per window | Measures directional motion |
+| Mean velocity vector | mean of per-window (Δx, Δy) | Rewards consistent directional drift |
+| Mean velocity magnitude | √(meanₓ² + mean_y²) | The numerator of the fitness |
+| Std dev of magnitudes | σ of per-window \|v\| | Penalizes inconsistent (drifter) motion |
+| Conservation score | mean of per-step bit-ratio | Enforces mass preservation |
 
-  of mass fixed at (22.50, 50.00). A period-1 cycle is detected at t=11,
+**The core formula:**
+```
+base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+final_fitness = base_fitness × conservation_score
+```
 
-  confirming the structure is a static still life from the v...]
+- A **true v<c glider** has near-zero std dev (identical velocity in every window) → denominator ≈ 1 → high fitness
+- A **drifter** has wildly varying velocities → large denominator → low fitness (even if mean displacement is high)
+- A **stationary object** has near-zero mean velocity → fitness ≈ 0
 
+#### 5. Selection & Mutation
+- **Tournament selection**: keep the top 10 rules (elite)
+- **Swap mutation**: each child gets 1 random bit swap per generation (0.01 × 128 ≈ 1 swap)
+- Offspring fill the remaining 90 slots in the next generation
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\stdout.txt'})]
+#### 6. Output
+- `champion_rule.json`: The best rule's full rule dict, chromosome, and all experiment metadata
+- `evolution_summary.csv`: Per-generation best and mean fitness (now written via the `csv` module)
 
-[Tool Result: I'll start by reviewing the existing code and rule files from previous iterations.
-Now I'll create the iter_056 simulation script, adapting from iter_055 with the adjacent placement.
-The simulation ran successfully. Let me verify the result file was written correctly.
-The experiment is complete. The two adjacent 3-bit still lifes form a stable 6-bit still life that never moves.
+### Pandas Removal
 
+**What changed:**
+1. **Removed** `import pandas as pd`
+2. **Replaced** `pd.DataFrame(gen_log)[...]` → `write_evolution_summary_csv()` using `csv.DictWriter`
+3. **Replaced** `summary_df.to_string()` → `print_evolution_summary()` using formatted print statements
+
+**What stays the same:**
+- All evolutionary logic, simulation, and fitness evaluation are unchanged
+- The output format (JSON + CSV) is identical to the original
+
+### How to Run
+
+```bash
+cd C:\Users\thomas\Projekte\rdf_digital_physic
+python src\run_evolution_exp_220.py
+```
+
+No pandas dependency required — only `numpy` for array operations and `csv` from the standard library.
+
+[NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts:
-  - archive/iter_056/result.yaml
-  - archive/iter_056/results/bit_count_trace.yaml
-  - s...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_056\\task.md'})]
-
-[Tool Result: # Task – iter_056
-
-**Hypothesis:** composite-adjacent: Two 3-bit still lifes, placed adjacently, form a stable, bit-conserving, non-trivial composite object.
-
-## Working Directory
-
-Your working directory is `src/` – a **persistent** directory shared across all iterations. Build on code from previous iterations; do not start from scratch each time.
-Write results and data files to `archive/iter_056/results/` (relative to the project root).
-
-## Task
-
-Use the existing W=3 rule from `src/symmetric_ru...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\rule.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-rule.py — Thin wrapper around a cellular automaton rule dict.
-
-The Rule wraps a packed-neighbourhood → packed-neighbourhood integer map and
-exposes the LUT used by the engine to step the grid.  ``bits_per_cell`` defaults
-to 1 so that the existing 1-bit pipeline (LUT length 128, key range 0..127)
-continues to work unchanged.  Passing a larger ``bits_per_cell`` enables N-bit
-cells, in which case the LUT has length ``2**(7*bits_per_cell)``.
-"""
-
-from __future__ import ann...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulate_iter056.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-iter_056: Composite-adjacent hypothesis.
-
-Two 3-bit straight-line still lifes placed immediately adjacent (no gap)
-on a 100x100 hexagonal grid with periodic boundaries.
-
-Still Life 1: (20,50), (21,50), (22,50)
-Still Life 2: (23,50), (24,50), (25,50)
-(no gap between them – total 6 bits)
-
-Rule: W=3 symmetric rule (A=7, B=14) from src/symmetric_rule_w3_a7_b14.json
-"""
-
-import json
-import sys
-import yaml
-import numpy as np
-from pathlib import Path
-
-PROJECT_ROOT = Path(__fi...]
-
-Now let me examine the key simulation modules to understand the `Simulation` class and seed patterns:
-
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulate.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-Composite two-cell particle CA: produces a v=c/2 glider.
-
-Particle representation (2-bit cells):
-  0 = '00' (empty)
-  1 = '01' (state A, leading half)
-  2 = '10' (state B, trailing half)
-
-Two-cell particle pattern: [1, 2] at positions (i, i+1).
-
-Phase OSCILLATE (even t): [1,2] at (i,i+1) -> [2,1] in-place (flip internal state)
-Phase MOVE (odd t):       [2,1] at (i,i+1) -> [1,2] at (i+1,i+2) (translate right)
-
-Effective velocity = 1 cell per 2 steps = c/2.
-"""
-import sy...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\seeds.py'})]
-
-[Tool Result: """
-seeds.py — Standard initial seeds for CA evolution experiments.
-"""
-
-import numpy as np
-
-_GRID = 128
-
-
-def _make_seed(cells, grid_size=_GRID):
-    grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
-    for r, c in cells:
-        grid[r % grid_size, c % grid_size] = 1
-    return grid
-
-
-# 3-cell L-tromino centred near the middle of a 128x128 grid
-L_TROMINO_SEED = _make_seed([(63, 63), (64, 63), (64, 64)])
-]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulator.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-simulator.py — Particle and Simulator classes for the hexagonal CA.
-
-The legacy 1-bit pipeline (128-entry LUT, 2D grids) is preserved as the
-default fast path so existing callers keep working unchanged.  Passing
-``bits_per_cell > 1`` enables the multi-bit engine in ``engine.py``, where
-grids carry shape ``(H, W, bits_per_cell)``.
-"""
-
-from __future__ import annotations
-
-import numpy as np
-
-from engine import (
-    BITS_PER_CELL,
-    HexagonalGrid,
-    build_lut,
-    oc...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-engine.py — Multi-bit hexagonal CA engine.
-
-Generalises the historic 1-bit step (encoded by simulator.py and evolution.py)
-to grids whose cells carry N bits.  The grid is represented as a NumPy array of
-shape ``(height, width, bits_per_cell)`` where each entry along the last axis
-is a single bit (0/1).  Cell value = base-2 with index 0 as the most
-significant bit.
-
-For ``bits_per_cell == 1`` the math reduces exactly to the legacy fast path:
-state encoding ``(c<<6)|(e<<...]
-
-Now let me check if there's a `Simulation` class or if the task refers to `Simulator`:
-
-
-
-[Tool Call: bash({'command': 'grep -r "class Simulation" C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\ 2>nul || echo "no Simulation class found"'})]
-
-[Tool Result: exit_code: 0
-stdout: "no Simulation class found"
-
-stderr: ]
-
-
-[Tool Call: bash({'command': 'grep -r "class Simulator" C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\ 2>nul || echo "no Simulator class found"'})]
-
-[Tool Result: exit_code: 0
-stdout: "no Simulator class found"
-
-stderr: ]
-
-
-[Tool Call: bash({'command': 'findstr /s /i /c:"class Simulation" "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\*.py"'})]
-
-[Tool Result: exit_code: 1
-stdout: 
-stderr: ]
-
-
-[Tool Call: bash({'command': 'findstr /s /i /c:"class Simulator" "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\*.py"'})]
-
-[Tool Result: exit_code: 0
-stdout: C:\Users\thomas\Projekte\rdf_digital_physic\src\simulator.py:class Simulator:
-
-stderr: ]
-
-Now I have a clear picture. There is no `archive/iter_056/results/rule_1.json` file — the iter_056 experiment used the rule from `src/symmetric_rule_w3_a7_b14.json`. There is also no `Simulation` class — only a `Simulator` class in `simulator.py`. Let me also check the existing debug_sim files for patterns:
-
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\debug_sim.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""Debug simulation of iter_218 champion rule."""
-import json
-import numpy as np
-
-with open(r'archive/iter_218/results/champion_rule.json') as f:
-    rule_data = json.load(f)
-rule_dict = rule_data['rule_dict']
-
-lut = np.arange(128, dtype=np.uint8)
-for k, v in rule_dict.items():
-    lut[int(k)] = int(v)
-lut = ((lut >> 6) & 1).astype(np.uint8)
-
-GRID_SIZE = 128
-SEED_CELLS = [(63, 63), (64, 63), (64, 64)]
-
-grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
-for r, c in SEE...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_simulation.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-run_simulation.py — Reproducibility check for the v=1c glider from iter_179.
-
-1. Load champion rule g10_rule_001 from archive/iter_179/results/champion_rule.json
-   (falls back to final_population.json if champion_rule.json does not exist,
-   and saves the extracted rule as champion_rule.json for future use).
-2. Initialize 128x128 hexagonal grid with L-tromino seed at center.
-3. Run 400 steps.
-4. Verify: displacement ≈ 400 cells, bit count = 3 throughout.
-5. Save GIF t...]
-
-
-[Tool Call: bash({'command': 'findstr /s /i /c:"rule_1.json" "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\*.py" | head -20'})]
-
-[Tool Result: exit_code: 255
-stdout: 
-stderr: Der Befehl "head" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
-
-
-[Tool Call: bash({'command': 'dir /s /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_0*\\*rule*.json 2>nul | findstr "rule_1" | head -5'})]
-
-[Tool Result: exit_code: 255
-stdout: 
-stderr: Der Befehl "head" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
-
-
-[Tool Call: bash({'command': 'Get-ChildItem -Path "C:\\Users\\thomas\\Projekte\\rdf_digital_physic" -Recurse -Filter "rule_1.json" -ErrorAction SilentlyContinue | Select-Object -First 10 FullName'})]
-
-[Tool Result: exit_code: 255
-stdout: 
-stderr: Der Befehl "Get-ChildItem" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
-
-
-[Tool Call: bash({'command': 'where python'})]
-
-[Tool Result: exit_code: 0
-stdout: C:\Users\thomas\Projekte\uroboros-rdf\.venv\Scripts\python.exe
-C:\Users\thomas\AppData\Local\Programs\Python\Python312\python.exe
-C:\Users\thomas\AppData\Local\Microsoft\WindowsApps\python.exe
-
-stderr: ]
-
-Let me check what other iterations have for rule_1.json:
-
-
-
-[Tool Call: bash({'command': 'for d in C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_179\\results C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_178\\results; do echo "=== $d ==="; dir "$d" 2>nul; done'})]
-
-[Tool Result: exit_code: 1
-stdout: 
-stderr: "d" kann syntaktisch an dieser Stelle nicht verarbeitet werden.
-]
-
-
-[NUDGE RESPONSE]
-I need to clarify: I was in the middle of diagnosing the codebase when this report was requested. I investigated the critical path components but did not actually create and execute `src/diag_sim.py` yet. Let me complete the task now.
-
+  - src/run_evolution_exp_220.py
+metrics:
+  population_size: 100
+  generations: 20
+  elite_size: 10
+  mutation_rate: 0.01
+  grid_size: 128
+  horizon_steps: 500
+  lut_size: 128
+  seed: L_TROMINO_3bit
+  seed_cells: [[63,63],[64,63],[64,64]]
+  num_windows_fitness: 5
+log_excerpt: |
+  Syntax OK
+  Imports OK
+  (no pandas references remain in code — only in explanatory comments)
+experimenter_view: |
+  The task was completed successfully:
+  1. Read and analyzed the original run_evolution_exp_220.py script,
+     along with its dependencies (new_fitness.py for DisplacementConsistencyFitness
+     and evolution.py for C2-symmetric rule generation and simulation).
+  2. The evolutionary search uses a generational (elitist) algorithm over
+     100 C2-symmetric hexagonal CA rules. The seed is a 3-cell L-tromino on
+     a 128x128 toroidal grid, simulated for 500 steps.
+  3. DisplacementConsistencyFitness defeats the "drifter" exploit by dividing
+     the simulation into 5 time windows, computing per-window velocity vectors,
+     and rewarding consistent directional motion (low std-dev of velocity
+     magnitudes) while penalizing random-walk behavior via the formula:
+       base_fitness = mean_velocity_magnitude / (1 + std_dev_magnitudes)
+     multiplied by a leaky bit-conservation score.
+  4. The pandas dependency was fully removed: replaced pd.DataFrame() and
+     .to_csv() with csv.DictWriter, and replaced .to_string() with a custom
+     print_evolution_summary() function using f-string formatting.
+  5. Syntax and imports verified — no errors.
+notes: "Pandas-free version of run_evolution_exp_220.py created and verified."
+```
