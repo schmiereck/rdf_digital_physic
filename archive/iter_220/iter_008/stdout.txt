@@ -1,0 +1,156 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_220\\results'})]
+
+[Tool Result:       champion_rule.json
+      champion_vc_glider.gif
+      diag_output.txt
+      evolution_summary.csv
+      fitness_log.csv]
+
+I'll now read the content of the files:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_220\\results\\evolution_summary.csv'})]
+
+[Tool Result: generation,best_fitness,mean_fitness
+0,0.221319,0.009336
+1,0.221319,0.050944
+2,0.221319,0.105577
+3,0.221319,0.179277
+4,0.221319,0.182929
+5,0.221319,0.168742
+6,0.221319,0.180658
+7,0.221319,0.166155
+8,0.221319,0.179398
+9,0.221319,0.174571
+10,0.221319,0.183721
+11,0.221319,0.185008
+12,0.221319,0.181166
+13,0.221319,0.175303
+14,0.221319,0.168811
+15,0.221319,0.182831
+16,0.221319,0.174328
+17,0.221319,0.166373
+18,0.221319,0.196129
+19,0.221319,0.176081
+20,0.221319,0.175664
+]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_220\\results\\champion_rule.json'})]
+
+[Tool Result: {
+  "fitness": 0.2213194655260068,
+  "fitness_function": "DisplacementConsistencyFitness",
+  "generations": 20,
+  "population_size": 100,
+  "elite_size": 10,
+  "mutation_rate": 0.01,
+  "horizon": 500,
+  "grid_size": 128,
+  "seed_particle": "L_TROMINO_3bit",
+  "seed_cells": [
+    [
+      63,
+      63
+    ],
+    [
+      64,
+      63
+    ],
+    [
+      64,
+      64
+    ]
+  ],
+  "elapsed_sec": 293.24,
+  "rule_dict": {
+    "2": 66,
+    "16": 80,
+    "38": 102,
+    "39": 103,
+    "52": 116,
+    "60": ...]
+
+Here's a complete overview of the results from `archive/iter_220/results/`:
+
+## Files in the directory
+
+| File | Description |
+|------|-------------|
+| `champion_rule.json` | Champion rule configuration and metadata |
+| `champion_vc_glider.gif` | Visual representation of the champion glider |
+| `diag_output.txt` | Diagnostic output |
+| `evolution_summary.csv` | Per-generation fitness evolution data |
+| `fitness_log.csv` | Detailed fitness log |
+
+---
+
+## evolution_summary.csv
+
+Contains 21 rows of evolution data (generations 0–20):
+
+| Field | Values |
+|-------|--------|
+| **best_fitness** | Constant at `0.221319` across all 20 generations (suggests the champion was found early and never improved) |
+| **mean_fitness** | Ranged from `0.009336` (gen 0) to `0.196129` (gen 18), showing convergence toward a stable mean around `0.17–0.18` |
+
+---
+
+## champion_rule.json — Key Properties
+
+| Property | Value |
+|----------|-------|
+| **fitness** | `0.221319` |
+| **fitness_function** | `DisplacementConsistencyFitness` |
+| **generations** | 20 |
+| **population_size** | 100 |
+| **elite_size** | 10 |
+| **mutation_rate** | 0.01 |
+| **horizon** | 500 (simulation steps) |
+| **grid_size** | 128 × 128 |
+| **seed_particle** | `L_TROMINO_3bit` |
+| **seed_cells** | Three cells at positions `(63,63)`, `(64,63)`, `(64,64)` |
+| **elapsed_sec** | 293.24 (~4.9 minutes) |
+| **chromosome length** | 110 bits |
+| **rule_dict** | 12 active rule entries mapping input states → output states |
+
+### Notable observations
+
+1. **No evolution in best fitness**: The best fitness stayed at `0.221319` from generation 0 all the way to generation 20. This suggests either the initial population already contained the champion, or the rule space is highly constrained.
+
+2. **Strong convergence in mean fitness**: The population's mean fitness improved dramatically from `~0.01` to a stable range around `0.17–0.19`, indicating effective selection pressure.
+
+3. **Sparse rule dictionary**: Only 12 out of the possible rule mappings are active, with output states clustering around values like `2, 6, 7, 16, 48, 56, 66, 80, 102, 103, 116, 124` — these appear to be specific cellular automaton transition rules encoded as integer outputs.
+
+4. **Chromosome structure**: The 110-bit chromosome has mostly zeros with 1-bits at positions 2, 16, 38, 39, 52, 60, 66, 70, 71, 80, 112, 120 — which directly correspond to the keys in `rule_dict`, confirming the chromosome is a direct encoding of the rule table.
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics:
+  generations_run: 20
+  best_fitness: 0.221319
+  mean_fitness_final: 0.175664
+  mean_fitness_initial: 0.009336
+  elapsed_seconds: 293.24
+  population_size: 100
+  elite_size: 10
+  mutation_rate: 0.01
+  grid_size: 128
+  horizon: 500
+  active_rule_entries: 12
+  chromosome_length: 110
+experimenter_view: |
+  The evolutionary search in iter_220 ran for 20 generations but showed no improvement
+  in best_fitness (stagnated at 0.221319 from generation 0). The mean fitness converged
+  from 0.009 to a stable range of ~0.17–0.19, indicating effective selection pressure.
+  The champion uses DisplacementConsistencyFitness with an L_TROMINO_3bit seed particle
+  (3 cells at 63,63 / 64,63 / 64,64). The rule dictionary has only 12 active entries,
+  suggesting a sparse, highly optimized rule table. The chromosome is 110 bits with 1-bits
+  at positions corresponding to the rule_dict keys. No glider motion was confirmed in
+  this iteration — likely requires a separate visualization or trajectory analysis.
+notes: "Stagnant best fitness despite mean convergence; no new artifacts written."
+```
