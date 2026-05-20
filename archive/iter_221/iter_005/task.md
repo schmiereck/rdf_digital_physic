@@ -1,1 +1,1 @@
-Read the argument parser and population loading code of src/run_evolution.py to understand how it loads pre-existing populations and what fitness functions it supports.
+Create a python script src/test_load_215.py that loads archive/iter_215/results/final_population.json and prints the type of the loaded object and the keys of the first item in the list of rules, or the dictionary structure. Run this script and print the output.
