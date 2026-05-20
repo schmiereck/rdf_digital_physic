@@ -15,6 +15,7 @@ Parameters:
 Outputs:
   archive/iter_220/results/champion_rule.json
   archive/iter_220/results/evolution_summary.csv
+  archive/iter_220/results/champion_vc_glider.gif
 """
 
 from __future__ import annotations
@@ -138,15 +139,7 @@ def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.nda
 # - CSV writer (replaces pandas) - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def write_evolution_summary_csv(gen_log: list[dict], path: Path) -> None:
-    """Write the evolution summary to a CSV file using the standard csv module.
-
-    Parameters
-    ----------
-    gen_log : list of dict
-        Each dict has keys: 'generation', 'best_fitness', 'mean_fitness'.
-    path : Path
-        Destination file path.
-    """
+    """Write the evolution summary to a CSV file using the standard csv module."""
     with open(path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["generation", "best_fitness", "mean_fitness"])
         writer.writeheader()
@@ -169,6 +162,54 @@ def print_evolution_summary(gen_log: list[dict]) -> None:
             f'{entry["best_fitness"]:>15.6f}  '
             f'{entry["mean_fitness"]:>15.6f}'
         )
+
+
+# - GIF renderer helper - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = 500, stride: int = 5) -> None:
+    """Render a GIF of the champion glider moving in the grid."""
+    print(f"Rendering GIF -> {gif_path}")
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    lut  = rule_dict_to_lut(rule_dict)
+    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+    grid[63, 63] = 1
+    grid[64, 63] = 1
+    grid[64, 64] = 1
+
+    frames = [(0, grid.copy())]
+    for step in range(1, steps + 1):
+        grid = step_grid(grid, lut)
+        if step % stride == 0 or step == steps:
+            frames.append((step, grid.copy()))
+
+    fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
+    ax.set_title("Champion v<c Glider (iter 220)")
+    img = ax.imshow(
+        frames[0][1], origin="upper", interpolation="nearest",
+        cmap="hot", vmin=0, vmax=1,
+    )
+    txt = ax.text(
+        0.02, 0.97, f"step={frames[0][0]}", transform=ax.transAxes,
+        color="white", fontsize=10, va="top",
+    )
+
+    def update(i):
+        step, g = frames[i]
+        img.set_data(g)
+        txt.set_text(f"step={step}")
+        return img, txt
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(frames), interval=80, blit=True,
+    )
+    gif_path.parent.mkdir(parents=True, exist_ok=True)
+    ani.save(str(gif_path), writer="pillow", fps=12)
+    plt.close(fig)
+    print(f"GIF saved ({gif_path.stat().st_size/1024:.1f} KB)")
 
 
 # - Main evolution loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,6 +306,11 @@ def main() -> None:
     summary_path = OUTPUT_DIR / "evolution_summary.csv"
     write_evolution_summary_csv(gen_log, summary_path)
     print(f"Saved evolution summary -> {summary_path}")
+
+    # - Render and save GIF of champion - - - - - - - - - - - - - - - - - - - - - - -
+
+    gif_path = OUTPUT_DIR / "champion_vc_glider.gif"
+    render_champion_gif(champ_rd, gif_path)
 
     # - Print summary table (pandas-free, using plain print) - - - - - - - - - - - -
 
