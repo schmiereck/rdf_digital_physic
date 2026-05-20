@@ -1,35 +1,36 @@
 artifacts:
-- apply_fix.py
-- src/new_fitness.py
-experimenter_view: 'Applied the COM unwrapping fix to src/new_fitness.py. The bug
-  was on line 241 where
+- src/print_unwrapped_code.py
+experimenter_view: 'The nested function in run_evolution_exp_221_unwrapped.py is named
+  _raw_com_and_bits
 
-  prev_com was incorrectly derived from unwrapped_coms[-1] (accumulating unwrapping
+  (not com_and_bits). It is a 6-line helper inside simulate_with_history that computes
 
-  artifacts) instead of sorted_history[i-1]["com"] (the raw previous position).
+  the raw (toroidal) center-of-mass and bit count from a grid. The unwrapping logic
+  is
 
-  The fix ensures consecutive raw COM positions are used as deltas, producing correct
+  handled separately by the _unwrap_com() function and a prev_unwrapped tracking loop,
 
-  unwrapped trajectories on the toroidal 128x128 grid. Runtime tests confirm the
+  rather than being baked into this nested function itself. This means the unwrapped
 
-  consistent glider scores ~250x higher than a drifter, and the toroidal wrap test
+  version separates concerns: _raw_com_and_bits returns toroidal coords, and a separate
 
-  also scores high (0.141421), validating proper boundary crossing behavior.
+  unwrapping step converts them to absolute unwrapped coordinates each step.
 
   '
-log_excerpt: "[FIX] Line 241: unwrapped_coms[-1]  ->  sorted_history[i - 1][\"com\"\
-  ]\n[INFO] Saved updated content to src/new_fitness.py\n[VERIFY] Line 241:      \
-  \       prev_com = sorted_history[i - 1][\"com\"]\n[VERIFY] OK: Fix confirmed present\
-  \ in file.\n--- Lines 240-255 of the updated file ---\n  240:         for i in range(1,\
-  \ len(sorted_history)):\n  241:             prev_com = sorted_history[i - 1][\"\
-  com\"]\n  242:             cur_com = sorted_history[i][\"com\"]\n--- Syntax check\
-  \ ---\n[OK] No syntax errors.\n--- Quick runtime test ---\n  Consistent glider:\
-  \   fitness = 0.141421\n  Drifter (oscillating): fitness = 0.000565\n  Toroidal\
-  \ wrap test:  fitness = 0.141421\n[SUCCESS] Fix applied and verified successfully.\n"
-metrics:
-  consistent_glider_fitness: 0.141421
-  drifter_fitness: 0.000565
-  toroidal_wrap_fitness: 0.141421
-notes: COM unwrapping fix applied — prev_com now uses raw sorted_history[i-1] instead
-  of accumulating unwrapped positions.
+log_excerpt: "======================================================================\n\
+  Nested functions found in run_evolution_exp_221_unwrapped.py:\n======================================================================\n\
+  \n  def _raw_com_and_bits(...) at line 133:\n    def _raw_com_and_bits(g):\n   \
+  \         \"\"\"Return the raw (toroidal) CoM and bit count for a grid.\"\"\"\n\
+  \            rows, cols = np.where(g > 0)\n            if len(rows) == 0:\n    \
+  \            return (0.0, 0.0), 0\n            return (float(np.mean(rows)), float(np.mean(cols))),\
+  \ int(g.sum())\n\n======================================================================\n\
+  Full definition of '_raw_com_and_bits' (the nested CoM function):\n======================================================================\n\
+  \n  Full definition of _raw_com_and_bits (line 133):\n  ------------------------------------------------------------\n\
+  \        def _raw_com_and_bits(g):\n            \"\"\"Return the raw (toroidal)\
+  \ CoM and bit count for a grid.\"\"\"\n            rows, cols = np.where(g > 0)\n\
+  \            if len(rows) == 0:\n                return (0.0, 0.0), 0\n        \
+  \    return (float(np.mean(rows)), float(np.mean(cols))), int(g.sum())\n  ------------------------------------------------------------\n"
+metrics: {}
+notes: Found _raw_com_and_bits (not com_and_bits) as the nested CoM function in unwrapped
+  file.
 status: ok
