@@ -1,1 +1,1 @@
-Print current_state.md and goal.md in their entirety to stdout, so we have their exact content.
+Print the contents of src/new_fitness.py and the SubLightFitness class from src/fitness_functions.py so we can see the exact implementations. If the files are too long, print the main methods.
