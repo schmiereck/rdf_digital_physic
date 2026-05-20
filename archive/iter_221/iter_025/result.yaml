@@ -1,45 +1,26 @@
 artifacts:
-- fix_unwrap.py
-- verify_fix.py
-experimenter_view: 'The goal was to replace the incorrect COM unwrapping logic in
-  src/new_fitness.py.
+- find_com_and_bits.py
+experimenter_view: 'The `com_and_bits` function is a nested helper inside `simulate_with_history`
 
-  The bug: in the unwrapping loop, prev_com was set to unwrapped_coms[-1] (the accumulated
-  unwrapped position)
+  that computes the center of mass (weighted mean of row/col indices of active
 
-  while cur_com was sorted_history[i]["com"] (the raw position). This mixed wrapped
-  and unwrapped coordinates,
+  cells) and the active bit count of a cellular automaton grid state. It is
 
-  producing incorrect delta calculations.
+  called at each simulation step to track particle displacement and mass
 
+  conservation, which are then passed to `DisplacementConsistencyFitness` for
 
-  The correct approach: prev_com should be sorted_history[i-1]["com"] (the raw previous
-  COM), then compute
-
-  dx/dy as the raw delta between consecutive raw COMs, unwrap those deltas, and add
-  them to the accumulated
-
-  unwrapped position.
-
-
-  The file modification commands failed silently, likely due to Windows console encoding
-  (cp1252) issues
-
-  preventing proper string matching/replacement.
+  evaluating glider-like behavior.
 
   '
-log_excerpt: '$ grep_search pattern: "prev_com" -> src/new_fitness.py:241: prev_com
-  = unwrapped_coms[-1]
-
-  The grep confirms the incorrect line is still present at line 241.
-
-  Multiple Python replacement attempts failed silently (likely due to Windows encoding
-  issues with stdout).
-
-  The fix was not successfully applied to src/new_fitness.py.
-
-  '
-metrics: {}
-notes: Fix attempt failed due to tooling issues; line 241 still contains the incorrect
-  unwrapping code.
-status: experiment_failed
+log_excerpt: "Found 'com_and_bits' definition at line 86:\n============================================================\n\
+  \    def com_and_bits(g):\n        rows, cols = np.where(g > 0)\n        if len(rows)\
+  \ == 0:\n            return (0.0, 0.0), 0\n        return (float(np.mean(rows)),\
+  \ float(np.mean(cols))), int(g.sum())\n\n\n============================================================\n\
+  \nTotal lines for the function definition: 5 non-blank lines\nLine range: 86-91\n"
+metrics:
+  function_end_line: 91
+  function_start_line: 86
+  non_blank_lines: 5
+notes: com_and_bits definition extracted successfully at line 86.
+status: ok
