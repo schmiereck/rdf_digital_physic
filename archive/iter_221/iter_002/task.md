@@ -1,1 +1,1 @@
-Print the contents of src/new_fitness.py and the SubLightFitness class from src/fitness_functions.py so we can see the exact implementations. If the files are too long, print the main methods.
+Print the structure of the genetic algorithm in src/run_evolution_exp_220_fixed.py. Specifically: How are the rules initialized (from scratch or can they load from a file)? Where is the population saved? And how can we modify/extend it to support a warm start using the population from archive/iter_215/results/warm_start_population.json or another warm-start population?
