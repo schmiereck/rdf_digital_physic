@@ -273,6 +273,9 @@ class DisplacementConsistencyFitness:
             if any(entry["bit_count"] != initial_bits for entry in sorted_history):
                 return 0.0
 
+        if any(entry["bit_count"] == 0 for entry in sorted_history):
+            return 0.0
+
         initial_step = float(sorted_history[0]["step"])
         final_step = float(sorted_history[-1]["step"])
         total_steps = final_step - initial_step
