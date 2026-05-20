@@ -1,1 +1,1 @@
-Write a python script to read src/run_evolution_exp_220_fixed.py and print its entire contents to stdout. Do not write yaml block or any other files, just print the text of that file to stdout.
+Print the __init__ and __call__ methods of DisplacementConsistencyFitness in src/new_fitness.py. Also explain how we can instantiate it with max_bit_threshold=12.
