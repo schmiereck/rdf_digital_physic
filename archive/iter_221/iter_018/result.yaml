@@ -1,19 +1,27 @@
-artifacts: []
-experimenter_view: 'Confirmed that `max_velocity_threshold` is passed to `DisplacementConsistencyFitness`
-  in `src/run_evolution_exp_221.py`.
-
-  The exact instantiation line (approx. line 110) is:
-
-  `_fitness_fn = DisplacementConsistencyFitness(num_windows=5, max_bit_threshold=12,
-  max_velocity_threshold=0.9)`
-
-  The parameter is explicitly set to `0.9` and is used to construct the global fitness
-  evaluator `_fitness_fn`.
+artifacts:
+- print_method.py
+experimenter_view: 'The script successfully extracted and printed lines 350–395 of
+  src/new_fitness.py. The `__call__` method finalizes the fitness calculation by determining
+  mean velocity magnitude, applying threshold guards, computing the standard deviation
+  of windowed velocities, and combining a base consistency score with a bit-conservation
+  score. The method returns the final fitness value at line 395.
 
   '
-log_excerpt: 'No tool execution output.
-
-  '
-metrics: {}
-notes: Parameter `max_velocity_threshold` confirmed present in instantiation.
+log_excerpt: "350:         # ------------------------------------------------------------------\n\
+  351:         mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows\n\
+  352:         mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows\n\
+  353:         mean_velocity_magnitude = math.sqrt(\n354:             mean_dx * mean_dx\
+  \ + mean_dy * mean_dy\n355:         )\n356: \n357:         if self.max_velocity_threshold\
+  \ is not None and mean_velocity_magnitude >= self.max_velocity_threshold:\n358:\
+  \             return 0.0\n359: \n360:         if self.min_velocity is not None and\
+  \ mean_velocity_magnitude < self.min_velocity:\n361:             return 0.0\n362:\
+  \ \n363:         # ------------------------------------------------------------------\n\
+  364:         # 4. Calculate standard deviation of windowed velocity magnitudes\n\
+  365:         # ------------------------------------------------------------------\n\
+  366:         velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)\n\
+  367:         std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))\n"
+metrics:
+  total_lines_in_file: 466
+notes: Successfully extracted and executed the script to display the final segment
+  of the DisplacementConsistencyFitness.__call__ method.
 status: ok
