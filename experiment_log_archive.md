@@ -9045,3 +9045,35 @@ The sub-planner for 197.2 successfully executed an evolutionary search for `v<c`
 
 **Notes:** A phase of informative failures. The v=1c rule is less robust than believed, and the v<c fitness function needs significant refinement.
 
+
+---
+```yaml
+cached_tokens: 64410
+cost_usd: 0.28593
+hypothesis: 'phase-199: Diagnosed the v=1c rule''s instability as brittleness, not
+  explosion, and developed an exploit-resistant fitness function for v<c gliders.'
+input_tokens: 119852
+iter: 199
+metrics:
+  active_cells_exploded_60_deg: false
+  bit_conserved_60_deg: true
+  new_fitness_on_exploit_pattern: 0.0
+  old_fitness_on_exploit_pattern: 16.7
+output_tokens: 3383
+status: ok
+```
+
+## iter_199: phase-199: Diagnosed the v=1c rule's instability as brittleness, not explosion, and developed an exploit-resistant fitness function for v<c gliders.
+
+**Analysis:** This phase successfully investigated and resolved the two critical failures from `iter_197`.
+
+Sub-agent 199.1 refuted the hypothesis of computational explosion in the `v=1c` elastic rule. It discovered the timeout in `iter_197.1` was caused by a technical issue (GIF generation overhead), not by the CA dynamics. More importantly, it revealed the rule's lack of generality: the L-tromino particle is 
+
+**Status:** ok
+
+**Metrics:** `{'bit_conserved_60_deg': True, 'active_cells_exploded_60_deg': False, 'new_fitness_on_exploit_pattern': 0.0, 'old_fitness_on_exploit_pattern': 16.7}`
+
+**Experimenter view:** **Sub-agent 199.1 (Diagnosis of `v=1c` rule):** The investigation revealed that the timeout in `iter_197.1` was not caused by a computational or bit-count explosion in the CA. The dynamics were perfectly stable, with bit count conserved and active cells remaining constant. The failure was traced to technical overhead in generating a large GIF animation. However, the experiment also showed that the
+
+**Notes:** A highly successful phase. Corrected a major misunderstanding about the v=1c rule and built the tool needed to resume the v<c search.
+

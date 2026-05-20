@@ -3,38 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 64410
-cost_usd: 0.28593
-hypothesis: 'phase-199: Diagnosed the v=1c rule''s instability as brittleness, not
-  explosion, and developed an exploit-resistant fitness function for v<c gliders.'
-input_tokens: 119852
-iter: 199
-metrics:
-  active_cells_exploded_60_deg: false
-  bit_conserved_60_deg: true
-  new_fitness_on_exploit_pattern: 0.0
-  old_fitness_on_exploit_pattern: 16.7
-output_tokens: 3383
-status: ok
-```
-
-## iter_199: phase-199: Diagnosed the v=1c rule's instability as brittleness, not explosion, and developed an exploit-resistant fitness function for v<c gliders.
-
-**Analysis:** This phase successfully investigated and resolved the two critical failures from `iter_197`.
-
-Sub-agent 199.1 refuted the hypothesis of computational explosion in the `v=1c` elastic rule. It discovered the timeout in `iter_197.1` was caused by a technical issue (GIF generation overhead), not by the CA dynamics. More importantly, it revealed the rule's lack of generality: the L-tromino particle is 
-
-**Status:** ok
-
-**Metrics:** `{'bit_conserved_60_deg': True, 'active_cells_exploded_60_deg': False, 'new_fitness_on_exploit_pattern': 0.0, 'old_fitness_on_exploit_pattern': 16.7}`
-
-**Experimenter view:** **Sub-agent 199.1 (Diagnosis of `v=1c` rule):** The investigation revealed that the timeout in `iter_197.1` was not caused by a computational or bit-count explosion in the CA. The dynamics were perfectly stable, with bit count conserved and active cells remaining constant. The failure was traced to technical overhead in generating a large GIF animation. However, the experiment also showed that the
-
-**Notes:** A highly successful phase. Corrected a major misunderstanding about the v=1c rule and built the tool needed to resume the v<c search.
-
-
----
-```yaml
 cached_tokens: 81677
 cost_usd: 0.22135
 hypothesis: 'phase-200: A critical execution bug blocked all scientific progress,
@@ -944,4 +912,37 @@ Sub-agent 220.1 confirmed that the basic execution environment is stable and res
 Sub-agent 220.2 successfully validated the new `DisplacementConsistencyFitness` function. It correctly assigned a fitness of 0.0 to the know
 
 **Notes:** Phase failed due to a missing 'pandas' dependency in the sub-planner's execution environment, blocking the main experiment.
+
+
+---
+```yaml
+cached_tokens: 9542740
+cost_usd: 4.97779
+hypothesis: 'phase-220: Breeder exploit is closed by setting max_bit_threshold=12;
+  hard gates cause a flatline from random starts.'
+input_tokens: 12082652
+iter: 220
+metrics:
+  breeder_exploit_active_cells: 129
+  champion_fitness_fixed_run: 0.019163
+  flatline_search_best_fitness: 0.0
+  run_time_fixed_search_sec: 291.42
+output_tokens: 17398
+status: ok
+```
+
+## iter_220: phase-220: Breeder exploit is closed by setting max_bit_threshold=12; hard gates cause a flatline from random starts.
+
+**Analysis:** We have made major conceptual progress in Phase 220.
+First, we resolved the platform instabilities and ran multiple python diagnostics to map out the codebase.
+Second, we diagnosed why the previous evolution runs generated breeder exploits: the `max_bit_threshold` was left as `None` by default, allowing the active cells to explode to 129. By setting `max_bit_threshold=12` (allowing small fluctuati
+
+**Status:** ok
+
+**Metrics:** `{'champion_fitness_fixed_run': 0.019163, 'run_time_fixed_search_sec': 291.42, 'breeder_exploit_active_cells': 129, 'flatline_search_best_fitness': 0.0}`
+
+**Experimenter view:** We systematically investigated the 'breeder-oscillator' exploit and the fitness landscape of v<c glider searches.
+1. Breeder Characterization (220.9): The previous champion was revealed to be a stationary 64-period breeder-oscillator. Every 64 steps, the original 3-cell L-tromino is restored perfectly at the same location, but in between it expands symmetrically and asymmetrically up to 129 active
+
+**Notes:** Breeder exploit resolved by setting max_bit_threshold=12. SubLightFitness flatline verified. Codebase confirmed to be pandas-free.
 

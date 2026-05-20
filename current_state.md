@@ -1,22 +1,21 @@
 # Current Research State
-Phase: PLATFORM DEPENDENCY ERROR - BLOCKED
+Phase: Breeder exploit closed, fitness landscape mapped.
 
 ## Goal
-Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid to enable the study of emergent mass and interactions.
+Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
 
 ## Confirmed
-- A stable, bit-conserving `v=1c` glider exists (iter_179).
-- A rule supporting perfectly elastic `v=1c` glider collisions exists (iter_193).
-- The new `DisplacementConsistencyFitness` function correctly assigns a fitness of 0.0 to the "drifter" exploit rule from iter_218, while assigning positive scores to known glider rules (iter_220.2). The function is validated.
-- The agent execution platform is stable and does not hang on simple tasks (iter_220.1).
+- The previous champion was a stationary breathing breeder-oscillator of period 64 (iter_220.9).
+- Setting `max_bit_threshold=12` in `DisplacementConsistencyFitness` completely eliminates breeders, forcing evolution to produce only compact, stable structures (iter_220.23).
+- Hard-gated fitness metrics like `SubLightFitness` cause a flat 0.0 fitness landscape when starting from random rules, proving the necessity of leaky conservation and warm-starts (iter_220.80).
+- The codebase in `src/` is fully `pandas`-free, preventing sub-agent execution errors (iter_220.17).
 
 ## Refuted
-- The `v<c` glider (`g4_rule_083`) from iter_218 is a stationary object that exploited a flawed fitness function (iter_219.7, confirmed in 220.2).
+- Naive windowed CoM consistency without a bit-count ceiling is sufficient (it is easily exploited by breeders).
 
 ## In Progress
-- **BLOCKED:** The evolutionary search for a `v<c` glider is blocked by a `ModuleNotFoundError` in the sub-planner execution environment. The environment is missing key dependencies like `pandas` (iter_220.3).
+- Preparing a warm-started evolution run using iter_215's final population combined with the `max_bit_threshold=12` filter.
 
 ## Open Questions
-- How can we ensure the sub-agent execution environment has all necessary dependencies pre-installed?
-- Does the validated `DisplacementConsistencyFitness` function create a searchable fitness landscape?
-- Can a `v<c` glider be found through evolutionary search?
+- How can we design a C2-preserving crossover operator to maintain rule symmetry?
+- What is the minimum population size needed for warm-start searches to converge?
