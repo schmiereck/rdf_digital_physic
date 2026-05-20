@@ -1,1 +1,1 @@
-Read src/run_evolution_exp_220_fixed.py and write out its structure and code, specifically how the GA loop and fitness function are defined and run, and how we can modify or use it to do a warm start with the iter_215 population.
+Read src/run_vc_search.py and check how it runs. Explain what fitness functions are available in it and if it supports --initial_population_path.
