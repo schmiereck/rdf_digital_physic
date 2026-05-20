@@ -1,0 +1,74 @@
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+
+Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+
+This penalises annihilation: a rule that destroys the seed gets a ratio near
+zero even if the centre-of-mass technically moves before the grid goes dark.
+Rules that move the particle while preserving its bit count score highest.
+"""
+
+import math
+import random
+
+import numpy as np
+
+# Small constant to guard against the (very unli...]
+
+Here is the `_try_build_c2_rule` function from `src/evolution.py`:
+
+```python
+def _try_build_c2_rule(pairs: list) -> dict | None:
+    rule: dict = {}
+    for a, b in pairs:
+        rot_a, rot_b = _rotate_c2(a), _rotate_c2(b)
+        for src, dst in [(a, b), (b, a), (rot_a, rot_b), (rot_b, rot_a)]:
+            if src in rule:
+                if rule[src] != dst:
+                    return None
+            else:
+                rule[src] = dst
+    return rule
+```
+
+### How `pairs` is structured
+
+Each element in `pairs` is a **tuple `(a, b)`** of two integers in the range **1–127**.
+
+- `a` and `b` are **hex-neighbourhood state encodings** (7-bit values, one bit per cell in the 7-cell hex pattern: bit6=center, bit5=E, …, bit0=NE).
+- A single pair `(a, b)` is not just a single rule mapping — it generates **4 C2-symmetric mappings**:
+  1. `(a → b)`        direct mapping
+  2. `(b → a)`        reversed mapping
+  3. `(rot_a → rot_b)`  180° C2 rotation of the first
+  4. `(rot_b → rot_a)`  180° C2 rotation of the second
+
+The helper `_rotate_c2(state)` rotates a 7-bit hex state by 180° (equivalent to three 60° CW rotations via `_rotate60`).
+
+### How the rule is built
+
+1. **Iterate each pair** `(a, b)` in the input list.
+2. **Compute `rot_a` and `rot_b`** — the 180° C2-rotated versions.
+3. **Try all 4 ordered mappings** — if a mapping's source key is already in `rule`, it must map to the same destination; otherwise a **conflict** is detected and the function returns `None` (rejecting the rule).
+4. If no conflict is found after all pairs, the fully populated `rule` dict is returned.
+
+This is called by `generate_random_c2_rule`, which randomly samples `k` pairs (where `k ∈ {2, 3, 4}`) and retries until a conflict-free C2-symmetric rule is found.
+
+[NUDGE RESPONSE]
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  Successfully read src/evolution.py and extracted the _try_build_c2_rule function.
+  The function takes a list of (a, b) pairs (integers 1-127) and builds a C2-symmetric
+  rule by mapping each pair to 4 symmetric entries: (a→b), (b→a), (rot_a→rot_b), (rot_b→rot_a).
+  It returns None if any conflicts are detected.
+experimenter_view: |
+  The _try_build_c2_rule function enforces C2 (180-degree) rotational symmetry on the rule.
+  Each random pair (a, b) implicitly generates 4 rule mappings. The function validates
+  consistency across all pairs; any conflict results in rejection (returning None).
+  This mechanism is used by generate_random_c2_rule to sample symmetric rules for evolution.
+notes: "Task completed: read and analyzed _try_build_c2_rule source."
