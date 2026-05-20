@@ -1,20 +1,31 @@
-artifacts:
-- src/read_lines.py
-experimenter_view: "Successfully extracted and displayed the two requested code sections\
-  \ from\nsrc/new_fitness.py (461 lines total):\n\n1. Lines 230-270: Center-of-mass\
-  \ unwrapping logic for toroidal grid boundaries.\n   The code sorts simulation history\
-  \ by step, then unwraps consecutive COM deltas\n   by checking if dx/dy exceeds\
-  \ half the grid size (64 on a 128-wide grid) and\n   correcting by ±128.0 to remove\
-  \ artificial discontinuities from wrapping.\n   Replaces raw COMs with unwrapped\
-  \ COMs for downstream calculations.\n\n2. Lines 340-365: Mean velocity threshold\
-  \ check and standard deviation calculation.\n   Computes the mean velocity vector\
-  \ across all windows, calculates its magnitude,\n   and zeros out fitness if mean_velocity_magnitude\
-  \ >= max_velocity_threshold.\n   This acts as a ceiling filter for objects moving\
-  \ too fast.\n\nBoth mechanisms are fitness penalty/termination checks: one for bit\
-  \ count\nconservation, one for excessive velocity.\n"
+artifacts: []
+experimenter_view: 'The diagnostic script analyzed a champion rule (''L_TROMINO_3bit'')
+  over 500 steps.
+
+  The particle exhibits perfect bit conservation. The calculated mean velocity is
+
+  very low (0.0253 cells/step). The low fitness score (0.0197) stems from the
+
+  DisplacementConsistencyFitness calculation, which penalizes high variance in
+
+  per-window velocity. A significant velocity spike (mag=1.0) occurred in Window 2
+
+  (steps 200-300), likely due to a grid wrap-around, driving up the standard deviation
+
+  of velocity magnitudes and suppressing the overall fitness score despite stable
+  behavior
+
+  in other windows.
+
+  '
+log_excerpt: "--- Step 7: Final fitness ---\n  fitness = base_fitness * total_conservation_score\n\
+  \           = 0.02533333333333332 * 1.0\n           = 0.019678745504580934\n==============================\n\
+  \  Direct __call__ result\n==============================\n  fitness_fn(sim_history)\
+  \ = 0.019678745504580934\n  matches computed result? True\n"
 metrics:
-  lines_printed_1: 41
-  lines_printed_2: 26
-  total_lines_in_file: 461
-notes: Unwrapping and velocity threshold code successfully extracted and verified.
+  bit_count: 3
+  displacement_per_step: 0.0253
+  final_fitness: 0.019679
+  total_steps: 500
+notes: Run completed; diagnostic output captured.
 status: ok

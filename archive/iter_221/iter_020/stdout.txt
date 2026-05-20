@@ -1,129 +1,112 @@
-I'll first check if the file exists, then write and execute the Python script.
 
-
-
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
-
-[Tool Result: [DIR] __pycache__
-      analyze_champion_trajectory.py
-      analyze_glider_200.1.py
-      analyze_glider_220.py
-      analyze_long_run_dynamics.py
-      analyze_median_elite_rule.py
-      analyze_top_elite_rule.py
-      analyze_top_stabilizing_rule.py
-      ash_pattern.json
-      asymmetric_collision.py
-      breed_next_generation.py
-      characterize_5bit_glider.py
-      characterize_champion_174.py
-      characterize_glider_200.py
-      characterize_iter_197_2_champion.py
-      characterize_...]
-
-The file exists. Now I'll write the script and execute it:
-
-
-
-[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\read_lines.py', 'content': '"""Read specific line ranges from new_fitness.py"""\n\nwith open("new_fitness.py", "r") as f:\n    lines = f.readlines()\n\nprint("=" * 80)\nprint("LINES 230-270")\nprint("=" * 80)\nfor i in range(229, min(270, len(lines))):\n    print(f"{i+1:4d}: {lines[i]}", end="")\n\nprint()\nprint("=" * 80)\nprint("LINES 340-365")\nprint("=" * 80)\nfor i in range(339, min(365, len(lines))):\n    print(f"{i+1:4d}: {lines[i]}", end="")\n\nprint()\nprint(f"\\nTotal lines in file: {len(lines)}")\n'})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\read_lines.py]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src && python read_lines.py'})]
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/diag_velocity.py'})]
 
 [Tool Result: exit_code: 0
-stdout: ================================================================================
-LINES 230-270
-================================================================================
- 230:         #    we sort to be safe)
- 231:         # ------------------------------------------------------------------
- 232:         sorted_history = sorted(sim_history, key=lambda e: e["step"])
- 233:         # ------------------------------------------------------------------
- 234:         #...]
+stdout: ======================================================================
+  Loading champion rule from C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_221\results\champion_rule.json
+======================================================================
+  fitness_function : DisplacementConsistencyFitness
+  fitness          : 0.019679
+  rule_dict entries : 12
+  chromosome length : 128
+  seed_particle     : L_TROMINO_3bit
+  seed_cells        : [[63, 63], [64, 63],...]
 
-The read_lines.py script executed successfully and printed both line ranges. However, I notice there was an error when trying to execute `new_fitness.py` itself. Let me re-run the script cleanly and also check what's happening with the unwrapping code:
-
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src && python read_lines.py 2>&1'})]
-
-[Tool Result: exit_code: 0
-stdout: ================================================================================
-LINES 230-270
-================================================================================
- 230:         #    we sort to be safe)
- 231:         # ------------------------------------------------------------------
- 232:         sorted_history = sorted(sim_history, key=lambda e: e["step"])
- 233:         # ------------------------------------------------------------------
- 234:         #...]
-
-The script has been written to `read_lines.py` and executed successfully. Here are the two code sections you requested:
+Here is the full output of running `python src/diag_velocity.py`:
 
 ---
 
-### Lines 230-270: Center-of-Mass Unwrapping
+### Simulation Parameters
 
-This code handles **toroidal grid boundary unwrapping** for the center-of-mass (COM) trajectory:
-
-1. **Sorts** the simulation history by step number (line 232)
-2. **Unwraps consecutive COM deltas** (lines 239-254): For each step, it computes the delta from the previous COM. If a delta exceeds half the grid size (64 on a 128-wide grid), it wraps it back by subtracting or adding 128.0 to remove the artificial discontinuity caused by toroidal wrapping
-3. **Replaces raw COMs** with unwrapped COMs in the history (lines 257-262)
-
-The key unwrap logic:
-```python
-if dx > 64:
-    dx -= 128.0
-elif dx < -64:
-    dx += 128.0
-```
+| Parameter | Value |
+|---|---|
+| Fitness function | `DisplacementConsistencyFitness` |
+| Fitness | `0.019679` |
+| Rule entries | `12` |
+| Chromosome length | `128` |
+| Seed particle | `L_TROMINO_3bit` |
+| Seed cells | `[[63,63], [64,63], [64,64]]` |
+| LUT non-zero entries | `64/128` |
+| Simulation steps | `500` |
 
 ---
 
-### Lines 340-365: Mean Velocity Threshold Check
+### Simulation Progress (Center of Mass)
 
-This code calculates the **mean velocity vector** across all windows and applies a threshold:
+| Step | Bit Count | Unwrapped COM | Displacement |
+|---|---|---|---|
+| 100 | 3 | (92.33, 63.33) | 28.667 |
+| 200 | 3 | (120.33, 63.33) | 56.667 |
+| 300 | 3 | (20.33, 63.33) | 43.333 |
+| 400 | 3 | (48.33, 63.33) | 15.333 |
+| 500 | 3 | (76.33, 63.33) | 12.667 |
 
-1. **Computes mean of windowed velocity vectors** (lines 349-353): Takes the average of `dx` and `dy` across all windows, then computes the magnitude of this mean vector
-2. **Applies the max velocity threshold** (lines 355-356): If `self.max_velocity_threshold` is set and the mean velocity magnitude meets or exceeds it, the fitness is **zeroed out** (returns 0.0)
-
-The threshold check:
-```python
-if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
-    return 0.0
-```
-
-This acts as a **ceiling filter** — objects moving too fast (faster than `max_velocity_threshold`) receive zero fitness.
+- **Final bit count**: 3
+- **Total displacement**: 12.6667 cells
+- **Displacement/step**: 0.0253
 
 ---
 
-The script `src/read_lines.py` was successfully created and executed. The output above shows the exact code from both line ranges in `src/new_fitness.py` (461 lines total).
+### Fitness Breakdown (`DisplacementConsistencyFitness`)
+
+**Per-window velocity magnitudes:**
+
+| Window | Steps | dx | dy | magnitude |
+|---|---|---|---|---|
+| 0 | [0, 100] | 0.2867 | 0.0 | 0.2867 |
+| 1 | [100, 200] | 0.2800 | 0.0 | 0.2800 |
+| 2 | [200, 300] | -1.0000 | 0.0 | 1.0000 |
+| 3 | [300, 400] | 0.2800 | 0.0 | 0.2800 |
+| 4 | [400, 500] | 0.2800 | 0.0 | 0.2800 |
+
+**Key computed values:**
+
+| Metric | Value |
+|---|---|
+| Mean velocity magnitude (directional drift) | 0.0253 |
+| Mean(|velocity|) | 0.4253 |
+| Std of velocity magnitudes | 0.2873 |
+| max_velocity_threshold check (≤ 0.9?) | **False** (0.0253 < 0.9) |
+| base_fitness | 0.0253 / (1 + 0.2873) = **0.01968** |
+| Conservation score | 1.0 (all 3 bits preserved) |
+| **Final fitness** | **0.01968** |
+
+---
+
+### Key Observations
+
+1. The agent moved almost entirely along the **X-axis** (dy ≈ 0 throughout).
+2. The center of mass exhibited a large jump in window 2 (dx = -1.0) — likely a wraparound on a 128-wide grid — which caused the high velocity magnitude in that window.
+3. Despite the per-window velocity reaching 1.0, the **mean directional drift** is very small (0.0253 cells/step), resulting in a **low final fitness of 0.0197**.
+4. Bit conservation is perfect (score = 1.0), so the fitness is purely determined by the displacement consistency component.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
-artifacts:
-  - src/read_lines.py
+artifacts: []
 metrics:
-  total_lines_in_file: 461
-  lines_printed_1: 41
-  lines_printed_2: 26
+  final_fitness: 0.019679
+  displacement_per_step: 0.0253
+  total_steps: 500
+  bit_count: 3
+log_excerpt: |
+  --- Step 7: Final fitness ---
+    fitness = base_fitness * total_conservation_score
+             = 0.02533333333333332 * 1.0
+             = 0.019678745504580934
+  ==============================
+    Direct __call__ result
+  ==============================
+    fitness_fn(sim_history) = 0.019678745504580934
+    matches computed result? True
 experimenter_view: |
-  Successfully extracted and displayed the two requested code sections from
-  src/new_fitness.py (461 lines total):
-  
-  1. Lines 230-270: Center-of-mass unwrapping logic for toroidal grid boundaries.
-     The code sorts simulation history by step, then unwraps consecutive COM deltas
-     by checking if dx/dy exceeds half the grid size (64 on a 128-wide grid) and
-     correcting by ±128.0 to remove artificial discontinuities from wrapping.
-     Replaces raw COMs with unwrapped COMs for downstream calculations.
-  
-  2. Lines 340-365: Mean velocity threshold check and standard deviation calculation.
-     Computes the mean velocity vector across all windows, calculates its magnitude,
-     and zeros out fitness if mean_velocity_magnitude >= max_velocity_threshold.
-     This acts as a ceiling filter for objects moving too fast.
-  
-  Both mechanisms are fitness penalty/termination checks: one for bit count
-  conservation, one for excessive velocity.
-notes: "Unwrapping and velocity threshold code successfully extracted and verified."
+  The diagnostic script analyzed a champion rule ('L_TROMINO_3bit') over 500 steps.
+  The particle exhibits perfect bit conservation. The calculated mean velocity is
+  very low (0.0253 cells/step). The low fitness score (0.0197) stems from the
+  DisplacementConsistencyFitness calculation, which penalizes high variance in
+  per-window velocity. A significant velocity spike (mag=1.0) occurred in Window 2
+  (steps 200-300), likely due to a grid wrap-around, driving up the standard deviation
+  of velocity magnitudes and suppressing the overall fitness score despite stable behavior
+  in other windows.
+notes: "Run completed; diagnostic output captured."
 ```
