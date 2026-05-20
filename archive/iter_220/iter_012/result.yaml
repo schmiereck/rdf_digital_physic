@@ -1,25 +1,47 @@
 artifacts: []
-experimenter_view: "C2 symmetry in this hex cellular automaton system is enforced\
-  \ at the\n*generator pair* level, not the full lookup table. The key design principle:\n\
-  \nNEVER mutate the 128-entry LUT directly. Always:\n  1. Extract generator pairs\
-  \ from the rule dict\n  2. Mutate the pair list (add/remove/replace)\n  3. Rebuild\
-  \ via _try_build_c2_rule() which enforces C2 by construction\n\nThis guarantees\
-  \ symmetry preservation because _try_build_c2_rule() adds\nall C2-orbit members\
-  \ automatically. Fallback to generate_random_c2_rule()\nhandles the rare case of\
-  \ inconsistent mutations (pair state collisions).\n\nThe generator-pair representation\
-  \ is efficient: a rule needs only ~3-8\npairs to define a full 128-entry rule, as\
-  \ each pair expands to 4 entries\n(a→b, b→a, rot_a→rot_b, rot_b→rot_a).\n"
-log_excerpt: "Analysis complete. Three core C2-symmetry functions identified in src/evolution.py:\n\
-  \n1. _rotate_c2(state) - Rotates a hex-neighbourhood 180° via _rotate60(x3)\n  \
-  \ Maps NE↔SW, E↔W, SE↔NW, center→center\n\n2. _try_build_c2_rule(pairs) - Builds\
-  \ full 128-entry rule from generator pairs,\n   enforcing (a→b), (b→a), (rot_a→rot_b),\
-  \ (rot_b→rot_a) symmetry.\n   Returns None on conflict.\n\n3. generate_random_c2_rule(rng)\
-  \ - Generates random valid C2 rule by\n   picking k∈{2,3,4} random pairs and retrying\
-  \ _try_build_c2_rule.\n\nFour mutation patterns examined across the codebase:\n\
-  - Pair-add/remove (run_v_less_than_c_search.py)\n- Single-pair replacement (evolve_reboot_gen3.py)\n\
-  - Probabilistic keep+add (run_iter_171_evo.py)\n- Crossover+mutate (run_iter_171_evo.py)\n\
-  \nAll rely on _try_build_c2_rule() as the consistency gate.\n"
-metrics: {}
-notes: C2 mutation design documented; three working implementations identified across
-  codebase
+experimenter_view: 'Both inspected files are already pandas-free. The main issues
+  identified are:
+
+  1. BREEDER VULNERABILITY: Bit conservation in NetDisplacementFitness and SubLightFitness
+  only checks initial/final bit counts by default. A breeder that spawns particles
+  mid-simulation then annihilates them before the final step would pass. The strict_bit_conservation=True
+  flag exists but is disabled by default.
+
+  2. CoM INCONSISTENCY: NetDisplacementFitness uses the naive center_of_mass() from
+  evolution.py, which is discontinuous at toroidal boundaries. SubLightFitness uses
+  the private _toroidal_center_of_mass() with wrap-aware circular means. Both should
+  use the toroidal-aware version for correct displacement measurement.
+
+  3. VALIDATE_FITNESS.PY: Imports DisplacementConsistencyFitness from new_fitness.py,
+  a legacy module not yet inspected. Needs review to determine if it should be replaced
+  by fitness_functions.py classes.
+
+  4. REDUNDANT ASSERTIONS: Both fitness class __call__ methods contain unnecessary
+  assert isinstance(result, tuple) checks that can be safely removed.
+
+  '
+log_excerpt: 'Grep search confirmed: neither fitness_functions.py nor validate_fitness.py
+  import pandas.
+
+  All pandas hits were inside .venv/ (third-party packages: matplotlib, networkx,
+  pandas itself).
+
+  Breeder-related pattern only found in src/run_vc_search.py (comment about eliminating
+  breeder exploits).
+
+  validate_fitness.py imports from new_fitness module which was not read in this iteration.
+
+  No files were written or modified during this iteration.
+
+  '
+metrics:
+  breeder_vulnerability: strict_bit_conservation defaults to False in both fitness
+    classes
+  co_m_consistency: inconsistent - NetDisplacementFitness uses naive CoM, SubLightFitness
+    uses toroidal-aware CoM
+  pandas_imports_found: 0
+  validate_fitness_import: imports DisplacementConsistencyFitness from new_fitness
+    (legacy module)
+notes: Files read and analyzed; no pandas imports or breeder patterns in the two inspected
+  files beyond the known strict_bit_conservation default issue.
 status: ok
