@@ -1,73 +1,31 @@
 artifacts:
-- archive/iter_221/results/characterize_champion_221.py
-experimenter_view: 'The champion rule from iter_221 has been characterized. The rule
-  has 12 active
-
-  entries out of 128 possible (sparse rule). The seed is a 3-bit L-tromino.
-
-  The script performs unwrapped CoM tracking on the toroidal 128x128 grid to
-
-  compute true displacement without wrap-around artifacts. Key metrics to be
-
-  computed upon execution include net displacement (Euclidean distance between
-
-  initial and final unwrapped CoM), average speed (displacement/500 steps),
-
-  bit conservation statistics (min/max/final bit counts across 500 steps), and
-
-  step-by-step velocity profiles. The unwrapping algorithm uses best-alignment
-
-  between consecutive step active cells to maintain continuous unwrapped
-
-  coordinates.
+- src/run_evolution_exp_221.py
+experimenter_view: 'The evolution script has been successfully extended to support
+  warm-starting from a previous iteration''s results. The load_warm_start_population()
+  function handles two known JSON structures (top-level list and nested "population"
+  dict) and validates that chromosomes have exactly 128 elements. The script will
+  attempt to load from archive/iter_215/results/final_population.json first, then
+  warm_start_population.json, before falling back to random initialization. All outputs
+  will be saved to archive/iter_221/results/ as requested.
 
   '
-log_excerpt: 'The script was written to archive/iter_221/results/characterize_champion_221.py.
+log_excerpt: 'Task completed successfully. Created src/run_evolution_exp_221.py with:
 
-  It loads the champion rule from champion_vc_rule.json, initializes a 128x128
+  - Generations set to 30
 
-  toroidal grid with the L-tromino seed at [(63,63), (64,63), (64,64)], simulates
+  - RNG seed changed to 221
 
-  500 steps using the evolution.py step_grid with the compiled LUT, unwraps the
+  - Output directory set to archive/iter_221/results/
 
-  center-of-mass trajectory to compute true net displacement, and records per-step
+  - Added load_warm_start_population() function supporting both final_population.json
+  and warm_start_population.json formats
 
-  bit counts and unwrapped CoM coordinates. Output is printed to stdout and also
+  - Populations extracted as 128-element numpy arrays, compatible with existing chromosome_to_rule_dict()
+  and evaluate_population() functions
 
-  written to archive/iter_221/results/trajectory_analysis.txt.
-
-  Initial run failed with ModuleNotFoundError due to incorrect sys.path resolution.
-
-  The script was rewritten with corrected PROJECT_ROOT path
-
-  (Path(__file__).resolve().parent.parent.parent.parent / "src").
+  - Fallback to random generation if no valid warm-start file is found
 
   '
-metrics:
-  fitness: 0.019678745504580934
-  grid_size: 128
-  rule_dict:
-    15: 79
-    26: 90
-    32: 96
-    39: 103
-    58: 122
-    60: 124
-    65: 1
-    68: 4
-    78: 14
-    92: 28
-    96: 32
-    113: 49
-  rule_entries: 12
-  seed_cells:
-  - - 63
-    - 63
-  - - 64
-    - 63
-  - - 64
-    - 64
-  seed_particle: L_TROMINO_3bit
-  simulation_steps: 500
-notes: Script written with correct path resolution; execution pending next iteration.
+metrics: {}
+notes: Script written with warm-start capability; ready for execution.
 status: ok
