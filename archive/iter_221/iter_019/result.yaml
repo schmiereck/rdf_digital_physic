@@ -1,35 +1,23 @@
 artifacts:
-- print_displacement.py
-experimenter_view: 'The displacement within each time window is computed as a simple
-  difference of
-
-  COM coordinates (lines 330-331), which would be incorrect on a toroidal grid.
-
-  However, toroidal unwrapping IS handled upstream in lines 234-262: consecutive
-
-  COM deltas are corrected when they exceed half the grid size (±64 for a 128
-
-  grid), producing continuous unwrapped COM values. The downstream velocity
-
-  calculation then operates on these unwrapped values, so boundary crossings are
-
-  handled correctly without artificial jumps.
-
-  '
-log_excerpt: "File has 461 lines. Reading lines 310–365.\n================================================================================\n\
-  \  310:                 effective_window_end = window_end\n  311:              \
-  \   if w == self.num_windows - 1:\n  312:                     effective_window_end\
-  \ = final_step\n  313: \n  314:                 if s > effective_window_end:\n \
-  \ 315:                     break\n  ...\n  330:             dx = last_entry[\"com\"\
-  ][0] - first_entry[\"com\"][0]\n  331:             dy = last_entry[\"com\"][1] -\
-  \ first_entry[\"com\"][1]\n  332:             velocity_mag = math.sqrt(dx * dx +\
-  \ dy * dy)\n  ...\n  362:         std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))\n\
-  \  363: \n  364:         # ------------------------------------------------------------------\n\
-  \  365:         # 5. Core fitness formula\n================================================================================\n\
-  Done.\n"
+- print_lines.py
+experimenter_view: "Lines 320-350 of src/new_fitness.py reveal the velocity calculation\
+  \ logic:\n\n1. dx and dy are computed as the difference between the last and first\
+  \ \"com\"\n   (center of mass) coordinates within a sliding window.\n2. The raw\
+  \ Euclidean magnitude is calculated via sqrt(dx² + dy²).\n3. Both dx, dy, and velocity_mag\
+  \ are normalized by dividing by window_steps,\n   yielding per-step velocity components\
+  \ and speed.\n4. Edge case: if no step difference exists, all values default to\
+  \ 0.0.\n5. Results are appended to window_velocity_mags and window_velocity_vectors\n\
+  \   for subsequent aggregation into directional drift metrics.\nThe code is clean\
+  \ and handles edge cases appropriately.\n"
+log_excerpt: "Lines 320 to 350 of src/new_fitness.py:\n================================================================================\n\
+  \ 320:                 if first_entry is None:\n 321:                     first_entry\
+  \ = entry\n 322:                 last_entry = entry  # overwrite on every match\
+  \ → last one wins\n ...\n 332:             dx = last_entry[\"com\"][0] - first_entry[\"\
+  com\"][0]\n 333:             dy = last_entry[\"com\"][1] - first_entry[\"com\"][1]\n\
+  \ 334:             velocity_mag = math.sqrt(dx * dx + dy * dy)\n ...\n 346:    \
+  \         window_velocity_vectors.append((dx, dy))\n"
 metrics:
-  file_total_lines: 461
-  lines_analyzed: 310-365
-notes: Toroidal unwrapping handled upstream via cumulative delta correction before
-  windowed displacement calculation.
+  file_total_lines: 466
+  lines_printed: 31
+notes: Velocity calculation logic extracted and documented successfully.
 status: ok
