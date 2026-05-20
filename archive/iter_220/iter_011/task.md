@@ -1,1 +1,1 @@
-Read and print the contents of archive/iter_179/results/champion_rule.json. Explain what mappings it defines.
+Read `src/fitness_functions.py` and `src/run_vc_search.py`. Check how fitness is computed and if there are pandas imports. Check if we can run a search that enforces strict bit-conservation (i.e., bit count must remain exactly equal to the seed bit count, like 3, at all times) to eliminate breeder exploits. Rewrite any pandas dependency in these files so they use only numpy and standard libraries.
