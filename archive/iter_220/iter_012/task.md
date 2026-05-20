@@ -1,1 +1,1 @@
-Read and print the contents of `src/fitness_functions.py` and `src/validate_fitness.py`. Print them clearly so we can inspect them and identify any imports or logic that can be simplified or corrected to eliminate pandas and breeder exploits.
+Read the file src/new_fitness.py and output its contents. If it is too long, output the DisplacementConsistencyFitness class and surrounding helper functions or classes.
