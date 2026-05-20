@@ -1,0 +1,1 @@
+Write a python script src/read_new_results.py that checks if archive/iter_220/results/champion_v2_rule.json and archive/iter_220/results/evolution_summary_v2.csv exist, reads their content, and prints it out. Run the script and print its full output.
