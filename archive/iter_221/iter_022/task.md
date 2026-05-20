@@ -1,1 +1,1 @@
-Find and print where history is generated. Does it record com at every step, or only at checkpoints (e.g., every 50 or 100 steps)? Print the relevant code.
+Write and run a simple python script src/show_com.py that runs the simulation with the champion rule for 500 steps, prints the unwrapped center of mass coordinates at step 0, 100, 200, 300, 400, 500, and calculates the per-step velocity between these checkpoints.
