@@ -1,0 +1,1 @@
+Create and run a python script src/test_perfect_unwrapped.py that implements the spatially unwrapped com_and_bits and step-by-step continuous_com simulation loop. Load the champion rule, run a 500-step simulation, print out the unwrapped center of mass at steps 0, 100, 200, 300, 400, 500, and print the resulting DisplacementConsistencyFitness score.
