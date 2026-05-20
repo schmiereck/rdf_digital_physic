@@ -1,1 +1,1 @@
-Print lines 230 to 280 of src/new_fitness.py. Do not write yaml block or any other files, just print the python code to stdout.
+Write a python script to print lines 240 to 285 of src/new_fitness.py with line numbers. We need to see if unwrapped COM replaces the raw values or if there is a bug. Execute the script and print stdout.
