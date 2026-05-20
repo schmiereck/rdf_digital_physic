@@ -1,1 +1,1 @@
-Write a python script to read and print lines 310 to 365 of src/new_fitness.py. This is crucial to find out how displacement is computed and if it handles toroidal unwrapping.
+Write a python script to print lines 320 to 350 of src/new_fitness.py to see how dx, dy, and mags are calculated. Run this script.
