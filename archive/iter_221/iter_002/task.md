@@ -1,0 +1,1 @@
+Print current_state.md and goal.md in their entirety to stdout, so we have their exact content.
