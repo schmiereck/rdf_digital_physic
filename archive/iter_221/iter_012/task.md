@@ -1,1 +1,3 @@
-Run 'python archive/iter_221/results/characterize_champion_221.py' in the terminal. Print its stdout and stderr to the console so we can see the results of the trajectory analysis. Make sure that it runs successfully and saves the 'trajectory_analysis.txt' file.
+Run the full evolutionary search by executing:
+python src/run_evolution_exp_221.py
+This runs 30 generations of evolution with DisplacementConsistencyFitness. Ensure that the search completes and saves the final results in archive/iter_221/results/. Print progress updates as they happen.
