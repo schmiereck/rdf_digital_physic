@@ -1,8 +1,5 @@
-I'll read the file and run the validation script for you.
 
-
-
-[Tool Call: read_file({'path': 'src/new_fitness.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
@@ -19,82 +16,141 @@ In cellular-automaton glider searches, evolution can converge on a class of
 objects sometimes called *drifters*: particles that do not travel coherently
 but instead undergo small periodic oscillation...]
 
+Here are the `__call__` method and its helper `_compute_conservation_score`:
 
-[Tool Call: bash({'command': 'python src/validate_fitness.py'})]
+```python
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        if not sim_history:
+            return 0.0
 
-[Tool Result: exit_code: 0
-stdout: DisplacementConsistencyFitness validation � 500 steps, 128x128 grid, 5 windows, 3-bit L-tromino seed
-
-  [g10_f_rule_034_c2 [iter_193]]
-    source: archive\iter_193\iter_002\results\champion_rule.json
-    fitness=0.0219  net_disp=20.14  bits: 3->14
-
-  [g10_rule_001      [iter_179]]
-    source: archive\iter_179\results\champion_rule.json
-    fitness=0.0805  net_disp=12.00  bits: 3->3
-
-  [g4_rule_083       [iter_218]]
-    source: archive\iter_218\results\champion_vc_...]
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
 
-Here's the summary:
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
 
----
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
 
-## `src/new_fitness.py` — Definition
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
 
-The file defines a **`DisplacementConsistencyFitness`** class. Key points:
+        if total_steps <= 0:
+            return 0.0
 
-- **Purpose**: A fitness function that rewards consistent, directional motion (like true gliders) and penalizes "drifter" objects that oscillate or exhibit random-walk behaviour.
-- **Core approach**: The simulation is divided into `num_windows` time windows. Per-window velocity vectors (ΔCOM) are computed, and the **standard deviation of velocity magnitudes** is used as a consistency metric.
-- **Formula**: `base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)`
-  - High mean velocity + low std dev → high fitness (true gliders)
-  - High std dev → suppressed fitness (drifters, even with high mean velocity)
-- **Bonus**: Multiplied by a "leaky" bit-conservation score that gives partial credit rather than hard-failing when bit counts change.
-- **Parameters**: `num_windows` (default 5) and `bits_per_cell` (default 1).
+        steps_per_window = total_steps / self.num_windows
 
----
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
 
-## Validation Script Results (`python src/validate_fitness.py`)
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
 
-✅ **Executed successfully** — no import errors, no exceptions.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
 
-| Rule | Fitness | Net Disp | Bits 0→500 |
-|---|---|---|---|
-| g10_f_rule_034_c2 (iter_193) | 0.0219 | 20.14 | 3 → 14 |
-| g10_rule_001 (iter_179) | 0.0805 | 12.00 | 3 → 3 |
-| g4_rule_083 (iter_218) | 0.0000 | 0.00 | 3 → 3 |
+            for entry in sorted_history:
+                s = float(entry["step"])
+                if s < window_start:
+                    continue
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+                if s > effective_window_end:
+                    break
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry
 
-**Pass/Fail**: **PASS** — The drifter (iter_218, fitness=0.0000) scored lower than both glider rules, confirming the fitness function correctly distinguishes true gliders from drifters.
+            if first_entry is None or last_entry is None:
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
 
-No issues at all — the script ran clean with zero exit code and no stderr output.
+            window_steps = last_entry["step"] - first_entry["step"]
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(mean_dx * mean_dx + mean_dy * mean_dy)
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        if mean_velocity_magnitude == 0.0:
+            base_fitness = 0.0
+        else:
+            base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)
+
+        total_conservation_score = self._compute_conservation_score(sorted_history)
+        fitness = base_fitness * total_conservation_score
+
+        return float(fitness)
+
+    def _compute_conservation_score(
+        self, sim_history: list[dict[str, Any]]
+    ) -> float:
+        if not sim_history:
+            return 1.0
+
+        initial_bits = sim_history[0]["bit_count"]
+        if initial_bits == 0:
+            return 1.0
+
+        conservation_factors: list[float] = []
+        for entry in sim_history:
+            bit_count = entry["bit_count"]
+            if bit_count == initial_bits:
+                conservation_factors.append(1.0)
+            else:
+                conservation_factors.append(
+                    min(bit_count, initial_bits) / max(bit_count, initial_bits)
+                )
+
+        total_conservation_score = sum(conservation_factors) / len(conservation_factors)
+        return float(total_conservation_score)
+```
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
 artifacts: []
-metrics:
-  g10_f_rule_034_c2_fitness: 0.0219
-  g10_rule_001_fitness: 0.0805
-  g4_rule_083_fitness: 0.0
-  validation_status: PASS
+metrics: {}
 log_excerpt: |
-  python src/validate_fitness.py
-  DisplacementConsistencyFitness validation 🧬 500 steps, 128x128 grid, 5 windows, 3-bit L-tromino seed
-
-    [g10_f_rule_034_c2 [iter_193]]
-      source: archive\iter_193\iter_002\results\champion_rule.json
-      fitness=0.0219  net_disp=20.14  bits: 3->14
-
-    [g10_rule_001      [iter_179]]
-      source: archive\iter_179\results\champion_rule.json
-      fitness=0.0805  net_disp=12.00  bits: 3->3
-
-    [g4_rule_083       [iter_218]]
-      source: archive\iter_218\results\champion_vc_rule.json
-      fitness=0.0000  net_disp=0.00  bits: 3->3
-
-  ======================================================================
-  PASS 🧪 drifter scored lower than both glider rules.
-  glider margin over drifter: iter_193=0.0219, iter_179=0.0805
+  (File read successfully: src/new_fitness.py)
+  Code extracted for DisplacementConsistencyFitness.__call__ and _compute_conservation_score.
 experimenter_view: |
-  The new fitness function, DisplacementConsistencyFitness, successfully distinguished between coherent glider motion and drifters. The validation script ran without errors (exit code 0). Rules representing true gliders (e.g., g10_rule_001) achieved higher fitness scores (0.0805) compared to a drifter-like object (g4_rule_083, fitness 0.0). The metric correctly penalizes objects with inconsistent velocity vectors or low net displacement.
-notes: "Successfully validated DisplacementConsistencyFitness; it distinguishes drifters from true gliders."
+  The DisplacementConsistencyFitness function computes fitness by:
+  1. Dividing the simulation history into `num_windows`.
+  2. Computing per-window velocity vectors and magnitudes.
+  3. Calculating the mean velocity magnitude and the standard deviation of magnitudes.
+  4. Applying the formula: base_fitness = mean_velocity_magnitude / (1 + std_dev).
+  5. Multiplying by a leaky bit-conservation score to penalize mass changes.
+  This design effectively distinguishes coherent gliders (low std dev) from drifters (high std dev).
+notes: "Retrieved DisplacementConsistencyFitness code as requested."
+```
