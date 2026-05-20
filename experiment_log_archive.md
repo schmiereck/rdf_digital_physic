@@ -9146,3 +9146,107 @@ The agent has now hardened `src/fitness_v2.py` with defensive assertions and a s
 
 **Notes:** The project is unblocked. The next action should be to run the `v<c` glider search.
 
+
+---
+```yaml
+cached_tokens: 115167
+cost_usd: 0.33883
+hypothesis: 'phase-200: A `v<c` (sub-light speed) glider is discovered through evolution,
+  though platform instability prevents full quantitative characterization.'
+input_tokens: 169049
+iter: 200
+metrics:
+  champion_fitness: 1.927
+  fitness_ratio_vs_v1c: 0.0344
+  generations_run: 15
+  reference_v1c_fitness: 56.0
+output_tokens: 4712
+status: ok
+```
+
+## iter_200: phase-200: A `v<c` (sub-light speed) glider is discovered through evolution, though platform instability prevents full quantitative characterization.
+
+**Analysis:** This phase aimed to discover a `v<c` (sub-light speed) glider, a critical milestone. The strategy was to first use a `planner` agent (200.1) for a broad evolutionary search, then characterize the result.
+
+The planner agent (200.1) was highly successful. It ran a 15-generation search using the new `SparseGliderFitness` function and discovered a champion rule with a stable, high fitness score of 1.9
+
+**Status:** ok
+
+**Metrics:** `{'champion_fitness': 1.927, 'generations_run': 15, 'reference_v1c_fitness': 56.0, 'fitness_ratio_vs_v1c': 0.0344}`
+
+**Experimenter view:** Sub-agent 200.1 successfully conducted a 15-generation evolutionary search using the `SparseGliderFitness` function, discovering a champion rule that produces a moving, compact particle. The fitness converged to a strong score of 1.927 after 8 generations.
+
+Subsequent attempts at quantitative analysis failed due to platform errors. A qualitative analysis by sub-agent 200.5, based on artifacts from
+
+**Notes:** Major scientific success in discovering the glider, but hampered by severe technical/platform limitations that must be addressed.
+
+
+---
+```yaml
+cached_tokens: 87874
+cost_usd: 0.23744
+hypothesis: 'phase-201: Debunked the `v<c` glider from `iter_200`, revealing it as
+  a stationary oscillator that exploited a phase-sampling flaw in the fitness function.'
+input_tokens: 124689
+iter: 201
+metrics:
+  actual_period_steps: 4
+  actual_velocity_c: 0.0
+  cumulative_displacement_at_step_512: 0.667
+  exploit_mechanism: Oscillator Phase-Sampling
+  reproduced_fitness_exploit: 1.927
+output_tokens: 3019
+status: ok
+```
+
+## iter_201: phase-201: Debunked the `v<c` glider from `iter_200`, revealing it as a stationary oscillator that exploited a phase-sampling flaw in the fitness function.
+
+**Analysis:** This phase was a crucial scientific debugging effort to validate the `v<c` glider discovery from `iter_200`. The investigation proceeded in three sequential steps, each building on the last.
+
+First, agent `201.1` performed a quantitative characterization. The result was a categorical refutation of the original claim: the champion rule produces a period-4 stationary oscillator with zero net velocit
+
+**Status:** ok
+
+**Metrics:** `{'reproduced_fitness_exploit': 1.927, 'actual_velocity_c': 0.0, 'actual_period_steps': 4, 'exploit_mechanism': 'Oscillator Phase-Sampling', 'cumulative_displacement_at_step_512': 0.667}`
+
+**Experimenter view:** **Sub-agent 201.1:** Successfully re-characterized the `v<c` champion rule. Instead of a moving glider, it produces a perfect period-4 stationary oscillator with zero net velocity. Bit conservation is stable.
+
+**Sub-agent 201.2:** Generated a clear GIF of the period-4 oscillator, visually confirming the findings of `201.1`. The object cycles through four distinct L-tromino-like shapes while remain
+
+**Notes:** A critical negative result. The previous `v<c` glider discovery is invalid. The next phase must focus on fixing the fitness function.
+
+
+---
+```yaml
+cached_tokens: 183308
+cost_usd: 0.56375
+hypothesis: 'phase-202: Developed and validated a robust, exploit-resistant fitness
+  function for v<c glider search.'
+input_tokens: 283671
+iter: 202
+metrics:
+  best_fitness_found: 0.16666666666666785
+  champion_displacement: 0.6666666666666714
+  generations_to_plateau: 3
+  known_exploits_blocked: 2
+output_tokens: 4960
+status: ok
+```
+
+## iter_202: phase-202: Developed and validated a robust, exploit-resistant fitness function for v<c glider search.
+
+**Analysis:** This phase was a critical and successful exercise in scientific debugging and tool hardening. The initial goal to find a `v<c` glider was not met. Instead, the phase pivoted to iteratively identifying and fixing two distinct, critical exploits in the fitness function.
+
+1.  **Sub-goal 202.1:** Addressed the "phase-sampling" exploit by creating `CumulativeDisplacementFitness`. While the agent report
+
+**Status:** ok
+
+**Metrics:** `{'best_fitness_found': 0.16666666666666785, 'champion_displacement': 0.6666666666666714, 'generations_to_plateau': 3, 'known_exploits_blocked': 2}`
+
+**Experimenter view:** This phase successfully hardened the `v<c` fitness function against two distinct exploits.
+
+- **Sub-agent 202.1** developed `CumulativeDisplacementFitness`, which solved the phase-sampling exploit but, as discovered by **sub-agent 202.2**, was vulnerable to an annihilation exploit that produced artificial fitness scores of ~89.8.
+- **Sub-agent 202.3** created the final `RobustCumulativeDisplacemen
+
+**Notes:** The main outcome of this phase is not a new particle, but a reliable tool to continue the search.
+
