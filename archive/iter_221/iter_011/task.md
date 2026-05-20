@@ -1,0 +1,1 @@
+Run the script archive/iter_221/results/characterize_champion_221.py. If there is any path or import issue, fix it. Print the stdout of the script. If the file 'archive/iter_221/results/trajectory_analysis.txt' is created, read and print its contents to stdout.
