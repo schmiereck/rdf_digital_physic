@@ -1,0 +1,1 @@
+Run a script to evaluate the champion rule from archive/iter_221/results/champion_rule.json using the fixed DisplacementConsistencyFitness in src/new_fitness.py (instantiated with max_velocity_threshold=0.9). What is its new fitness score? Confirm if it is 0.0.
