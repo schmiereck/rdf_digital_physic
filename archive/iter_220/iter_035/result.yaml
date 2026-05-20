@@ -1,22 +1,42 @@
-artifacts:
-- archive/iter_220/results/champion_vc_rule_consistency.json
-experimenter_view: 'The iterative search for iteration 220 (DisplacementConsistencyFitness)
+artifacts: []
+experimenter_view: "Both `evolution` and `engine` modules expose a `center_of_mass`\
+  \ function. \nThe `evolution.py` version (line 103) operates on a simple 2D boolean\
+  \ grid via `np.where(grid > 0)`.\nThe `engine.py` version (line 185) is more robust,\
+  \ using `occupancy_mask()` to handle multi-bit (3D) grids by summing over the bit\
+  \ axis.\nThe `HexagonalGrid` class also wraps this as an instance method at line\
+  \ 271.\nCritically, `center_of_mass` is redundantly defined in ~50+ other files\
+  \ across the project, indicating a lack of centralized utility — a potential code\
+  \ smell worth addressing.\n"
+log_excerpt: '=== dir(evolution) ===
 
-  successfully identified a champion solution. The best fitness score is
+  [''EPS'', ''GRID_SIZE'', ''INITIAL_BITS'', ''LTROMINO_CELLS'', ''STEPS'', ''center_of_mass'',
+  ''evaluate_rule'', ''generate_random_c2_rule'', ''make_ltromino_grid'', ''math'',
+  ''np'', ''random'', ''rule_dict_to_lut'', ''step_grid'']
 
-  approximately 0.1779 (17.8%), found at generation 6 of 20. The rule set
 
-  is relatively sparse with 18 active rules. The particle configuration
+  === dir(engine) ===
 
-  utilizes an L-tromino (3 cells) on a 128x128 grid.
+  [''BITS_PER_CELL'', ''HEX_DIRS'', ''HexagonalGrid'', ''annotations'', ''bit_count'',
+  ''build_lut'', ''center_of_mass'', ''np'', ''occupancy_mask'', ''step_grid'', ''step_grid_2d'']
+
+
+  Grep found `center_of_mass` defined in 53 locations, including:
+
+  - src/evolution.py:103
+
+  - src/engine.py:185 (module-level) and :271 (class method)
+
+  - src/simulator.py:102
+
+  - src/simulate.py:54
+
+  - And ~49 other standalone scripts with their own copies
 
   '
 metrics:
-  fitness: 0.1779048749022924
-  generation_of_best: 6
-  grid_size: 128
-  population_size: 100
-  rule_dict_size: 18
-  simulation_steps: 200
-notes: Champion found with 0.178 fitness.
+  center_of_mass_definitions_found: 53
+  engine_module_functions: 11
+  evolution_module_functions: 14
+notes: center_of_mass found in both modules; 50+ duplicate definitions across codebase
+  suggest refactoring opportunity.
 status: ok
