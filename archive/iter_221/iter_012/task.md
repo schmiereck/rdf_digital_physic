@@ -1,3 +1,1 @@
-Run the full evolutionary search by executing:
-python src/run_evolution_exp_221.py
-This runs 30 generations of evolution with DisplacementConsistencyFitness. Ensure that the search completes and saves the final results in archive/iter_221/results/. Print progress updates as they happen.
+Print the code inside src/new_fitness.py where velocity/displacement is calculated and compared against max_velocity_threshold. Why did a rule with net velocity ~1.0 pass the max_velocity_threshold of 0.9?
