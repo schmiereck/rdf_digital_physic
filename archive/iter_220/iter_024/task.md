@@ -1,1 +1,16 @@
-Run a python script to search for any files containing 'v2' or 'warm_start' in 'src/', 'archive/', or project root. Print their relative paths and sizes, and if there are any JSON or CSV files under 'archive/iter_220/results/' or similar, print their content (or summary) to see if the warm start evolution run completed and what it found.
+Modify `src/new_fitness.py` and `src/run_vc_search_consistency.py` to add a velocity gating mechanism to filter out speed-of-light ($v=c$) gliders:
+1. In `src/new_fitness.py`, modify `DisplacementConsistencyFitness.__init__` to accept `max_velocity_threshold: float | None = None`. Stash it in `self.max_velocity_threshold`.
+2. In `src/new_fitness.py`, modify `DisplacementConsistencyFitness.__call__` to check:
+   ```python
+   if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+       return 0.0
+   ```
+3. In `src/run_vc_search_consistency.py`, configure the `fitness_fn` in `main()` to use:
+   ```python
+   fitness_fn = DisplacementConsistencyFitness(
+       num_windows=5,
+       max_bit_threshold=6,
+       max_velocity_threshold=0.9,
+   )
+   ```
+4. Verify both files can be imported and are syntax-error-free.
