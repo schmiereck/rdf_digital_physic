@@ -1,1 +1,1 @@
-Check if src/test_deconstruct_rule.py exists and print its content. If it was run, print its output or execute it to see if the deconstruction works and what the generator pairs are.
+Execute the evolutionary search by running `python src/run_vc_search_consistency.py`. Ensure that it runs without any errors and successfully outputs `archive/iter_220/results/champion_vc_rule_consistency.json`. Print the final logs showing the champion rule, its fitness, and statistics.
