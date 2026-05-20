@@ -1,0 +1,1 @@
+Write a python script to search for class definitions in src/new_fitness.py and print them, along with their __init__ and __call__ or evaluate signatures.
