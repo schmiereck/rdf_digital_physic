@@ -1,1 +1,1 @@
-Print the full contents of src/run_evolution_exp_220_fixed.py so we can inspect its implementation details.
+Read the argument parser and population loading code of src/run_evolution.py to understand how it loads pre-existing populations and what fitness functions it supports.
