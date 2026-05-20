@@ -238,7 +238,7 @@ class DisplacementConsistencyFitness:
         # ------------------------------------------------------------------
         unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]
         for i in range(1, len(sorted_history)):
-            prev_com = unwrapped_coms[-1]
+            prev_com = sorted_history[i - 1]["com"]
             cur_com = sorted_history[i]["com"]
             dx = cur_com[0] - prev_com[0]
             dy = cur_com[1] - prev_com[1]

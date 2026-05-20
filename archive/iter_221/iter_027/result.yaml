@@ -1,25 +1,35 @@
-artifacts: []
-experimenter_view: 'Champion Rule (iter_221) was evaluated simulating an L-tromino
-  seed on a 128x128 grid for 500 steps. The simulation demonstrated perfect bit conservation
-  (score: 1.0), but suffered from high velocity variance across time windows (std
-  dev ~0.287). This instability significantly reduced the base fitness, resulting
-  in a low final score of ~0.0197. The mean velocity was low (~0.025), indicating
-  poor directed movement.
+artifacts:
+- apply_fix.py
+- src/new_fitness.py
+experimenter_view: 'Applied the COM unwrapping fix to src/new_fitness.py. The bug
+  was on line 241 where
+
+  prev_com was incorrectly derived from unwrapped_coms[-1] (accumulating unwrapping
+
+  artifacts) instead of sorted_history[i-1]["com"] (the raw previous position).
+
+  The fix ensures consecutive raw COM positions are used as deltas, producing correct
+
+  unwrapped trajectories on the toroidal 128x128 grid. Runtime tests confirm the
+
+  consistent glider scores ~250x higher than a drifter, and the toroidal wrap test
+
+  also scores high (0.141421), validating proper boundary crossing behavior.
 
   '
-log_excerpt: "======================================================================\n\
-  \  FINAL RESULTS:\n======================================================================\n\
-  \  mean_velocity_magnitude      : 0.02533333\n  std_dev_velocity_magnitudes  : 0.28734493\n\
-  \  leaky_bit_conservation_score : 1.00000000\n  base_fitness                 : 0.01967875\n\
-  \  final_fitness                : 0.01967875\n======================================================================\n\
-  \n  fitness_fn(history) = 0.01967875\n"
+log_excerpt: "[FIX] Line 241: unwrapped_coms[-1]  ->  sorted_history[i - 1][\"com\"\
+  ]\n[INFO] Saved updated content to src/new_fitness.py\n[VERIFY] Line 241:      \
+  \       prev_com = sorted_history[i - 1][\"com\"]\n[VERIFY] OK: Fix confirmed present\
+  \ in file.\n--- Lines 240-255 of the updated file ---\n  240:         for i in range(1,\
+  \ len(sorted_history)):\n  241:             prev_com = sorted_history[i - 1][\"\
+  com\"]\n  242:             cur_com = sorted_history[i][\"com\"]\n--- Syntax check\
+  \ ---\n[OK] No syntax errors.\n--- Quick runtime test ---\n  Consistent glider:\
+  \   fitness = 0.141421\n  Drifter (oscillating): fitness = 0.000565\n  Toroidal\
+  \ wrap test:  fitness = 0.141421\n[SUCCESS] Fix applied and verified successfully.\n"
 metrics:
-  final_fitness: 0.01967875
-  grid_size: 128x128
-  leaky_bit_conservation_score: 1.0
-  mean_velocity_magnitude: 0.02533333
-  simulation_steps: 500
-  std_dev_velocity_magnitudes: 0.28734493
-notes: Rule iter_221 shows perfect conservation but low fitness due to high velocity
-  variance and unstable trajectory.
+  consistent_glider_fitness: 0.141421
+  drifter_fitness: 0.000565
+  toroidal_wrap_fitness: 0.141421
+notes: COM unwrapping fix applied — prev_com now uses raw sorted_history[i-1] instead
+  of accumulating unwrapped positions.
 status: ok
