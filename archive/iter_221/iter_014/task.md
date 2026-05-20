@@ -1,0 +1,1 @@
+Read and print the parts of src/new_fitness.py where max_velocity_threshold is used, to see how velocity is calculated and why the v=1c glider was not rejected.
