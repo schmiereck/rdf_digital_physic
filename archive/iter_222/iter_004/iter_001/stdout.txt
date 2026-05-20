@@ -1,0 +1,88 @@
+Now I have enough context. Let me implement the script.
+Let me verify the orbit count and quick sanity-check the script before running the long search.
+Good — the projection is correct. The iter_215 rules use C6 (60°) symmetry, not C2, so projecting them to C2 chromosomes correctly enforces 180° symmetry. Let me run a quick sanity test before launching the full search.
+Fix the encoding issue.
+Now run the full search.
+Search is running. I'll wait for the notification.
+All artifacts produced. The implementation ran cleanly but the search found no candidate above 0 fitness — the C2-projected warm starts produced expanding non-gliders and the 50-gen GA never escaped the flat-zero landscape under the strict fitness gates (min_velocity=0.02, max_velocity=0.9, max_bit_threshold=12, extinction guard).
+
+```yaml
+status: experiment_failed
+artifacts:
+  - src/run_evolution_exp_222.py
+  - archive/iter_222/results/champion_rule_perfect.json
+  - archive/iter_222/results/evolution_summary_perfect.csv
+  - archive/iter_222/results/champion_vc_glider_perfect.gif
+  - archive/iter_222/results/trajectory_analysis.txt
+metrics:
+  num_orbits: 72
+  population_size: 100
+  generations: 50
+  elite_size: 10
+  tournament_size: 3
+  crossover_prob: 0.5
+  mutation_prob: 0.02
+  champion_fitness: 0.0
+  best_fitness_any_gen: 0.0
+  mean_fitness_any_gen: 0.0
+  elapsed_sec: 193.4
+  characterization_steps: 500
+  champion_extinction_step: null
+  champion_max_bits: 172
+  champion_final_bits: 156
+  champion_total_disp_cells: 20.3468
+  champion_mean_speed_cells_per_step: 0.040694
+  champion_period: null
+log_excerpt: |
+  Gen 49: best=0.000000  mean=0.000000  champion=0.000000
+  Gen 50: best=0.000000  mean=0.000000  champion=0.000000
+  === Search complete in 193.4s ===
+    Champion fitness: 0.000000
+  Saved champion rule  -> archive/iter_222/results/champion_rule_perfect.json
+  Saved evolution summary -> archive/iter_222/results/evolution_summary_perfect.csv
+  Rendering GIF -> archive/iter_222/results/champion_vc_glider_perfect.gif
+  GIF saved (424.7 KB)
+  Wrote trajectory analysis -> archive/iter_222/results/trajectory_analysis.txt
+  === Champion characterisation ===
+    extinction_step : None
+    speed           : 0.040694 cells/step
+    total_disp      : 20.3468
+    max_bits        : 172
+    period          : None
+    verdict         : GROWING WITHOUT BOUND (max_bits=172) - NOT a stable glider
+experimenter_view: |
+  The full 72-orbit C2-symmetric evolutionary pipeline was implemented and
+  executed end-to-end. The C2 orbit machinery is mathematically verified:
+  16 fixed-point states + 56 size-2 orbits = exactly 72 orbits. Conversion
+  between 72-orbit chromosomes and rule_dicts is bijective up to projection,
+  yielding fully C2-symmetric LUTs by construction.
+
+  However, the 50-generation search failed to discover any candidate with
+  non-zero fitness. The warm-start population from iter_215 — which encoded
+  C6-symmetric rules — collapses under C2 projection: the OR-projection
+  enforces C2 symmetry but breaks the original glider dynamics, producing
+  rules whose L-tromino seed either grows without bound (exceeding the
+  max_bit_threshold=12 gate) or moves at speeds outside the (0.02, 0.9)
+  velocity window. Random bit-flip mutations at rate 0.02/bit produced
+  zero variance in fitness across all 50 generations, so selection became
+  random and the GA performed a random walk in a flat zero-fitness
+  landscape.
+
+  The "champion" written to disk is essentially the first chromosome from
+  the seeded population (fitness = 0). Its 500-step characterisation shows
+  it grows monotonically toward 138-172 active cells (≈55× the 12-cell
+  threshold) and drifts only +20 rows over 500 steps with highly
+  inconsistent per-window velocities — a clear non-glider that is correctly
+  filtered to 0.0 by DisplacementConsistencyFitness.
+
+  Conclusion: the pipeline is correct; the scientific goal (find a v<c
+  glider via 72-orbit C2 search) was not met from this warm start. Likely
+  remedies for a follow-up iteration include (i) seeding with verified
+  C2-symmetric rules rather than C2-projected C6 rules, (ii) increasing
+  mutation rate (≥0.05/bit) until a non-zero fitness emerges to break the
+  flat-fitness plateau, (iii) relaxing max_bit_threshold so partial gliders
+  earn fractional fitness, or (iv) using a tournament-with-noise selection
+  to keep diversity high during the flat phase.
+notes: "Pipeline implemented and executed (193s, 50 gens, 100 pop, 72-orbit C2); zero glider candidates emerged from C2-projected iter_215 warm start."
+```
+Monitor timeout is informational only — the run already completed and all artifacts are written. No action needed.
