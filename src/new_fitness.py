@@ -114,7 +114,7 @@ class DisplacementConsistencyFitness:
     ----------------
     1. Divide ``sim_history`` into ``num_windows`` equal-duration windows.
     2. For each window, compute the displacement vector (ΔCOM) and its
-       magnitude (velocity proxy, since all windows are equal length).
+       magnitude (velocity in cells/step, normalized by window duration).
     3. Compute the mean of the per-window velocity *vectors* (not just
        magnitudes) — this gives the net directional drift.
     4. Compute the standard deviation of the per-window velocity *magnitudes*
@@ -294,9 +294,20 @@ class DisplacementConsistencyFitness:
                 window_velocity_vectors.append((0.0, 0.0))
                 continue
 
+            window_steps = last_entry["step"] - first_entry["step"]
+
             dx = last_entry["com"][0] - first_entry["com"][0]
             dy = last_entry["com"][1] - first_entry["com"][1]
             velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
 
             window_velocity_mags.append(velocity_mag)
             window_velocity_vectors.append((dx, dy))
