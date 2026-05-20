@@ -161,6 +161,7 @@ class DisplacementConsistencyFitness:
         strict_conservation: bool = False,
         max_bit_threshold: int | None = None,
         max_velocity_threshold: float | None = None,
+        min_velocity: float | None = None,
     ) -> None:
         """Initialise the fitness function.
 
@@ -183,6 +184,7 @@ class DisplacementConsistencyFitness:
         self.strict_conservation = strict_conservation
         self.max_bit_threshold = max_bit_threshold
         self.max_velocity_threshold = max_velocity_threshold
+        self.min_velocity = min_velocity
 
     def __call__(
         self,
@@ -353,6 +355,9 @@ class DisplacementConsistencyFitness:
         )
 
         if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        if self.min_velocity is not None and mean_velocity_magnitude < self.min_velocity:
             return 0.0
 
         # ------------------------------------------------------------------
