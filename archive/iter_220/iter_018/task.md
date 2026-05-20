@@ -1,0 +1,1 @@
+Check if src/test_deconstruct_rule.py exists and print its content. If it was run, print its output or execute it to see if the deconstruction works and what the generator pairs are.
