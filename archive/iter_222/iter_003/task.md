@@ -1,0 +1,1 @@
+Create and run src/validate_extinction_guard.py to evaluate the old champion rule (from archive/iter_221/results/champion_rule_perfect.json) using the modified DisplacementConsistencyFitness (from src/new_fitness.py). Verify that the computed fitness is exactly 0.0, and write a summary to archive/iter_222/results/extinction_verification.json.
