@@ -1,0 +1,1 @@
+Run the diagnostic script src/diag_perfect_champion.py and capture its full stdout/stderr to analyze the champion rule from iter_221.
