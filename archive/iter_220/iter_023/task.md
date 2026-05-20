@@ -1,1 +1,1 @@
-Find all files in the project workspace (including src/, archive/ and root) whose name contains 'v2' or 'warm_start' or 'champion_v2'. Print their paths and sizes, and if there are any JSON or CSV files, read and print their first few lines.
+Read and print the `__call__` and `evaluate` methods of `DisplacementConsistencyFitness` from `src/new_fitness.py`. Print them clearly so we can see the exact return types and how they handle the fitness calculation and return values.
