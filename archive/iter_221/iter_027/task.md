@@ -1,0 +1,1 @@
+Run 'python run_champion_eval.py' in the terminal. Print its stdout and stderr. Do not write yaml block or any other files, just print the stdout of that command.
