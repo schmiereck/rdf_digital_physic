@@ -1,19 +1,45 @@
 artifacts: []
-experimenter_view: 'The requested source code lines from src/new_fitness.py were successfully
-  printed.
+experimenter_view: 'The unwrapping logic relies on a greedy anchor strategy to propagate
+  position
 
-  The code snippet belongs to a fitness function `DisplacementConsistencyFitness`
+  continuity across toroidal boundaries. By finding the closest cell pair (minimizing
 
-  that validates simulation history for bit conservation and calculates
+  Euclidean distance in toroidal space) between consecutive steps, the algorithm
 
-  displacement consistency across defined time windows.
+  ensures that the "drift" is continuous and free of artificial jumps caused by
+
+  the grid wrapping. This allows for accurate calculation of net displacement and
+
+  average speed for the champion rule, which would otherwise be incorrect if using
+
+  raw wrapped coordinates.
 
   '
-log_excerpt: 'lines 210 to 255 of 430
+log_excerpt: 'The function `unwrap_trajectory` implements a robust unwrapping algorithm.
 
-  [Content successfully retrieved and printed above]
+  It initializes the first step''s CoM from raw grid positions. For each subsequent
+
+  step, it identifies the best matching cell pair between the previous step''s
+
+  unwrapped positions and the current step''s raw positions using the toroidal
+
+  distance formula: `(cc[i] - pc[i] + N // 2) % N - N // 2`.
+
+
+  This formula maps the difference to the range `[-N/2, N/2]`, correctly handling
+
+  toroidal wrapping (e.g., transition from 127 to 0 yields a delta of +1).
+
+
+  The matched pair serves as an "anchor": its current raw offset is applied to
+
+  the anchor''s known continuous coordinate to get a global anchor position. All
+
+  other cells are then placed relative to this anchor using the same toroidal
+
+  modulo arithmetic, creating a consistent, continuous CoM trajectory.
 
   '
 metrics: {}
-notes: Successfully printed requested code lines to stdout.
+notes: Analyzed toroidal unwrapping logic in characterize_champion_221.py.
 status: ok

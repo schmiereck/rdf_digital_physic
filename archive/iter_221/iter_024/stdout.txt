@@ -1,129 +1,120 @@
 
-[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 210, 'end_line': 255})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_221\\results\\characterize_champion_221.py'})]
 
-[Tool Result: --- lines 210 to 255 of 430 ---
-            history is empty, when the simulation runs for zero steps,
-            or when there is no net displacement.
+[Tool Result: #!/usr/bin/env python3
+"""
+Characterize the champion rule from archive/iter_221/results/champion_vc_rule.json.
 
-        Examples
-        --------
-        >>> sim_history = [
-        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
-        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
-        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
-        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
-        ... ...]
+1. Load the rule dictionary from the JSON file.
+2. Initialize a 128x128 grid with the L-tromino seed.
+3. Simulate it for 500 steps.
+4. For each step, record step number, active cell count (bit count), and
+   unwrapped center of mass coordinates (row, col).
+5. Compute net displacement (Euclidean distance between CoM at step 0 and step 500).
+6. Compute average speed (cells per step).
+7. ...]
+
+## Center-of-Mass Unwrapping Logic
+
+The key function is `unwrap_trajectory()` (lines 77–131). It converts **wrapped** (toroidal) CoM coordinates into a **continuous unwrapped** trajectory. Here's the step-by-step breakdown:
+
+---
+
+### Problem
+
+On a toroidal (wrapped) grid of size `128×128`, positions near opposite edges are artificially close. The raw center of mass can "jump" by up to 64 cells when particles cross a boundary, even though they move only a few cells in physical space. The unwrapper eliminates these artificial jumps.
+
+---
+
+### Algorithm
+
+**1. Step 0 — Seed the unwrapped coordinates:**
 
 ```python
-            history is empty, when the simulation runs for zero steps,
-            or when there is no net displacement.
-
-        Examples
-        --------
-        >>> sim_history = [
-        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
-        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
-        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
-        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
-        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
-        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
-        ... ]
-        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
-        """
-        if not sim_history:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 1. Sort by step (defensive — history should be ordered but
-        #    we sort to be safe)
-        # ------------------------------------------------------------------
-        sorted_history = sorted(sim_history, key=lambda e: e["step"])
-
-        if self.max_bit_threshold is not None:
-            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
-                return 0.0
-
-        if self.strict_conservation:
-            initial_bits = sorted_history[0]["bit_count"]
-            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
-                return 0.0
-
-        initial_step = float(sorted_history[0]["step"])
-        final_step = float(sorted_history[-1]["step"])
-        total_steps = final_step - initial_step
-
-        if total_steps <= 0:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 2. Compute per-window velocity vectors
-        # ------------------------------------------------------------------
-        steps_per_window = total_steps / self.num_windows
-
-        window_velocity_mags: list[float] = []
+unwrapped_prev = [np.array(c, dtype=float) for c in raw_cell_lists[0]]
+com_prev = float(np.mean(unwrapped_prev, axis=0)[0]), float(np.mean(unwrapped_prev, axis-0)[1])
 ```
+
+Each active cell at step 0 starts unwrapped at its raw grid position. The initial CoM is their simple arithmetic mean.
+
+**2. For each subsequent step `t`, find the best cell-to-cell alignment:**
+
+```python
+for pi, pc in enumerate(unwrapped_prev):
+    for ci, cc in enumerate(cells_t):
+        dr = (cc[0] - int(pc[0]) + GRID_SIZE // 2) % GRID_SIZE - GRID_SIZE // 2
+        dc = (cc[1] - int(pc[1]) + GRID_SIZE // 2) % GRID_SIZE - GRID_SIZE // 2
+```
+
+This is the classic **modulo-distance** formula:
+- `cc[i] - pc[i]` gives the raw difference (can be −127…+127).
+- Adding `GRID_SIZE // 2` (i.e., 64) and taking `% GRID_SIZE` wraps it into `[0, 127)`.
+- Subtracting `GRID_SIZE // 2` shifts it into `[−63, 64]`.
+
+So `dr` and `dc` are the **shortest toroidal distance** between a previously-unwrapped cell and a current raw cell, always in the range **−63 to +64**. This correctly handles wrapping: e.g., a cell that moved from row 127 to row 0 gets `dr = +1`, not `dr = −127`.
+
+The best `(prev_cell, current_cell)` pair (minimizing `dr² + dc²`) is chosen as an **anchor**.
+
+**3. Compute offsets of all current cells from the anchor, then shift:**
+
+```python
+anchor_unwrapped = unwrapped_prev[p_idx] + np.array([dr_t, dc_t])
+
+for cc in cells_t:
+    dr_r = (cc[0] - anchor_grid[0] + GRID_SIZE // 2) % GRID_SIZE - GRID_SIZE // 2
+    dc_r = (cc[1] - anchor_grid[1] + GRID_SIZE // 2) % GRID_SIZE - GRID_SIZE // 2
+    unwrapped_curr.append(anchor_unwrapped + np.array([dr_r, dc_r]))
+```
+
+Every cell's offset from the anchor is computed in wrapped form (again using the mod formula), then the entire set is shifted by `anchor_unwrapped` — which is the anchor cell's **continuous** (unwrapped) position. This preserves the relative structure of the pattern while placing it in global continuous coordinates.
+
+**4. Compute the new CoM:**
+
+```python
+com_curr = float(np.mean(unwrapped_curr, axis=0)[0]), float(np.mean(unwrapped_curr, axis-0)[1])
+unwrapped_prev = unwrapped_curr   # advance
+```
+
+---
+
+### Why It Works
+
+| Aspect | Detail |
+|---|---|
+| **Anchor alignment** | Finds the closest previous cell → current cell pair via toroidal distance, ensuring the best local match. |
+| **Toroidal distance** | `(a - b + N//2) % N - N//2` always returns the shortest signed distance in `[−N/2, N/2]`. |
+| **Consistency** | All cells at step `t` are placed relative to the anchor's known unwrapped position, so the whole pattern moves coherently. |
+| **Handles disappearing cells** | If step `t` has no active cells, it emits `(0.0, 0.0)`. |
+| **Iterative** | Each step builds on the previous step's fully unwrapped positions, accumulating drift naturally. |
+
+The net result is a smooth, continuous CoM trajectory where a glider moving diagonally across the toroidal boundary doesn't show a 128-cell jump — instead it continues incrementally.
 
 [NUDGE RESPONSE]
-```python
-            history is empty, when the simulation runs for zero steps,
-            or when there is no net displacement.
-
-        Examples
-        --------
-        >>> sim_history = [
-        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
-        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
-        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
-        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
-        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
-        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
-        ... ]
-        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
-        """
-        if not sim_history:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 1. Sort by step (defensive — history should be ordered but
-        #    we sort to be safe)
-        # ------------------------------------------------------------------
-        sorted_history = sorted(sim_history, key=lambda e: e["step"])
-
-        if self.max_bit_threshold is not None:
-            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
-                return 0.0
-
-        if self.strict_conservation:
-            initial_bits = sorted_history[0]["bit_count"]
-            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
-                return 0.0
-
-        initial_step = float(sorted_history[0]["step"])
-        final_step = float(sorted_history[-1]["step"])
-        total_steps = final_step - initial_step
-
-        if total_steps <= 0:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 2. Compute per-window velocity vectors
-        # ------------------------------------------------------------------
-        steps_per_window = total_steps / self.num_windows
-
-        window_velocity_mags: list[float] = []
-```
-
 ```yaml
 status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  lines 210 to 255 of 430
-  [Content successfully retrieved and printed above]
+  The function `unwrap_trajectory` implements a robust unwrapping algorithm.
+  It initializes the first step's CoM from raw grid positions. For each subsequent
+  step, it identifies the best matching cell pair between the previous step's
+  unwrapped positions and the current step's raw positions using the toroidal
+  distance formula: `(cc[i] - pc[i] + N // 2) % N - N // 2`.
+  
+  This formula maps the difference to the range `[-N/2, N/2]`, correctly handling
+  toroidal wrapping (e.g., transition from 127 to 0 yields a delta of +1).
+  
+  The matched pair serves as an "anchor": its current raw offset is applied to
+  the anchor's known continuous coordinate to get a global anchor position. All
+  other cells are then placed relative to this anchor using the same toroidal
+  modulo arithmetic, creating a consistent, continuous CoM trajectory.
 experimenter_view: |
-  The requested source code lines from src/new_fitness.py were successfully printed.
-  The code snippet belongs to a fitness function `DisplacementConsistencyFitness`
-  that validates simulation history for bit conservation and calculates
-  displacement consistency across defined time windows.
-notes: "Successfully printed requested code lines to stdout."
+  The unwrapping logic relies on a greedy anchor strategy to propagate position
+  continuity across toroidal boundaries. By finding the closest cell pair (minimizing
+  Euclidean distance in toroidal space) between consecutive steps, the algorithm
+  ensures that the "drift" is continuous and free of artificial jumps caused by
+  the grid wrapping. This allows for accurate calculation of net displacement and
+  average speed for the champion rule, which would otherwise be incorrect if using
+  raw wrapped coordinates.
+notes: "Analyzed toroidal unwrapping logic in characterize_champion_221.py."
 ```
