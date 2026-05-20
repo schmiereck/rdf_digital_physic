@@ -1,0 +1,122 @@
+I'll check both files to verify the usage of `DisplacementConsistencyFitness` and examine the fitness evaluation code.
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220.py  -  20-generation evolutionary search for a stable glider
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+  archive/iter_220/results/evoluti...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+## Analysis Results
+
+### ✅ `run_evolution_exp_220.py` **does use** `DisplacementConsistencyFitness` from `new_fitness.py`
+
+The import is on **line 40**:
+```python
+from new_fitness import DisplacementConsistencyFitness                       # noqa: E402
+```
+
+---
+
+### Fitness Evaluation Code (lines 112–117)
+
+Here is the exact code that defines the fitness evaluation in `src/run_evolution_exp_220.py`:
+
+```python
+_fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+
+
+def evaluate_rule(rule_dict: dict) -> float:
+    hist  = simulate_with_history(rule_dict)
+    score = _fitness_fn(hist)
+    return float(score)
+```
+
+The fitness function is instantiated once as a module-level singleton `_fitness_fn` with `num_windows=5`, then called inside `evaluate_rule()` for every candidate rule.
+
+---
+
+### Readiness Assessment
+
+| Check | Status |
+|---|---|
+| Import of `DisplacementConsistencyFitness` | ✅ Correct |
+| Class exists in `new_fitness.py` | ✅ Present |
+| `__call__` signature matches call site | ✅ Accepts `list[dict]` from `simulate_with_history` |
+| History format matches (step, com, bit_count) | ✅ `simulate_with_history` produces dicts with exactly those keys |
+| `num_windows=5` ≥ minimum of 2 | ✅ |
+| Evolution loop with evaluation | ✅ |
+| Output directories created | ✅ (`OUTPUT_DIR.mkdir(parents=True, exist_ok=True)`) |
+| Entry point `if __name__ == "__main__": main()` | ✅ |
+
+**The script is ready to run.** It will:
+1. Generate 100 random C2 rules with an L-tromino 3-bit seed
+2. Run 20 generations of generational evolution (elite size 10, swap mutation rate 0.01)
+3. Use `DisplacementConsistencyFitness` to score each rule's consistent directional motion
+4. Save champion rule JSON, evolution summary CSV, and a GIF visualization to `archive/iter_220/results/`
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics:
+  num_windows: 5
+  population_size: 100
+  generations: 20
+  elite_size: 10
+  mutation_rate: 0.01
+  horizon_steps: 500
+  grid_size: 128
+  lut_size: 128
+log_excerpt: |
+  Import confirmed: from new_fitness import DisplacementConsistencyFitness
+  Fitness evaluation code (lines 112-117):
+    _fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+    def evaluate_rule(rule_dict: dict) -> float:
+        hist  = simulate_with_history(rule_dict)
+        score = _fitness_fn(hist)
+        return float(score)
+  Ready to run: ✅ All dependencies match.
+experimenter_view: |
+  The script src/run_evolution_exp_220.py correctly imports and uses DisplacementConsistencyFitness
+  from src/new_fitness.py. The fitness function evaluates consistent directional motion by dividing
+  the simulation into 5 time windows, computing per-window velocity vectors, and applying the core
+  formula: base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes), multiplied
+  by a leaky bit-conservation score. The simulation history format (step, com, bit_count) produced
+  by simulate_with_history() matches the expected input schema. The script is fully ready to run
+  and will search for hexagonal CA rules that produce stable v<c gliders.
+notes: "Script verified: DisplacementConsistencyFitness properly imported and integrated for glider search."
+```
