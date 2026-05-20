@@ -1,17 +1,36 @@
-artifacts:
-- src/evolve_glider.py
-- archive/iter_215/results/champion.json
-experimenter_view: 'The evolutionary search successfully discovered a sub-light speed
-  glider.
+artifacts: []
+experimenter_view: 'The DisplacementConsistencyFitness class currently uses a "leaky"
+  bit
 
-  The particle maintains a stable structure of 6 cells and moves with a
+  conservation mechanism that provides a smooth evolutionary gradient but
 
-  velocity of approximately 0.25c. Bit conservation is perfect over 1000 steps.
+  never hard-fails on bit-count deviations (except when bits reach 0).
+
+  This means particles that temporarily gain or lose cells still receive
+
+  partial fitness, which may allow drifters or non-conserving objects to
+
+  survive and produce offspring. Adding a strict_conservation parameter
+
+  would enable a hard-fail mode (zero fitness on any deviation), useful
+
+  when evolution needs a sharp selection pressure for perfect mass
+
+  conservation rather than gradual gradient guidance.
 
   '
+log_excerpt: "Analysis of src/new_fitness.py DisplacementConsistencyFitness completed.\n\
+  \nKey findings:\n- _compute_conservation_score uses a continuous leaky penalty\n\
+  - No strict_conservation parameter exists\n- Any bit count != initial_bits produces\
+  \ a fractional factor\n  min(n,m)/max(n,m) instead of hard-zeroing fitness\n- Final\
+  \ score = base_fitness * mean(conservation_factors)\n- Only bit_count == 0 produces\
+  \ a factor of 0.0\n\nProposed fix: add strict_conservation bool to __init__ and\n\
+  early-return 0.0 from _compute_conservation_score on any\ndeviation in strict mode.\n"
 metrics:
-  generations: 50
-  max_fitness: 0.942
-  stable_steps: 1000
-notes: Sub-light glider found and verified.
+  conservation_example_0_of_3: 0.0
+  conservation_example_1_of_3: 0.333
+  conservation_example_2_of_3: 0.667
+  conservation_example_4_of_3: 0.75
+  current_conservation_behavior: leaky (fractional penalty)
+notes: No strict bit conservation parameter exists; provided implementation solution.
 status: ok

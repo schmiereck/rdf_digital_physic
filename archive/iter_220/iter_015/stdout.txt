@@ -1,74 +1,284 @@
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+new_fitness.py
 
-Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-This penalises annihilation: a rule that destroys the seed gets a ratio near
-zero even if the centre-of-mass technically moves before the grid goes dark.
-Rules that move the particle while preserving its bit count score highest.
-"""
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
-import math
-import random
+## Analysis of `DisplacementConsistencyFitness`
 
-import numpy as np
+### 1. The `__call__` (evaluate) method
 
-# Small constant to guard against the (very unli...]
+The evaluation pipeline is:
 
-Here is the `_try_build_c2_rule` function from `src/evolution.py`:
+1. **Sort history** chronologically
+2. **Divide into `num_windows`** time windows and compute per-window velocity vectors (ΔCOM)
+3. **Calculate mean velocity magnitude** (net directional drift) and **std dev of velocity magnitudes** (consistency)
+4. **Core fitness formula:**
+   ```
+   base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+   ```
+5. **Multiply by the leaky conservation score** from `_compute_conservation_score`
+   ```
+   final_fitness = base_fitness * total_conservation_score
+   ```
+
+### 2. The `_compute_conservation_score` method (current — "leaky")
+
+The current implementation applies a **continuous/fractional penalty**, NOT a strict hard-fail:
 
 ```python
-def _try_build_c2_rule(pairs: list) -> dict | None:
-    rule: dict = {}
-    for a, b in pairs:
-        rot_a, rot_b = _rotate_c2(a), _rotate_c2(b)
-        for src, dst in [(a, b), (b, a), (rot_a, rot_b), (rot_b, rot_a)]:
-            if src in rule:
-                if rule[src] != dst:
-                    return None
-            else:
-                rule[src] = dst
-    return rule
+if bit_count == initial_bits:
+    conservation_factor = 1.0
+else:
+    # Fractional penalty — never returns 0 unless bit_count is 0
+    conservation_factor = min(bit_count, initial_bits) / max(bit_count, initial_bits)
 ```
 
-### How `pairs` is structured
+For example with `initial_bits = 3`:
 
-Each element in `pairs` is a **tuple `(a, b)`** of two integers in the range **1–127**.
+| bit_count | conservation factor |
+|-----------|-------------------|
+| 3 | 1.0 |
+| 2 | 2/3 ≈ 0.667 |
+| 1 | 1/3 ≈ 0.333 |
+| 0 | 0/3 = 0.0 |
+| 4 | 3/4 = 0.75 |
 
-- `a` and `b` are **hex-neighbourhood state encodings** (7-bit values, one bit per cell in the 7-cell hex pattern: bit6=center, bit5=E, …, bit0=NE).
-- A single pair `(a, b)` is not just a single rule mapping — it generates **4 C2-symmetric mappings**:
-  1. `(a → b)`        direct mapping
-  2. `(b → a)`        reversed mapping
-  3. `(rot_a → rot_b)`  180° C2 rotation of the first
-  4. `(rot_b → rot_a)`  180° C2 rotation of the second
+**There is currently NO parameter to enable strict bit conservation.** The score is always a smooth, leaky multiplier in [0, 1].
 
-The helper `_rotate_c2(state)` rotates a 7-bit hex state by 180° (equivalent to three 60° CW rotations via `_rotate60`).
+### 3. Adding strict enforcement
 
-### How the rule is built
+An easy way to enable strict bit conservation (return 0 fitness if bit count ever ≠ initial value) would be to add a `strict_conservation` boolean parameter. Here's a minimal patch:
 
-1. **Iterate each pair** `(a, b)` in the input list.
-2. **Compute `rot_a` and `rot_b`** — the 180° C2-rotated versions.
-3. **Try all 4 ordered mappings** — if a mapping's source key is already in `rule`, it must map to the same destination; otherwise a **conflict** is detected and the function returns `None` (rejecting the rule).
-4. If no conflict is found after all pairs, the fully populated `rule` dict is returned.
 
-This is called by `generate_random_c2_rule`, which randomly samples `k` pairs (where `k ∈ {2, 3, 4}`) and retries until a conflict-free C2-symmetric rule is found.
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+## Analysis of `DisplacementConsistencyFitness`
+
+### 1. The `evaluate` method (`__call__`)
+
+The evaluation pipeline is:
+
+1. **Sort history** chronologically by step
+2. **Divide into `num_windows`** time windows and compute per-window velocity vectors (ΔCOM between first and last entry per window)
+3. **Compute base fitness** using:
+   ```
+   base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)
+   ```
+4. **Multiply by the leaky bit-conservation score**:
+   ```
+   final_fitness = base_fitness * total_conservation_score
+   ```
+
+### 2. The `_compute_conservation_score` method (current — "leaky")
+
+**There is currently NO parameter to enable strict bit conservation.** The implementation uses a continuous "leaky" fractional penalty:
+
+| bit_count | conservation_factor |
+|-----------|-------------------|
+| == initial_bits | 1.0 |
+| initial_bits - 1 | (n-1)/n (e.g., 2/3 = 0.667) |
+| initial_bits - 2 | (n-2)/n (e.g., 1/3 = 0.333) |
+| 0 | 0.0 |
+
+The final score is the **mean** of all per-step factors. So even if a step has a different bit count, the fitness is only *reduced*, never hard-zeroed out (unless bit_count reaches 0).
+
+### 3. How to add strict bit conservation
+
+The easiest way would be to add a `strict_conservation: bool = False` parameter to `__init__` and modify `_compute_conservation_score` to early-return 0.0 when strict mode is enabled:
+
+
+
+[Tool Call: bash({'command': 'grep_search(pattern="class DisplacementConsistencyFitness"', 'include_pattern': '*.py'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Der Befehl "grep_search" ist entweder falsch geschrieben oder
+konnte nicht gefunden werden.
+]
+
+
+[Tool Call: grep_search({'pattern': 'class DisplacementConsistencyFitness', 'include_pattern': '*.py'})]
+
+[Tool Result: src\new_fitness.py:88: class DisplacementConsistencyFitness:]
+
+
+[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'DisplacementConsistencyFitness'})]
+
+[Tool Result: breakdown_fitness.py:11: from new_fitness import DisplacementConsistencyFitness
+breakdown_fitness.py:40: fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+src\new_fitness.py:5: DisplacementConsistencyFitness
+src\new_fitness.py:70: fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+src\new_fitness.py:88: class DisplacementConsistencyFitness:
+src\new_fitness.py:149: name = "DisplacementConsistencyFitness"
+src\new_fitness.py:205: >>> fitness = DisplacementConsistencyFitness(num_win...]
+
+Now I have a complete picture. Let me provide a comprehensive answer:
+
+---
+
+## Analysis
+
+### Current Behavior — No Strict Mode Exists
+
+**Short answer:** There is currently **no parameter** to enable strict bit conservation. The current `_compute_conservation_score` method uses a "leaky" continuous penalty approach — it **never returns 0** unless the bit count drops to exactly 0.
+
+### How the Current `_compute_conservation_score` Works
+
+The method applies a per-step fractional penalty:
+
+```
+if bit_count == initial_bits:
+    factor = 1.0
+else:
+    factor = min(bit_count, initial_bits) / max(bit_count, initial_bits)
+```
+
+For `initial_bits = 3`, this gives:
+
+| bit_count | conservation_factor |
+|-----------|-------------------|
+| 3 | 1.0 |
+| 2 | 2/3 ≈ 0.667 |
+| 1 | 1/3 ≈ 0.333 |
+| 0 | 0.0 |
+| 4 | 3/4 = 0.75 |
+
+The **final** conservation score is the **mean** of all per-step factors. So a single step with `bit_count=2` when `initial=3` would give a factor of 0.667 for that step — the final score is only partially penalised, not hard-zeroed.
+
+### Why This Is Not Strict
+
+With strict bit conservation (hard-fail if bit count ever ≠ initial value), any deviation should yield a fitness of 0.0. But currently:
+
+- **A particle that temporarily gains/loses a bit** still gets partial fitness (e.g., ~0.75-0.9 depending on how many steps deviate).
+- **The only way to get 0.0** is if the bit count reaches 0 at some step.
+- **The final fitness** is `base_fitness * conservation_score`, so the leaky multiplier only attenuates — it doesn't eliminate.
+
+### How to Add Strict Enforcement
+
+The simplest approach is to add a `strict_conservation: bool = False` parameter and short-circuit:
+
+```python
+def __init__(
+    self,
+    num_windows: int = 5,
+    bits_per_cell: int = 1,
+    strict_conservation: bool = False,  # <-- NEW PARAMETER
+) -> None:
+    self.num_windows = max(2, int(num_windows))
+    self.bits_per_cell = int(bits_per_cell)
+    self.strict_conservation = strict_conservation
+
+# In _compute_conservation_score, add at the top of the loop:
+def _compute_conservation_score(self, sim_history: list[dict[str, Any]]) -> float:
+    if not sim_history:
+        return 1.0
+
+    initial_bits = sim_history[0]["bit_count"]
+    if initial_bits == 0:
+        return 1.0
+
+    conservation_factors: list[float] = []
+    for entry in sim_history:
+        bit_count = entry["bit_count"]
+
+        # ── NEW: strict mode hard-fails on any deviation ──
+        if self.strict_conservation and bit_count != initial_bits:
+            return 0.0
+
+        if bit_count == initial_bits:
+            conservation_factors.append(1.0)
+        else:
+            conservation_factors.append(
+                min(bit_count, initial_bits)
+                / max(bit_count, initial_bits)
+            )
+
+    return float(sum(conservation_factors) / len(conservation_factors))
+```
+
+### Usage
+
+```python
+# Strict mode — zero fitness if bit count ever deviates from 3
+fitness_fn = DisplacementConsistencyFitness(num_windows=5, strict_conservation=True)
+
+# Current default (leaky) — partial penalty for deviations
+fitness_fn = DisplacementConsistencyFitness(num_windows=5)  # strict_conservation=False
+```
+
+### Summary Table
+
+| Aspect | Current (Leaky) | With `strict_conservation=True` |
+|--------|----------------|--------------------------------|
+| Any bit-count deviation | Partial penalty (0 < score ≤ 1) | Hard-fail (score = 0) |
+| Only bit_count=0 causes 0 | No (only if bit_count hits 0) | No (any ≠ initial_bits → 0) |
+| Evolutionary gradient | Preserves gradient (smooth penalty) | Kills the candidate entirely |
+| Use case | Gentle guidance toward conservation | Hard filter — only perfect conservation passes |
+
+**Conclusion:** The `strict_conservation` parameter does not exist yet. Adding it as shown above would be the cleanest and most surgical change — it modifies only `_compute_conservation_score` and requires just one boolean flag in `__init__`.
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
 artifacts: []
-metrics: {}
+metrics:
+  current_conservation_behavior: "leaky (fractional penalty)"
+  conservation_example_2_of_3: 0.667
+  conservation_example_1_of_3: 0.333
+  conservation_example_4_of_3: 0.75
+  conservation_example_0_of_3: 0.0
 log_excerpt: |
-  Successfully read src/evolution.py and extracted the _try_build_c2_rule function.
-  The function takes a list of (a, b) pairs (integers 1-127) and builds a C2-symmetric
-  rule by mapping each pair to 4 symmetric entries: (a→b), (b→a), (rot_a→rot_b), (rot_b→rot_a).
-  It returns None if any conflicts are detected.
+  Analysis of src/new_fitness.py DisplacementConsistencyFitness completed.
+  
+  Key findings:
+  - _compute_conservation_score uses a continuous leaky penalty
+  - No strict_conservation parameter exists
+  - Any bit count != initial_bits produces a fractional factor
+    min(n,m)/max(n,m) instead of hard-zeroing fitness
+  - Final score = base_fitness * mean(conservation_factors)
+  - Only bit_count == 0 produces a factor of 0.0
+
+  Proposed fix: add strict_conservation bool to __init__ and
+  early-return 0.0 from _compute_conservation_score on any
+  deviation in strict mode.
 experimenter_view: |
-  The _try_build_c2_rule function enforces C2 (180-degree) rotational symmetry on the rule.
-  Each random pair (a, b) implicitly generates 4 rule mappings. The function validates
-  consistency across all pairs; any conflict results in rejection (returning None).
-  This mechanism is used by generate_random_c2_rule to sample symmetric rules for evolution.
-notes: "Task completed: read and analyzed _try_build_c2_rule source."
+  The DisplacementConsistencyFitness class currently uses a "leaky" bit
+  conservation mechanism that provides a smooth evolutionary gradient but
+  never hard-fails on bit-count deviations (except when bits reach 0).
+  This means particles that temporarily gain or lose cells still receive
+  partial fitness, which may allow drifters or non-conserving objects to
+  survive and produce offspring. Adding a strict_conservation parameter
+  would enable a hard-fail mode (zero fitness on any deviation), useful
+  when evolution needs a sharp selection pressure for perfect mass
+  conservation rather than gradual gradient guidance.
+notes: "No strict bit conservation parameter exists; provided implementation solution."
+```
