@@ -1,1 +1,1 @@
-Find and print the constructor `__init__` signature and first 30 lines of `DisplacementConsistencyFitness` inside `src/new_fitness.py` using a Python script. Do not use complex libraries, just open the file and read lines.
+Write a python script to print swap_mutate and generate_population from src/run_evolution_exp_220_fixed.py. Run this script.
