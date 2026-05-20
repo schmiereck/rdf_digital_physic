@@ -1,270 +1,70 @@
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-new_fitness.py
-
-DisplacementConsistencyFitness
-------------------------------
-A fitness function designed to reward consistent, directional motion and
-penalize stationary or oscillating "drifter" objects in v<c glider discovery.
-
-The "drifter" exploit
-~~~~~~~~~~~~~~~~~~~~~
-In cellular-automaton glider searches, evolution can converge on a class of
-objects sometimes called *drifters*: particles that do not travel coherently
-but instead undergo small periodic oscillation...]
-
-Let me extract exactly lines 130–180:
-
-
-
-[Tool Call: bash({'command': 'powershell -Command "Get-Content \'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py\' | Select-Object -Skip 129 -First 51 | ForEach-Object { $i++ ; \'{0:D3}: {1}\' -f ($i+129,$_) }"'})]
+[Tool Call: bash({'command': 'python -c "with open(r\'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220_fixed.py\', \'r\', encoding=\'utf-8\') as f: print(f.read(1000))"'})]
 
 [Tool Result: exit_code: 0
-stdout: 
-stderr: Fehler beim Aufrufen der Methode, da [System.Object[]] keine Methode mit dem Namen "op_Addition" enth�lt.
-In Zeile:1 Zeichen:140
-+ ... 29 -First 51 | ForEach-Object { $i++ ; '{0:D3}: {1}' -f ($i+129,$_) }
-+                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidOperation: (op_Addition:String) [], RuntimeException
-    + FullyQualifiedErrorId : MethodNotFound
- 
-Fehler beim Aufrufen der Methode, da [System.Ob...]
-
-
-[Tool Call: bash({'command': 'python -c "\nlines = open(\'C:/Users/thomas/Projekte/rdf_digital_physic/src/new_fitness.py\').readlines()\nfor i in range(129, min(180, len(lines))):\n    print(f\'{i+1:4d}: {lines[i]}\', end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-Let me first check how many lines are in the file and find the relevant lines:
-
-
-
-[Tool Call: bash({'command': 'python -c "\nlines = open(\'C:/Users/thomas/Projekte/rdf_digital_physic/src/new_fitness.py\').readlines()\nprint(f\'Total lines: {len(lines)}\')\n# Find the division by window_steps\nfor i, line in enumerate(lines):\n    if \'window_steps\' in line:\n        print(f\'Line {i+1}: {line}\', end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-[Tool Call: bash({'command': 'python -c "\nlines = open(r\'C:/Users/thomas/Projekte/rdf_digital_physic/src/new_fitness.py\').readlines()\nprint(\'Total lines:\', len(lines))\nfor i, line in enumerate(lines):\n    if \'window\' in line.lower():\n        print(f\'{i+1:4d}: {line}\', end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-
-
-
-[Tool Call: bash({'command': 'python -c "print(len(open(r\'C:/Users/thomas/Projekte/rdf_digital_physic/src/new_fitness.py\').readlines()))"'})]
-
-[Tool Result: exit_code: 0
-stdout: 430
-
-stderr: ]
-
-
-[Tool Call: bash({'command': 'cd "C:\\Users\\thomas\\Projekte\\rdf_digital_physic" && python -c "\nwith open(\'src/new_fitness.py\') as f:\n    lines = f.readlines()\nprint(\'Total lines:\', len(lines))\nfor i, line in enumerate(lines):\n    if \'window_steps\' in line:\n        print(f\'Line {i+1}: {line}\', end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-[Tool Call: grep_search({'pattern': 'window_steps', 'include_pattern': '*.py'})]
-
-[Tool Result: src\fitness_functions.py:562: window_steps = self.window_end - self.window_start
-src\fitness_functions.py:563: avg_velocity = displacement / window_steps
-src\new_fitness.py:297: window_steps = last_entry["step"] - first_entry["step"]
-src\new_fitness.py:303: if window_steps > 0:
-src\new_fitness.py:304: velocity_mag = velocity_mag / window_steps
-src\new_fitness.py:305: dx = dx / window_steps
-src\new_fitness.py:306: dy = dy / window_steps
-src\run_iter_216_2_characterize.py:166: "window_steps":  win...]
-
-
-[Tool Call: bash({'command': 'cd "C:\\Users\\thomas\\Projekte\\rdf_digital_physic" && python -c "\nwith open(\'src/new_fitness.py\') as f:\n    lines = f.readlines()\nfor i in range(296, min(320, len(lines))):\n    print(f\'{i+1:4d}: {lines[i]}\', end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "f=open(\'src/new_fitness.py\');lines=f.readlines();f.close();[print(str(i+1)+\': \'+l,) for i,l in enumerate(lines[296:318])]"'})]
-
-[Tool Result: exit_code: 0
-stdout: 1:             window_steps = last_entry["step"] - first_entry["step"]
+stdout: #!/usr/bin/env python3
+"""
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
 
-2: 
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
 
-3:             dx = last_entry["com"][0] - first_entry["com"][0]
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
 
-4:             dy = last_entry["com"][1] - first_entry["com"][1]
-
-5:             velocity_mag = math.sqrt(dx * dx + dy * dy)
-
-6: 
-
-7:             if window_steps > 0:
-
-8:                 velocity_mag = velocity_mag / window_steps
-
-9:                 dx = dx / window_steps
-
-10:                 dy = dy / window_steps
-...]
-
-Let me print the output with line numbers more clearly:
-
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nwith open(\'src/new_fitness.py\') as f:\n    lines = f.readlines()\nfor i in range(296, 318):\n    print(\'%4d: %s\' % (i+1, lines[i]), end=\'\')\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nwith open(\'src/new_fitness.py\', encoding=\'utf-8\') as f:\n    lines = f.readlines()\nfor i in range(296, min(320, len(lines))):\n    print(\'{0:4d}: {1}\'.format(i+1, lines[i]), end=\'\')\n" 2>&1'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-[Tool Call: bash({'command': 'cd "C:\\Users\\thomas\\Projekte\\rdf_digital_physic" && python -c "\nwith open(\'src/new_fitness.py\', encoding=\'utf-8\') as f:\n    lines = f.readlines()\nresult = \'\'\nfor i in range(296, min(320, len(lines))):\n    result += \'{0:4d}: {1}\\n\'.format(i+1, lines[i])\nimport sys\nsys.stdout.write(result)\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport sys\nwith open(\'src/new_fitness.py\', \'r\', encoding=\'utf-8\') as f:\n    lines = f.readlines()\nsys.stdout.reconfigure(encoding=\'utf-8\')\nfor i in range(296, min(320, len(lines))):\n    line = lines[i].rstrip(\'\\n\')\n    sys.stdout.write(\'{0:4d}: {1}\\n\'.format(i+1, line))\n"'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-The bash stdout is being swallowed. Let me write the output to a file and read it:
-
-
-
-[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_print_lines.py', 'content': "with open('src/new_fitness.py', 'r', encoding='utf-8') as f:\n    lines = f.readlines()\n\noutput_lines = []\nfor i in range(129, min(180, len(lines))):\n    output_lines.append('{0:4d}: {1}'.format(i + 1, lines[i].rstrip('\\n')))\n\nwith open('tmp_output.txt', 'w', encoding='utf-8') as out:\n    out.write('\\n'.join(output_lines) + '\\n')\n"})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_print_lines.py]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_print_lines.py && cat tmp_output.txt'})]
-
-[Tool Result: exit_code: 1
-stdout: 
-stderr: Der Befehl "cat" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_output.txt'})]
-
-[Tool Result:  130:     6. Multiply by the "leaky" bit-conservation score to enforce mass
- 131:        conservation (see ``_compute_conservation_score``).
- 132: 
- 133:         final_fitness = base_fitness * total_conservation_score
- 134: 
- 135:     Parameters
- 136:     ----------
- 137:     num_windows : int
- 138:         Number of windows to divide the simulation into. Default 5.
- 139:         At least 2 windows are needed to measure velocity consistency.
- 140:     bits_per_cell : int
- 141:         Bits per c...]
-
-Lines 130–180 are the docstring and constructor. The actual `window_steps` division logic is later in the file. Let me also print the relevant section where the division happens:
-
-
-
-[Tool Call: write_file({'content': "with open('src/new_fitness.py', 'r', encoding='utf-8') as f:\n    lines = f.readlines()\n\noutput_lines = []\nfor i in range(290, min(320, len(lines))):\n    output_lines.append('{0:4d}: {1}'.format(i + 1, lines[i].rstrip('\\n')))\n\nwith open('tmp_output2.txt', 'w', encoding='utf-8') as out:\n    out.write('\\n'.join(output_lines) + '\\n')\n", 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_print_lines2.py'})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_print_lines2.py]
-
-Let me write a script to print lines 130-180 and the relevant `window_steps` section:
-
-
-
-[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_print.py', 'content': 'with open(\'src/new_fitness.py\', \'r\', encoding=\'utf-8\') as f:\n    lines = f.readlines()\n\n# Lines 130-180\noutput = []\noutput.append("=" * 80)\noutput.append("LINES 130-180:")\noutput.append("=" * 80)\nfor i in range(129, min(180, len(lines))):\n    output.append(\'{0:4d}: {1}\'.format(i + 1, lines[i].rstrip(\'\\n\')))\n\n# The window_steps division section (around line 297-315)\noutput.append("")\noutput.append("=" * 80)\noutput.append("WINDOW_STEPS DIVISION SECTION (lines ~290-320):")\noutput.append("=" * 80)\nfor i in range(289, min(320, len(lines))):\n    output.append(\'{0:4d}: {1}\'.format(i + 1, lines[i].rstrip(\'\\n\')))\n\nwith open(\'tmp_output.txt\', \'w\', encoding=\'utf-8\') as out:\n    out.write(\'\\n\'.join(output) + \'\\n\')\n'})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_print.py]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_print.py'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
+Outputs:
+  archive/i...]
 
 
 [NUDGE RESPONSE]
-Based on my investigation of `src/new_fitness.py`, here's what I found:
-
-**Lines 130-180** contain the docstring and `__init__` method of the `DisplacementConsistencyFitness` class — they do not contain the `window_steps` division logic.
-
-The actual `window_steps` division logic is found in **lines 297-314**:
-
-```python
-297:             window_steps = last_entry["step"] - first_entry["step"]
-298:
-299:             dx = last_entry["com"][0] - first_entry["com"][0]
-300:             dy = last_entry["com"][1] - first_entry["com"][1]
-301:             velocity_mag = math.sqrt(dx * dx + dy * dy)
-302:
-303:             if window_steps > 0:
-304:                 velocity_mag = velocity_mag / window_steps
-305:                 dx = dx / window_steps
-306:                 dy = dy / window_steps
-307:             else:
-308:                 velocity_mag = 0.0
-309:                 dx = 0.0
-310:                 dy = 0.0
-```
-
-**Verification results:**
-
-1. **Division by `window_steps` (duration)** — ✅ Correctly added on lines 304-306. The velocity magnitude is divided by `window_steps`, and the `dx`/`dy` displacement components are also divided by `window_steps` to yield velocity (cells/step) rather than raw displacement.
-
-2. **Safe handling of `window_steps == 0`** — ✅ Correctly handled on lines 307-310. When `window_steps == 0` (i.e., first and last entries have the same step number), the code safely sets `velocity_mag`, `dx`, and `dy` all to `0.0`, avoiding any division-by-zero error.
-
-```yaml
 status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  Lines 297-310 contain the window_steps division logic:
-  
-  297:             window_steps = last_entry["step"] - first_entry["step"]
-  298: 
-  299:             dx = last_entry["com"][0] - first_entry["com"][0]
-  300:             dy = last_entry["com"][1] - first_entry["com"][1]
-  301:             velocity_mag = math.sqrt(dx * dx + dy * dy)
-  302: 
-  303:             if window_steps > 0:
-  304:                 velocity_mag = velocity_mag / window_steps
-  305:                 dx = dx / window_steps
-  306:                 dy = dy / window_steps
-  307:             else:
-  308:                 velocity_mag = 0.0
-  309:                 dx = 0.0
-  310:                 dy = 0.0
+  #!/usr/bin/env python3
+  """
+  run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
+
+  Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+  seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+  Parameters:
+    population_size : 100
+    generations     : 20
+    elite_size      : 10
+    mutation_rate   : 0.01
+    horizon         : 500 steps
+
+  Outputs:
+    archive/iter_220/results/champion_rule.json
+    archive/iter_220/results/evolution_summary.csv
+    archive/iter_220/results/champion_vc_glider.gif
+  """
+
+  from __future__ import annotations
+
+  import csv
+  import json
+  import os
+  import random
+  import sys
+  import time
+  from pathlib import Path
+
+  import numpy as np
+
+  PROJECT_ROOT = Path(__file__).parent.parent
+  sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+  from evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid  # noqa: E402
+  from new_fitness import DisplacementConsistencyFitness
 experimenter_view: |
-  The division by window_steps was confirmed to be correctly implemented
-  (lines 304-306), converting raw displacement into velocity (cells/step).
-  The zero-division case is safely handled (lines 307-310) by assigning
-  all velocity components to 0.0 when no time elapses between entries.
-notes: "window_steps division logic verified in lines 297-310, not in 130-180."
-```
+  The first 1000 characters of `run_evolution_exp_220_fixed.py` were successfully printed.
+  The file is an evolutionary search script for finding stable gliders in hexagonal cellular automata.
+  It imports necessary modules and custom packages (`evolution`, `new_fitness`) and sets up
+  the project path. The script uses `DisplacementConsistencyFitness` with a 3-bit L-tromino seed.
+notes: "First 1000 chars of src/run_evolution_exp_220_fixed.py printed successfully."
