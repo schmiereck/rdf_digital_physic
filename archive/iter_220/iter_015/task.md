@@ -1,0 +1,1 @@
+Print the source code of _try_build_c2_rule in src/evolution.py to see exactly how the 'pairs' argument is structured and how it builds the rule.
