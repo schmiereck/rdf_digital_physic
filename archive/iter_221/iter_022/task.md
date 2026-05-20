@@ -1,1 +1,1 @@
-Print lines 180 to 240 of src/new_fitness.py. Do not write yaml block or any other files, just print the python code to stdout.
+Find and print where history is generated. Does it record com at every step, or only at checkpoints (e.g., every 50 or 100 steps)? Print the relevant code.
