@@ -1,39 +1,41 @@
 artifacts: []
-experimenter_view: "The population consists of 100 evolved rules for the L-tromino\
-  \ cellular automaton. \nEach individual encodes a rule set via a 128-bit chromosome\
-  \ where each bit \ncorresponds to a specific neighborhood configuration. The decoded\
-  \ rule_dict \nmaps active configurations to their resulting cell states, providing\
-  \ a \nhuman-readable interpretation of the genome. Fitness ranges from 56.0 \n(2\
-  \ best performers) down to 0.0 (25 zero-fitness individuals), with the \nbulk (60)\
-  \ clustering around 0.667. The sparse nature of rule_dict suggests \nthat only ~15-30\
-  \ of the 128 possible configurations are actively defined \nper rule, with the rest\
-  \ acting as no-ops or defaults.\n"
-log_excerpt: 'Inspected archive/iter_179/results/final_population.json.
+experimenter_view: "The codebase implements a sophisticated evolutionary search framework\
+  \ for discovering v<c (sub-light) gliders in cellular automata rules. \n\nTwo fitness\
+  \ architectures were identified:\n1. run_vc_search.py currently uses LeakySubLightFitness\
+  \ or SubLightFitness (both from existing fitness_modules), which employ checkpoint-based\
+  \ conservation with velocity reward.\n2. new_fitness.py introduces DisplacementConsistencyFitness,\
+  \ a newer approach that uses windowed velocity consistency (low std_dev of per-window\
+  \ velocity magnitudes) to defeat \"drifter\" exploits where objects fake displacement\
+  \ via random-walk behavior.\n\nThe DisplacementConsistencyFitness fitness uses the\
+  \ formula: base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes),\
+  \ multiplied by a leaky conservation score. This creates a metric that rewards coherent\
+  \ directional motion while penalizing inconsistent oscillators and drifters.\n\n\
+  The search configuration is modest (100 population, 10 generations, 200 simulation\
+  \ steps), suggesting this is an early exploration phase. The output artifacts include\
+  \ a champion JSON, evolution log CSV, and animation GIF.\n"
+log_excerpt: 'Successfully read and displayed:
 
-  Top-level keys: generation, population_size, best_fitness_found, generation_of_best,
-  tournament_size, crossover_rate, mutation_rate, total_steps, checkpoints, ltromino_cells,
-  rng_seed, population.
+  - src/new_fitness.py (DisplacementConsistencyFitness class)
 
-  First individual (g10_rule_001) keys: rule_id, fitness, chromosome, rule_dict.
+  - src/run_vc_search.py (Evolutionary search runner)
 
-  Chromosome: 128-element binary list (0/1).
 
-  rule_dict: Sparse mapping of config IDs (0-127) to output states (0-63).
+  Key findings:
 
-  Only configurations with bit=1 in the chromosome appear in rule_dict.
+  - Bit conservation: Leaky scoring via min(bit,initial)/max(bit,initial) per step,
+  averaged over simulation
+
+  - Velocity consistency: 5 time windows, std dev of per-window velocity magnitudes
+  penalizes drifters
+
+  - Search config: 100 pop, 10 gens, elite=10%, 128x128 grid, 200 steps, 3-bit L-tromino
+  seed
+
+  - Two fitness modes: LeakySubLightFitness (default) and SubLightFitness (via --strict)
 
   '
-metrics:
-  best_fitness: 56.0
-  chromosome_length: 128
-  fitness_distribution:
-    0.0: 25
-    0.333: 2
-    0.471: 1
-    0.667: 60
-    0.745: 10
-    56.0: 2
-  generation: 10
-  population_size: 100
-notes: Population structure and rule encoding successfully analyzed.
+metrics: {}
+notes: Read and analyzed both fitness/search files; DisplacementConsistencyFitness
+  in new_fitness.py offers drifter-resistant velocity-consistency scoring but is not
+  yet integrated into run_vc_search.py.
 status: ok

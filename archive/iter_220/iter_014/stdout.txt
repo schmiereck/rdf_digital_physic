@@ -1,132 +1,150 @@
 
-[Tool Call: read_file({'path': 'archive/iter_179/results/final_population.json'})]
+[Tool Call: read_file({'path': 'src/new_fitness.py'})]
 
-[Tool Result: {
-  "generation": 10,
-  "population_size": 100,
-  "best_fitness_found": 56.0,
-  "generation_of_best": 7,
-  "tournament_size": 4,
-  "crossover_rate": 0.8,
-  "mutation_rate": 0.01,
-  "total_steps": 200,
-  "checkpoints": [
-    50,
-    100,
-    150,
-    200
-  ],
-  "ltromino_cells": [
-    [
-      63,
-      63
-    ],
-    [
-      64,
-      63
-    ],
-    [
-      64,
-      64
-    ]
-  ],
-  "rng_seed": 179003,
-  "population": [
-    {
-      "rule_id": "g10_rule_001",
-      "fitness": 56.0,
-      "chromosome...]
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
 
-Here's the analysis of the `final_population.json` file:
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-## Top-Level Keys
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
-The JSON has the following top-level keys:
 
-| Key | Description |
-|-----|-------------|
-| `generation` | Current generation number (10) |
-| `population_size` | Number of individuals (100) |
-| `best_fitness_found` | Best fitness in the population (56.0) |
-| `generation_of_best` | Generation where best fitness was found (7) |
-| `tournament_size` | Tournament size for selection (4) |
-| `crossover_rate` | Crossover probability (0.8) |
-| `mutation_rate` | Mutation probability (0.01) |
-| `total_steps` | Total simulation steps (200) |
-| `checkpoints` | Checkpoint generations [50, 100, 150, 200] |
-| `ltromino_cells` | Coordinates of the L-tromino seed |
-| `rng_seed` | Random number generator seed (179003) |
-| `population` | List of 100 individual rule sets |
+[Tool Call: read_file({'path': 'src/run_vc_search.py'})]
 
-## First Individual (`g10_rule_001`) Structure
+[Tool Result: #!/usr/bin/env python3
+"""
+run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness or SubLightFitness.
 
-Each individual has these keys:
+Setup
+-----
+* Fitness     : LeakySubLightFitness (default; leaky bit-conservation gate;
+                rewards displacement with a continuous conservation penalty)
+                OR SubLightFitness (with strict_bit_conservation=True;
+                enforces that bit count remains exactly equal to the seed bit
+                count at all times to eliminate breede...]
 
-| Key | Type | Description |
-|-----|------|-------------|
-| `rule_id` | String | Unique identifier (e.g., `"g10_rule_001"`) |
-| `fitness` | Float | Fitness score (e.g., `56.0` for best, `0.0` for worst) |
-| `chromosome` | List[int] | Binary bitstring (128 elements) representing the full genome |
-| `rule_dict` | Dict[str, int] | Decoded, human-readable rule mapping |
+Here are the complete contents of both files, followed by a detailed analysis:
 
-## How Rules Are Represented
+---
 
-**1. Chromosome (binary genome):**
-A flat list of 128 bits (`0` or `1`). Each bit corresponds to a possible neighborhood configuration. A `1` means that configuration triggers the given update rule; a `0` means it does not.
+## File 1: `src/new_fitness.py` — `DisplacementConsistencyFitness`
 
-**2. Rule Dictionary (`rule_dict`):**
-A compact, human-readable mapping. The **keys** are the neighborhood configuration IDs (integers 0–127), and the **values** are the resulting cell state after applying the rule (integers 0–63, fitting in 6 bits).
+### What it does
 
-For example, in `g10_rule_001`:
-- `"4": 68` → neighborhood config `4` → output state `68`
-- `"6": 70` → neighborhood config `6` → output state `70`
-- ...
-- `"115": 51` → neighborhood config `115` → output state `51`
+This is a **drifter-resistant** fitness function for discovering v<c (sub-light speed) gliders in cellular automata. It defeats a known exploit where objects perform random-walk or oscillating motion to fake high displacement scores.
 
-Only configurations where the chromosome bit is `1` appear in the `rule_dict`. Configurations with bit `0` are not listed (they either stay unchanged or fall under a default).
+### Core Formula
 
-**Fitness distribution across the population:**
-- **56.0** (2 individuals) — best performers
-- **0.745** (10 individuals)
-- **0.667** (60 individuals)
-- **0.471** (1 individual)
-- **0.333** (2 individuals)
-- **0.0** (25 individuals) — zero fitness
+```
+base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+final_fitness = base_fitness * total_conservation_score
+```
 
-The `rule_dict` shows that rules are sparse — only ~15–30 of the 128 possible configurations are actively defined per individual, with the rest implicitly being no-ops or default transitions.
+### How Bit Conservation Is Calculated (`_compute_conservation_score`)
+
+The **"leaky"** conservation scoring is applied per step in the simulation history:
+
+| Condition | Formula |
+|-----------|---------|
+| `bit_count[i] == initial_bits` | `conservation_factor[i] = 1.0` |
+| Otherwise | `conservation_factor[i] = min(bit_count, initial) / max(bit_count, initial)` |
+
+The **total conservation score** is the **mean of all per-step conservation factors**, yielding a value in **[0, 1]**:
+- **1.0** = perfect bit conservation throughout
+- **0.5** = one step lost half the bits, everything else was fine
+- **0.0** = bit count diverged heavily
+
+This is "leaky" because instead of hard-failing on any bit-count change (like `CheckpointFitness`), it applies a **continuous fractional penalty**, preserving the evolutionary gradient.
+
+### Velocity Consistency Calculation
+
+1. Divide `sim_history` into `num_windows` (default: 5) equal-duration windows
+2. For each window, find the first and last entries, compute the displacement vector `ΔCOM` → its magnitude
+3. Compute the **mean velocity vector** across all windows (directional drift)
+4. Compute the **standard deviation of per-window velocity magnitudes**
+5. Apply the formula above
+
+A true glider gets **low std_dev** → high fitness. A drifter gets **high std_dev** → heavily penalised.
+
+---
+
+## File 2: `src/run_vc_search.py` — Evolutionary Search Runner
+
+### Search Configuration
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `POPULATION_SIZE` | 100 | Number of random C2-symmetric rules |
+| `NUM_GENERATIONS` | 10 | Evolutionary generations |
+| `ELITE_FRACTION` | 0.10 | Top 10% advance to next generation |
+| `CROSSOVER_RATE` | 0.8 | Two-point crossover probability |
+| `MUTATION_RATE` | 0.01 | Per-bit flip probability |
+| `LUT_SIZE` | 128 | Rule table size |
+| `RNG_SEED` | 200001 | Random seed |
+| `GRID_SIZE` | 128 | Simulation grid dimensions |
+| `SIMULATION_STEPS` | 200 | Number of CA steps |
+| `DENSITY` | 6 | C2 rule generation parameter |
+| `SEED_PARTICLE` | `[(0,0), (0,1), (1,1)]` | 3-bit L-tromino |
+
+### Fitness Function Selection
+
+| Flag | Fitness Function | Bit Conservation |
+|------|-----------------|------------------|
+| (default) | `LeakySubLightFitness` | Continuous fractional penalty (checkpoints at 50, 100, 150) |
+| `--strict` | `SubLightFitness` | **Strict** — hard failure on any bit-count change |
+
+### Key Search Flow
+
+1. **Generate initial population** of 100 random C2-symmetric rules
+2. **Evaluate** each chromosome → convert to rule_dict → run fitness
+3. **Elitism**: select top 10%, breed via crossover + mutation
+4. **Track champion** across generations
+5. **Output**: `champion_vc_rule.json`, `evolution_log.csv`, `champion_vc_glider.gif`
+
+### Chromosome Encoding
+
+Rules are encoded as 128-bit binary chromosomes:
+- Each LUT entry is 7 bits (3 neighbor-count bits + 1 center bit + 3 neighbor-state bits)
+- Only the center bit (bit 6) is varied; the rest are fixed per rule index
+- `rule_dict_to_chromosome`: extracts center bits from rule dict
+- `chromosome_to_rule_dict`: reconstructs rule dict from chromosome, keeping only bits that differ from defaults
+
+---
+
+The key insight: `new_fitness.py` provides a **drifter-resistant** fitness function using velocity consistency + leaky bit conservation, while `run_vc_search.py` is the **orchestrator** that runs an evolutionary search using `LeakySubLightFitness` (or `SubLightFitness` with `--strict`) and saves results to `archive/iter_218/results/`.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts: []
-metrics:
-  population_size: 100
-  best_fitness: 56.0
-  generation: 10
-  chromosome_length: 128
-  fitness_distribution:
-    56.0: 2
-    0.745: 10
-    0.667: 60
-    0.471: 1
-    0.333: 2
-    0.0: 25
+metrics: {}
 log_excerpt: |
-  Inspected archive/iter_179/results/final_population.json.
-  Top-level keys: generation, population_size, best_fitness_found, generation_of_best, tournament_size, crossover_rate, mutation_rate, total_steps, checkpoints, ltromino_cells, rng_seed, population.
-  First individual (g10_rule_001) keys: rule_id, fitness, chromosome, rule_dict.
-  Chromosome: 128-element binary list (0/1).
-  rule_dict: Sparse mapping of config IDs (0-127) to output states (0-63).
-  Only configurations with bit=1 in the chromosome appear in rule_dict.
+  Successfully read and displayed:
+  - src/new_fitness.py (DisplacementConsistencyFitness class)
+  - src/run_vc_search.py (Evolutionary search runner)
+  
+  Key findings:
+  - Bit conservation: Leaky scoring via min(bit,initial)/max(bit,initial) per step, averaged over simulation
+  - Velocity consistency: 5 time windows, std dev of per-window velocity magnitudes penalizes drifters
+  - Search config: 100 pop, 10 gens, elite=10%, 128x128 grid, 200 steps, 3-bit L-tromino seed
+  - Two fitness modes: LeakySubLightFitness (default) and SubLightFitness (via --strict)
 experimenter_view: |
-  The population consists of 100 evolved rules for the L-tromino cellular automaton. 
-  Each individual encodes a rule set via a 128-bit chromosome where each bit 
-  corresponds to a specific neighborhood configuration. The decoded rule_dict 
-  maps active configurations to their resulting cell states, providing a 
-  human-readable interpretation of the genome. Fitness ranges from 56.0 
-  (2 best performers) down to 0.0 (25 zero-fitness individuals), with the 
-  bulk (60) clustering around 0.667. The sparse nature of rule_dict suggests 
-  that only ~15-30 of the 128 possible configurations are actively defined 
-  per rule, with the rest acting as no-ops or defaults.
-notes: "Population structure and rule encoding successfully analyzed."
+  The codebase implements a sophisticated evolutionary search framework for discovering v<c (sub-light) gliders in cellular automata rules. 
+
+  Two fitness architectures were identified:
+  1. run_vc_search.py currently uses LeakySubLightFitness or SubLightFitness (both from existing fitness_modules), which employ checkpoint-based conservation with velocity reward.
+  2. new_fitness.py introduces DisplacementConsistencyFitness, a newer approach that uses windowed velocity consistency (low std_dev of per-window velocity magnitudes) to defeat "drifter" exploits where objects fake displacement via random-walk behavior.
+
+  The DisplacementConsistencyFitness fitness uses the formula: base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes), multiplied by a leaky conservation score. This creates a metric that rewards coherent directional motion while penalizing inconsistent oscillators and drifters.
+
+  The search configuration is modest (100 population, 10 generations, 200 simulation steps), suggesting this is an early exploration phase. The output artifacts include a champion JSON, evolution log CSV, and animation GIF.
+notes: "Read and analyzed both fitness/search files; DisplacementConsistencyFitness in new_fitness.py offers drifter-resistant velocity-consistency scoring but is not yet integrated into run_vc_search.py."
 ```
