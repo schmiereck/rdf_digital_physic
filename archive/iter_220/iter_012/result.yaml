@@ -1,0 +1,25 @@
+artifacts: []
+experimenter_view: "C2 symmetry in this hex cellular automaton system is enforced\
+  \ at the\n*generator pair* level, not the full lookup table. The key design principle:\n\
+  \nNEVER mutate the 128-entry LUT directly. Always:\n  1. Extract generator pairs\
+  \ from the rule dict\n  2. Mutate the pair list (add/remove/replace)\n  3. Rebuild\
+  \ via _try_build_c2_rule() which enforces C2 by construction\n\nThis guarantees\
+  \ symmetry preservation because _try_build_c2_rule() adds\nall C2-orbit members\
+  \ automatically. Fallback to generate_random_c2_rule()\nhandles the rare case of\
+  \ inconsistent mutations (pair state collisions).\n\nThe generator-pair representation\
+  \ is efficient: a rule needs only ~3-8\npairs to define a full 128-entry rule, as\
+  \ each pair expands to 4 entries\n(a→b, b→a, rot_a→rot_b, rot_b→rot_a).\n"
+log_excerpt: "Analysis complete. Three core C2-symmetry functions identified in src/evolution.py:\n\
+  \n1. _rotate_c2(state) - Rotates a hex-neighbourhood 180° via _rotate60(x3)\n  \
+  \ Maps NE↔SW, E↔W, SE↔NW, center→center\n\n2. _try_build_c2_rule(pairs) - Builds\
+  \ full 128-entry rule from generator pairs,\n   enforcing (a→b), (b→a), (rot_a→rot_b),\
+  \ (rot_b→rot_a) symmetry.\n   Returns None on conflict.\n\n3. generate_random_c2_rule(rng)\
+  \ - Generates random valid C2 rule by\n   picking k∈{2,3,4} random pairs and retrying\
+  \ _try_build_c2_rule.\n\nFour mutation patterns examined across the codebase:\n\
+  - Pair-add/remove (run_v_less_than_c_search.py)\n- Single-pair replacement (evolve_reboot_gen3.py)\n\
+  - Probabilistic keep+add (run_iter_171_evo.py)\n- Crossover+mutate (run_iter_171_evo.py)\n\
+  \nAll rely on _try_build_c2_rule() as the consistency gate.\n"
+metrics: {}
+notes: C2 mutation design documented; three working implementations identified across
+  codebase
+status: ok
