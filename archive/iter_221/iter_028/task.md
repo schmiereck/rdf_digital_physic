@@ -1,1 +1,1 @@
-Run a script to evaluate the champion rule from archive/iter_221/results/champion_rule.json using the fixed DisplacementConsistencyFitness in src/new_fitness.py (instantiated with max_velocity_threshold=0.9). What is its new fitness score? Confirm if it is 0.0.
+Write a python script src/print_simulate_func.py to print the entire simulate_with_history function from src/run_evolution_exp_221_unwrapped.py so we can see how the unwrapping is applied and where it is recorded in history. Run this script.
