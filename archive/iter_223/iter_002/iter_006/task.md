@@ -1,0 +1,1 @@
+Run `python src/search_mixed_gliders_final.py` and print its full output.

@@ -178,26 +178,23 @@ def simulate_seed_fast(seed_cells, lut):
 
     initial_bits = len(seed_cells)
     
+    # 1. Fast check: just step and check bit count
+    grids = [grid.copy()]
+    for t in range(1, STEPS + 1):
+        grid = step_grid(grid, lut)
+        if int(grid.sum()) != initial_bits:
+            return None
+        grids.append(grid.copy())
+        
+    # 2. If it survives, do the heavy computation
     coms = []
     bit_counts = []
     canonical_history = []
-    
-    com, bits = trigonometric_com_and_bits(grid)
-    coms.append(com)
-    bit_counts.append(bits)
-    canonical_history.append(canonical_active_cells(grid))
-    
-    for t in range(1, STEPS + 1):
-        grid = step_grid(grid, lut)
-        bits = int(grid.sum())
-        if bits != initial_bits:
-            # Violated perfect bit conservation
-            return None
-        
-        com, _ = trigonometric_com_and_bits(grid)
+    for g in grids:
+        com, bits = trigonometric_com_and_bits(g)
         coms.append(com)
         bit_counts.append(bits)
-        canonical_history.append(canonical_active_cells(grid))
+        canonical_history.append(canonical_active_cells(g))
         
     # If we got here, we have perfect bit conservation!
     unwrapped = unwrap_coms(coms)
@@ -226,7 +223,7 @@ def simulate_seed_fast(seed_cells, lut):
         return {
             "initial_cells": [list(c) for c in seed_cells],
             "initial_bit_count": initial_bits,
-            "final_bit_count": bits,
+            "final_bit_count": initial_bits,
             "period": None,
             "mean_speed": mean_speed,
             "velocity_std": velocity_std,
@@ -244,7 +241,7 @@ def simulate_seed_fast(seed_cells, lut):
     return {
         "initial_cells": [list(c) for c in seed_cells],
         "initial_bit_count": initial_bits,
-        "final_bit_count": bits,
+        "final_bit_count": initial_bits,
         "period": period,
         "mean_speed": mean_speed,
         "velocity_std": velocity_std,
