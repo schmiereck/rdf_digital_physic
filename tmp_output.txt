@@ -1,0 +1,89 @@
+================================================================================
+LINES 130-180:
+================================================================================
+ 130:     6. Multiply by the "leaky" bit-conservation score to enforce mass
+ 131:        conservation (see ``_compute_conservation_score``).
+ 132: 
+ 133:         final_fitness = base_fitness * total_conservation_score
+ 134: 
+ 135:     Parameters
+ 136:     ----------
+ 137:     num_windows : int
+ 138:         Number of windows to divide the simulation into. Default 5.
+ 139:         At least 2 windows are needed to measure velocity consistency.
+ 140:     bits_per_cell : int
+ 141:         Bits per cell (reserved for future multi-bit support). Default 1.
+ 142:     strict_conservation : bool
+ 143:         Whether to enforce perfect, non-leaky mass conservation.
+ 144:     max_bit_threshold : int or None
+ 145:         If specified, any step exceeding this bit count makes the fitness 0.0.
+ 146:     max_velocity_threshold : float or None
+ 147:         If specified, any mean velocity magnitude >= this value returns 0.0.
+ 148: 
+ 149:     Attributes
+ 150:     ----------
+ 151:     name : str
+ 152:         Display name for registration purposes.
+ 153:     """
+ 154: 
+ 155:     name = "DisplacementConsistencyFitness"
+ 156: 
+ 157:     def __init__(
+ 158:         self,
+ 159:         num_windows: int = 5,
+ 160:         bits_per_cell: int = 1,
+ 161:         strict_conservation: bool = False,
+ 162:         max_bit_threshold: int | None = None,
+ 163:         max_velocity_threshold: float | None = None,
+ 164:     ) -> None:
+ 165:         """Initialise the fitness function.
+ 166: 
+ 167:         Parameters
+ 168:         ----------
+ 169:         num_windows : int
+ 170:             Number of time windows. Must be >= 2 for meaningful velocity
+ 171:             consistency measurement.
+ 172:         bits_per_cell : int
+ 173:             Bits per cell (reserved).
+ 174:         strict_conservation : bool
+ 175:             Whether to enforce perfect, non-leaky mass conservation.
+ 176:         max_bit_threshold : int, optional
+ 177:             Maximum allowed bit count at any step.
+ 178:         max_velocity_threshold : float, optional
+ 179:             Maximum allowed mean velocity magnitude.
+ 180:         """
+
+================================================================================
+WINDOW_STEPS DIVISION SECTION (lines ~290-320):
+================================================================================
+ 290: 
+ 291:             if first_entry is None or last_entry is None:
+ 292:                 # No data points in this window — zero velocity.
+ 293:                 window_velocity_mags.append(0.0)
+ 294:                 window_velocity_vectors.append((0.0, 0.0))
+ 295:                 continue
+ 296: 
+ 297:             window_steps = last_entry["step"] - first_entry["step"]
+ 298: 
+ 299:             dx = last_entry["com"][0] - first_entry["com"][0]
+ 300:             dy = last_entry["com"][1] - first_entry["com"][1]
+ 301:             velocity_mag = math.sqrt(dx * dx + dy * dy)
+ 302: 
+ 303:             if window_steps > 0:
+ 304:                 velocity_mag = velocity_mag / window_steps
+ 305:                 dx = dx / window_steps
+ 306:                 dy = dy / window_steps
+ 307:             else:
+ 308:                 velocity_mag = 0.0
+ 309:                 dx = 0.0
+ 310:                 dy = 0.0
+ 311: 
+ 312:             window_velocity_mags.append(velocity_mag)
+ 313:             window_velocity_vectors.append((dx, dy))
+ 314: 
+ 315:         # ------------------------------------------------------------------
+ 316:         # 3. Calculate mean of windowed velocity vectors (directional drift)
+ 317:         # ------------------------------------------------------------------
+ 318:         mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+ 319:         mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+ 320:         mean_velocity_magnitude = math.sqrt(
