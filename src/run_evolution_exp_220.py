@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import random
 import sys
 import time
@@ -36,14 +37,18 @@ from evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid  # no
 from new_fitness import DisplacementConsistencyFitness                       # noqa: E402
 
 OUTPUT_DIR      = PROJECT_ROOT / "archive" / "iter_220" / "results"
-POPULATION_SIZE = 100
-GENERATIONS     = 20
-ELITE_SIZE      = 10
+POPULATION_SIZE = int(os.environ.get("POPULATION_SIZE", 100))
+GENERATIONS     = int(os.environ.get("GENERATIONS", 20))
+ELITE_SIZE      = int(os.environ.get("ELITE_SIZE", 10))
 MUTATION_RATE   = 0.01
 GRID_SIZE       = 128
 STEPS           = 500
 LUT_SIZE        = 128
 RNG_SEED        = 220
+
+# Ensure elite size makes sense relative to population size
+if ELITE_SIZE > POPULATION_SIZE:
+    ELITE_SIZE = POPULATION_SIZE
 
 
 # - Chromosome helpers - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
