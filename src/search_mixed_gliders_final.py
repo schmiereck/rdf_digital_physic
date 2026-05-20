@@ -258,22 +258,15 @@ def main():
     archive_dir = Path("archive")
     target_iters = ["iter_215", "iter_218", "iter_221", "iter_222"]
     
-    # We will collect files in target directories, and any other results folders under archive.
+    # We will collect files ONLY in the target results directories
     target_files = []
-    other_files = []
-    
-    all_results_dirs = sorted(list(archive_dir.glob("**/results")))
-    
-    for rdir in all_results_dirs:
-        # Check if this results dir is in our main targets or not
-        is_target = any(t in rdir.parts for t in target_iters)
-        json_files = sorted(list(rdir.glob("*.json")))
-        if is_target:
+    for iter_name in target_iters:
+        rdir = archive_dir / iter_name / "results"
+        if rdir.is_dir():
+            json_files = sorted(list(rdir.glob("*.json")))
             target_files.extend(json_files)
-        else:
-            other_files.extend(json_files)
             
-    all_files_to_scan = target_files + other_files
+    all_files_to_scan = target_files
     # Deduplicate paths (absolute)
     seen_paths = set()
     deduped_files = []
@@ -285,7 +278,6 @@ def main():
             
     print(f"Total results JSON files discovered: {len(deduped_files)}")
     print(f"  - Target directory files ({', '.join(target_iters)}): {len(target_files)}")
-    print(f"  - Other results directories files: {len(deduped_files) - len(target_files)}")
     print("\nList of all scanned files:")
     for i, f in enumerate(deduped_files, 1):
         print(f"  [{i:03d}] {f}")
