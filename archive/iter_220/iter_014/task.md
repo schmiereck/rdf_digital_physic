@@ -1,0 +1,1 @@
+Inspect archive/iter_179/results/final_population.json. Print the keys and structure of the first individual in the population list to see how rules are represented in the population.
