@@ -1,45 +1,25 @@
-artifacts:
-- archive/iter_221/results/champion_rule.json
-- archive/iter_221/results/champion_vc_glider.gif
-- archive/iter_221/results/champion_vc_rule.json
-- archive/iter_221/results/evolution_summary.csv
-- archive/iter_221/results/trajectory_analysis.txt
-- archive/iter_221/results/characterize_champion_221.py
-- archive/iter_221/results/final_population.json
-experimenter_view: 'The evolutionary search with DisplacementConsistencyFitness converged
-  rapidly.
+artifacts: []
+experimenter_view: 'The code checks the magnitude of the **mean velocity vector**
+  (displacement per window averaged vectorially), not the mean of the velocity magnitudes.
 
-  A massive fitness jump occurred at generation 3 (0.019679 -> 0.145654),
-
-  indicating discovery of a qualitatively superior structure. This champion
-
-  was then only marginally refined (+0.000057) at generation 21, suggesting
-
-  the search converged to a local optimum. Mean fitness improved ~300x from
-
-  0.000423 to 0.127395, showing the population''s overall quality improved
-
-  dramatically. The warm-start from iter_215 provided a reasonable starting
-
-  population that still had sufficient diversity to discover the new champion.
+  A "drifter" with speed ~1.0 in every window but varying direction will have a small
+  net displacement vector (low magnitude), allowing it to pass the `max_velocity_threshold`
+  check. The logic correctly suppresses such drifters via the `std_dev` penalty later
+  in the formula, but the threshold check itself targets coherent motion (directed
+  drift), not total energy or mean speed.
 
   '
-log_excerpt: "Gen 30: best=0.145711  mean=0.127395  champion=0.145711\n  ... evaluated\
-  \ 100/100\n=== Search complete in 442.4s ===\n  Champion fitness: 0.145711\nSaved\
-  \ champion rule  -> C:\\...\\archive\\iter_221\\results\\champion_rule.json\nSaved\
-  \ evolution summary -> C:\\...\\archive\\iter_221\\results\\evolution_summary.csv\n\
-  Rendering GIF -> C:\\...\\archive\\iter_221\\results\\champion_vc_glider.gif\nGIF\
-  \ saved (319.0 KB)\nFitness improved significantly: True\n"
-metrics:
-  champion_fitness: 0.145711
-  elite_size: 10
-  generations: 30
-  initial_best_fitness: 0.017685
-  mean_fitness_gen0: 0.000423
-  mean_fitness_genN: 0.127395
-  population_size: 100
-  runtime_seconds: 442.4
-  significant_improvement: true
-notes: Fitness plateaued at gen 3 with 0.145654, refined to 0.145711 at gen 21; rapid
-  convergence.
+log_excerpt: 'The code calculates `window_velocity_vectors` for each window.
+
+  The check uses `mean_velocity_magnitude` = `sqrt(mean_dx^2 + mean_dy^2)`.
+
+  The discrepancy is due to vector vs scalar averaging:
+
+  - Mean of magnitudes (scalar average): ~1.0
+
+  - Magnitude of mean vector (directional drift): < 0.9
+
+  '
+metrics: {}
+notes: Threshold checks vector magnitude, not mean speed.
 status: ok
