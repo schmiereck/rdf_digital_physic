@@ -1,0 +1,1 @@
+Run 'python archive/iter_221/results/characterize_champion_221.py' in the terminal. Print its stdout and stderr to the console so we can see the results of the trajectory analysis. Make sure that it runs successfully and saves the 'trajectory_analysis.txt' file.
