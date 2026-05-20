@@ -1,0 +1,167 @@
+
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  (Waiting for script output)
+experimenter_view: |
+  (Pending script execution results)
+notes: "Starting file search and archive inspection."
+```
+
+```python
+import os
+import sys
+import json
+import csv
+import io
+
+# Configuration
+search_terms = ['v2', 'warm_start']
+search_dirs = ['src', 'archive', '.']  # Project root included as '.'
+
+def get_file_size(filepath):
+    try:
+        return os.path.getsize(filepath)
+    except:
+        return 0
+
+def contains_term(filepath, terms):
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+            return any(term in content for term in terms)
+    except:
+        return False
+
+def print_file_content(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+            # Truncate very large files
+            if len(content) > 2000:
+                print(f"[CONTENT TRUNCATED] First 2000 chars:\n{content[:2000]}...")
+            else:
+                print(f"[CONTENT START]\n{content}\n[CONTENT END]")
+    except Exception as e:
+        print(f"[ERROR READING FILE] {e}")
+
+def summarize_json(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            data = json.load(f)
+        print(json.dumps(data, indent=2)[:2000]) # Summary
+    except Exception as e:
+        print(f"[ERROR JSON PARSING] {e}")
+
+def summarize_csv(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            reader = csv.reader(f)
+            rows = list(reader)
+        print(f"[CSV HEADERS]: {rows[0] if rows else []}")
+        print(f"[CSV SHAPE]: {len(rows)} rows")
+        if len(rows) > 1:
+            print(f"[SAMPLE ROW]: {rows[1] if len(rows)>1 else 'N/A'}")
+    except Exception as e:
+        print(f"[ERROR CSV READING] {e}")
+
+print("="*50)
+print("SEARCHING FOR FILES CONTAINING 'v2' OR 'warm_start'")
+print("="*50)
+
+found_files = []
+
+for search_dir in search_dirs:
+    print(f"\nScanning directory: {search_dir}...")
+    if not os.path.exists(search_dir):
+        continue
+    
+    for root, dirs, files in os.walk(search_dir):
+        # Skip hidden directories like .git, .hg
+        dirs[:] = [d for d in dirs if not d.startswith('.')]
+        
+        for filename in files:
+            filepath = os.path.join(root, filename)
+            rel_path = os.path.relpath(filepath)
+            
+            if contains_term(filepath, search_terms):
+                size = get_file_size(filepath)
+                print(f"FOUND: {rel_path} (Size: {size} bytes)")
+                found_files.append(filepath)
+
+print("\n" + "="*50)
+print("INSPECTING ARCHIVE FOR WARM START EVOLUTION RESULTS")
+print("="*50)
+
+# Look for specific iterations
+archive_dir = "archive"
+if os.path.exists(archive_dir):
+    # Find directories like iter_220
+    iter_dirs = [d for d in os.listdir(archive_dir) if d.startswith('iter_')]
+    # Sort them to find the latest
+    iter_dirs.sort()
+    
+    latest_iter = iter_dirs[-1] if iter_dirs else None
+    print(f"Latest iteration found: {latest_iter}")
+
+    # Specifically check iter_220 or similar if it exists
+    target_iter = "iter_220"
+    iter_path = os.path.join(archive_dir, target_iter)
+    
+    # If iter_220 doesn't exist, try to find the most recent one
+    if not os.path.exists(iter_path) and iter_dirs:
+        iter_path = os.path.join(archive_dir, iter_dirs[-1])
+        target_iter = iter_dirs[-1]
+    
+    results_path = os.path.join(iter_path, 'results')
+    
+    if os.path.exists(results_path):
+        print(f"\nChecking for JSON/CSV files in: {results_path}")
+        json_files = [f for f in os.listdir(results_path) if f.endswith('.json')]
+        csv_files = [f for f in os.listdir(results_path) if f.endswith('.csv')]
+        
+        if json_files:
+            print(f"\n--- JSON Files in {results_path} ---")
+            for jf in json_files:
+                full_path = os.path.join(results_path, jf)
+                print(f"File: {jf} ({get_file_size(full_path)} bytes)")
+                print("Summary:")
+                summarize_json(full_path)
+                print("\n" + "-"*30)
+        else:
+            print("No JSON files found.")
+
+        if csv_files:
+            print(f"\n--- CSV Files in {results_path} ---")
+            for cf in csv_files:
+                full_path = os.path.join(results_path, cf)
+                print(f"File: {cf} ({get_file_size(full_path)} bytes)")
+                print("Summary:")
+                summarize_csv(full_path)
+                print("\n" + "-"*30)
+        else:
+            print("No CSV files found.")
+    else:
+        print(f"Directory {results_path} not found inside {iter_path}")
+else:
+    print(f"Archive directory '{archive_dir}' not found.")
+
+print("\n" + "="*50)
+print("SCRIPT COMPLETED")
+print("="*50)
+```
+
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  (Pending script output from next step)
+experimenter_view: |
+  (Pending analysis of script output)
+notes: "Script prepared and executed."
+```
