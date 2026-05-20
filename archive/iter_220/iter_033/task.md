@@ -1,0 +1,1 @@
+Read and print lines 130-180 of `src/new_fitness.py` to verify that the division by `window_steps` (duration) was added correctly and that it handles the case where `window_steps == 0` safely.
