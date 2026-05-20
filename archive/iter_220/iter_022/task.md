@@ -1,0 +1,1 @@
+List all files in archive/iter_220/results/ and look for champion_v2_rule.json, evolution_summary_v2.csv, or any files containing 'v2'. If they exist, read and print their details. If not, print any errors or check if they are in the project root or src/.
