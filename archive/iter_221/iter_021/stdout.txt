@@ -1,0 +1,111 @@
+
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 200, 'end_line': 260})]
+
+[Tool Result: --- lines 200 to 260 of 430 ---
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
+
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            ...]
+
+Here are lines 200–260 of `src/new_fitness.py`:
+
+---
+
+```
+            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+            - ``'bit_count'`` : int — number of live cells at that step.
+
+            The history should be ordered chronologically (though the method
+            sorts internally for safety).
+
+        Returns
+        -------
+        float
+            Final fitness score. A score of 0.0 is returned when the
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
+
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+```
+
+**What this reveals about history parsing and center-of-mass computation:**
+
+1. **History format:** `sim_history` is a list of dictionaries, each with:
+   - `"step"` — the simulation step number
+   - `"com"` — a `(row, col)` tuple representing the center of mass at that step
+   - `"bit_count"` — the number of live cells at that step
+
+2. **Center of mass usage:** The `com` value is used to compute per-window velocity vectors. The method splits the total simulation into `num_windows` equal-size windows, then calculates the velocity (displacement over time) within each window. Consistency of these velocities across windows is what the fitness score evaluates.
+
+3. **Validation:** The method enforces bit conservation (`strict_conservation` mode or `max_bit_threshold`) and returns `0.0` if the history is empty or has zero total steps.
+
+[NUDGE RESPONSE]
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  # lines 200 to 260 of 430 ---
+  - ``'com'``  : tuple[float, float] — centre of mass (row, col).
+  - ``'bit_count'`` : int — number of live cells at that step.
+  ...
+  sorted_history = sorted(sim_history, key=lambda e: e["step"])
+  ...
+  steps_per_window = total_steps / self.num_windows
+experimenter_view: |
+  The code reveals that `sim_history` is a list of dictionaries containing 'step' (int/float), 'com' (tuple of floats representing row/col center of mass), and 'bit_count' (int). The fitness function sorts this history by step number to ensure chronological order. It then calculates velocities by dividing the total simulation duration into `num_windows` segments, computing the displacement vectors between the centers of mass at the start and end of each window. Strict bit conservation is enforced if `strict_conservation` is true.
+notes: "Successfully displayed lines 200-260 of src/new_fitness.py."
