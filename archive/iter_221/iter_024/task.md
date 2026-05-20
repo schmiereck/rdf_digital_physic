@@ -1,0 +1,1 @@
+Print lines 210 to 255 of src/new_fitness.py. Do not write yaml block or any other files, just print the python code to stdout.
