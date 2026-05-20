@@ -1,111 +1,141 @@
+I'll start by examining the file `src/new_fitness.py` to understand its structure, then write a script to print the `DisplacementConsistencyFitness` class.
 
-[Tool Call: bash({'command': 'tail -n 30 "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_221\\results\\trajectory_analysis.txt"'})]
+
+
+[Tool Call: read_file({'path': 'src/new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+Now I have the full file content. Let me write a script that prints the class, focusing on the `__call__` method:
+
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\print_class.py', 'content': '#!/usr/bin/env python3\n"""Print the DisplacementConsistencyFitness class from src/new_fitness.py."""\n\nimport inspect\nimport sys\nsys.path.insert(0, "src")\n\nfrom new_fitness import DisplacementConsistencyFitness\n\ncls = DisplacementConsistencyFitness\n\nprint("=" * 72)\nprint(f"Class: {cls.__name__}")\nprint("=" * 72)\nprint()\n\nprint("-" * 72)\nprint("FULL CLASS SOURCE CODE")\nprint("-" * 72)\nprint(inspect.getsource(cls))\nprint()\n\nprint("=" * 72)\nprint("ONLY __call__ METHOD")\nprint("=" * 72)\nprint()\nprint("-" * 72)\nprint(inspect.getsource(cls.__call__))\nprint()\n\nprint("=" * 72)\nprint("ONLY _compute_conservation_score METHOD")\nprint("=" * 72)\nprint()\nprint("-" * 72)\nprint(inspect.getsource(cls._compute_conservation_score))\nprint()\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\print_class.py]
+
+
+[Tool Call: bash({'command': 'cd /d C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python print_class.py'})]
 
 [Tool Result: exit_code: 1
-stdout: 
-stderr: Der Befehl "tail" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
+stdout: ========================================================================
+Class: DisplacementConsistencyFitness
+========================================================================
+
+------------------------------------------------------------------------
+FULL CLASS SOURCE CODE
+------------------------------------------------------------------------
+
+stderr: Traceback (most recent call last):
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\print_class.py", line...]
+
+The script encountered a Unicode encoding error due to the docstring containing Unicode characters. Let me fix the script to handle this:
 
 
-[Tool Call: bash({'command': 'powershell -Command "Get-Content \'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_221\\results\\trajectory_analysis.txt\' -Tail 30"'})]
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""Print the DisplacementConsistencyFitness class from src/new_fitness.py."""\n\nimport sys\nimport os\n\n# Force UTF-8 encoding for stdout on Windows\nif sys.platform == "win32":\n    import io\n    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")\n\nsys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))\n\nfrom new_fitness import DisplacementConsistencyFitness\n\ncls = DisplacementConsistencyFitness\n\nprint("=" * 72)\nprint(f"Class: {cls.__name__}")\nprint("=" * 72)\nprint()\n\nprint("-" * 72)\nprint("FULL CLASS SOURCE CODE")\nprint("-" * 72)\nprint(cls.__doc__)\nprint()\nprint("=" * 72)\nprint("INIT METHOD")\nprint("=" * 72)\nprint()\nimport inspect\nprint(inspect.getsource(cls.__init__))\nprint()\nprint("=" * 72)\nprint("__call__ METHOD")\nprint("=" * 72)\nprint()\nprint(inspect.getsource(cls.__call__))\nprint()\nprint("=" * 72)\nprint("_compute_conservation_score METHOD")\nprint("=" * 72)\nprint()\nprint(inspect.getsource(cls._compute_conservation_score))\nprint()\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\print_class.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\print_class.py]
+
+
+[Tool Call: bash({'command': 'cd /d C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python print_class.py'})]
 
 [Tool Result: exit_code: 0
-stdout:      486     3  (   90.33,    63.33)  (     -421.67,        63.33)  [(89, 63), (90, 63), (92, 64)]
-     487     3  (   90.33,    63.67)  (     -421.67,        63.67)  [(88, 63), (91, 64), (92, 64)]
-     488     3  (   88.33,    63.33)  (     -423.67,        63.33)  [(87, 63), (88, 63), (90, 64)]
-     489     3  (   88.33,    63.67)  (     -423.67,        63.67)  [(86, 63), (89, 64), (90, 64)]
-     490     3  (   86.33,    63.33)  (     -425.67,        63.33)  [(85, 63), ...]
+stdout: ========================================================================
+Class: DisplacementConsistencyFitness
+========================================================================
+
+------------------------------------------------------------------------
+FULL CLASS SOURCE CODE
+------------------------------------------------------------------------
+Fitness function that rewards consistent, directional motion.
+
+    This fitness function defeats the *drifter* explo...]
 
-Here are the last 30 lines of `archive/iter_221/results/trajectory_analysis.txt`:
+The script ran successfully. Here's a summary of what was printed:
 
+## `DisplacementConsistencyFitness` Class
+
+### Class Docstring
+The class is a fitness function designed to reward **consistent, directional motion** and penalize "drifter" objects in cellular automaton glider searches. It defeats the drifter exploit by:
+1. Dividing the simulation into time windows
+2. Computing per-window velocity vectors
+3. Measuring the **standard deviation** of velocity magnitudes — true gliders have low std dev, drifters have high std dev
+
+**Core formula:**
 ```
-     486     3  (   90.33,    63.33)  (     -421.67,        63.33)  [(89, 63), (90, 63), (92, 64)]
-     487     3  (   90.33,    63.67)  (     -421.67,        63.67)  [(88, 63), (91, 64), (92, 64)]
-     488     3  (   88.33,    63.33)  (     -423.67,        63.33)  [(87, 63), (88, 63), (90, 64)]
-     489     3  (   88.33,    63.67)  (     -423.67,        63.67)  [(86, 63), (89, 64), (90, 64)]
-     490     3  (   86.33,    63.33)  (     -425.67,        63.33)  [(85, 63), (86, 63), (88, 64)]
-     491     3  (   86.33,    63.67)  (     -425.67,        63.67)  [(84, 63), (87, 64), (88, 64)]
-     492     3  (   84.33,    63.33)  (     -427.67,        63.33)  [(83, 63), (84, 63), (86, 64)]
-     493     3  (   84.33,    63.67)  (     -427.67,        63.67)  [(82, 63), (85, 64), (86, 64)]
-     494     3  (   82.33,    63.33)  (     -429.67,        63.33)  [(81, 63), (82, 63), (84, 64)]
-     495     3  (   82.33,    63.67)  (     -429.67,        63.67)  [(80, 63), (83, 64), (84, 64)]
-     496     3  (   80.33,    63.33)  (     -431.67,        63.33)  [(79, 63), (80, 63), (82, 64)]
-     497     3  (   80.33,    63.67)  (     -431.67,        63.67)  [(78, 63), (81, 64), (82, 64)]
-     498     3  (   78.33,    63.33)  (     -433.67,        63.33)  [(77, 63), (78, 63), (80, 64)]
-     499     3  (   78.33,    63.67)  (     -433.67,        63.67)  [(76, 63), (79, 64), (80, 64)]
-     500     3  (   76.33,    63.33)  (     -435.67,        63.33)  [(75, 63), (76, 63), (78, 64)]
-
-================================================================================
-SUMMARY
-================================================================================
-  Initial CoM   : (63.666667, 63.333333)
-  Final CoM     : (-435.666667, 63.333333)
-  Net displacement (Euclidean): 499.333333 cells
-  Total delta    : dx=-499.333333, dy=+0.000000
-  Average speed  : 0.998667 cells/step
-
-  Bit count — min: 3, max: 3, final: 3
-
-  Step velocity — min: 0.333333, max: 2.027588, mean: 1.178405
-
-================================================================================
+base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+final_fitness = base_fitness * total_conservation_score
 ```
 
-The output shows trajectory data for steps 486–500 (each row with step number, bit count, initial position, final position, and neighbor cells), followed by a summary block showing the overall statistics:
+### `__init__` Method
+Takes parameters: `num_windows` (default 5), `bits_per_cell`, `strict_conservation`, `max_bit_threshold`, `max_velocity_threshold`, and `min_velocity`.
 
-- **Initial center of mass:** (63.67, 63.33)
-- **Final center of mass:** (-435.67, 63.33)
-- **Net displacement:** ~499.33 cells (entirely in the -x direction, dy=0)
-- **Average speed:** ~0.999 cells/step
-- **Bit count:** constant at 3 throughout
-- **Step velocity:** min 0.33, max 2.03, mean 1.18 cells/step
+### `__call__` Method (main method)
+The main 7-step pipeline:
+1. **Sort** by step
+2. **Unwrap COMs** to handle toroidal grid boundaries (wrapping at 128)
+3. Apply **bit threshold** and **strict conservation** guards
+4. **Compute per-window velocity vectors** — divides simulation into equal-duration windows
+5. **Calculate mean velocity** direction (mean of vectors, not magnitudes)
+6. **Calculate std dev** of velocity magnitudes
+7. Apply core formula + **leaky bit-conservation score** as final multiplier
+
+### `_compute_conservation_score` Method
+A "leaky" conservation scoring that applies a fractional penalty (rather than hard-failing) when bit counts change, providing an evolutionary gradient toward perfect conservation.
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
-artifacts: []
-metrics:
-  net_displacement: 499.333333
-  average_speed: 0.998667
-  final_step: 500
-  initial_com: "(63.666667, 63.333333)"
-  final_com: "(-435.666667, 63.333333)"
-  step_velocity_mean: 1.178405
-  bit_count_final: 3
-experimenter_view: |
-  The trajectory analysis for iter_221 (steps 486-500) indicates a stable, linear motion.
-  The center of mass moves strictly along the negative x-axis (dx = -499.33) while maintaining a constant y-coordinate (dy ≈ 0).
-  The average speed is approximately 0.999 cells/step, and the bit count remains constant at 3.
-  The structure appears to be a consistent oscillator or moving object without drift or decay.
+artifacts:
+  - print_class.py
+metrics: {}
 log_excerpt: |
-     486     3  (   90.33,    63.33)  (     -421.67,        63.33)  [(89, 63), (90, 63), (92, 64)]
-     487     3  (   90.33,    63.67)  (     -421.67,        63.67)  [(88, 63), (91, 64), (92, 64)]
-     488     3  (   88.33,    63.33)  (     -423.67,        63.33)  [(87, 63), (88, 63), (90, 64)]
-     489     3  (   88.33,    63.67)  (     -423.67,        63.67)  [(86, 63), (89, 64), (90, 64)]
-     490     3  (   86.33,    63.33)  (     -425.67,        63.33)  [(85, 63), (86, 63), (88, 64)]
-     491     3  (   86.33,    63.67)  (     -425.67,        63.67)  [(84, 63), (87, 64), (88, 64)]
-     492     3  (   84.33,    63.33)  (     -427.67,        63.33)  [(83, 63), (84, 63), (86, 64)]
-     493     3  (   84.33,    63.67)  (     -427.67,        63.67)  [(82, 63), (85, 64), (86, 64)]
-     494     3  (   82.33,    63.33)  (     -429.67,        63.33)  [(81, 63), (82, 63), (84, 64)]
-     495     3  (   82.33,    63.67)  (     -429.67,        63.67)  [(80, 63), (83, 64), (84, 64)]
-     496     3  (   80.33,    63.33)  (     -431.67,        63.33)  [(79, 63), (80, 63), (82, 64)]
-     497     3  (   80.33,    63.67)  (     -431.67,        63.67)  [(78, 63), (81, 64), (82, 64)]
-     498     3  (   78.33,    63.33)  (     -433.67,        63.33)  [(77, 63), (78, 63), (80, 64)]
-     499     3  (   78.33,    63.67)  (     -433.67,        63.67)  [(76, 63), (79, 64), (80, 64)]
-     500     3  (   76.33,    63.33)  (     -435.67,        63.33)  [(75, 63), (76, 63), (78, 64)]
-
-  ================================================================================================
-  SUMMARY
-  ================================================================================================
-    Initial CoM   : (63.666667, 63.333333)
-    Final CoM     : (-435.666667, 63.333333)
-    Net displacement (Euclidean): 499.333333 cells
-    Total delta    : dx=-499.333333, dy=+0.000000
-    Average speed  : 0.998667 cells/step
-
-    Bit count — min: 3, max: 3, final: 3
-
-    Step velocity — min: 0.333333, max: 2.027588, mean: 1.178405
-
-  ================================================================================================
-notes: "Printed last 30 lines of trajectory analysis for iter_221."
+  ========================================================================
+  Class: DisplacementConsistencyFitness
+  ========================================================================
+  
+  ------------------------------------------------------------------------
+  FULL CLASS SOURCE CODE
+  ------------------------------------------------------------------------
+  Fitness function that rewards consistent, directional motion.
+  ...
+  __call__ METHOD
+  ------------------------------------------------------------------------
+  def __call__(
+      self,
+      sim_history: list[dict[str, Any]],
+  ) -> float:
+      ...
+      steps_per_window = total_steps / self.num_windows
+      ...
+      base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)
+      ...
+      fitness = base_fitness * total_conservation_score
+      return float(fitness)
+experimenter_view: |
+  The DisplacementConsistencyFitness class is a well-designed fitness function
+  for cellular automaton glider discovery. Its core innovation is defeating
+  "drifter" exploits by analyzing velocity consistency across time windows.
+  True gliders show low standard deviation of per-window velocity magnitudes,
+  while drifters (oscillating or random-walk objects) show high std dev.
+  The formula base_fitness = mean_velocity_magnitude / (1 + std_dev) naturally
+  penalizes inconsistent motion. Combined with the leaky conservation score,
+  it rewards objects that are both directionally coherent AND mass-conserving.
+  The COM unwrapping logic handles toroidal grid boundaries correctly at
+  grid size 128.
+notes: "Successfully printed DisplacementConsistencyFitness class with __call__ method."
+```

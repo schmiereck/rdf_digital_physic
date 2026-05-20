@@ -1,17 +1,37 @@
 artifacts:
-- src/evolve_glider.py
-- archive/iter_215/results/champion.json
-experimenter_view: 'The evolutionary search successfully discovered a sub-light speed
-  glider.
+- print_class.py
+experimenter_view: 'The DisplacementConsistencyFitness class is a well-designed fitness
+  function
 
-  The particle maintains a stable structure of 6 cells and moves with a
+  for cellular automaton glider discovery. Its core innovation is defeating
 
-  velocity of approximately 0.25c. Bit conservation is perfect over 1000 steps.
+  "drifter" exploits by analyzing velocity consistency across time windows.
+
+  True gliders show low standard deviation of per-window velocity magnitudes,
+
+  while drifters (oscillating or random-walk objects) show high std dev.
+
+  The formula base_fitness = mean_velocity_magnitude / (1 + std_dev) naturally
+
+  penalizes inconsistent motion. Combined with the leaky conservation score,
+
+  it rewards objects that are both directionally coherent AND mass-conserving.
+
+  The COM unwrapping logic handles toroidal grid boundaries correctly at
+
+  grid size 128.
 
   '
-metrics:
-  generations: 50
-  max_fitness: 0.942
-  stable_steps: 1000
-notes: Sub-light glider found and verified.
+log_excerpt: "========================================================================\n\
+  Class: DisplacementConsistencyFitness\n========================================================================\n\
+  \n------------------------------------------------------------------------\nFULL\
+  \ CLASS SOURCE CODE\n------------------------------------------------------------------------\n\
+  Fitness function that rewards consistent, directional motion.\n...\n__call__ METHOD\n\
+  ------------------------------------------------------------------------\ndef __call__(\n\
+  \    self,\n    sim_history: list[dict[str, Any]],\n) -> float:\n    ...\n    steps_per_window\
+  \ = total_steps / self.num_windows\n    ...\n    base_fitness = mean_velocity_magnitude\
+  \ / (1.0 + std_dev_velocity_magnitudes)\n    ...\n    fitness = base_fitness * total_conservation_score\n\
+  \    return float(fitness)\n"
+metrics: {}
+notes: Successfully printed DisplacementConsistencyFitness class with __call__ method.
 status: ok
