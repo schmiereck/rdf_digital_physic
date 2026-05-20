@@ -230,6 +230,37 @@ class DisplacementConsistencyFitness:
         #    we sort to be safe)
         # ------------------------------------------------------------------
         sorted_history = sorted(sim_history, key=lambda e: e["step"])
+        # ------------------------------------------------------------------
+        # Center-of-mass unwrapping to handle toroidal grid boundaries.
+        # When the COM jumps from near one edge to the opposite edge,
+        # raw displacement would be wrong.  We unwrap consecutive COM
+        # deltas to remove artificial discontinuities.
+        # ------------------------------------------------------------------
+        unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]
+        for i in range(1, len(sorted_history)):
+            prev_com = unwrapped_coms[-1]
+            cur_com = sorted_history[i]["com"]
+            dx = cur_com[0] - prev_com[0]
+            dy = cur_com[1] - prev_com[1]
+            # Assume grid wraps at 128 (GRID_SIZE).  Unwrap deltas:
+            if dx > 64:
+                dx -= 128.0
+            elif dx < -64:
+                dx += 128.0
+            if dy > 64:
+                dy -= 128.0
+            elif dy < -64:
+                dy += 128.0
+            unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
+
+        # Replace the raw COMs with unwrapped ones for downstream calc.
+        unwrapped_history: list[dict] = []
+        for i, entry in enumerate(sorted_history):
+            unwrapped_entry = dict(entry)
+            unwrapped_entry["com"] = unwrapped_coms[i]
+            unwrapped_history.append(unwrapped_entry)
+        sorted_history = unwrapped_history
+
 
         if self.max_bit_threshold is not None:
             if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
