@@ -1,1 +1,1 @@
-Check if `archive/iter_220/results/trajectory_log_consistency.txt` exists. If it does, print the complete file or the most important sections (summary, classification, period, velocity, and step-by-step table). If there is an animated GIF, confirm its presence.
+Inspect the directory iter_220.21/ and output its stderr.txt and task.md/checkpoint.yaml to understand what went wrong with the execution. Why did it fail with "name 'ExecResult' is not defined"?
