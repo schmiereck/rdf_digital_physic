@@ -1,0 +1,2 @@
+1. Modify src/new_fitness.py: inside DisplacementConsistencyFitness.__call__, add a check right after max_bit_threshold and strict_conservation checks, so that if any step has bit_count == 0, the method immediately returns 0.0 (extinction guard).
+2. Create and run a validation script src/validate_extinction_guard.py that loads archive/iter_221/results/champion_rule_perfect.json and evaluates its fitness. Verify that its fitness under the new DisplacementConsistencyFitness is exactly 0.0.
