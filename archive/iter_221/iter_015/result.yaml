@@ -1,20 +1,24 @@
 artifacts: []
-experimenter_view: 'The fitness function effectively addresses the "drifter" exploit
-  in CA glider discovery by penalizing inconsistent motion. By using windowed velocity
-  standard deviation, it distinguishes coherent v<c gliders from stationary or random-walk
-  drifters. The integration of a continuous (leaky) bit-conservation metric ensures
-  mass conservation is rewarded gradually rather than rejected outright.
+experimenter_view: 'The `max_velocity_threshold` is an optional float parameter (default
+  `None`) in the `DisplacementConsistencyFitness` class. It is stored as an instance
+  attribute in `__init__` and evaluated during the `__call__` method. Specifically,
+  line 355 checks if the calculated `mean_velocity_magnitude` (derived from windowed
+  centre-of-mass drift) is greater than or equal to the threshold. If true, the function
+  returns `0.0`, acting as a hard constraint against high directional drift.
 
   '
-log_excerpt: 'Successfully extracted __init__ and __call__ methods from DisplacementConsistencyFitness
-  class in src/new_fitness.py.
+log_excerpt: 'src\new_fitness.py:146: max_velocity_threshold : float or None
 
-  The implementation divides simulation history into windows, calculates per-window
-  velocity vectors, computes mean magnitude and standard deviation, and applies the
-  core formula: mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes). It multiplies
-  the result by a leaky bit-conservation score.
+  src\new_fitness.py:163: max_velocity_threshold: float | None = None,
+
+  src\new_fitness.py:178: max_velocity_threshold : float, optional
+
+  src\new_fitness.py:185: self.max_velocity_threshold = max_velocity_threshold
+
+  src\new_fitness.py:355: if self.max_velocity_threshold is not None and mean_velocity_magnitude
+  >= self.max_velocity_threshold:
 
   '
 metrics: {}
-notes: Code extraction complete; no files modified.
+notes: Analysis of max_velocity_threshold constraints in new_fitness.py.
 status: ok
