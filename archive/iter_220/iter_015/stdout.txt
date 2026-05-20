@@ -1,284 +1,272 @@
+I'll search for the simulation update logic by exploring the project structure and finding the relevant files.
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] -p
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      goal.md
+      output.txt
+      python_path_info.py
+      RDF-REVIEW-179.md
+      requirements.txt
+      RESEARCH-R...]
+
+
+[Tool Call: grep_search({'pattern': 'def (step|update|simulate)', 'include_pattern': '*.py'})]
+
+[Tool Result: analyze_champion_vc_220.py:43: def simulate_with_history(rule_dict: dict) -> list[dict]:
+debug_sim_vc.py:12: def step(g):
+src\analyze_long_run_dynamics.py:46: def step_grid(grid: np.ndarray, lookup: np.ndarray) -> np.ndarray:
+src\analyze_median_elite_rule.py:142: def step_cells(cells: frozenset, rule: dict) -> frozenset:
+src\analyze_top_elite_rule.py:142: def step_cells(cells: frozenset, rule: dict) -> frozenset:
+src\analyze_top_stabilizing_rule.py:138: def step_cells(cells: frozenset, rule: dic...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_offset_collisions.py
+      characteri...]
+
+Now let me read the two most likely candidates — `src/engine.py` and `src/simulator.py`:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-new_fitness.py
+engine.py — Multi-bit hexagonal CA engine.
 
-DisplacementConsistencyFitness
-------------------------------
-A fitness function designed to reward consistent, directional motion and
-penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+Generalises the historic 1-bit step (encoded by simulator.py and evolution.py)
+to grids whose cells carry N bits.  The grid is represented as a NumPy array of
+shape ``(height, width, bits_per_cell)`` where each entry along the last axis
+is a single bit (0/1).  Cell value = base-2 with index 0 as the most
+significant bit.
 
-The "drifter" exploit
-~~~~~~~~~~~~~~~~~~~~~
-In cellular-automaton glider searches, evolution can converge on a class of
-objects sometimes called *drifters*: particles that do not travel coherently
-but instead undergo small periodic oscillation...]
-
-## Analysis of `DisplacementConsistencyFitness`
-
-### 1. The `__call__` (evaluate) method
-
-The evaluation pipeline is:
-
-1. **Sort history** chronologically
-2. **Divide into `num_windows`** time windows and compute per-window velocity vectors (ΔCOM)
-3. **Calculate mean velocity magnitude** (net directional drift) and **std dev of velocity magnitudes** (consistency)
-4. **Core fitness formula:**
-   ```
-   base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
-   ```
-5. **Multiply by the leaky conservation score** from `_compute_conservation_score`
-   ```
-   final_fitness = base_fitness * total_conservation_score
-   ```
-
-### 2. The `_compute_conservation_score` method (current — "leaky")
-
-The current implementation applies a **continuous/fractional penalty**, NOT a strict hard-fail:
-
-```python
-if bit_count == initial_bits:
-    conservation_factor = 1.0
-else:
-    # Fractional penalty — never returns 0 unless bit_count is 0
-    conservation_factor = min(bit_count, initial_bits) / max(bit_count, initial_bits)
-```
-
-For example with `initial_bits = 3`:
-
-| bit_count | conservation factor |
-|-----------|-------------------|
-| 3 | 1.0 |
-| 2 | 2/3 ≈ 0.667 |
-| 1 | 1/3 ≈ 0.333 |
-| 0 | 0/3 = 0.0 |
-| 4 | 3/4 = 0.75 |
-
-**There is currently NO parameter to enable strict bit conservation.** The score is always a smooth, leaky multiplier in [0, 1].
-
-### 3. Adding strict enforcement
-
-An easy way to enable strict bit conservation (return 0 fitness if bit count ever ≠ initial value) would be to add a `strict_conservation` boolean parameter. Here's a minimal patch:
+For ``bits_per_cell == 1`` the math reduces exactly to the legacy fast path:
+state encoding ``(c<<6)|(e<<...]
 
 
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulator.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-new_fitness.py
+simulator.py — Particle and Simulator classes for the hexagonal CA.
 
-DisplacementConsistencyFitness
-------------------------------
-A fitness function designed to reward consistent, directional motion and
-penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+The legacy 1-bit pipeline (128-entry LUT, 2D grids) is preserved as the
+default fast path so existing callers keep working unchanged.  Passing
+``bits_per_cell > 1`` enables the multi-bit engine in ``engine.py``, where
+grids carry shape ``(H, W, bits_per_cell)``.
+"""
 
-The "drifter" exploit
-~~~~~~~~~~~~~~~~~~~~~
-In cellular-automaton glider searches, evolution can converge on a class of
-objects sometimes called *drifters*: particles that do not travel coherently
-but instead undergo small periodic oscillation...]
+from __future__ import annotations
 
-## Analysis of `DisplacementConsistencyFitness`
+import numpy as np
 
-### 1. The `evaluate` method (`__call__`)
+from engine import (
+    BITS_PER_CELL,
+    HexagonalGrid,
+    build_lut,
+    oc...]
 
-The evaluation pipeline is:
-
-1. **Sort history** chronologically by step
-2. **Divide into `num_windows`** time windows and compute per-window velocity vectors (ΔCOM between first and last entry per window)
-3. **Compute base fitness** using:
-   ```
-   base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)
-   ```
-4. **Multiply by the leaky bit-conservation score**:
-   ```
-   final_fitness = base_fitness * total_conservation_score
-   ```
-
-### 2. The `_compute_conservation_score` method (current — "leaky")
-
-**There is currently NO parameter to enable strict bit conservation.** The implementation uses a continuous "leaky" fractional penalty:
-
-| bit_count | conservation_factor |
-|-----------|-------------------|
-| == initial_bits | 1.0 |
-| initial_bits - 1 | (n-1)/n (e.g., 2/3 = 0.667) |
-| initial_bits - 2 | (n-2)/n (e.g., 1/3 = 0.333) |
-| 0 | 0.0 |
-
-The final score is the **mean** of all per-step factors. So even if a step has a different bit count, the fitness is only *reduced*, never hard-zeroed out (unless bit_count reaches 0).
-
-### 3. How to add strict bit conservation
-
-The easiest way would be to add a `strict_conservation: bool = False` parameter to `__init__` and modify `_compute_conservation_score` to early-return 0.0 when strict mode is enabled:
+Now I have a comprehensive picture. Let me also check how the simulation loop calls the step function to understand the full picture of the update model:
 
 
 
-[Tool Call: bash({'command': 'grep_search(pattern="class DisplacementConsistencyFitness"', 'include_pattern': '*.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulate.py'})]
 
-[Tool Result: exit_code: 1
-stdout: 
-stderr: Der Befehl "grep_search" ist entweder falsch geschrieben oder
-konnte nicht gefunden werden.
-]
+[Tool Result: #!/usr/bin/env python3
+"""
+Composite two-cell particle CA: produces a v=c/2 glider.
+
+Particle representation (2-bit cells):
+  0 = '00' (empty)
+  1 = '01' (state A, leading half)
+  2 = '10' (state B, trailing half)
+
+Two-cell particle pattern: [1, 2] at positions (i, i+1).
+
+Phase OSCILLATE (even t): [1,2] at (i,i+1) -> [2,1] in-place (flip internal state)
+Phase MOVE (odd t):       [2,1] at (i,i+1) -> [1,2] at (i+1,i+2) (translate right)
+
+Effective velocity = 1 cell per 2 steps = c/2.
+"""
+import sy...]
+
+Now let me check the main simulation entry point to see how the step function is called in the actual simulation loop:
 
 
-[Tool Call: grep_search({'pattern': 'class DisplacementConsistencyFitness', 'include_pattern': '*.py'})]
 
-[Tool Result: src\new_fitness.py:88: class DisplacementConsistencyFitness:]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_simulation.py'})]
 
+[Tool Result: #!/usr/bin/env python3
+"""
+run_simulation.py — Reproducibility check for the v=1c glider from iter_179.
 
-[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'DisplacementConsistencyFitness'})]
+1. Load champion rule g10_rule_001 from archive/iter_179/results/champion_rule.json
+   (falls back to final_population.json if champion_rule.json does not exist,
+   and saves the extracted rule as champion_rule.json for future use).
+2. Initialize 128x128 hexagonal grid with L-tromino seed at center.
+3. Run 400 steps.
+4. Verify: displacement ≈ 400 cells, bit count = 3 throughout.
+5. Save GIF t...]
 
-[Tool Result: breakdown_fitness.py:11: from new_fitness import DisplacementConsistencyFitness
-breakdown_fitness.py:40: fitness_fn = DisplacementConsistencyFitness(num_windows=5)
-src\new_fitness.py:5: DisplacementConsistencyFitness
-src\new_fitness.py:70: fitness_fn = DisplacementConsistencyFitness(num_windows=5)
-src\new_fitness.py:88: class DisplacementConsistencyFitness:
-src\new_fitness.py:149: name = "DisplacementConsistencyFitness"
-src\new_fitness.py:205: >>> fitness = DisplacementConsistencyFitness(num_win...]
-
-Now I have a complete picture. Let me provide a comprehensive answer:
+I've now read the full simulation update logic. Here's my complete analysis:
 
 ---
 
-## Analysis
+## Where is the simulation update logic?
 
-### Current Behavior — No Strict Mode Exists
+**Primary: `src/engine.py`** — the canonical `step_grid()` function (line 117).
 
-**Short answer:** There is currently **no parameter** to enable strict bit conservation. The current `_compute_conservation_score` method uses a "leaky" continuous penalty approach — it **never returns 0** unless the bit count drops to exactly 0.
+**Secondary: `src/simulator.py`** — provides OO wrappers (`Particle`, `Simulator`) that delegate to `engine.py`. It also has its own standalone `_step_grid()` (line 39) kept for backward compatibility with the legacy 1-bit pipeline.
 
-### How the Current `_compute_conservation_score` Works
+---
 
-The method applies a per-step fractional penalty:
+## The Update Model — Full Code
 
-```
-if bit_count == initial_bits:
-    factor = 1.0
-else:
-    factor = min(bit_count, initial_bits) / max(bit_count, initial_bits)
-```
-
-For `initial_bits = 3`, this gives:
-
-| bit_count | conservation_factor |
-|-----------|-------------------|
-| 3 | 1.0 |
-| 2 | 2/3 ≈ 0.667 |
-| 1 | 1/3 ≈ 0.333 |
-| 0 | 0.0 |
-| 4 | 3/4 = 0.75 |
-
-The **final** conservation score is the **mean** of all per-step factors. So a single step with `bit_count=2` when `initial=3` would give a factor of 0.667 for that step — the final score is only partially penalised, not hard-zeroed.
-
-### Why This Is Not Strict
-
-With strict bit conservation (hard-fail if bit count ever ≠ initial value), any deviation should yield a fitness of 0.0. But currently:
-
-- **A particle that temporarily gains/loses a bit** still gets partial fitness (e.g., ~0.75-0.9 depending on how many steps deviate).
-- **The only way to get 0.0** is if the bit count reaches 0 at some step.
-- **The final fitness** is `base_fitness * conservation_score`, so the leaky multiplier only attenuates — it doesn't eliminate.
-
-### How to Add Strict Enforcement
-
-The simplest approach is to add a `strict_conservation: bool = False` parameter and short-circuit:
+### Core step function (`src/engine.py` lines 117–158)
 
 ```python
-def __init__(
-    self,
-    num_windows: int = 5,
+def step_grid(
+    grid: np.ndarray,
+    lut: np.ndarray,
     bits_per_cell: int = 1,
-    strict_conservation: bool = False,  # <-- NEW PARAMETER
-) -> None:
-    self.num_windows = max(2, int(num_windows))
-    self.bits_per_cell = int(bits_per_cell)
-    self.strict_conservation = strict_conservation
+) -> np.ndarray:
+    """Advance one CA step.
 
-# In _compute_conservation_score, add at the top of the loop:
-def _compute_conservation_score(self, sim_history: list[dict[str, Any]]) -> float:
-    if not sim_history:
-        return 1.0
+    Accepts either a 3D ``(H, W, N)`` bit-grid or, for ``N == 1``, a 2D
+    ``(H, W)`` grid for backward compatibility.  Always returns a 3D
+    ``(H, W, N)`` array.
+    """
+    n = int(bits_per_cell)
+    cell = _pack_cell_values(grid, n)
+    e = np.roll(cell, -1, axis=0)
+    w = np.roll(cell, 1, axis=0)
+    ne = np.roll(cell, -1, axis=1)
+    sw = np.roll(cell, 1, axis=1)
+    se = np.roll(e, 1, axis=1)
+    nw = np.roll(w, -1, axis=1)
 
-    initial_bits = sim_history[0]["bit_count"]
-    if initial_bits == 0:
-        return 1.0
-
-    conservation_factors: list[float] = []
-    for entry in sim_history:
-        bit_count = entry["bit_count"]
-
-        # ── NEW: strict mode hard-fails on any deviation ──
-        if self.strict_conservation and bit_count != initial_bits:
-            return 0.0
-
-        if bit_count == initial_bits:
-            conservation_factors.append(1.0)
-        else:
-            conservation_factors.append(
-                min(bit_count, initial_bits)
-                / max(bit_count, initial_bits)
-            )
-
-    return float(sum(conservation_factors) / len(conservation_factors))
+    if n == 1:
+        # Legacy fast path — produces uint8 indices identical to evolution.step_grid.
+        state = (
+            (cell.astype(np.uint16) << 6)
+            | (e.astype(np.uint16) << 5)
+            | (se.astype(np.uint16) << 4)
+            | (sw.astype(np.uint16) << 3)
+            | (w.astype(np.uint16) << 2)
+            | (nw.astype(np.uint16) << 1)
+            | ne.astype(np.uint16)
+        ).astype(np.uint8)
+    else:
+        dt = _state_dtype(n)
+        state = (
+            (cell.astype(dt) << (6 * n))
+            | (e.astype(dt) << (5 * n))
+            | (se.astype(dt) << (4 * n))
+            | (sw.astype(dt) << (3 * n))
+            | (w.astype(dt) << (2 * n))
+            | (nw.astype(dt) << n)
+            | ne.astype(dt)
+        )
+    new_cell = lut[state]
+    return _unpack_cell_values(new_cell, n)
 ```
 
-### Usage
+### Legacy 1-bit variant (`src/simulator.py` lines 39–52)
 
 ```python
-# Strict mode — zero fitness if bit count ever deviates from 3
-fitness_fn = DisplacementConsistencyFitness(num_windows=5, strict_conservation=True)
-
-# Current default (leaky) — partial penalty for deviations
-fitness_fn = DisplacementConsistencyFitness(num_windows=5)  # strict_conservation=False
+def _step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:
+    e  = np.roll(grid, -1, axis=0)
+    w  = np.roll(grid,  1, axis=0)
+    ne = np.roll(grid, -1, axis=1)
+    sw = np.roll(grid,  1, axis=1)
+    se = np.roll(e,     1, axis=1)
+    nw = np.roll(w,    -1, axis=1)
+    state = (
+        (grid.astype(np.uint16) << 6)
+        | (e.astype(np.uint16)  << 5)
+        | (se.astype(np.uint16) << 4)
+        | (sw.astype(np.uint16) << 3)
+        | (w.astype(np.uint16)  << 2)
+        | (nw.astype(np.uint16) << 1)
+        |  ne.astype(np.uint16)
+    ).astype(np.uint8)
+    return lut[state]
 ```
 
-### Summary Table
+---
 
-| Aspect | Current (Leaky) | With `strict_conservation=True` |
-|--------|----------------|--------------------------------|
-| Any bit-count deviation | Partial penalty (0 < score ≤ 1) | Hard-fail (score = 0) |
-| Only bit_count=0 causes 0 | No (only if bit_count hits 0) | No (any ≠ initial_bits → 0) |
-| Evolutionary gradient | Preserves gradient (smooth penalty) | Kills the candidate entirely |
-| Use case | Gentle guidance toward conservation | Hard filter — only perfect conservation passes |
+## Why the number of active cells changes
 
-**Conclusion:** The `strict_conservation` parameter does not exist yet. Adding it as shown above would be the cleanest and most surgical change — it modifies only `_compute_conservation_score` and requires just one boolean flag in `__init__`.
+This is a **generalized hexagonal (7-neighbor) cellular automaton** where:
+
+1. **7-bit neighborhood encoding**: Each cell's new state is determined by its own value plus its 6 hexagonal neighbors (E, W, NE, SW, SE, NW), packed into a 7-bit integer index (0–127 for 1-bit cells).
+
+2. **Arbitrary LUT lookup**: The 7-bit index is used to look up the new center cell value from a 128-entry lookup table. This is **not a conservative rule** — the LUT is learned/optimized for motion, not for conservation.
+
+3. **No conservation constraint**: Unlike Conway's Game of Life (where rules like B3/S23 have some emergent conservation properties), this LUT is essentially a **black-box 1-to-1 mapping** from neighborhoods to new center cell values. The mapping is optimized by evolution for displacement (glider velocity), not for conserving the number of active cells.
+
+4. **Consequences**:
+   - If a neighborhood maps to `0` (dead), cells die
+   - If a neighborhood maps to `1` (alive), new cells are born
+   - The balance depends entirely on the specific 128-entry rule table
+   - Some rules are **non-conserving** (cell count drifts) — this is actually desirable for glider motion, as gliders must be able to create/die cells at their leading and trailing edges to propagate
+
+5. **Torus wrapping**: `np.roll` means the grid wraps around at the edges, so no cells are lost at boundaries — all changes come purely from the rule.
+
+In short: **the number of active cells changes because the rule LUT is an arbitrary (evolved) mapping from 7-bit neighborhoods to new cell states, not a conserving rule**. This is by design — gliders need to be able to grow and shrink to propagate.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts: []
 metrics:
-  current_conservation_behavior: "leaky (fractional penalty)"
-  conservation_example_2_of_3: 0.667
-  conservation_example_1_of_3: 0.333
-  conservation_example_4_of_3: 0.75
-  conservation_example_0_of_3: 0.0
-log_excerpt: |
-  Analysis of src/new_fitness.py DisplacementConsistencyFitness completed.
-  
-  Key findings:
-  - _compute_conservation_score uses a continuous leaky penalty
-  - No strict_conservation parameter exists
-  - Any bit count != initial_bits produces a fractional factor
-    min(n,m)/max(n,m) instead of hard-zeroing fitness
-  - Final score = base_fitness * mean(conservation_factors)
-  - Only bit_count == 0 produces a factor of 0.0
-
-  Proposed fix: add strict_conservation bool to __init__ and
-  early-return 0.0 from _compute_conservation_score on any
-  deviation in strict mode.
+  grid_size: 128x128 (default)
+  neighborhood_size: 7 (hexagonal: E, W, NE, SW, SE, NW + center)
+  lut_entries: 128 (for 1-bit cells)
+  state_encoding: 7-bit index (c<<6)|(e<<5)|(se<<4)|(sw<<3)|(w<<2)|(nw<<1)|ne
 experimenter_view: |
-  The DisplacementConsistencyFitness class currently uses a "leaky" bit
-  conservation mechanism that provides a smooth evolutionary gradient but
-  never hard-fails on bit-count deviations (except when bits reach 0).
-  This means particles that temporarily gain or lose cells still receive
-  partial fitness, which may allow drifters or non-conserving objects to
-  survive and produce offspring. Adding a strict_conservation parameter
-  would enable a hard-fail mode (zero fitness on any deviation), useful
-  when evolution needs a sharp selection pressure for perfect mass
-  conservation rather than gradual gradient guidance.
-notes: "No strict bit conservation parameter exists; provided implementation solution."
+  The simulation update logic lives primarily in src/engine.py (step_grid function at line 117),
+  with backward-compatible legacy code in src/simulator.py (_step_grid at line 39). The CA uses a
+  hexagonal 7-neighborhood where each cell's new state is determined by a 128-entry lookup table
+  (LUT). The LUT is an arbitrary evolved mapping from neighborhoods to new cell states — it is
+  NOT conservative. This explains why active cell counts change: cells can be born or die depending
+  on their local neighborhood configuration. The LUT is optimized for displacement (glider motion),
+  not conservation. Torus wrapping via np.roll ensures no boundary losses. Multi-bit extension
+  (bits_per_cell > 1) is supported via engine.py, with state encoding generalized to 7*N bits.
+notes: "Step logic found in src/engine.py — non-conserving hexagonal CA with evolved 128-entry LUT explains active cell count changes."
 ```
