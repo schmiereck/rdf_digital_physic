@@ -1,126 +1,84 @@
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_221_warm.py'})]
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 300, 'end_line': 370})]
 
-[Tool Result: #!/usr/bin/env python3
-"""
-run_evolution_exp_221_warm.py  -  20-generation evolutionary search (warm start from iter_215)
+[Tool Result: --- lines 300 to 370 of 461 ---
+                s = float(entry["step"])
 
-Uses DisplacementConsistencyFitness with the 3-bit L-tromino seed to search for hexagonal CA
-rules that produce consistent, directional motion.
+                # Skip entries before this window
+                if s < window_start:
+                    continue
 
-WARM START: Loads 100 chromosomes from archive/iter_215/results/final_population.json
-to initialize the population.
+                # Stop processing once we're past this window's end
+                # (the very last entry of the global history belongs to
+                #  the last window only, so we clamp window_end to
+                #  final_step for the final window to avoid excluding it).
+                effective_w...]
 
-Parameters:
-  population_size : 100
-  generations     : 20
-  elite_size      : 10
-  mutation_rate   : 0.01
-  horizo...]
+Here are lines 300–370 of `src/new_fitness.py`. Here's a summary of how velocity and `max_velocity_threshold` are calculated:
 
-Here are the relevant sections:
+### Velocity Calculation (lines 325–352)
 
-**`DisplacementConsistencyFitness` instantiation** (lines 103–107):
+For each of the `num_windows` windows in the simulation history:
+
+1. **Windowing**: The global simulation history is split into time windows. For each window, the first and last entries within that window's step range are found.
+2. **Displacement**: `dx` and `dy` are computed as the difference in center-of-mass (COM) positions between the last and first entries.
+3. **Per-window velocity magnitude**:
+   ```python
+   velocity_mag = math.sqrt(dx*dx + dy*dy)
+   if window_steps > 0:
+       velocity_mag = velocity_mag / window_steps   # pixels per step
+       dx = dx / window_steps
+       dy = dy / window_steps
+   ```
+   This gives a velocity in **units per step**, averaged over each window.
+
+4. **Mean directional drift** (lines 355–361): The per-window velocity *vectors* `(dx, dy)` are averaged across all windows:
+   ```python
+   mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+   mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+   mean_velocity_magnitude = math.sqrt(mean_dx*mean_dx + mean_dy*mean_dy)
+   ```
+   This captures the **net directional drift** — i.e., whether the organism moves predominantly in one direction.
+
+### `max_velocity_threshold` Check (lines 363–364)
 
 ```python
-_fitness_fn = DisplacementConsistencyFitness(
-    num_windows=5,
-    max_bit_threshold=12,
-    max_velocity_threshold=0.9,
-)
+if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+    return 0.0
 ```
 
-It's used inside `evaluate_rule` (lines 111–114):
+If `max_velocity_threshold` is set (it's a configurable parameter on the fitness function), and the organism's mean directional velocity is **too high** (i.e., it's moving too fast), the fitness is clamped to **0.0**. This is a hard cap to penalize organisms that move too quickly (possibly indicating unrealistic or unstable behavior).
 
-```python
-def evaluate_rule(rule_dict: dict) -> float:
-    hist  = simulate_with_history(rule_dict)
-    score = _fitness_fn(hist)
-    return float(score)
-```
+### Next Step (lines 367+)
 
----
-
-**GA loop — how fitness is handled** (lines 235–268):
-
-```python
-    # - Evaluate generation 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    scores = evaluate_population(population)
-    best_idx = int(np.argmax(scores))
-    if scores[best_idx] > champion_fitness:
-        champion_fitness = float(scores[best_idx])
-        champion_chrom   = population[best_idx].copy()
-
-    gen_log.append({
-        "generation":   0,
-        "best_fitness": float(np.max(scores)),
-        "mean_fitness": float(np.mean(scores)),
-    })
-
-    # - Generational loop - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    for gen in range(1, GENERATIONS + 1):
-        elites   = select_top_k(population, scores, ELITE_SIZE)
-        next_pop = [e.copy() for e in elites]
-        while len(next_pop) < POPULATION_SIZE:
-            parent = rng.choice(elites)
-            child  = swap_mutate(parent, num_swaps, rng)
-            next_pop.append(child)
-        population = next_pop
-
-        scores   = evaluate_population(population)
-        best_idx = int(np.argmax(scores))
-
-        if scores[best_idx] > champion_fitness:
-            champion_fitness = float(scores[best_idx])
-            champion_chrom   = population[best_idx].copy()
-
-        gen_log.append({
-            "generation":   gen,
-            "best_fitness": float(np.max(scores)),
-            "mean_fitness": float(np.mean(scores)),
-        })
-```
-
-**Summary of the GA fitness flow:**
-
-1. **Evaluate** the entire population → `scores` (list of floats, higher = better).
-2. **Select** top-`ELITE_SIZE` chromosomes via `select_top_k` (sort descending by score, keep top-k).
-3. **Elitism**: elites are copied directly into the next generation.
-4. **Rest of offspring** are generated by choosing a random elite parent and applying `swap_mutate`.
-5. **Champion tracking**: the single best chromosome seen across all generations is stored in `champion_chrom`/`champion_fitness` and updated whenever a new high score is found.
-6. **Per-generation stats** (`best_fitness` = max, `mean_fitness` = mean) are logged to `gen_log` for CSV output.
+After the threshold check, the code computes the **standard deviation** of the per-window velocity magnitudes and uses it in the core fitness formula to reward smooth, consistent movement.
 
 [NUDGE RESPONSE]
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  (No tool output, content displayed in previous turn)
+experimenter_view: |
+  The code calculates velocity by splitting simulation history into windows,
+  computing per-window velocity vectors based on center-of-mass displacement,
+  and then averaging these vectors to determine a 'mean directional drift'.
+  If this mean velocity exceeds a hardcoded or configured 'max_velocity_threshold',
+  the fitness is immediately returned as 0.0 to penalize excessive speed.
+  Standard deviation of per-window speeds is also calculated for the fitness formula.
+notes: "Task completed: printed lines 300-370 of src/new_fitness.py."
 ```yaml
 status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  _fitness_fn = DisplacementConsistencyFitness(
-      num_windows=5,
-      max_bit_threshold=12,
-      max_velocity_threshold=0.9,
-  )
-
-  def evaluate_rule(rule_dict: dict) -> float:
-      hist  = simulate_with_history(rule_dict)
-      score = _fitness_fn(hist)
-      return float(score)
-  
-  # GA Loop
-  for gen in range(1, GENERATIONS + 1):
-      elites   = select_top_k(population, scores, ELITE_SIZE)
-      next_pop = [e.copy() for e in elites]
-      while len(next_pop) < POPULATION_SIZE:
-          parent = rng.choice(elites)
-          child  = swap_mutate(parent, num_swaps, rng)
-          next_pop.append(child)
-      population = next_pop
-      scores   = evaluate_population(population)
-      # ... tracking champion and logs ...
+  (No tool output, content displayed in previous turn)
 experimenter_view: |
-  The DisplacementConsistencyFitness function is instantiated with specific thresholds for windows and velocity. The GA loop implements elitism (top 10 kept) and swap mutation. It tracks a global champion across generations and logs statistics.
-notes: "Printed requested code sections as requested."
+  The code calculates velocity by splitting simulation history into windows,
+  computing per-window velocity vectors based on center-of-mass displacement,
+  and then averaging these vectors to determine a 'mean directional drift'.
+  If this mean velocity exceeds a hardcoded or configured 'max_velocity_threshold',
+  the fitness is immediately returned as 0.0 to penalize excessive speed.
+  Standard deviation of per-window speeds is also calculated for the fitness formula.
+notes: "Task completed: printed lines 300-370 of src/new_fitness.py."
 ```
