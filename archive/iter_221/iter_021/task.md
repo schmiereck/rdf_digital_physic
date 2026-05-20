@@ -1,1 +1,1 @@
-Print lines 200 to 260 of src/new_fitness.py so we see how history is parsed and how center of mass is computed. Do not write yaml block or any other files.
+Write a python script to read and print lines 200 to 280 of src/new_fitness.py. We need to see how the history and unwrapping of center of mass are handled.
