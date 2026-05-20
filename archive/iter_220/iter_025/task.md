@@ -1,1 +1,1 @@
-Check if the velocity gate was successfully added to both `src/new_fitness.py` and `src/run_vc_search_consistency.py`. Print the modified parts of both files to confirm.
+Read src/fitness_functions.py and print the SubLightFitness.__init__ and __call__ (or evaluate) signature. How do we pass the arguments and instantiate it?
