@@ -1,4 +1,1 @@
-Create a script 'edit_fitness.py' that reads 'src/new_fitness.py', finds 'sorted_history = sorted(sim_history, key=lambda e: e["step"])' inside class DisplacementConsistencyFitness, and inserts the center-of-mass unwrapping code right after it. Save the modified 'src/new_fitness.py'.
-Then, run 'python run_champion_eval.py' to verify the champion's evaluation.
-The output of 'run_champion_eval.py' should now show 'mean_velocity_magnitude' close to 1.0, and 'final_fitness' as 0.0 (since it is rejected by max_velocity_threshold=0.9).
-Execute 'edit_fitness.py' and 'run_champion_eval.py', and print the output of 'run_champion_eval.py' to verify. Do not write yaml block.
+Write and run a Python script that loads src/new_fitness.py with utf-8 encoding, replaces the old unwrapping logic (mixing raw/unwrapped) with the corrected version (pure raw-to-raw deltas added to unwrapped), and writes it back with utf-8 encoding. Verify and print lines 240 to 260 of src/new_fitness.py to confirm the change is successful.
