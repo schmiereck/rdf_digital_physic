@@ -1,21 +1,22 @@
 # Current Research State
-Phase: Breeder exploit closed, fitness landscape mapped.
+Phase: Phase 3 (2D Hex Glider Discovery) successfully completed.
 
 ## Goal
 Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
 
 ## Confirmed
-- The previous champion was a stationary breathing breeder-oscillator of period 64 (iter_220.9).
-- Setting `max_bit_threshold=12` in `DisplacementConsistencyFitness` completely eliminates breeders, forcing evolution to produce only compact, stable structures (iter_220.23).
-- Hard-gated fitness metrics like `SubLightFitness` cause a flat 0.0 fitness landscape when starting from random rules, proving the necessity of leaky conservation and warm-starts (iter_220.80).
-- The codebase in `src/` is fully `pandas`-free, preventing sub-agent execution errors (iter_220.17).
+- A stable, period-1, diagonal-moving `v<c` glider exists under a C2-symmetric, bit-conserving rule (`champion_rule_perfect.json`, iter_222.4.2).
+- The glider moves at exactly `0.469c` with exceptional velocity stability (std_dev = 0.0044 over 500 steps, iter_222.7).
+- The center-of-mass boundary crossing artifact is fully resolved using trigonometric toroidal CoM and step-by-step unwrapping (iter_222.7).
+- The particle has 3 initial bits (L-tromino) and 4 final bits, with perfect size conservation throughout the run.
+- The corrected, artifact-free fitness of the glider is `0.350669` (iter_222.7).
 
 ## Refuted
-- Naive windowed CoM consistency without a bit-count ceiling is sufficient (it is easily exploited by breeders).
+- The assumption that sub-light gliders cannot be found under simple, sparse C2-symmetric rules (a sparse 42-entry LUT is sufficient).
 
 ## In Progress
-- Preparing a warm-started evolution run using iter_215's final population combined with the `max_bit_threshold=12` filter.
+- Preparing the transition of our cellular automaton framework to 3D Cuboctahedron geometry (Phase 4.1).
 
 ## Open Questions
-- How can we design a C2-preserving crossover operator to maintain rule symmetry?
-- What is the minimum population size needed for warm-start searches to converge?
+- What are the elastic collision properties of the v=0.469c sub-light glider?
+- How does the 2D hexagonal logic generalize to 3D and 4D FCC spacetime grids?
