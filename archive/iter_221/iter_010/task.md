@@ -1,5 +1,1 @@
-1. Read src/run_evolution_exp_220_fixed.py and write a modified copy to src/run_evolution_exp_221.py.
-2. In src/run_evolution_exp_221.py, add logic to load an initial population of chromosomes from a JSON file.
-3. Specifically, let's look for archive/iter_215/results/final_population.json or archive/iter_215/results/warm_start_population.json, check which one has a list of chromosomes (should be lists of 128 elements), and load them as the initial population. If the loaded population has 128-bit chromosomes, we can convert them to rule dicts using evolution.py functions if needed, or if the evolution script works directly on chromosomes, keep them as chromosomes.
-4. Let's make sure the script runs for 30 generations and saves all outputs to archive/iter_221/results/.
-Write the script, then print the part of the code where you add the population loading logic.
+Check if the file `src/run_evolution_exp_221.py` exists, and if so, check if it was written correctly. If not, write it using python file operations.
