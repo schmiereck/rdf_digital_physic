@@ -1,24 +1,31 @@
-artifacts: []
-experimenter_view: 'The `max_velocity_threshold` is an optional float parameter (default
-  `None`) in the `DisplacementConsistencyFitness` class. It is stored as an instance
-  attribute in `__init__` and evaluated during the `__call__` method. Specifically,
-  line 355 checks if the calculated `mean_velocity_magnitude` (derived from windowed
-  centre-of-mass drift) is greater than or equal to the threshold. If true, the function
-  returns `0.0`, acting as a hard constraint against high directional drift.
-
-  '
-log_excerpt: 'src\new_fitness.py:146: max_velocity_threshold : float or None
-
-  src\new_fitness.py:163: max_velocity_threshold: float | None = None,
-
-  src\new_fitness.py:178: max_velocity_threshold : float, optional
-
-  src\new_fitness.py:185: self.max_velocity_threshold = max_velocity_threshold
-
-  src\new_fitness.py:355: if self.max_velocity_threshold is not None and mean_velocity_magnitude
-  >= self.max_velocity_threshold:
-
-  '
-metrics: {}
-notes: Analysis of max_velocity_threshold constraints in new_fitness.py.
+artifacts:
+- src/diag_velocity.py
+experimenter_view: "The diagnostic script successfully loaded the iter_221 champion\
+  \ rule and ran a\ncomplete 500-step simulation, capturing all internal variables\
+  \ from\nDisplacementConsistencyFitness.__call__. The champion particle conserves\
+  \ bits\nperfectly (3 cells throughout) but moves very slowly (0.0253 cells/step).\
+  \ \nVelocity consistency is poor: window 2 exhibits anomalous backward velocity\
+  \ \n(-1.0) while other windows show ~0.28 forward velocity, producing a high \n\
+  std_dev (0.287) that heavily penalizes the fitness score. Despite the leaky \nconservation\
+  \ score being perfect (1.0), the velocity inconsistency dominates, \nyielding a\
+  \ final fitness of only 0.0197.\n"
+log_excerpt: "--- Step 7: Final fitness ---\n  fitness = base_fitness * total_conservation_score\n\
+  \          = 0.019678745504580934 * 1.0\n          = 0.019678745504580934\n\nDirect\
+  \ __call__ result\nfitness_fn(sim_history) = 0.019678745504580934\nmatches computed\
+  \ result? True\n"
+metrics:
+  base_fitness: 0.019678745504580934
+  displacement_per_step: 0.0253
+  fitness: 0.019678745504580934
+  max_bit_threshold: 12
+  max_velocity_threshold: 0.9
+  mean_velocity_magnitude: 0.02533333333333332
+  num_windows: 5
+  simulation_steps: 500
+  std_dev_velocity_magnitudes: 0.2873449340272264
+  total_conservation_score: 1.0
+  total_displacement: 12.6667
+  window_velocities: '[0.287, 0.280, -1.000, 0.280, 0.280]'
+notes: Created diag_velocity.py and verified all internal fitness variables match
+  direct __call__ result
 status: ok

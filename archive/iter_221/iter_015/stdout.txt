@@ -1,123 +1,338 @@
 
-[Tool Call: grep_search({'pattern': 'max_velocity_threshold', 'include_pattern': 'src/new_fitness.py'})]
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
 
-[Tool Result: src\new_fitness.py:146: max_velocity_threshold : float or None
-src\new_fitness.py:163: max_velocity_threshold: float | None = None,
-src\new_fitness.py:178: max_velocity_threshold : float, optional
-src\new_fitness.py:185: self.max_velocity_threshold = max_velocity_threshold
-src\new_fitness.py:355: if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:]
+[Tool Result:       $null
+[DIR] -p
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+      apply_fix.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      edit_fitness.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      fix_unwrap.py
+      goal.md
+      output.txt
+      print_call_method.py
+ ...]
 
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py', 'start_line': 130, 'end_line': 200})]
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
 
-[Tool Result: --- lines 130 to 200 of 461 ---
-    6. Multiply by the "leaky" bit-conservation score to enforce mass
-       conservation (see ``_compute_conservation_score``).
+[Tool Result: [DIR] __pycache__
+      analyze_champion_trajectory.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_...]
 
-        final_fitness = base_fitness * total_conservation_score
 
-    Parameters
-    ----------
-    num_windows : int
-        Number of windows to divide the simulation into. Default 5.
-        At least 2 windows are needed to measure velocity consistency.
-    bits_per_cell : int
-        Bits per cell (reserved for future multi-bit suppo...]
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive'})]
+
+[Tool Result: [DIR] archive
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+[DIR] iter_004
+[DIR] iter_005
+[DIR] iter_006
+[DIR] iter_007
+[DIR] iter_008
+[DIR] iter_009
+[DIR] iter_010
+[DIR] iter_011
+[DIR] iter_012
+[DIR] iter_013
+[DIR] iter_014
+[DIR] iter_015
+[DIR] iter_016
+[DIR] iter_017
+[DIR] iter_018
+[DIR] iter_019
+[DIR] iter_020
+[DIR] iter_021
+[DIR] iter_022
+[DIR] iter_023
+[DIR] iter_024
+[DIR] iter_025
+[DIR] iter_026
+[DIR] iter_027
+[DIR] iter_028
+[DIR] iter_029
+[DIR] iter_030
+[DIR] iter_031
+[DIR] iter_032
+[DIR] ...]
 
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py', 'start_line': 340, 'end_line': 370})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_221\\results\\champion_rule.json'})]
 
-[Tool Result: --- lines 340 to 370 of 461 ---
-                dx = 0.0
-                dy = 0.0
+[Tool Result: {
+  "fitness": 0.019678745504580934,
+  "fitness_function": "DisplacementConsistencyFitness",
+  "generations": 30,
+  "population_size": 100,
+  "elite_size": 10,
+  "mutation_rate": 0.01,
+  "horizon": 500,
+  "grid_size": 128,
+  "seed_particle": "L_TROMINO_3bit",
+  "seed_cells": [
+    [
+      63,
+      63
+    ],
+    [
+      64,
+      63
+    ],
+    [
+      64,
+      64
+    ]
+  ],
+  "elapsed_sec": 469.32,
+  "rule_dict": {
+    "15": 79,
+    "26": 90,
+    "32": 96,
+    "39": 103,
+    "58": 122,
+    "60"...]
 
-            window_velocity_mags.append(velocity_mag)
-            window_velocity_vectors.append((dx, dy))
+Let me find the `DisplacementConsistencyFitness` class and understand the simulation setup.
 
-        # ------------------------------------------------------------------
-        # 3. Calculate mean of windowed velocity vectors (directional drift)
-        # ------------------------------------------------------------------
-        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_window...]
 
-Here is the complete picture of how `max_velocity_threshold` is implemented in `src/new_fitness.py`:
 
----
+[Tool Call: grep_search({'pattern': 'class DisplacementConsistencyFitness', 'include_pattern': '*.py'})]
 
-### All lines where `max_velocity_threshold` appears:
+[Tool Result: edit_fitness.py:7: inside class DisplacementConsistencyFitness, and inserts
+src\new_fitness.py:88: class DisplacementConsistencyFitness:]
 
-| Line | Role |
-|------|------|
-| **146** | Docstring parameter description |
-| **163** | `__init__` method signature (parameter) |
-| **178** | `__init__` docstring parameter description |
-| **185** | Instance attribute assignment (`self.max_velocity_threshold = max_velocity_threshold`) |
-| **355** | Runtime check — gates the fitness score |
 
----
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness.py'})]
 
-### How it is implemented
+[Tool Result: #!/usr/bin/env python3
+"""
+fitness.py
 
-**1. Parameter & documentation (lines 146, 163, 178)**
+Fitness metrics for hexagonal CA rules.
+  - calculate_velocity_stability: rewards sustained, constant-velocity motion.
+  - CheckpointFitness: rewards stable bit-count throughout the simulation.
+  - DynamicCollisionFitness: rewards rules that produce a true dynamic
+    bit-and-object-conserving collision between two 3-bit gliders (approach
+    followed by recession).
+"""
 
-`max_velocity_threshold` is an optional `float | None` parameter on `DisplacementConsistencyFitness`. In the docstrings it is described as:
+import math
+import sys
+from pathlib import Path
 
-> *"If specified, any mean velocity magnitude >= this value returns 0.0."*
+import numpy as np
+from scipy.ndimage ...]
 
-The constructor accepts it as:
 
-```python
-def __init__(
-    self,
-    ...
-    max_velocity_threshold: float | None = None,
-) -> None:
-```
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
 
-**2. Storage as instance attribute (line 185)**
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
 
-```python
-self.max_velocity_threshold = max_velocity_threshold
-```
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-It is simply stored as an instance variable so it can be accessed during the `__call__` computation.
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
-**3. The runtime check (line 355)**
+Now let me look at the simulator and how simulations are typically run:
 
-Inside `__call__`, the fitness function first computes a **mean velocity vector** across all time windows:
 
-```python
-mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
-mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
-mean_velocity_magnitude = math.sqrt(mean_dx * mean_dx + mean_dy * mean_dy)
-```
 
-Then, if `max_velocity_threshold` is set and the mean velocity magnitude meets or exceeds it, the fitness is **immediately clamped to 0.0**:
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\simulator.py'})]
 
-```python
-if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
-    return 0.0
-```
+[Tool Result: #!/usr/bin/env python3
+"""
+simulator.py — Particle and Simulator classes for the hexagonal CA.
 
-### Purpose
+The legacy 1-bit pipeline (128-entry LUT, 2D grids) is preserved as the
+default fast path so existing callers keep working unchanged.  Passing
+``bits_per_cell > 1`` enables the multi-bit engine in ``engine.py``, where
+grids carry shape ``(H, W, bits_per_cell)``.
+"""
 
-This acts as a **hard constraint** (a "kill switch"). The `DisplacementConsistencyFitness` function rewards agent behaviors that exhibit **low directional drift** (i.e., agents that wander rather than move persistently in one direction). If the agent's average velocity across windows is too high—suggesting it is systematically travelling in a particular direction—the fitness is penalised with a score of `0.0`, regardless of the rest of the calculation.
+from __future__ import annotations
 
-If `max_velocity_threshold` is left as `None` (the default), this check is skipped entirely.
+import numpy as np
+
+from engine import (
+    BITS_PER_CELL,
+    HexagonalGrid,
+    build_lut,
+    oc...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\rule.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+rule.py — Thin wrapper around a cellular automaton rule dict.
+
+The Rule wraps a packed-neighbourhood → packed-neighbourhood integer map and
+exposes the LUT used by the engine to step the grid.  ``bits_per_cell`` defaults
+to 1 so that the existing 1-bit pipeline (LUT length 128, key range 0..127)
+continues to work unchanged.  Passing a larger ``bits_per_cell`` enables N-bit
+cells, in which case the LUT has length ``2**(7*bits_per_cell)``.
+"""
+
+from __future__ import ann...]
+
+Let me look at an example of how simulations are run and histories are captured:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_simulation.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_simulation.py — Reproducibility check for the v=1c glider from iter_179.
+
+1. Load champion rule g10_rule_001 from archive/iter_179/results/champion_rule.json
+   (falls back to final_population.json if champion_rule.json does not exist,
+   and saves the extracted rule as champion_rule.json for future use).
+2. Initialize 128x128 hexagonal grid with L-tromino seed at center.
+3. Run 400 steps.
+4. Verify: displacement ≈ 400 cells, bit count = 3 throughout.
+5. Save GIF t...]
+
+Let me also check the engine module to understand BITS_PER_CELL:
+
+
+
+[Tool Call: read_file({'end_line': 50, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine.py'})]
+
+[Tool Result: --- lines 1 to 50 of 295 ---
+#!/usr/bin/env python3
+"""
+engine.py — Multi-bit hexagonal CA engine.
+
+Generalises the historic 1-bit step (encoded by simulator.py and evolution.py)
+to grids whose cells carry N bits.  The grid is represented as a NumPy array of
+shape ``(height, width, bits_per_cell)`` where each entry along the last axis
+is a single bit (0/1).  Cell value = base-2 with index 0 as the most
+significant bit.
+
+For ``bits_per_cell == 1`` the math reduces exactly to the legacy fast path:...]
+
+Now I have a thorough understanding of the codebase. Let me create the diagnostic script:
+
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\diag_velocity.py', 'content': '#!/usr/bin/env python3\n"""\ndiag_velocity.py — Diagnostic script for DisplacementConsistencyFitness.\n\n1. Load champion_rule.json from archive/iter_221/results/\n2. Run a simulation for 500 steps with the L-tromino seed.\n3. Capture a full simulation history (step, com, bit_count).\n4. Instantiate DisplacementConsistencyFitness with:\n     num_windows=5, max_bit_threshold=12, max_velocity_threshold=0.9\n5. Evaluate the simulation history and print ALL internal variables\n   computed inside __call__ (window velocities, magnitudes, means, std dev,\n   conservation scores, etc.).\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport math\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\n# Ensure src/ is on the path\nsys.path.insert(0, str(Path(__file__).parent))\n\nfrom new_fitness import DisplacementConsistencyFitness\nfrom engine import build_lut\n\n\n# ─────────────────────────────────────────────────────────────────────────────\n# Constants\n# ─────────────────────────────────────────────────────────────────────────────\nPROJECT_ROOT = Path(__file__).parent.parent\nCHAMP_PATH   = PROJECT_ROOT / "archive" / "iter_221" / "results" / "champion_rule.json"\nSIM_STEPS    = 500\nGRID_SIZE    = 128\nLTROMINO_CELLS = [(63, 63), (64, 63), (64, 64)]\nINITIAL_BITS = len(LTROMINO_CELLS)  # 3\nBITS_PER_CELL = 1  # champion is a 1-bit rule\n\n\n# ─────────────────────────────────────────────────────────────────────────────\n# Simulation helpers\n# ─────────────────────────────────────────────────────────────────────────────\n\ndef step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:\n    """Advance a 2D binary grid by one CA step using the 128-entry LUT."""\n    e  = np.roll(grid, -1, axis=0)\n    w  = np.roll(grid,  1, axis=0)\n    ne = np.roll(grid, -1, axis=1)\n    sw = np.roll(grid,  1, axis=1)\n    se = np.roll(e,     1, axis=1)\n    nw = np.roll(w,    -1, axis=1)\n    state = (\n        (grid.astype(np.uint16) << 6)\n        | (e.astype(np.uint16)  << 5)\n        | (se.astype(np.uint16) << 4)\n        | (sw.astype(np.uint16) << 3)\n        | (w.astype(np.uint16)  << 2)\n        | (nw.astype(np.uint16) << 1)\n        |  ne.astype(np.uint16)\n    ).astype(np.uint8)\n    return lut[state]\n\n\ndef center_of_mass(grid: np.ndarray) -> tuple:\n    xs, ys = np.where(grid > 0)\n    if len(xs) == 0:\n        return (0.0, 0.0)\n    return (float(np.mean(xs)), float(np.mean(ys)))\n\n\ndef unwrap_com(prev_com: tuple, curr_com: tuple, size: int = GRID_SIZE) -> tuple:\n    """Adjust curr_com for torus wrapping relative to prev_com."""\n    pr, pc = prev_com\n    cr, cc = curr_com\n    half = size / 2.0\n    dr = cr - pr\n    if dr > half:\n        cr -= size\n    elif dr < -half:\n        cr += size\n    dc = cc - pc\n    if dc > half:\n        cc -= size\n    elif dc < -half:\n        cc += size\n    return (cr, cc)\n\n\n# ─────────────────────────────────────────────────────────────────────────────\n# Main\n# ─────────────────────────────────────────────────────────────────────────────\n\ndef main() -> None:\n    # ── 1. Load champion rule ────────────────────────────────────────────\n    print("=" * 70)\n    print("  Loading champion rule from", CHAMP_PATH)\n    print("=" * 70)\n    with open(CHAMP_PATH) as f:\n        champ = json.load(f)\n\n    rule_dict = champ["rule_dict"]\n    chromosome = champ["chromosome"]\n    print(f"  fitness_function : {champ.get(\'fitness_function\', \'N/A\')}")\n    print(f"  fitness          : {champ[\'fitness\']:.6f}")\n    print(f"  rule_dict entries : {len(rule_dict)}")\n    print(f"  chromosome length : {len(chromosome)}")\n    print(f"  seed_particle     : {champ.get(\'seed_particle\', \'N/A\')}")\n    print(f"  seed_cells        : {champ.get(\'seed_cells\', \'N/A\')}")\n    print()\n\n    # Build LUT\n    lut = np.asarray(chromosome, dtype=np.uint8)\n    print(f"  LUT non-zero entries: {int(lut.sum())}/{len(lut)}")\n    print()\n\n    # ── 2. Run simulation ────────────────────────────────────────────────\n    print("=" * 70)\n    print("  Running simulation for", SIM_STEPS, "steps")\n    print("=" * 70)\n\n    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)\n    for r, c in LTROMINO_CELLS:\n        grid[r, c] = 1\n\n    initial_com = center_of_mass(grid)\n    prev_raw    = initial_com\n    unwrapped   = initial_com\n\n    sim_history: list[dict] = [\n        {"step": 0, "com": (float(initial_com[0]), float(initial_com[1])), "bit_count": INITIAL_BITS}\n    ]\n\n    for step in range(1, SIM_STEPS + 1):\n        grid    = step_grid(grid, lut)\n        raw_com = center_of_mass(grid)\n\n        adj      = unwrap_com(prev_raw, raw_com)\n        dr       = adj[0] - prev_raw[0]\n        dc       = adj[1] - prev_raw[1]\n        unwrapped = (unwrapped[0] + dr, unwrapped[1] + dc)\n        prev_raw  = raw_com\n\n        bc = int(grid.sum())\n\n        sim_history.append({\n            "step":      step,\n            "com":       (float(unwrapped[0]), float(unwrapped[1])),\n            "bit_count": bc,\n        })\n\n        if step % 100 == 0:\n            ddx = unwrapped[0] - initial_com[0]\n            ddy = unwrapped[1] - initial_com[1]\n            disp = math.sqrt(ddx * ddx + ddy * ddy)\n            print(f"  step {step:>4}  bit_count={bc:>3}  unwrapped_com=({unwrapped[0]:10.2f}, {unwrapped[1]:10.2f})  "\n                  f"displacement={disp:8.3f}")\n\n    final_bc = int(grid.sum())\n    total_disp = math.sqrt(\n        (unwrapped[0] - initial_com[0]) ** 2 +\n        (unwrapped[1] - initial_com[1]) ** 2\n    )\n    print(f"\\n  Final bit count    : {final_bc}")\n    print(f"  Total displacement : {total_disp:.4f} cells")\n    print(f"  Displacement/step  : {total_disp / SIM_STEPS:.4f}")\n    print()\n\n    # ── 3. Instantiate fitness function ──────────────────────────────────\n    fitness_fn = DisplacementConsistencyFitness(\n        num_windows=5,\n        bits_per_cell=BITS_PER_CELL,\n        strict_conservation=False,\n        max_bit_threshold=12,\n        max_velocity_threshold=0.9,\n    )\n\n    print("=" * 70)\n    print("  Fitness parameters")\n    print("=" * 70)\n    print(f"  num_windows            : {fitness_fn.num_windows}")\n    print(f"  bits_per_cell          : {fitness_fn.bits_per_cell}")\n    print(f"  strict_conservation    : {fitness_fn.strict_conservation}")\n    print(f"  max_bit_threshold      : {fitness_fn.max_bit_threshold}")\n    print(f"  max_velocity_threshold : {fitness_fn.max_velocity_threshold}")\n    print(f"  min_velocity           : {fitness_fn.min_velocity}")\n    print()\n\n    # ── 4. Run __call__ and intercept internal variables ─────────────────\n    # We\'ll manually execute the __call__ body to capture every variable.\n    print("=" * 70)\n    print("  Executing DisplacementConsistencyFitness.__call__ internals")\n    print("=" * 70)\n    print()\n\n    sim_history_copy = list(sim_history)\n\n    # --- Step 1: sort ---\n    sorted_history = sorted(sim_history_copy, key=lambda e: e["step"])\n\n    # --- Step 1.5: COM unwrapping ---\n    unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]\n    for i in range(1, len(sorted_history)):\n        prev_com = sorted_history[i - 1]["com"]\n        cur_com = sorted_history[i]["com"]\n        dx = cur_com[0] - prev_com[0]\n        dy = cur_com[1] - prev_com[1]\n        if dx > 64:\n            dx -= 128.0\n        elif dx < -64:\n            dx += 128.0\n        if dy > 64:\n            dy -= 128.0\n        elif dy < -64:\n            dy += 128.0\n        unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))\n\n    unwrapped_history: list[dict] = []\n    for i, entry in enumerate(sorted_history):\n        unwrapped_entry = dict(entry)\n        unwrapped_entry["com"] = unwrapped_coms[i]\n        unwrapped_history.append(unwrapped_entry)\n    sorted_history = unwrapped_history\n\n    print("--- Step 1: Sorting & COM unwrapping ---")\n    print(f"  len(sorted_history) = {len(sorted_history)}")\n    print(f"  sorted_history[0]   = {sorted_history[0]}")\n    print(f"  sorted_history[-1]  = {sorted_history[-1]}")\n    print()\n\n    # --- Step 1.7: max_bit_threshold check ---\n    if fitness_fn.max_bit_threshold is not None:\n        exceeded = [e for e in sorted_history if e["bit_count"] > fitness_fn.max_bit_threshold]\n        print(f"--- Step 1.5: max_bit_threshold check ---")\n        print(f"  max_bit_threshold         = {fitness_fn.max_bit_threshold}")\n        print(f"  entries exceeding threshold = {len(exceeded)}")\n        if exceeded:\n            for e in exceeded[:5]:\n                print(f"    step={e[\'step\']}  bit_count={e[\'bit_count\']}")\n        print()\n\n    # --- Step 1.8: strict_conservation check ---\n    if fitness_fn.strict_conservation:\n        initial_bits = sorted_history[0]["bit_count"]\n        non_conserving = [e for e in sorted_history if e["bit_count"] != initial_bits]\n        print(f"--- Step 1.6: strict_conservation check ---")\n        print(f"  entries violating conservation = {len(non_conserving)}")\n        print()\n\n    initial_step = float(sorted_history[0]["step"])\n    final_step = float(sorted_history[-1]["step"])\n    total_steps = final_step - initial_step\n\n    print(f"--- Step 2: Total time range ---")\n    print(f"  initial_step = {initial_step}")\n    print(f"  final_step   = {final_step}")\n    print(f"  total_steps  = {total_steps}")\n    print()\n\n    # --- Step 2: Window velocity computation ---\n    steps_per_window = total_steps / fitness_fn.num_windows\n\n    print(f"--- Step 2: Per-window velocity computation ---")\n    print(f"  steps_per_window = {steps_per_window}")\n    print()\n\n    window_velocities: list[tuple[float, float]] = []\n    window_velocity_mags: list[float] = []\n    window_velocity_vectors: list[tuple[float, float]] = []\n\n    for w in range(fitness_fn.num_windows):\n        window_start = initial_step + w * steps_per_window\n        window_end = window_start + steps_per_window\n\n        first_entry = None\n        last_entry = None\n\n        for entry in sorted_history:\n            s = float(entry["step"])\n            if s < window_start:\n                continue\n            effective_window_end = window_end\n            if w == fitness_fn.num_windows - 1:\n                effective_window_end = final_step\n            if s > effective_window_end:\n                break\n            if first_entry is None:\n                first_entry = entry\n            last_entry = entry\n\n        if first_entry is None or last_entry is None:\n            window_velocity_mags.append(0.0)\n            window_velocity_vectors.append((0.0, 0.0))\n            window_velocities.append((0.0, 0.0, 0.0))\n            continue\n\n        window_steps = last_entry["step"] - first_entry["step"]\n        dx = last_entry["com"][0] - first_entry["com"][0]\n        dy = last_entry["com"][1] - first_entry["com"][1]\n        velocity_mag = math.sqrt(dx * dx + dy * dy)\n\n        if window_steps > 0:\n            velocity_mag = velocity_mag / window_steps\n            dx = dx / window_steps\n            dy = dy / window_steps\n        else:\n            velocity_mag = 0.0\n            dx = 0.0\n            dy = 0.0\n\n        window_velocity_mags.append(velocity_mag)\n        window_velocity_vectors.append((dx, dy))\n        window_velocities.append((dx, dy, velocity_mag))\n\n        w_start_step = first_entry["step"]\n        w_end_step   = last_entry["step"]\n        print(f"  Window {w}: steps [{w_start_step}, {w_end_step}] "\n              f"dx={dx:.6f}  dy={dy:.6f}  mag={velocity_mag:.6f}")\n\n    print()\n\n    # --- Step 3: mean velocity vector ---\n    mean_dx = sum(v[0] for v in window_velocity_vectors) / fitness_fn.num_windows\n    mean_dy = sum(v[1] for v in window_velocity_vectors) / fitness_fn.num_windows\n    mean_velocity_magnitude = math.sqrt(mean_dx * mean_dx + mean_dy * mean_dy)\n\n    print("--- Step 3: Mean velocity vector (directional drift) ---")\n    print(f"  mean_dx                = {mean_dx}")\n    print(f"  mean_dy                = {mean_dy}")\n    print(f"  mean_velocity_magnitude= {mean_velocity_magnitude}")\n    print()\n\n    # --- max_velocity_threshold check ---\n    if fitness_fn.max_velocity_threshold is not None:\n        print(f"--- Velocity threshold check ---")\n        print(f"  max_velocity_threshold = {fitness_fn.max_velocity_threshold}")\n        print(f"  mean_velocity_magnitude>= threshold? {mean_velocity_magnitude >= fitness_fn.max_velocity_threshold}")\n        if mean_velocity_magnitude >= fitness_fn.max_velocity_threshold:\n            print("  -> Would return 0.0 (velocity too high)")\n        print()\n\n    # --- min_velocity check ---\n    if fitness_fn.min_velocity is not None:\n        print(f"--- Min velocity check ---")\n        print(f"  min_velocity           = {fitness_fn.min_velocity}")\n        print(f"  mean_velocity_magnitude< min? {mean_velocity_magnitude < fitness_fn.min_velocity}")\n        if mean_velocity_magnitude < fitness_fn.min_velocity:\n            print("  -> Would return 0.0 (velocity too low)")\n        print()\n\n    # --- Step 4: std dev of velocity magnitudes ---\n    velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)\n    std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))\n\n    print("--- Step 4: Standard deviation of velocity magnitudes ---")\n    print(f"  velocity_magnitudes (array) = {velocity_magnitudes.tolist()}")\n    print(f"  mean(mag)                   = {float(np.mean(velocity_magnitudes))}")\n    print(f"  std(mag)                    = {std_dev_velocity_magnitudes}")\n    print()\n\n    # --- Step 5: Core fitness formula ---\n    if mean_velocity_magnitude == 0.0:\n        base_fitness = 0.0\n    else:\n        base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)\n\n    print("--- Step 5: Core fitness formula ---")\n    print(f"  base_fitness = mean_velocity_magnitude / (1 + std_dev)")\n    print(f"             = {mean_velocity_magnitude} / (1 + {std_dev_velocity_magnitudes})")\n    print(f"             = {base_fitness}")\n    print()\n\n    # --- Step 6: Conservation score ---\n    total_conservation_score = fitness_fn._compute_conservation_score(sorted_history)\n\n    print("--- Step 6: Leaky conservation score ---")\n    print(f"  total_conservation_score = {total_conservation_score}")\n\n    # Print per-step conservation factors for detail\n    initial_bits = sorted_history[0]["bit_count"]\n    print(f"  initial_bits = {initial_bits}")\n    factors = []\n    for entry in sorted_history:\n        bc = entry["bit_count"]\n        if bc == initial_bits:\n            cf = 1.0\n        else:\n            cf = min(bc, initial_bits) / max(bc, initial_bits)\n        factors.append(cf)\n    print(f"  mean conservation factor = {sum(factors)/len(factors):.6f}")\n    print()\n\n    # --- Step 7: Final fitness ---\n    fitness = base_fitness * total_conservation_score\n\n    print("--- Step 7: Final fitness ---")\n    print(f"  fitness = base_fitness * total_conservation_score")\n    print(f"          = {base_fitness} * {total_conservation_score}")\n    print(f"          = {fitness}")\n    print()\n\n    # ── 5. Verify by calling __call__ directly ───────────────────────────\n    print("=" * 70)\n    print("  Direct __call__ result")\n    print("=" * 70)\n    direct_result = fitness_fn(sim_history)\n    print(f"  fitness_fn(sim_history) = {direct_result}")\n    print(f"  matches computed result? {abs(direct_result - fitness) < 1e-12}")\n    print()\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\diag_velocity.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python.exe src/diag_velocity.py'})]
+
+[Tool Result: exit_code: 0
+stdout: ======================================================================
+  Loading champion rule from C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_221\results\champion_rule.json
+======================================================================
+  fitness_function : DisplacementConsistencyFitness
+  fitness          : 0.019679
+  rule_dict entries : 12
+  chromosome length : 128
+  seed_particle     : L_TROMINO_3bit
+  seed_cells        : [[63, 63], [64, 63],...]
+
+The script was created and executed successfully. Here's a summary of the results:
+
+**Champion Rule (iter_221):**
+- Fitness: 0.019679 (from `champion_rule.json`)
+- Rule has 12 entries, 64/128 LUT non-zero (a sparse rule)
+- Seed: L-tromino at (63,63), (64,63), (64,64)
+
+**Simulation Results (500 steps):**
+- Final bit count: 3 (perfectly conserved)
+- Total displacement: 12.67 cells over 500 steps
+- Displacement per step: 0.0253 (very slow motion)
+
+**DisplacementConsistencyFitness internals (num_windows=5, max_bit_threshold=12, max_velocity_threshold=0.9):**
+
+| Variable | Value |
+|---|---|
+| `window_velocities` | Window 0: (0.287, 0), Window 1: (0.280, 0), Window 2: (-1.000, 0), Window 3: (0.280, 0), Window 4: (0.280, 0) |
+| `window_velocity_magnitudes` | [0.287, 0.280, 1.000, 0.280, 0.280] |
+| `mean_velocity_magnitude` | 0.0253 |
+| `std_dev_velocity_magnitudes` | 0.2873 |
+| `base_fitness` | 0.01968 = 0.0253 / (1 + 0.2873) |
+| `total_conservation_score` | 1.0 (perfect bit conservation) |
+| **Final fitness** | **0.019679** |
+
+The champion is a slow, inconsistent object — it moves steadily (~0.28 cells/step) in windows 0,1,3,4, but has a anomalous burst of velocity (-1.0) in window 2. This inconsistency in velocity magnitudes (std_dev = 0.287) penalizes its fitness, keeping it at ~0.02 despite the high mean speed in most windows. The `__call__` direct result matches the manually computed internal variables exactly.
 
 [NUDGE RESPONSE]
-The investigation into `max_velocity_threshold` within `src/new_fitness.py` is complete. The parameter serves as a hard constraint for the `DisplacementConsistencyFitness` class, returning a score of 0.0 if the mean velocity magnitude exceeds the specified threshold.
-
 ```yaml
 status: ok
-artifacts: []
-metrics: {}
+artifacts:
+  - src/diag_velocity.py
+metrics:
+  fitness: 0.019678745504580934
+  num_windows: 5
+  max_bit_threshold: 12
+  max_velocity_threshold: 0.9
+  simulation_steps: 500
+  total_displacement: 12.6667
+  displacement_per_step: 0.0253
+  window_velocities: "[0.287, 0.280, -1.000, 0.280, 0.280]"
+  mean_velocity_magnitude: 0.02533333333333332
+  std_dev_velocity_magnitudes: 0.2873449340272264
+  total_conservation_score: 1.0
+  base_fitness: 0.019678745504580934
 log_excerpt: |
-  src\new_fitness.py:146: max_velocity_threshold : float or None
-  src\new_fitness.py:163: max_velocity_threshold: float | None = None,
-  src\new_fitness.py:178: max_velocity_threshold : float, optional
-  src\new_fitness.py:185: self.max_velocity_threshold = max_velocity_threshold
-  src\new_fitness.py:355: if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+  --- Step 7: Final fitness ---
+    fitness = base_fitness * total_conservation_score
+            = 0.019678745504580934 * 1.0
+            = 0.019678745504580934
+
+  Direct __call__ result
+  fitness_fn(sim_history) = 0.019678745504580934
+  matches computed result? True
 experimenter_view: |
-  The `max_velocity_threshold` is an optional float parameter (default `None`) in the `DisplacementConsistencyFitness` class. It is stored as an instance attribute in `__init__` and evaluated during the `__call__` method. Specifically, line 355 checks if the calculated `mean_velocity_magnitude` (derived from windowed centre-of-mass drift) is greater than or equal to the threshold. If true, the function returns `0.0`, acting as a hard constraint against high directional drift.
-notes: "Analysis of max_velocity_threshold constraints in new_fitness.py."
+  The diagnostic script successfully loaded the iter_221 champion rule and ran a
+  complete 500-step simulation, capturing all internal variables from
+  DisplacementConsistencyFitness.__call__. The champion particle conserves bits
+  perfectly (3 cells throughout) but moves very slowly (0.0253 cells/step). 
+  Velocity consistency is poor: window 2 exhibits anomalous backward velocity 
+  (-1.0) while other windows show ~0.28 forward velocity, producing a high 
+  std_dev (0.287) that heavily penalizes the fitness score. Despite the leaky 
+  conservation score being perfect (1.0), the velocity inconsistency dominates, 
+  yielding a final fitness of only 0.0197.
+notes: "Created diag_velocity.py and verified all internal fitness variables match direct __call__ result"
 ```
