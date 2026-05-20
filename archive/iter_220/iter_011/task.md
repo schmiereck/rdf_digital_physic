@@ -1,0 +1,1 @@
+Read and print the contents of archive/iter_179/results/champion_rule.json. Explain what mappings it defines.
