@@ -1,1 +1,1 @@
-Read and print the parts of src/new_fitness.py where max_velocity_threshold is used, to see how velocity is calculated and why the v=1c glider was not rejected.
+List all files in archive/iter_221/results/. If archive/iter_221/results/trajectory_analysis.txt exists, print its contents.
