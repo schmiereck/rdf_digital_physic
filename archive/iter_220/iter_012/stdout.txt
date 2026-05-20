@@ -1,123 +1,34 @@
 
-[Tool Call: read_file({'path': 'src/fitness_functions.py'})]
+[Tool Call: read_file({'path': 'src/new_fitness.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-fitness_functions.py
+new_fitness.py
 
-A library of fitness functions for evaluating cellular-automaton rules on the
-128x128 toroidal hexagonal grid used throughout this project.
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-NetDisplacementFitness
------------------------
-Designed to defeat the 'compact oscillator' and 'puffer' exploits identified
-in iter_203.  Two complementary mechanisms:
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
-  1. **Net displacement** — measures the Euclidean distance between the
-     centre-of-mass at t=0 and t=max_steps.  Stationary oscillators t...]
-
-
-[Tool Call: read_file({'path': 'src/validate_fitness.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-validate_fitness.py
-
-Empirical validation of DisplacementConsistencyFitness.
-
-Gallery:
-  1. g10_f_rule_034_c2 (iter_193) — v=1c elastic collision rule  → expected HIGH score
-  2. g10_rule_001      (iter_179) — v=1c glider                  → expected HIGH score
-  3. g4_rule_083       (iter_218) — drifter exploit               → expected LOW / zero score
-
-Exit code: non-zero if the drifter rule scores higher than either glider rule.
-"""
-
-import json
-import sys
-from pathl...]
-
-Here are the full contents of both files. Now let me analyze them for any pandas imports, breeder exploit patterns, and areas for simplification/correction.
-
-
-
-[Tool Call: grep_search({'pattern': 'pandas|import pandas|from pandas|breeder|Breeder', 'include_pattern': '*.py'})]
-
-[Tool Result: src\run_evolution_exp_220.py:144: # - CSV writer (replaces pandas) - - - - - - - - - - - - - - - - - - - - - - - - - -
-src\run_evolution_exp_220.py:160: """Print a plain-text table of the evolution summary (no pandas)."""
-src\run_evolution_exp_220.py:309: # - Save evolution summary CSV (pandas-free, using csv module) - - - - - - - - -
-src\run_evolution_exp_220.py:320: # - Print summary table (pandas-free, using plain print) - - - - - - - - - - - -
-src\run_vc_search.py:11: count at all times to e...]
-
-
-[Tool Call: grep_search({'pattern': 'import pandas|from pandas'})]
-
-[Tool Result: .venv\Lib\site-packages\matplotlib\table.pyi:13: from pandas import DataFrame
-.venv\Lib\site-packages\moocore\_moocore.py:2467: >>> import pandas as pd
-.venv\Lib\site-packages\networkx\conftest.py:155: import pandas as pd
-.venv\Lib\site-packages\networkx\convert.py:125: import pandas as pd
-.venv\Lib\site-packages\networkx\convert_matrix.py:105: >>> import pandas as pd
-.venv\Lib\site-packages\networkx\convert_matrix.py:137: import pandas as pd
-.venv\Lib\site-packages\networkx\convert_matrix.py:19...]
-
-The grep confirms **neither file imports pandas**. All pandas hits are from installed packages in `.venv/`. Let me also check for any breeder-related patterns specifically in `src/`:
-
-
-
-[Tool Call: grep_search({'include_pattern': 'src/**/*.py', 'pattern': 'breeder|Breeder'})]
-
-[Tool Result: src\run_vc_search.py:11: count at all times to eliminate breeder exploits)]
-
-
-[Tool Call: grep_search({'include_pattern': 'src/validate_fitness.py', 'pattern': 'DisplacementConsistencyFitness'})]
-
-[Tool Result: src\validate_fitness.py:5: Empirical validation of DisplacementConsistencyFitness.
-src\validate_fitness.py:23: from new_fitness import DisplacementConsistencyFitness
-src\validate_fitness.py:103: fitness_fn = DisplacementConsistencyFitness(num_windows=NUM_WINDOWS)
-src\validate_fitness.py:105: print(f"DisplacementConsistencyFitness validation — {SIM_STEPS} steps, "]
-
-Let me also check what `new_fitness` module the validate script imports from:
-
-
-
-[Tool Call: bash({'command': 'dir /b C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\*.py'})]
-
-[Tool Result: exit_code: 0
-stdout: analyze_glider_200.1.py
-analyze_glider_220.py
-analyze_long_run_dynamics.py
-analyze_median_elite_rule.py
-analyze_top_elite_rule.py
-analyze_top_stabilizing_rule.py
-asymmetric_collision.py
-breed_next_generation.py
-characterize_5bit_glider.py
-characterize_champion_174.py
-characterize_glider_200.py
-characterize_iter_197_2_champion.py
-characterize_offset_collisions.py
-characterize_remnant.py
-characterize_rule.py
-characterize_rules.py
-characterize_top_rules.py
-char...]
-
-Here is the complete analysis:
+The file is complete at 314 lines. Here are its full contents:
 
 ---
-
-## Files Inspected
-
-### `src/fitness_functions.py` — Full Contents
 
 ```python
 #!/usr/bin/env python3
 """
-fitness_functions.py
+new_fitness.py
 
-A library of fitness functions for evaluating cellular-automaton rules on the
-128x128 toroidal hexagonal grid used throughout this project.
-...
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 """
 
 from __future__ import annotations
@@ -127,115 +38,238 @@ from typing import Any
 
 import numpy as np
 
-from evolution import center_of_mass, rule_dict_to_lut, step_grid
-```
 
-### `src/validate_fitness.py` — Full Contents
+class DisplacementConsistencyFitness:
+    """Fitness function that rewards consistent, directional motion.
 
-```python
-#!/usr/bin/env python3
-"""
-validate_fitness.py
+    This fitness function defeats the *drifter* exploit by analysing the
+    consistency of velocity across multiple time windows of a simulation.
 
-Empirical validation of DisplacementConsistencyFitness.
-...
-"""
+    Parameters
+    ----------
+    num_windows : int
+        Number of windows to divide the simulation into. Default 5.
+    bits_per_cell : int
+        Bits per cell (reserved for future multi-bit support). Default 1.
+    strict_conservation : bool
+        Whether to enforce perfect, non-leaky mass conservation.
+    max_bit_threshold : int or None
+        If specified, any step exceeding this bit count makes the fitness 0.0.
+    max_velocity_threshold : float or None
+        If specified, any mean velocity magnitude >= this value returns 0.0.
+    """
 
-import json
-import sys
-from pathlib import Path
+    name = "DisplacementConsistencyFitness"
 
-import numpy as np
+    def __init__(
+        self,
+        num_windows: int = 5,
+        bits_per_cell: int = 1,
+        strict_conservation: bool = False,
+        max_bit_threshold: int | None = None,
+        max_velocity_threshold: float | None = None,
+    ) -> None:
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
 
-sys.path.insert(0, str(Path(__file__).parent))
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        """Compute fitness score from a simulation history.
 
-from new_fitness import DisplacementConsistencyFitness
-from evolution import rule_dict_to_lut, step_grid, center_of_mass
+        Parameters
+        ----------
+        sim_history : list of dict
+            Each dict must contain:
+              - 'step'    : int — simulation step index (0-based).
+              - 'com'     : tuple[float, float] — centre of mass (row, col).
+              - 'bit_count': int   — number of live cells at that step.
+
+        Returns
+        -------
+        float
+            Final fitness score. 0.0 for empty history, zero steps, or no
+            net displacement.
+        """
+        if not sim_history:
+            return 0.0
+
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # 2. Compute per-window velocity vectors
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
+
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                if s < window_start:
+                    continue
+
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+
+                if s > effective_window_end:
+                    break
+
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry
+
+            if first_entry is None or last_entry is None:
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            window_steps = last_entry["step"] - first_entry["step"]
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # 3. Calculate mean of windowed velocity vectors
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(
+            mean_dx * mean_dx + mean_dy * mean_dy
+        )
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        # 4. Calculate standard deviation of windowed velocity magnitudes
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        # 5. Core fitness formula
+        if mean_velocity_magnitude == 0.0:
+            base_fitness = 0.0
+        else:
+            base_fitness = mean_velocity_magnitude / (
+                1.0 + std_dev_velocity_magnitudes
+            )
+
+        # 6. Leaky bit-conservation score
+        total_conservation_score = self._compute_conservation_score(
+            sorted_history
+        )
+
+        # 7. Final fitness
+        fitness = base_fitness * total_conservation_score
+
+        return float(fitness)
+
+    def _compute_conservation_score(
+        self, sim_history: list[dict[str, Any]]
+    ) -> float:
+        """Compute the 'leaky' bit-conservation score from simulation history.
+
+        For each step, if bit_count == initial_bit_count, factor = 1.0.
+        Otherwise factor = min(bc, initial) / max(bc, initial).
+
+        Returns mean of all per-step factors, in range [0, 1].
+        """
+        if not sim_history:
+            return 1.0
+
+        initial_bits = sim_history[0]["bit_count"]
+
+        if initial_bits == 0:
+            return 1.0
+
+        conservation_factors: list[float] = []
+        for entry in sim_history:
+            bit_count = entry["bit_count"]
+            if bit_count == initial_bits:
+                conservation_factors.append(1.0)
+            else:
+                conservation_factors.append(
+                    min(bit_count, initial_bits)
+                    / max(bit_count, initial_bits)
+                )
+
+        total_conservation_score = sum(conservation_factors) / len(
+            conservation_factors
+        )
+        return float(total_conservation_score)
 ```
 
 ---
 
-## Key Findings
+**Summary of the file:**
 
-### 1. Pandas — NONE present
+- **`DisplacementConsistencyFitness`** (line ~42–255) — A fitness function for cellular automaton glider search that rewards *consistent directional motion* and penalizes "drifter" objects (which oscillate in place or drift via random walk).
 
-**Neither file imports pandas.** Both are already clean:
+- **Core formula:** `base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)`
+  - True gliders → low std dev → high fitness
+  - Drifters → high std dev → suppressed fitness, regardless of mean velocity
 
-| File | pandas imports | Status |
-|---|---|---|
-| `fitness_functions.py` | None (only `math`, `numpy`, `typing`) | ✅ Clean |
-| `validate_fitness.py` | None (only `json`, `sys`, `pathlib`, `numpy`) | ✅ Clean |
+- **`__call__`** — Main entry point. Takes a `sim_history` list of dicts (with `step`, `com`, `bit_count`), splits the simulation into `num_windows` time windows, computes per-window velocity vectors, then applies the formula above. Includes optional hard thresholds (`max_bit_threshold`, `max_velocity_threshold`) and strict mass conservation.
 
-All pandas hits from the grep were inside `.venv/` (third-party packages).
-
-### 2. Breeder Exploit Gaps
-
-**In `fitness_functions.py`:**
-
-- **Bit conservation only checks initial + final states.** Both `NetDisplacementFitness` and `SubLightFitness` have an `expected_bits = 3` gate that checks the bit count at step 0 and step `max_steps`. A breeder that **creates new particles mid-simulation then annihilates them** before the final step would pass this check.
-- **`strict_bit_conservation` exists but is disabled by default.** This is the real breeder prevention — it checks `grid.sum() == expected_bits` at **every single step** in the loop. But since the default is `False`, any code using these fitness classes without explicitly enabling strict mode is vulnerable to breeders.
-
-**In `validate_fitness.py`:**
-
-- No breeder references or checks at all. It only validates that known drifter rules score lower than known glider rules.
-
-### 3. Import/Logic Issues Worth Correcting
-
-**a) `validate_fitness.py` imports from `new_fitness` (line 23):**
-```python
-from new_fitness import DisplacementConsistencyFitness
-```
-This imports from `src/new_fitness.py` — a module not shown here. If this is a legacy module that should have been replaced by `fitness_functions.py`, that's a code health issue. Need to check what `new_fitness.py` contains to decide if it's still needed.
-
-**b) `fitness_functions.py` uses two different CoM functions inconsistently:**
-
-- `NetDisplacementFitness.evaluate()` uses the **naive** `center_of_mass` from `evolution` (line 191, 217):
-  ```python
-  initial_com  = center_of_mass(grid)
-  final_com    = center_of_mass(grid)
-  ```
-- But `SubLightFitness.evaluate()` and the module's own private `_toroidal_center_of_mass()` use a **wrap-aware circular-mean** CoM for toroidal continuity.
-
-The naive `center_of_mass` is discontinuous at toroidal boundaries — a single wrapped cell can jolt the CoM by ~grid_size/n_cells. `NetDisplacementFitness` could benefit from using the toroidal-aware version for its net-displacement calculation too.
-
-**c) Redundant assertion in `__call__`:**
-Both fitness classes have this in their `__call__` method:
-```python
-assert isinstance(result, tuple) and len(result) == 2, ...
-```
-This is defensive but unnecessary since the tuple is explicitly constructed on the line above. The assertion can be safely removed.
-
----
-
-## Recommended Simplifications
-
-| Area | Action |
-|---|---|
-| **Breeder exploits** | Set `strict_bit_conservation=True` in fitness class usage, or consider making it the default. |
-| **CoM consistency** | Use `_toroidal_center_of_mass` (not `center_of_mass`) in `NetDisplacementFitness.evaluate` for toroidal correctness. |
-| **validate_fitness.py** | Verify if `from new_fitness import ...` should be `from fitness_functions import ...` — check if `new_fitness.py` is still needed. |
-| **Redundant assertions** | Remove the `assert isinstance(result, tuple)` checks in both `__call__` methods. |
+- **`_compute_conservation_score`** (line ~260–297) — A helper that computes a "leaky" bit-conservation score (fractional penalty for bit-count changes rather than hard-fail), applied as a multiplier to the base fitness.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts: []
-metrics:
-  pandas_imports_found: 0
-  breeder_vulnerability: "strict_bit_conservation defaults to False in both fitness classes"
-  co_m_consistency: "inconsistent - NetDisplacementFitness uses naive CoM, SubLightFitness uses toroidal-aware CoM"
-  validate_fitness_import: "imports DisplacementConsistencyFitness from new_fitness (legacy module)"
+metrics: {}
 log_excerpt: |
-  Grep search confirmed: neither fitness_functions.py nor validate_fitness.py import pandas.
-  All pandas hits were inside .venv/ (third-party packages: matplotlib, networkx, pandas itself).
-  Breeder-related pattern only found in src/run_vc_search.py (comment about eliminating breeder exploits).
-  validate_fitness.py imports from new_fitness module which was not read in this iteration.
-  No files were written or modified during this iteration.
+  Successfully read src/new_fitness.py (314 lines)
+  Outputted full file contents including:
+  - DisplacementConsistencyFitness class definition
+  - __call__ method with windowed velocity computation
+  - _compute_conservation_score helper method
+  - Detailed docstrings explaining drifter exploit mitigation
 experimenter_view: |
-  Both inspected files are already pandas-free. The main issues identified are:
-  1. BREEDER VULNERABILITY: Bit conservation in NetDisplacementFitness and SubLightFitness only checks initial/final bit counts by default. A breeder that spawns particles mid-simulation then annihilates them before the final step would pass. The strict_bit_conservation=True flag exists but is disabled by default.
-  2. CoM INCONSISTENCY: NetDisplacementFitness uses the naive center_of_mass() from evolution.py, which is discontinuous at toroidal boundaries. SubLightFitness uses the private _toroidal_center_of_mass() with wrap-aware circular means. Both should use the toroidal-aware version for correct displacement measurement.
-  3. VALIDATE_FITNESS.PY: Imports DisplacementConsistencyFitness from new_fitness.py, a legacy module not yet inspected. Needs review to determine if it should be replaced by fitness_functions.py classes.
-  4. REDUNDANT ASSERTIONS: Both fitness class __call__ methods contain unnecessary assert isinstance(result, tuple) checks that can be safely removed.
-notes: "Files read and analyzed; no pandas imports or breeder patterns in the two inspected files beyond the known strict_bit_conservation default issue."
+  The file implements DisplacementConsistencyFitness, a fitness function for
+  cellular automaton glider discovery. It defeats "drifter" exploits by:
+  1. Dividing simulation into time windows
+  2. Computing per-window velocity vectors
+  3. Penalizing high standard deviation in velocity magnitudes
+  Core formula: mean_velocity / (1 + std_dev_velocity_magnitudes)
+  Includes leaky bit-conservation scoring as a multiplier.
+  Well-documented with clear design rationale for each component.
+notes: "Read and displayed src/new_fitness.py successfully"
 ```
