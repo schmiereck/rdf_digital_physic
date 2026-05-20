@@ -1,0 +1,129 @@
+
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 210, 'end_line': 255})]
+
+[Tool Result: --- lines 210 to 255 of 430 ---
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ... ...]
+
+```python
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+```
+
+[NUDGE RESPONSE]
+```python
+            history is empty, when the simulation runs for zero steps,
+            or when there is no net displacement.
+
+        Examples
+        --------
+        >>> sim_history = [
+        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+        ... ]
+        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+        """
+        if not sim_history:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 1. Sort by step (defensive — history should be ordered but
+        #    we sort to be safe)
+        # ------------------------------------------------------------------
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
+
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+
+        if total_steps <= 0:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 2. Compute per-window velocity vectors
+        # ------------------------------------------------------------------
+        steps_per_window = total_steps / self.num_windows
+
+        window_velocity_mags: list[float] = []
+```
+
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  lines 210 to 255 of 430
+  [Content successfully retrieved and printed above]
+experimenter_view: |
+  The requested source code lines from src/new_fitness.py were successfully printed.
+  The code snippet belongs to a fitness function `DisplacementConsistencyFitness`
+  that validates simulation history for bit conservation and calculates
+  displacement consistency across defined time windows.
+notes: "Successfully printed requested code lines to stdout."
+```
