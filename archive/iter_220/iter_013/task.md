@@ -1,1 +1,1 @@
-Read and print `src/new_fitness.py` to see its definition. Run the validation script using `python src/validate_fitness.py` and print its output. Check if it executes successfully or if it raises any import errors or other issues.
+Output the code of DisplacementConsistencyFitness.__call__ and any helper functions in src/new_fitness.py. Keep it concise.
