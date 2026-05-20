@@ -1,1 +1,1 @@
-Read and print lines 130-180 of `src/new_fitness.py` to verify that the division by `window_steps` (duration) was added correctly and that it handles the case where `window_steps == 0` safely.
+Run a python command to print the first 1000 characters of `src/run_evolution_exp_220_fixed.py` so we can see the imports and setup of the file.
