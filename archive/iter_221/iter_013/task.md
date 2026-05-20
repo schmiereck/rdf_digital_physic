@@ -1,0 +1,1 @@
+Print the last 30 lines of archive/iter_221/results/trajectory_analysis.txt. Do not write yaml block or any other files, just print those lines to stdout.
