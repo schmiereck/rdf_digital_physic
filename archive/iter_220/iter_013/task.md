@@ -1,0 +1,1 @@
+Print the keys of the JSON dictionary in archive/iter_179/results/champion_rule.json, and check if it contains a key named 'pairs' or 'generator_pairs' or similar, and print the values of those keys if they exist.
