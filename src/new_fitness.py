@@ -244,7 +244,6 @@ class DisplacementConsistencyFitness:
             cur_com = sorted_history[i]["com"]
             dx = cur_com[0] - prev_com[0]
             dy = cur_com[1] - prev_com[1]
-            # Assume grid wraps at 128 (GRID_SIZE).  Unwrap deltas:
             if dx > 64:
                 dx -= 128.0
             elif dx < -64:
@@ -253,7 +252,8 @@ class DisplacementConsistencyFitness:
                 dy -= 128.0
             elif dy < -64:
                 dy += 128.0
-            unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
+            last_unwrapped = unwrapped_coms[-1]
+            unwrapped_coms.append((last_unwrapped[0] + dx, last_unwrapped[1] + dy))
 
         # Replace the raw COMs with unwrapped ones for downstream calc.
         unwrapped_history: list[dict] = []
