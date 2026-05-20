@@ -1,31 +1,5 @@
-I'll examine the project structure and files to provide a comprehensive summary. Let me start by reading the key documents and exploring the source directory.
 
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\current_state.md'})]
-
-[Tool Result: # Current Research State
-Phase: Breeder exploit closed, fitness landscape mapped.
-
-## Goal
-Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
-
-## Confirmed
-- The previous champion was a stationary breathing breeder-oscillator of period 64 (iter_220.9).
-- Setting `max_bit_threshold=12` in `DisplacementConsistencyFitness` completely eliminates breeders, forcing evolution to produce only compact, stable structures (iter_220.23).
-- Hard-gated fitness metrics...]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\goal.md'})]
-
-[Tool Result: # Forschungsziel: Emergenz digitaler Physik (Bit-Gitter-Universum)
-
-Dieses Projekt erforscht die Reduktion physikalischer Gesetze auf fundamentale, binäre Operationen innerhalb eines diskreten Gitters. Ziel ist es, nachzuweisen, dass komplexe Phänomene wie Masse, Gravitation und Zeitdilatation keine mathematischen Axiome sind, sondern als emergente Effekte aus einem minimalen Satz lokaler, reversibler Regeln auf einem hochsymmetrischen Gitter hervorgehen.
-
-Das Universum wird hierbei als ein vert...]
-
-
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+[Tool Call: list_dir({'path': 'src'})]
 
 [Tool Result: [DIR] __pycache__
       analyze_glider_200.1.py
@@ -44,200 +18,170 @@ Das Universum wird hierbei als ein vert...]
       characterize_offset_collisions.py
       characteri...]
 
-Now let me examine the key infrastructure files and some evolutionary search scripts to understand their roles:
 
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+[Tool Call: read_file({'path': 'src/new_fitness.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+new_fitness.py
 
-Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-This penalises annihilation: a rule that destroys the seed gets a ratio near
-zero even if the centre-of-mass technically moves before the grid goes dark.
-Rules that move the particle while preserving its bit count score highest.
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+
+[Tool Call: read_file({'path': 'src/fitness_functions.py'})]
+
+[Tool Result: #!/usr/bin/env python3
 """
+fitness_functions.py
 
-import math
-import random
+A library of fitness functions for evaluating cellular-automaton rules on the
+128x128 toroidal hexagonal grid used throughout this project.
 
-import numpy as np
+NetDisplacementFitness
+-----------------------
+Designed to defeat the 'compact oscillator' and 'puffer' exploits identified
+in iter_203.  Two complementary mechanisms:
 
-# Small constant to guard against the (very unli...]
+  1. **Net displacement** — measures the Euclidean distance between the
+     centre-of-mass at t=0 and t=max_steps.  Stationary oscillators t...]
 
+Here's the complete summary:
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness.py', 'end_line': 60})]
+---
 
-[Tool Result: --- lines 1 to 60 of 818 ---
-#!/usr/bin/env python3
-"""
-fitness.py
+## All Files in `src/` Directory
 
-Fitness metrics for hexagonal CA rules.
-  - calculate_velocity_stability: rewards sustained, constant-velocity motion.
-  - CheckpointFitness: rewards stable bit-count throughout the simulation.
-  - DynamicCollisionFitness: rewards rules that produce a true dynamic
-    bit-and-object-conserving collision between two 3-bit gliders (approach
-    followed by recession).
-"""
+The `src/` directory contains **230+ files**, organized as:
 
-import math
-import sys
-from pathlib import Path
+**Files (selected highlights):**
+- `engine.py`, `evolution.py`, `evolve.py`, `evolve_rules.py` — core evolution/evolutionary algorithm
+- `evaluate.py`, `evaluate_rule_fitness.py` — evaluation infrastructure
+- `fitness.py`, `fitness_functions.py`, `new_fitness.py` — fitness functions
+- `leaky_fitness.py` — leaky fitness variants
+- `rule.py`, `rule_generator.py`, `rules.py` — rule definitions
+- `simulate.py`, `simulator.py`, `simulate_*.py` — various simulation runners
+- `run_evolution*.py`, `run_iter_*.py`, `run_vc_search.py` — evolution experiment runners
+- `characterize_*.py`, `analyze_*.py`, `validate_*.py` — analysis/validation scripts
+- `find_*.py`, `search_*.py` — object/CA rule search scripts
+- `test_*.py` — test files
 
-import nu...]
+**Subdirectories:**
+- `__pycache__/`
+- `experiments/`
 
+---
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\rule.py', 'end_line': 60})]
+## Available Fitness Functions
 
-[Tool Result: --- lines 1 to 60 of 91 ---
-#!/usr/bin/env python3
-"""
-rule.py — Thin wrapper around a cellular automaton rule dict.
+### 1. `NetDisplacementFitness` (from `src/fitness_functions.py`)
 
-The Rule wraps a packed-neighbourhood → packed-neighbourhood integer map and
-exposes the LUT used by the engine to step the grid.  ``bits_per_cell`` defaults
-to 1 so that the existing 1-bit pipeline (LUT length 128, key range 0..127)
-continues to work unchanged.  Passing a larger ``bits_per_cell`` enables N-bit
-cells, in which case the LUT has length ``2**(7*bits_per_cell)``.
-"""...]
+**Name:** `"NetDisplacementFitness"`
 
+**Formula:** `fitness = net_displacement / (1 + final_bb_area)`
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine.py', 'end_line': 60})]
+**Purpose:** Rewards the Euclidean distance the particle's centre of mass travels from start to end, penalized by the final bounding-box area to counter "puffer" exploits (large diffuse patterns). Bit conservation is enforced.
 
-[Tool Result: --- lines 1 to 60 of 295 ---
-#!/usr/bin/env python3
-"""
-engine.py — Multi-bit hexagonal CA engine.
+**Key defenses:**
+- **Net displacement** only — stationary oscillators score 0.
+- **Bounding-box penalty** — suppresses large puffer patterns.
+- **Bit conservation gate** — fitness is 0 if bit count changes.
+- Optional `strict_bit_conservation` — enforces exact bit count at *every* step.
 
-Generalises the historic 1-bit step (encoded by simulator.py and evolution.py)
-to grids whose cells carry N bits.  The grid is represented as a NumPy array of
-shape ``(height, width, bits_per_cell)`` where each entry along the last axis
-is a single bit (0/1).  Cell value = base-2 with index 0 as the most
-significant bit.
+**Returns:** `(fitness, metrics_dict)` via `__call__`, or just `metrics_dict` via `evaluate()`.
 
-For ``bits_per_cell == 1`` the math reduces exactly to the legacy fast path:...]
+---
 
-Now let me look at the current evolutionary search scripts for the sub-light glider search:
+### 2. `SubLightFitness` (from `src/fitness_functions.py`)
 
+**Name:** `"SubLightFitness"`
 
+**Formula:** `fitness = displacement * (1 - 1/T)` where T is the internal period.
 
-[Tool Call: read_file({'end_line': 60, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_iter_220_consistency_trajectory.py'})]
+**Purpose:** Selects for **sub-light-speed (v<c)** periodic gliders, defeating the v=1c (lattice speed of light) glider exploit.
 
-[Tool Result: --- lines 1 to 60 of 415 ---
-#!/usr/bin/env python3
-"""
-run_iter_220_consistency_trajectory.py
+**Key mechanisms:**
+1. **Unwrapped CoM tracking** — handles toroidal grid boundary crossings correctly.
+2. **Hard velocity gate** — rejects particles with mean velocity ≥ `v_threshold` (default 0.9), eliminating v=1c gliders.
+3. **Internal-period gate & bonus** — detects the smallest repeating configuration period T; T ≤ 1 is rejected outright, and larger T values get multiplied by `(1 - 1/T)`.
 
-Full 500-step simulation of the consistency champion rule from iter_220
-with L-tromino seed on a 128x128 grid.
-"""
+**Period factor examples:**
 
-import json
-import math
-import sys
-from pathlib import Path
-import numpy as np
+| Period T | Factor (1-1/T) | Meaning |
+|----------|----------------|---------|
+| 1        | 0.0            | Rejected (v=1c trivial) |
+| 2        | 0.5            | v=0.5c |
+| 4        | 0.75           | v=0.25c |
+| 8        | 0.875          | v=1/8c |
 
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+**Default settings:** 1200 simulation steps, late window 600–1000, period window 600–800, max_period=64, v_threshold=0.9.
 
-from evolution import rule_dict_to_lut, step_grid, center_of_mass
+---
 
-# -- Configuration --
+### 3. `DisplacementConsistencyFitness` (from `src/new_fitness.py`)
 
-CHAMPION_JSON = PROJECT_ROO...]
+**Name:** `"DisplacementConsistencyFitness"`
 
+**Formula:** `fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)`
 
-[Tool Call: read_file({'end_line': 60, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_iter_220_trajectory.py'})]
+**Purpose:** Rewards **consistent, directional motion** and defeats "drifter" exploits — objects that oscillate in place or random-walk while appearing to travel long distances.
 
-[Tool Result: --- lines 1 to 60 of 309 ---
-#!/usr/bin/env python3
-"""
-run_iter_220_trajectory.py
+**Key mechanism:**
+- Divides simulation into `num_windows` (default 5) equal-duration windows.
+- Computes per-window velocity vectors.
+- High standard deviation of velocity magnitudes → heavy penalty (drifter behavior).
+- Low standard deviation → high fitness (true glider behavior).
 
-Full 500-step simulation of the champion rule from iter_220
-with L-tromino seed on a 128x128 grid.
+**Additional features:**
+- **Toroidal grid unwrapping** — correctly handles CoM wrapping across grid boundaries.
+- **Leaky bit-conservation score** — applies a continuous fractional penalty (not hard fail) for bit-count changes, preserving evolutionary gradient.
+- Optional `strict_conservation` — hard-rejects any bit-count change.
+- Optional `max_bit_threshold` and `max_velocity_threshold` — hard rejects.
 
-Outputs:
-  - Center of mass at steps 0, 100, 200, 300, 400, 500
-  - Movement classification (moving, oscillating, stationary)
-  - Average velocity
-  - Trajectory log saved to archive/iter_220/results/trajectory_log.txt
-"""
+**Returns:** A single `float` score via `__call__`.
 
-import json
-import math
-import sys
-from pathlib import Path
-import numpy as np
+---
 
-PROJECT_ROOT...]
+### Summary of all fitness functions in `src/`:
 
-
-[Tool Call: read_file({'end_line': 60, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_iter_220_exp_220_sublight_final.py'})]
-
-[Tool Result: Error: File not found: C:\Users\thomas\Projekte\rdf_digital_physic\src\run_iter_220_exp_220_sublight_final.py]
-
+| File | Class/Function | Purpose |
+|------|---------------|---------|
+| `fitness.py` | (general fitness infrastructure) | Base utilities |
+| `fitness_functions.py` | `NetDisplacementFitness` | Net displacement / bounding-box penalty |
+| `fitness_functions.py` | `SubLightFitness` | Sub-light periodic glider selection |
+| `new_fitness.py` | `DisplacementConsistencyFitness` | Velocity consistency / drifter detection |
+| `leaky_fitness.py` | `LeakySubLightFitness` | Leaky variant with fractional conservation |
+| `fitness_v2.py`, `fitness_v_lessthan_c.py`, `fitness_g190.py`, `fitness_simple_motion.py`, `fitness_stable_velocity.py` | Various | Specialized fitness functions |
+| `massive_glider_fitness.py` | — | Large-scale glider evaluation |
+| `validate_*.py`, `forensic_fitness_analysis.py` | — | Fitness metric validation tools |
 
 [NUDGE RESPONSE]
-Based on my examination of the project, here is my comprehensive summary:
-
-```yaml
 status: ok
 artifacts: []
-metrics: {}
+metrics:
+  files_in_src: 230
+  fitness_classes_found: 3
 log_excerpt: |
-  Project structure examined successfully.
-  Root files: current_state.md, goal.md
-  src/ directory contains ~200+ Python files across 3 sub-categories:
-    - Core infrastructure (engine.py, rule.py, fitness.py, evolution.py, simulator.py)
-    - Evolutionary search scripts (run_iter_*.py, evolve*.py)
-    - Analysis/extraction tools (analyze_*.py, characterize_*.py, find_*.py)
-  
-  Current state: Phase "Breeder exploit closed, fitness landscape mapped"
-  Goal: Discover stable v<c glider in 2D hexagonal grid
-  Last iteration: iter_220 (warm-start preparation with max_bit_threshold=12)
+  [DIR] __pycache__
+  analyze_glider_200.1.py
+  analyze_glider_220.py
+  ...
+  new_fitness.py
+  ...
+  fitness_functions.py
+  ...
+  DisplacementConsistencyFitness, NetDisplacementFitness, SubLightFitness
 experimenter_view: |
-  PROJECT STRUCTURE SUMMARY:
-  
-  1. CORE INFRASTRUCTURE:
-     - engine.py: Multi-bit hexagonal CA engine. Handles 1-bit (legacy) through N-bit cells
-       with proper LUT construction (2^(7N) length) and step functions.
-     - rule.py: Thin wrapper around rule dicts. Exposes LUT used by engine. Supports
-       variable bits_per_cell (defaults to 1 for backward compatibility).
-     - evolution.py: C2-symmetric rule generation and basic fitness evaluation.
-       Contains L-tromino seed (63,63), (64,63), (64,64) on 128x128 grid, 200-step sim.
-     - fitness.py: Robust fitness metrics including CheckpointFitness (bit-count stable
-       at checkpoints) and velocity stability metrics. Prevents breeder/annihilator exploits.
-     - simulator.py: Particle and Simulator classes for running hexagonal CA simulations.
-  
-  2. EVOLUTIONARY SEARCH SCRIPTS:
-     - run_iter_*.py: Iteration-specific evolution runs (iter_170 through iter_220+)
-     - evolve*.py: General evolution scripts (evolve.py, evolve_rules.py, etc.)
-     - run_vc_search*.py: Sub-light (v<c) glider search scripts
-     - run_iter_220*.py: Current iteration scripts with max_bit_threshold=12 filter
-  
-  3. ANALYSIS/EXTRACTION TOOLS:
-     - analyze_*.py: Analysis scripts for champions and elite rules
-     - characterize_*.py: Characterization of discovered objects (gliders, oscillators)
-     - find_*.py: Kernel/object discovery scripts (various constraints)
-     - extract_*.py: Pattern extraction from simulation state
-  
-  4. CURRENT RESEARCH FOCUS (iter_220):
-     - Breeder exploit closed via max_bit_threshold=12 in DisplacementConsistencyFitness
-     - Preparing warm-start from iter_215 final population
-     - Key open question: C2-preserving crossover operator design
-     - L-tromino seed confirmed as asymmetric seed (avoiding C2 symmetry bug)
-  
-  5. KNOWN EXPLOITS AVOIDED:
-     - Settler (zero std_dev) -> Displacement term required
-     - Annihilator (all bits deleted) -> final_bits/initial_bits ratio
-     - Transient buffer -> Late-window or checkpoint measurement
-     - Explosive bloom -> max_bit_count penalty
-     - C2 symmetry bug -> Asymmetric seed (L-tromino)
-notes: "Project overview completed. ~200 Python files found in src/. No files created or modified."
-```
+  Successfully enumerated the src/ directory and extracted the core fitness function APIs. Three primary fitness classes were identified:
+  1. NetDisplacementFitness (fitness_functions.py): Rewards net COM displacement, penalized by bounding box area, with bit-conservation gates.
+  2. SubLightFitness (fitness_functions.py): Targets sub-light periodic gliders, defeating v=1c exploits via velocity gates, period detection, and period bonuses.
+  3. DisplacementConsistencyFitness (new_fitness.py): Uses multi-window velocity consistency (mean/std dev) to detect true gliders vs drifters, combined with leaky bit-conservation scoring.
+notes: "Read-only exploration of src/ fitness infrastructure completed."
