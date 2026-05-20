@@ -1,0 +1,53 @@
+Writing the script as specified.
+The script as specified crashes because `generate_random_c2_rule` in evolution.py requires an `rng` argument. Let me apply the minimal fix needed to make the script runnable.
+The script ran to completion (20 generations × 100 individuals) but every rule scored 0.0 — no sub-light glider candidates emerged. The champion file was written with fitness 0.0.
+
+```yaml
+status: experiment_failed
+artifacts:
+  - src/run_evolution_exp_220_sublight_final.py
+  - archive/iter_220/results/champion_rule.json
+metrics:
+  pop_size: 100
+  generations: 20
+  elite_size: 10
+  mutation_rate: 0.01
+  best_fitness: 0.0
+  mean_fitness: 0.0
+experimenter_view: |
+  The script as written had a TypeError (generate_random_c2_rule requires an
+  `rng: random.Random` argument). Applied a one-line fix: instantiated
+  `rng = random.Random()` and passed it. The GA then ran cleanly through
+  Gen 0 → Gen 20 (100 individuals each).
+  
+  However, every individual in every generation scored fitness=0.0. Inspection
+  of the champion JSON shows a sparse LUT (mostly identity 0→0 with a few
+  scattered non-identity entries), which is the typical signature of a
+  recombination-only crossover from initially-trivial parents: once Gen 0 all
+  score 0, the "elite_size=10" elites are just an arbitrary 10 zero-fitness
+  rules, and crossover between them cannot escape the dead zone.
+  
+  Root causes of the flatline:
+  1) The C2-symmetric rule generators produce LUTs that are dense over a small
+     orbit set, but the crossover here works over keys "0".."127" as if every
+     key is independent — this breaks C2 symmetry and likely also breaks
+     reversibility/conservation properties needed for any glider to survive.
+  2) `expected_bits=3` is a hard gate: rules that don't perfectly conserve the
+     3-bit L-tromino over 500 steps return fitness 0. Random C2 rules almost
+     never satisfy this. Without a softer fitness ramp (e.g. partial credit
+     for displacement or near-conservation) the search has no gradient to climb.
+  3) Default `random.Random()` (no seed) makes runs non-reproducible.
+  
+  Net: the pipeline is functional but the fitness landscape is effectively flat
+  for the chosen seed/operators. Need a softer fitness shaping, C2-preserving
+  crossover, or a warm-start population to make further iterations productive.
+log_excerpt: |
+  === Starting SubLight GA Search (pop=100, gens=20) ===
+  Gen  0: best=0.000000  mean=0.000000
+  Gen  1: best=0.000000  mean=0.000000
+  ...
+  Gen 19: best=0.000000  mean=0.000000
+  Gen 20: best=0.000000  mean=0.000000
+  === Evolutionary Search Finished! Champion fitness: 0.000000 ===
+notes: "Ran 20 generations; entire population flatlined at fitness 0 — no sub-light glider found."
+```
