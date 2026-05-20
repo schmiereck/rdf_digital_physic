@@ -1,17 +1,45 @@
 artifacts:
-- src/evolve_glider.py
-- archive/iter_215/results/champion.json
-experimenter_view: 'The evolutionary search successfully discovered a sub-light speed
-  glider.
+- fix_unwrap.py
+- verify_fix.py
+experimenter_view: 'The goal was to replace the incorrect COM unwrapping logic in
+  src/new_fitness.py.
 
-  The particle maintains a stable structure of 6 cells and moves with a
+  The bug: in the unwrapping loop, prev_com was set to unwrapped_coms[-1] (the accumulated
+  unwrapped position)
 
-  velocity of approximately 0.25c. Bit conservation is perfect over 1000 steps.
+  while cur_com was sorted_history[i]["com"] (the raw position). This mixed wrapped
+  and unwrapped coordinates,
+
+  producing incorrect delta calculations.
+
+
+  The correct approach: prev_com should be sorted_history[i-1]["com"] (the raw previous
+  COM), then compute
+
+  dx/dy as the raw delta between consecutive raw COMs, unwrap those deltas, and add
+  them to the accumulated
+
+  unwrapped position.
+
+
+  The file modification commands failed silently, likely due to Windows console encoding
+  (cp1252) issues
+
+  preventing proper string matching/replacement.
 
   '
-metrics:
-  generations: 50
-  max_fitness: 0.942
-  stable_steps: 1000
-notes: Sub-light glider found and verified.
-status: ok
+log_excerpt: '$ grep_search pattern: "prev_com" -> src/new_fitness.py:241: prev_com
+  = unwrapped_coms[-1]
+
+  The grep confirms the incorrect line is still present at line 241.
+
+  Multiple Python replacement attempts failed silently (likely due to Windows encoding
+  issues with stdout).
+
+  The fix was not successfully applied to src/new_fitness.py.
+
+  '
+metrics: {}
+notes: Fix attempt failed due to tooling issues; line 241 still contains the incorrect
+  unwrapping code.
+status: experiment_failed
