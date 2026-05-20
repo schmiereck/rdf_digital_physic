@@ -1,0 +1,1 @@
+Run a 200-step simulation of the consistency champion rule `archive/iter_220/results/champion_vc_rule_consistency.json` and print the active cell count (bit count) at every step (or every 5 steps). Check if it remains strictly at 3 cells for all 200 steps, or if it changes later. This will let us know if it is a true still-life or if it exhibits delayed dynamics.
