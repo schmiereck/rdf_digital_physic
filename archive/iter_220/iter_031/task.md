@@ -1,1 +1,1 @@
-Read lines 110-160 of `src/new_fitness.py` to see the window loop in `DisplacementConsistencyFitness.__call__`. Check if the displacement `dx` and `dy` are divided by the window duration (number of steps) or if they are used as raw displacements.
+Read the first 50 lines of src/run_evolution_exp_220.py to see what functions and classes it imports (e.g., step_grid, center_of_mass, rule_dict_to_lut, etc.) and where they are imported from. This will let us write an identical, compatible simulation loop in our sublight fitness class.
