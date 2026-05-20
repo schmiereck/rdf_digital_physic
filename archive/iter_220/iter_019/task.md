@@ -1,6 +1,1 @@
-Write and run a python script src/test_rebuilt_glider.py to:
-1. Load original 179 champion rule.
-2. Rebuild the rule using the 14 generator pairs.
-3. Simulate both for 200 steps starting from the L-tromino seed.
-4. Check if they have 100% identical center of mass and active cells at every step.
-Print if they match.
+Check if `archive/iter_220/results/champion_vc_rule_consistency.json` exists. Print its contents if it does, or list the files in `archive/iter_220/results/`. Read and print the last 20 lines of `archive/iter_220/iter_018/stdout.txt` to see if `run_vc_search_consistency.py` actually executed in that task.
