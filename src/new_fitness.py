@@ -139,6 +139,10 @@ class DisplacementConsistencyFitness:
         At least 2 windows are needed to measure velocity consistency.
     bits_per_cell : int
         Bits per cell (reserved for future multi-bit support). Default 1.
+    strict_conservation : bool
+        If True, any bit count change makes the fitness 0.0.
+    max_bit_threshold : int or None
+        If specified, any step exceeding this bit count makes the fitness 0.0.
 
     Attributes
     ----------
@@ -152,6 +156,8 @@ class DisplacementConsistencyFitness:
         self,
         num_windows: int = 5,
         bits_per_cell: int = 1,
+        strict_conservation: bool = False,
+        max_bit_threshold: int | None = None,
     ) -> None:
         """Initialise the fitness function.
 
@@ -162,9 +168,15 @@ class DisplacementConsistencyFitness:
             consistency measurement.
         bits_per_cell : int
             Bits per cell (reserved).
+        strict_conservation : bool
+            Whether to enforce perfect, non-leaky mass conservation.
+        max_bit_threshold : int, optional
+            Maximum allowed bit count at any step.
         """
         self.num_windows = max(2, int(num_windows))
         self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
 
     def __call__(
         self,
@@ -212,6 +224,15 @@ class DisplacementConsistencyFitness:
         #    we sort to be safe)
         # ------------------------------------------------------------------
         sorted_history = sorted(sim_history, key=lambda e: e["step"])
+
+        if self.max_bit_threshold is not None:
+            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+                return 0.0
+
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+                return 0.0
 
         initial_step = float(sorted_history[0]["step"])
         final_step = float(sorted_history[-1]["step"])
