@@ -1,1 +1,1 @@
-Print lines 260 to 330 of src/new_fitness.py. Keep it concise. Do not write yaml block or any other files, just print the python code to stdout.
+Write a python script to read and print lines 310 to 365 of src/new_fitness.py. This is crucial to find out how displacement is computed and if it handles toroidal unwrapping.
