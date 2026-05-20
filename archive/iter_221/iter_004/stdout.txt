@@ -1,197 +1,102 @@
 
-[Tool Call: read_file({'path': 'src/run_evolution_exp_220_fixed.py'})]
+[Tool Call: read_file({'path': 'src/run_vc_search.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
+run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness or SubLightFitness.
 
-Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
-seed to search for hexagonal CA rules that produce consistent, directional motion.
+Setup
+-----
+* Fitness     : LeakySubLightFitness (default; leaky bit-conservation gate;
+                rewards displacement with a continuous conservation penalty)
+                OR SubLightFitness (with strict_bit_conservation=True;
+                enforces that bit count remains exactly equal to the seed bit
+                count at all times to eliminate breede...]
 
-Parameters:
-  population_size : 100
-  generations     : 20
-  elite_size      : 10
-  mutation_rate   : 0.01
-  horizon         : 500 steps
+# Analysis of `src/run_vc_search.py`
 
-Outputs:
-  archive/iter_220/results/champion_rule.json
- ...]
+## How It Runs
 
-Now let me look at the iter_215 archive to understand the population structure, and also the fitness function and evolution module:
+The script performs an **evolutionary (genetic) search** for rules that produce v<c (velocity less than c) gliders in a cellular automaton. Here's the high-level flow:
 
+1. **Argument parsing** via `argparse` — accepts `--output_file` and `--strict` flags.
+2. **`run_search(strict)`** is called, which:
+   - Creates an output directory (`archive/iter_218/results/`).
+   - Initializes a `random.Random(200_001)` RNG.
+   - Generates an initial random population of **100 C2-symmetric rules** (128×128 grid, seed: 3-bit L-tromino).
+   - Evaluates fitness for all 100 chromosomes.
+   - Runs **10 generations** of evolution using:
+     - **Top-k selection** (`ELITE_COUNT` = 10% of population = 10 elites).
+     - **Two-point crossover** (`crossover_rate=0.8`).
+     - **Per-bit mutation** (`mutation_rate=0.01`).
+   - Tracks the ever-best champion rule across all generations.
+3. **`write_results(result)`** saves three artifacts:
+   - `champion_vc_rule.json` — the best rule dict, fitness, and metrics.
+   - `evolution_log.csv` — generation-by-generation champion fitness.
+   - `champion_vc_glider.gif` — a 200-step animation of the champion.
 
+---
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215'})]
+## Available Fitness Functions
 
-[Tool Result: [DIR] iter_001
-[DIR] iter_002
-      planner_response.txt
-[DIR] results]
+| Fitness Function | How to Select | Description |
+|---|---|---|
+| **`LeakySubLightFitness`** | **Default** (omit `--strict`) | Uses "leaky" bit-conservation. Rewards displacement with a continuous conservation penalty. Configurable via `checkpoints`, `bits_per_cell`, `velocity_threshold`. |
+| **`SubLightFitness`** | Use `--strict` flag | Enforces **strict bit conservation** (`strict_bit_conservation=True`). Bit count must remain exactly equal to the seed bit count (3) at all times, eliminating breeder exploits. Configurable via `window_start/end`, `period_window_start/end`, `max_period`, `v_threshold`, `expected_bits`. |
 
+The switch between them is purely the `--strict` boolean flag passed to `main()`, which routes into the `run_search(strict=True/False)` function.
 
-[Tool Call: read_file({'path': 'src/new_fitness.py'})]
+---
 
-[Tool Result: #!/usr/bin/env python3
-"""
-new_fitness.py
+## Does It Support `--initial_population_path`?
 
-DisplacementConsistencyFitness
-------------------------------
-A fitness function designed to reward consistent, directional motion and
-penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+**No, it does not.** The argument parser only defines two flags:
 
-The "drifter" exploit
-~~~~~~~~~~~~~~~~~~~~~
-In cellular-automaton glider searches, evolution can converge on a class of
-objects sometimes called *drifters*: particles that do not travel coherently
-but instead undergo small periodic oscillation...]
+```python
+parser.add_argument("--output_file",  ...)  # Override champion output path
+parser.add_argument("--strict", action="store_true", ...)  # Use SubLightFitness
+```
 
+The initial population is **always** generated on the fly with random C2-symmetric rules:
 
-[Tool Call: read_file({'path': 'src/evolution.py'})]
-
-[Tool Result: #!/usr/bin/env python3
-"""
-evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
-
-Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
-
-This penalises annihilation: a rule that destroys the seed gets a ratio near
-zero even if the centre-of-mass technically moves before the grid goes dark.
-Rules that move the particle while preserving its bit count score highest.
-"""
-
-import math
-import random
-
-import numpy as np
-
-# Small constant to guard against the (very unli...]
-
-
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results'})]
-
-[Tool Result:       champion_rule.json
-      final_population.json
-      fitness_log.csv
-      run_log.txt
-      warm_start_population.json]
-
-
-[Tool Call: read_file({'end_line': 50, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\final_population.json'})]
-
-[Tool Result: --- lines 1 to 50 of 16112 ---
-[
-  {
-    "index": 0,
-    "fitness": 2.4,
-    "metrics": {
-      "fitness": 2.4,
-      "reason": "ok",
-      "window_start_com": "[76.33333333333333, 64.66666666666667]",
-      "window_end_com": "[88.33333333333333, 64.66666666666667]",
-      "late_window_displacement": 12.0,
-      "final_bb_area": 4,
-      "initial_bits": 3,
-      "final_bits": 3
-    },
-    "rule_dict": {
-      "15": 79,
-      "26": 90,
-      "32": 96,
-      "39": 103,
-      "48": 112,
-      "56":...]
-
-
-[Tool Call: bash({'command': 'python -c "import json; d=json.load(open(r\'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\final_population.json\')); print(f\'Total chromosomes: {len(d)}\'); print(f\'Chrom length: {len(d[0][\\"chromosome\\"])}\'); print(f\'Chrom type: {type(d[0][\\"chromosome\\"][0])}\'); print(f\'Fitness range: {min(x[\\"fitness\\"] for x in d):.4f} to {max(x[\\"fitness\\"] for x in d):.4f}\')"'})]
-
-[Tool Result: exit_code: 0
-stdout: Total chromosomes: 100
-Chrom length: 128
-Chrom type: <class 'int'>
-Fitness range: 0.0000 to 2.4000
-
-stderr: ]
-
-
-[Tool Call: bash({'command': 'python -c "import json; d=json.load(open(r\'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\warm_start_population.json\')); print(f\'Total chromosomes: {len(d)}\'); print(f\'Chrom length: {len(d[0][\\"chromosome\\"])}\')" 2>&1'})]
-
-[Tool Result: exit_code: 1
-stdout: Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-KeyError: 0
-Total chromosomes: 5
-
-stderr: ]
-
-
-[Tool Call: bash({'command': 'ls -la "C:/Users/thomas/Projekte/rdf_digital_physic/archive/iter_220/results/" 2>/dev/null || echo "iter_220/results not found"'})]
-
-[Tool Result: exit_code: 0
-stdout: "iter_220/results not found"
-
-stderr: Das System kann den angegebenen Pfad nicht finden.
+```python
+population = [
+    rule_dict_to_chromosome(generate_c2_rule(rng))
+    for _ in range(POPULATION_SIZE)
 ]
+```
 
+There is no mechanism to load a pre-existing population from disk. To support that, `main()` would need an `--initial_population_path` argument, and `run_search()` would need logic to load chromosomes from a JSON or similar file and replace the random population initialization.
 
 [NUDGE RESPONSE]
-```yaml
 status: ok
 artifacts: []
-metrics:
-  iter_215_population_size: 100
-  iter_215_fitness_range: "0.0 to 2.4"
-  iter_220_population_size: 100
-  iter_220_generations: 20
-  iter_220_elite_size: 10
-  iter_220_lut_size: 128
-  iter_220_mutation_rate: 0.01
-  iter_220_grid_size: 128
-  iter_220_steps: 500
-  iter_215_warm_start_entries: 5
+metrics: {}
 log_excerpt: |
-  Analysis complete. Key files examined:
-  - src/run_evolution_exp_220_fixed.py (main GA script)
-  - src/new_fitness.py (DisplacementConsistencyFitness)
-  - src/evolution.py (C2 rule generation, simulation)
-  - archive/iter_215/results/final_population.json (100 chromosomes)
-  - archive/iter_215/results/warm_start_population.json (5 entries)
-  - archive/iter_220/results/ does not exist yet
+  # Argument Parser
+  parser.add_argument("--output_file", type=str, default=None, ...)
+  parser.add_argument("--strict", action="store_true", ...)
 
-  iter_215 final_population.json structure:
-    [{"index": 0, "fitness": 2.4, "metrics": {...}, "rule_dict": {...}, "chromosome": [0,0,...]}, ...]
-  
-  iter_220 expected initial population structure:
-    list[np.ndarray] of 128-element uint8 arrays
+  # Selection Logic in run_search
+  if strict:
+      print(f"  Fitness         : SubLightFitness (STRICT conservation)\n")
+      fitness_fn = SubLightFitness(...)
+  else:
+      print(f"  Fitness         : LeakySubLightFitness\n")
+      fitness_fn = LeakySubLightFitness(...)
+
+  # Population Initialization (Always Random)
+  population = [
+      rule_dict_to_chromosome(generate_c2_rule(rng))
+      for _ in range(POPULATION_SIZE)
+  ]
 experimenter_view: |
-  The run_evolution_exp_220_fixed.py script implements a generational GA with:
+  The file `src/run_vc_search.py` implements an evolutionary search for v<c gliders on a 128x128 grid using a 3-bit L-tromino seed.
   
-  1. CHROMOSOME: 128-element numpy uint8 array where each element is the "actual_center" 
-     bit (bit 6) of the LUT value. Index s maps to neighbourhood state s.
-  
-  2. GA LOOP: 
-     - Gen 0: evaluate random population
-     - For each gen: select top ELITE_SIZE elites → fill rest by swap-mutating elites
-     - Evaluate new population → update champion
-     - swap_mutate: random bit swaps (num_swaps = round(0.01 * 128) = 1 swap/child)
-  
-  3. FITNESS (DisplacementConsistencyFitness):
-     - Simulates L-tromino seed for 500 steps
-     - Divides into 5 windows, computes per-window velocity vectors
-     - base_fitness = mean_velocity_mag / (1 + std_dev_velocity_mags)
-     - Final = base_fitness * leaky_bit_conservation_score
-     - max_bit_threshold=12, max_velocity_threshold=0.9
-  
-  4. WARM START APPROACH:
-     The iter_215 final_population.json can directly warm-start iter_220 by:
-     - Loading the 100 chromosomes from iter_215/final_population.json
-     - Converting each chromosome list to np.array([...], dtype=np.uint8)
-     - The chromosome format (128 bits) is identical between both experiments
-     - Replace generate_population() with a load_from_json() function
-     - Evaluate the loaded population first to establish Gen 0 fitness scores
-     - Optionally subsample top-k from iter_215 if desired
-     - The only difference is GENERATIONS=20 for iter_220 vs whatever iter_215 used
-notes: "Structure analysis complete. Warm start is straightforward: load iter_215 chromosomes and pass to existing GA loop."
-```
+  Key Findings:
+  1. **Fitness Functions**:
+     - `LeakySubLightFitness`: The default mode. Rewards displacement with a continuous conservation penalty.
+     - `SubLightFitness`: Available via the `--strict` flag. Enforces strict bit conservation (exactly 3 bits) at all times to eliminate breeder exploits.
+  2. **Execution**: It generates a random initial population of 100 C2-symmetric rules and runs 10 generations of evolutionary search (elite selection, two-point crossover, mutation).
+  3. **Arguments**: It supports `--output_file` to override the save path and `--strict` for the strict fitness function. It does **not** support `--initial_population_path` or any mechanism to load a seed population from disk.
+notes: "Analysis complete: 2 fitness modes identified; --initial_population_path not supported."
