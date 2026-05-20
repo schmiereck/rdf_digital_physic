@@ -1,0 +1,133 @@
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\diag_perfect_champion.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+diag_perfect_champion.py
+
+Loads archive/iter_221/results/champion_rule_perfect.json, runs a 500-step
+simulation with the same *perfect continuous unwrapped COM tracking* that
+was used during evolution (from run_evolution_exp_221_perfect.py), and then
+prints out every intermediate variable that DisplacementConsistencyFitness
+computes so we can see exactly why the fitness is 0.0006154.
+
+Output sections:
+  1. Rule summary (rule_dict, fitness params)
+  2. Full 501-step tra...]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/diag_perfect_champion.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: ========================================================================
+  DIAGNOSTIC: champion_rule_perfect.json
+  Why is fitness = 0.0006154?
+========================================================================
+
+Rule dict keys: [15, 22, 26, 39, 48, 60, 65, 68, 78, 92, 96, 113]
+Stored fitness: 0.0006154209
+Fitness params: {'num_windows': 5, 'max_bit_threshold': 12, 'max_velocity_threshold': 0.9, 'min_velocity': 0.05}
+
+===========================================...]
+
+The diagnostic script executed successfully (exit code 0, no stderr). Here's a complete analysis of the champion rule from `iter_221`:
+
+---
+
+## Champion Rule Summary
+
+- **File**: `archive/iter_221/results/champion_rule_perfect.json`
+- **Stored fitness**: `0.0006154209`
+- **Rule dict keys (active states)**: `[15, 22, 26, 39, 48, 60, 65, 68, 78, 92, 96, 113]`
+- **Fitness params**: `num_windows=5`, `max_bit_threshold=12`, `max_velocity_threshold=0.9`, `min_velocity=0.05`
+- **Seed cells**: `[[63,63], [64,63], [64,64]]` (3 cells)
+
+---
+
+## Key Finding: The "Champion" Self-Destructs
+
+The champion rule is **not a glider at all** — it self-destructs within 3 steps:
+
+| Step | Raw COM (r, c) | Unwrapped COM (r, c) | Bit Count |
+|------|----------------|---------------------|-----------|
+| 0    | (63.6667, 63.3333) | (63.6667, 63.3333) | 3 |
+| 1    | (64.0000, 63.5000) | (64.0000, 63.5000) | 2 |
+| 2    | (63.5000, 64.0000) | (63.5000, 64.0000) | 2 |
+| 3    | (0.0000, 0.0000)   | (0.0000, 0.0000)   | 0 |
+| 4-500| (0.0000, 0.0000)   | (0.0000, 0.0000)   | 0 |
+
+The pattern disappears completely by step 3 and never recovers.
+
+---
+
+## Why Fitness = 0.0006154 (The Formula)
+
+The `DisplacementConsistencyFitness` formula is:
+
+```
+fitness = [mean_velocity_magnitude / (1 + std_dev)] × total_conservation_score
+```
+
+**Step-by-step breakdown:**
+
+1. **Velocity component** (Section 3-4):
+   - Only Window 1 has non-zero velocity: `0.8980` (the initial collapse from (63,63) to the origin)
+   - Windows 2-5 are all zero (empty grid)
+   - `mean_velocity_magnitude = 0.1796` (average of [0.898, 0, 0, 0, 0])
+   - `std_dev = 0.3592` (high variance from the one big spike)
+   - `base_fitness = 0.1796 / (1 + 0.3592) = 0.1321`
+
+2. **Conservation score** (Section 5):
+   - Initial bits = 3, but after step 3 all bits are 0
+   - Steps 1-2: factor = 2/3 = 0.6667 each
+   - Steps 3-500: factor = 0/3 = 0.0 each
+   - `total_conservation_score = (3 + 0.6667 + 0.6667) / 501 = 0.004657`
+
+3. **Final fitness**:
+   ```
+   0.1321396585 × 0.0046573520 = 0.0006154209 ✓
+   ```
+
+---
+
+## Root Cause Analysis (Section 7)
+
+The fitness is essentially zero because:
+
+1. **🔴 Dominant penalty — Conservation score = 0.004657**: The pattern completely vanishes after 3 steps. This applies a massive multiplicative penalty, reducing what would otherwise be ~0.13 to ~0.0006.
+
+2. **🟡 Secondary penalty — Velocity swing**: Only window 1 has motion, making the std_dev high (0.3592), inflating the denominator from 1.0 to 1.36.
+
+3. **✅ No speed-of-light violation**: mean velocity (0.1796) is safely below the 0.9 threshold.
+
+4. **✅ No bit threshold violation**: max bit count never exceeds 12.
+
+**Conclusion**: This "champion" is a fragile 3-cell pattern that dies out after 3 steps. It survives as a champion only because the fitness function gives *some* non-zero score (the tiny conservation + velocity remnants), making it technically better than a fitness of exactly 0.0. It is **not** a functional glider.
+
+[NUDGE RESPONSE]
+status: ok
+artifacts: []
+metrics:
+  stored_fitness: 0.0006154209
+  mean_velocity_magnitude: 0.1796057411
+  std_dev: 0.3592114821
+  conservation_score: 0.0046573520
+  bit_count_drop_step: 3
+log_excerpt: |
+  final_fitness = base_fitness x total_conservation_score
+               = 0.1321396585 x 0.0046573520
+               = 0.0006154209
+  Stored fitness:  0.0006154209
+  Computed fitness: 0.0006154209
+  Match: True
+  [!] Conservation score (0.004657) below 1.0:
+      The bit count changes during simulation, applying a multiplicative
+      penalty of 0.004657.
+  [OK] Speed below light speed (0.179606 < 0.9)
+  Window velocity range: 0.00000000 - 0.89802871  (range=0.89802871)
+  [!] Large velocity swing between windows!
+  Total unwrapped displacement: (-63.6667, -63.3333)  = 89.8029 in 500 steps
+  Average speed (total disp / steps): 0.17960574
+experimenter_view: |
+  The iter_221 champion rule is not a functional glider. It begins as a 3-cell pattern that self-destructs completely by step 3, leaving an empty grid for the remaining 497 steps. The extremely low fitness (0.000615) is driven almost entirely by the bit-conservation penalty (score ~0.0047), not by velocity or speed-of-light violations. The velocity component is artificially inflated by a single initial collapse before extinction, resulting in high std_dev. This "champion" survives only because the fitness function yields a tiny positive value rather than an exact zero, highlighting a flaw in the reward landscape where transient patterns with early extinction can technically outrank non-functional but stable-0 fitness rules.
+notes: "Champion rule self-destructs in 3 steps; low fitness driven almost entirely by bit-count conservation penalty."
