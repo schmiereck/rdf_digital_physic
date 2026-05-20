@@ -1,1 +1,1 @@
-Print lines 300 to 370 of src/new_fitness.py to see how velocity and max_velocity_threshold are calculated.
+Write a python script src/print_math.py that opens src/new_fitness.py and prints the exact lines of DisplacementConsistencyFitness.__call__ from line 220 to line 350. Run this script.
