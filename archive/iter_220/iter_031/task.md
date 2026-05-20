@@ -1,0 +1,1 @@
+Read lines 110-160 of `src/new_fitness.py` to see the window loop in `DisplacementConsistencyFitness.__call__`. Check if the displacement `dx` and `dy` are divided by the window duration (number of steps) or if they are used as raw displacements.
