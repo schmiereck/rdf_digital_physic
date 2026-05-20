@@ -1,1 +1,1 @@
-List all files in archive/iter_220/results/ and look for champion_v2_rule.json, evolution_summary_v2.csv, or any files containing 'v2'. If they exist, read and print their details. If not, print any errors or check if they are in the project root or src/.
+Check if `archive/iter_220/results/trajectory_log_consistency.txt` exists. If it does, print the complete file or the most important sections (summary, classification, period, velocity, and step-by-step table). If there is an animated GIF, confirm its presence.
