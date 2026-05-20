@@ -1,2 +1,1 @@
-1. Execute 'python src/read_new_results.py' to see if the files are found.
-2. In the same run, search the entire workspace for any files modified/created in the last 60 minutes. Print their relative paths and sizes. This will help find any files written by the warm start evolution.
+Read and print `archive/iter_220/results/champion_vc_rule_consistency.json`. Check if the fitness value is different from `0.45686125288797624` (which was the v=c glider). If it is different, it means the sub-light search successfully found a new champion! Let us know what the new fitness, rule_dict size, and configuration are.
