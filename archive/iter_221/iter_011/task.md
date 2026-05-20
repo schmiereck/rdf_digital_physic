@@ -1,1 +1,1 @@
-Run the script archive/iter_221/results/characterize_champion_221.py. If there is any path or import issue, fix it. Print the stdout of the script. If the file 'archive/iter_221/results/trajectory_analysis.txt' is created, read and print its contents to stdout.
+Run a dry-run of src/run_evolution_exp_221.py (e.g. modify it temporarily or pass a flag, or create a short script dry_run.py) to make sure it loads final_population.json or warm_start_population.json from archive/iter_215/results/ and evaluates them with DisplacementConsistencyFitness without any error. Print stdout.
