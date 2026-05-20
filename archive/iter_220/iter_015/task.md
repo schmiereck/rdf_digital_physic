@@ -1,1 +1,1 @@
-Inspect the exact python implementation of `DisplacementConsistencyFitness` in `src/new_fitness.py` (specifically `evaluate` and `_compute_conservation_score`). Check if there is a parameter or an easy way to enable strict bit conservation (i.e., returning 0 fitness if the bit count is ever not equal to 3).
+Find and read the simulation update logic. Is it in src/engine.py or src/simulator.py or elsewhere? Output the code that updates the grid (the step function) so we can understand the update model and why the number of active cells changes.
