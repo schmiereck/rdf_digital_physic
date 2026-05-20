@@ -1,0 +1,1 @@
+Create a python script to load `archive/iter_220/results/champion_vc_rule_consistency.json` and run the `DisplacementConsistencyFitness` function on it. Print the windowed velocity vectors, the mean velocity magnitude, the std dev of velocity magnitudes, the conservation score, and the final fitness calculation. Explain why this stationary oscillator got a fitness of 0.1779.
