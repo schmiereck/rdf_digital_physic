@@ -1,0 +1,1 @@
+Write a small script `src/test_short_sim.py` that runs a 10-step simulation of the rule in `archive/iter_220/results/champion_vc_rule_consistency.json` using the L-tromino seed and prints the active cell count (bit count) at each step. Execute the script and print the output. This will confirm if the rule behaves exactly as expected.
