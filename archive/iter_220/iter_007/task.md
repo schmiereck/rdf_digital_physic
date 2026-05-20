@@ -1,11 +1,5 @@
-**Goal:** Validate the new `DisplacementConsistencyFitness` function against the two most critical test cases.
-
-**Task:**
-1.  Create a Python script named `src/validate_new_fitness.py`.
-2.  The script will test `DisplacementConsistencyFitness` on two key rules:
-    a.  **'Drifter' (Exploit):** Use the rule from `archive/iter_218/results/champion_rule.json`.
-    b.  **'Elastic v=1c Glider':** Use the rule from `archive/iter_193/results/champion_rule.json`.
-3.  For each rule, run a 500-step simulation on a 128x128 grid with the standard 3-bit L-tromino seed.
-4.  Calculate and print the fitness score for both rules using `DisplacementConsistencyFitness`.
-5.  The final output should be a clear, comparative report summarizing the two scores.
-6.  Success is defined as the script running to completion and reporting a significantly higher score for the 'Elastic v=1c Glider' than for the 'Drifter'.
+1. Run 'python src/run_evolution_exp_220.py' to perform the evolutionary search for a sub-light speed (v<c) glider using the validated DisplacementConsistencyFitness function.
+2. Confirm that the run completes successfully and writes outputs (champion_rule.json, evolution_summary.csv, and any other files) to 'archive/iter_220/results/'.
+3. Analyze the champion rule: What is its fitness? What is its average velocity (is it indeed v<c, e.g. < 0.9c)? Does it conserve bits perfectly? Is it a true glider rather than an exploit (puffer, drifter, explosive bloomer)?
+4. If a champion glider is found, make sure a GIF is rendered showing its motion and saved in 'archive/iter_220/results/'.
+5. Provide a summary of the metrics and findings.
