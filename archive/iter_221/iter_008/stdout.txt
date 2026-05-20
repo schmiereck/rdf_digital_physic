@@ -1,152 +1,116 @@
-I'll first check if the file exists and then create a simple Python script to read and print the requested information.
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220_fixed.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+ ...]
+
+Now I'll create a Python script that extracts and prints the `swap_mutate` and `generate_population` functions, then run it:
 
 
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\print_functions.py', 'content': '#!/usr/bin/env python3\n"""\nPrint swap_mutate and generate_population functions from run_evolution_exp_220_fixed.py.\n"""\n\nwith open("src/run_evolution_exp_220_fixed.py", "r") as f:\n    lines = f.readlines()\n\ndef print_function(func_name, lines, indent=""):\n    found = False\n    start = None\n    indent_level = None\n    for i, line in enumerate(lines):\n        stripped = line.strip()\n        if stripped.startswith(f"def {func_name}("):\n            found = True\n            start = i\n            indent_level = len(line) - len(line.lstrip())\n            break\n\n    if not found:\n        print(f"Function \'{func_name}\' not found!")\n        return\n\n    end = start + 1\n    while end < len(lines):\n        line = lines[end]\n        if line.strip() == "":\n            end += 1\n            continue\n        current_indent = len(line) - len(line.lstrip())\n        if current_indent <= indent_level and line.strip() != "":\n            break\n        end += 1\n\n    print(f"{indent}--- {func_name} ---")\n    print(f"{indent}{\'=\' * 60}")\n    for j in range(start, end):\n        print(f"{indent}{lines[j].rstrip()}")\n    print(f"{indent}{\'=\' * 60}\\n")\n\n\nprint_function("swap_mutate", lines)\nprint_function("generate_population", lines)\n'})]
 
-[Tool Result: [DIR] __pycache__
-      analyze_glider_200.1.py
-      analyze_glider_220.py
-      analyze_long_run_dynamics.py
-      analyze_median_elite_rule.py
-      analyze_top_elite_rule.py
-      analyze_top_stabilizing_rule.py
-      ash_pattern.json
-      asymmetric_collision.py
-      breed_next_generation.py
-      characterize_5bit_glider.py
-      characterize_champion_174.py
-      characterize_glider_200.py
-      characterize_iter_197_2_champion.py
-      characterize_offset_collisions.py
-      characteri...]
-
-The file exists. Now I'll create a simple Python script to find the `__init__` method of `DisplacementConsistencyFitness` and print the requested lines.
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\src\print_functions.py]
 
 
-
-[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\read_init.py', 'content': '#!/usr/bin/env python\n"""\nSimple script to find and print the __init__ signature and first 30 lines\nof the DisplacementConsistencyFitness class from src/new_fitness.py.\nNo complex libraries used.\n"""\n\nfilepath = "src/new_fitness.py"\nclass_name = "class DisplacementConsistencyFitness"\ninit_name = "__init__"\n\nlines = open(filepath, "r").readlines()\n\n# Find the line number where the class is defined\nclass_line = None\nfor i, line in enumerate(lines):\n    if class_name in line:\n        class_line = i\n        break\n\nif class_line is None:\n    print(f"ERROR: Could not find \'{class_name}\' in {filepath}")\n    exit(1)\n\nprint(f"Found \'{class_name}\' at line {class_line + 1}")\n\n# Now find the __init__ method inside that class\n# Look for lines that define __init__ (indented with def) inside the class\ninit_line = None\nfor i in range(class_line, len(lines)):\n    stripped = lines[i].lstrip()\n    if stripped.startswith(init_name + "(") and lines[i].startswith("    "):\n        init_line = i\n        break\n\nif init_line is None:\n    print(f"ERROR: Could not find \'__init__\' inside {class_name}")\n    exit(1)\n\nprint(f"Found \'__init__\' at line {init_line + 1}")\n\n# Print the __init__ signature (from the def line, possibly spanning multiple lines)\n# We\'ll print from the def __init__ line until we hit a new def or dedented line\nprint("\\n--- __init__ signature ---")\nin_sig = True\nsig_lines = []\nfor i in range(init_line, len(lines)):\n    line = lines[i]\n    sig_lines.append(line)\n    # If the line contains \')\' and we\'ve started reading, the signature might be complete\n    # But we need to handle multi-line signatures\n    stripped = line.rstrip()\n    if in_sig and not line.strip().startswith("#") and ")" in line:\n        # Check if the closing parenthesis of the signature is on this line\n        # Count open and close parens to handle multi-line signatures\n        open_parens = stripped.count("(")\n        close_parens = stripped.count(")")\n        if open_parens <= close_parens:\n            in_sig = False\n            break\n\nprint("".join(sig_lines))\n\n# Print the first 30 lines of the class (from the class definition line)\nprint("\\n--- First 30 lines of DisplacementConsistencyFitness ---")\ncount = 0\nfor i in range(class_line, min(class_line + 30, len(lines))):\n    print(f"{i + 1:5d}: {lines[i]}", end="")\n    count += 1\n\nprint(f"\\n(Showing {count} lines total)")\n'})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\read_init.py]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python read_init.py'})]
-
-[Tool Result: exit_code: 1
-stdout: Found 'class DisplacementConsistencyFitness' at line 88
-ERROR: Could not find '__init__' inside class DisplacementConsistencyFitness
-
-stderr: ]
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py', 'start_line': 88, 'end_line': 130})]
-
-[Tool Result: --- lines 88 to 130 of 461 ---
-class DisplacementConsistencyFitness:
-    """Fitness function that rewards consistent, directional motion.
-
-    This fitness function defeats the *drifter* exploit by analysing the
-    consistency of velocity across multiple time windows of a simulation.
-
-    Design rationale
-    ----------------
-    The drifter exploit occurs when a cellular-automaton object exhibits
-    random-walk or oscillating behaviour with occasional long displacements.
-    Such objects may ...]
-
-The class has a long docstring. Let me search for the `__init__` method directly.
-
-
-
-[Tool Call: grep_search({'include_pattern': 'src/new_fitness.py', 'pattern': 'def __init__'})]
-
-[Tool Result: src\new_fitness.py:157: def __init__(]
-
-The `__init__` is at line 157. Now let me create a simpler script that reads the raw lines and prints them correctly:
-
-
-
-[Tool Call: write_file({'content': '#!/usr/bin/env python\n"""\nSimple script to find and print the __init__ signature and first 30 lines\nof the DisplacementConsistencyFitness class from src/new_fitness.py.\nNo complex libraries used.\n"""\n\nfilepath = "src/new_fitness.py"\n\nlines = open(filepath, "r").readlines()\n\n# 1. Find class definition line\nclass_start = None\nfor i, line in enumerate(lines):\n    if "class DisplacementConsistencyFitness" in line:\n        class_start = i\n        break\n\nprint("=" * 70)\nprint("FIRST 30 LINES OF DisplacementConsistencyFitness CLASS:")\nprint("=" * 70)\n\nif class_start is not None:\n    for i in range(class_start, min(class_start + 30, len(lines))):\n        print(f"{i+1:5d}: {lines[i]}", end="")\n\n# 2. Find __init__ definition line\ninit_start = None\nfor i, line in enumerate(lines):\n    if "def __init__" in line:\n        init_start = i\n        break\n\nprint()\nprint("=" * 70)\nprint("__init__ SIGNATURE:")\nprint("=" * 70)\n\nif init_start is not None:\n    # The __init__ signature may span multiple lines until the closing )\n    sig_lines = []\n    paren_count = 0\n    started = False\n    for i in range(init_start, len(lines)):\n        line = lines[i]\n        sig_lines.append(line)\n        # Track parentheses to detect end of multi-line signature\n        for ch in line:\n            if ch == \'(\':\n                paren_count += 1\n                started = True\n            elif ch == \')\':\n                paren_count -= 1\n        if started and paren_count == 0:\n            break\n    print("".join(sig_lines))\n', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\read_init.py'})]
-
-[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\read_init.py]
-
-
-[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python read_init.py'})]
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/print_functions.py'})]
 
 [Tool Result: exit_code: 0
-stdout: ======================================================================
-FIRST 30 LINES OF DisplacementConsistencyFitness CLASS:
-======================================================================
-   88: class DisplacementConsistencyFitness:
-   89:     """Fitness function that rewards consistent, directional motion.
-   90: 
-   91:     This fitness function defeats the *drifter* exploit by analysing the
-   92:     consistency of velocity across multiple time windows o...]
+stdout: --- swap_mutate ---
+============================================================
+def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:
+    out = chrom.copy()
+    n   = len(out)
+    for _ in range(num_swaps):
+        i, j     = rng.sample(range(n), 2)
+        out[i], out[j] = out[j], out[i]
+    return out
+
+
+============================================================
+
+--- generate_population ---
+===================================...]
 
-The script ran successfully. Here are the results:
+The script has been created and executed successfully. Here are the two functions extracted from `src/run_evolution_exp_220_fixed.py`:
 
----
+### `swap_mutate`
 
-**`__init__` signature:**
 ```python
-def __init__(
-    self,
-    num_windows: int = 5,
-    bits_per_cell: int = 1,
-    strict_conservation: bool = False,
-    max_bit_threshold: int | None = None,
-    max_velocity_threshold: float | None = None,
-) -> None:
+def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:
+    out = chrom.copy()
+    n   = len(out)
+    for _ in range(num_swaps):
+        i, j     = rng.sample(range(n), 2)
+        out[i], out[j] = out[j], out[i]
+    return out
 ```
 
-**First 30 lines of `DisplacementConsistencyFitness`** (lines 88–117): The class starts with a detailed docstring explaining that the fitness function rewards consistent directional motion and defeats the "drifter" exploit. It covers design rationale, scoring pipeline, and the core formula `base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)`.
+This function performs a swap-based mutation on a chromosome: it makes a copy, then randomly picks two distinct indices and swaps their values, repeating `num_swaps` times.
 
-Let me clean up the temporary script:
+### `generate_population`
 
+```python
+def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:
+    pop: list[np.ndarray] = []
+    while len(pop) < size:
+        rule = generate_random_c2_rule(rng)
+        pop.append(rule_dict_to_chromosome(rule))
+    return pop[:size]
+```
 
-
-[Tool Call: bash({'command': 'del C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\read_init.py'})]
-
-[Tool Result: exit_code: 0
-stdout: 
-stderr: ]
-
-Done. The script successfully read `src/new_fitness.py` using only basic Python file operations (no imports needed):
-
-- **`__init__` signature** (line 157): Takes `num_windows`, `bits_per_cell`, `strict_conservation`, `max_bit_threshold`, and `max_velocity_threshold` parameters with type hints and defaults.
-
-- **First 30 lines** (lines 88–117): The class is mostly docstring, explaining the "drifter exploit" problem and the scoring pipeline that uses windowed velocity consistency as a fitness metric.
+This function generates an initial population of chromosomes: it repeatedly generates random C2 cellular automaton rules, converts them to chromosomes, and collects them until the desired population `size` is reached.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
-artifacts: []
+artifacts:
+  - src/print_functions.py
 metrics:
-  class_line: 88
-  init_line: 157
+  functions_extracted: 2
+  script_exit_code: 0
 log_excerpt: |
-  Found 'class DisplacementConsistencyFitness' at line 88
-  Found '__init__' at line 157
+  --- swap_mutate ---
+  ============================================================
+  def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:
+      out = chrom.copy()
+      n   = len(out)
+      for _ in range(num_swaps):
+          i, j     = rng.sample(range(n), 2)
+          out[i], out[j] = out[j], out[i]
+      return out
+  ============================================================
   
-  __init__ signature:
-      def __init__(
-          self,
-          num_windows: int = 5,
-          bits_per_cell: int = 1,
-          strict_conservation: bool = False,
-          max_bit_threshold: int | None = None,
-          max_velocity_threshold: float | None = None,
-      ) -> None:
-      
-  First 30 lines of the class consist of a detailed docstring explaining:
-  - The fitness function rewards consistent directional motion
-  - It defeats the "drifter exploit" by analyzing velocity consistency
-  - Uses windowed velocity analysis with formula:
-    base_fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
+  --- generate_population ---
+  ============================================================
+  def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:
+      pop: list[np.ndarray] = []
+      while len(pop) < size:
+          rule = generate_random_c2_rule(rng)
+          pop.append(rule_dict_to_chromosome(rule))
+      return pop[:size]
+  ============================================================
 experimenter_view: |
-  The DisplacementConsistencyFitness class uses a multi-window velocity analysis approach to
-  reward consistent glider-like motion while penalizing drifters and oscillators. The __init__
-  accepts configurable window count (default 5), bit conservation settings, and optional
-  velocity/bit thresholds for the fitness scoring pipeline.
-notes: "Temp script read_init.py created and deleted; no artifacts remain."
+  Successfully extracted the swap_mutate and generate_population functions from
+  run_evolution_exp_220_fixed.py. The swap_mutate function performs element-wise
+  swaps on a chromosome using a random number generator, while generate_population
+  creates an initial population of random C2 rule chromosomes. Both functions are
+  core components of the evolutionary search algorithm for discovering cellular
+  automaton rules that produce stable gliders.
+notes: "Successfully extracted and printed swap_mutate and generate_population functions."
 ```

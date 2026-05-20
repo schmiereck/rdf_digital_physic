@@ -1,26 +1,30 @@
-artifacts: []
-experimenter_view: 'The DisplacementConsistencyFitness class uses a multi-window velocity
-  analysis approach to
+artifacts:
+- src/print_functions.py
+experimenter_view: 'Successfully extracted the swap_mutate and generate_population
+  functions from
 
-  reward consistent glider-like motion while penalizing drifters and oscillators.
-  The __init__
+  run_evolution_exp_220_fixed.py. The swap_mutate function performs element-wise
 
-  accepts configurable window count (default 5), bit conservation settings, and optional
+  swaps on a chromosome using a random number generator, while generate_population
 
-  velocity/bit thresholds for the fitness scoring pipeline.
+  creates an initial population of random C2 rule chromosomes. Both functions are
+
+  core components of the evolutionary search algorithm for discovering cellular
+
+  automaton rules that produce stable gliders.
 
   '
-log_excerpt: "Found 'class DisplacementConsistencyFitness' at line 88\nFound '__init__'\
-  \ at line 157\n\n__init__ signature:\n    def __init__(\n        self,\n       \
-  \ num_windows: int = 5,\n        bits_per_cell: int = 1,\n        strict_conservation:\
-  \ bool = False,\n        max_bit_threshold: int | None = None,\n        max_velocity_threshold:\
-  \ float | None = None,\n    ) -> None:\n    \nFirst 30 lines of the class consist\
-  \ of a detailed docstring explaining:\n- The fitness function rewards consistent\
-  \ directional motion\n- It defeats the \"drifter exploit\" by analyzing velocity\
-  \ consistency\n- Uses windowed velocity analysis with formula:\n  base_fitness =\
-  \ mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)\n"
+log_excerpt: "--- swap_mutate ---\n============================================================\n\
+  def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:\n\
+  \    out = chrom.copy()\n    n   = len(out)\n    for _ in range(num_swaps):\n  \
+  \      i, j     = rng.sample(range(n), 2)\n        out[i], out[j] = out[j], out[i]\n\
+  \    return out\n============================================================\n\n\
+  --- generate_population ---\n============================================================\n\
+  def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:\n  \
+  \  pop: list[np.ndarray] = []\n    while len(pop) < size:\n        rule = generate_random_c2_rule(rng)\n\
+  \        pop.append(rule_dict_to_chromosome(rule))\n    return pop[:size]\n============================================================\n"
 metrics:
-  class_line: 88
-  init_line: 157
-notes: Temp script read_init.py created and deleted; no artifacts remain.
+  functions_extracted: 2
+  script_exit_code: 0
+notes: Successfully extracted and printed swap_mutate and generate_population functions.
 status: ok
