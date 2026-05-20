@@ -1,29 +1,26 @@
 artifacts: []
-experimenter_view: 'The deconstruction test revealed that the champion rule is stored
-  in a compressed form.
-
-  The original rule_dict contains only 24 entries, but the 14 extracted generator
-  pairs
-
-  correctly produce a full C2-symmetric orbit of 56 entries (14 pairs × 4 symmetric
-
-  mappings each). The rebuilt rule is mathematically correct as a C2-symmetric rule,
-
-  but differs from the original because the champion file was likely stored with
-
-  only unique/orbit-representative entries rather than the complete expanded set.
-
-  The generator pairs themselves are valid and correctly extracted.
+experimenter_view: 'The breeder was able to grow to 129 active cells because DisplacementConsistencyFitness.max_bit_threshold
+  defaults to None when instantiated. The guard clause `if self.max_bit_threshold
+  is not None:` effectively disables all hard bit-count enforcement. The only mechanism
+  penalizing cell count changes is the _compute_conservation_score() method, which
+  applies a continuous fractional penalty (min/max ratio) rather than an outright
+  rejection. To fix this, the breeder''s initialization needs to pass an explicit
+  max_bit_threshold value (e.g., max_bit_threshold=100) to the DisplacementConsistencyFitness
+  constructor.
 
   '
-log_excerpt: "Extracted 14 generator pairs:\n  (70, 6)\n  (20, 84)\n  ...\n  (83,\
-  \ 19)\n\nRebuilt rule_dict (56 entries):\n  ...\n\nVerification: FAIL — rule_dicts\
-  \ are DIFFERENT.\n"
-metrics:
-  extracted_generator_pairs: 14
-  original_rule_entries: 24
-  rebuilt_rule_entries: 56
-  test_result: FAIL
-notes: Deconstruction extracts 14 valid generator pairs; rebuild produces full 56-entry
-  C2 orbit — original rule stored in compressed form.
+log_excerpt: '[Analysis of src/new_fitness.py]
+
+  - max_bit_threshold defaults to None in __init__
+
+  - Check in __call__: if self.max_bit_threshold is not None:
+
+  - Breeder bypassed because threshold was never set
+
+  - Only penalty is leaky conservation score (fractional, not hard-fail)
+
+  '
+metrics: {}
+notes: 'Root cause identified: default None bypasses bit threshold check; fix requires
+  passing explicit value to constructor'
 status: ok
