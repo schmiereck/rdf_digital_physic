@@ -1,1 +1,1 @@
-List all scripts in src/ matching *evolution* or *search* or run_iter_*.py. Output their names and a brief description of how they handle the initial population (e.g., from random or from a file).
+List files in the root directory. If current_state.md exists, print its contents.
