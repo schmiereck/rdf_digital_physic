@@ -1,0 +1,1 @@
+Read and print src/run_evolution_exp_221_warm.py. Keep it concise, print the part where DisplacementConsistencyFitness is instantiated and how the GA loop handles fitness. Do not write yaml block or any other files, just print the python code to stdout.
