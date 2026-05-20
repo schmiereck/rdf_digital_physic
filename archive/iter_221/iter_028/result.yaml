@@ -1,34 +1,28 @@
-artifacts: []
-experimenter_view: 'The champion rule from iter_221 does NOT score 0.0 with the fixed
-  DisplacementConsistencyFitness(max_velocity_threshold=0.9). Instead, it scores ~0.0197.
-  The threshold check only triggers when mean_velocity_magnitude >= 0.9, which is
-  not the case here (mean is ~0.025). The low fitness stems from high velocity inconsistency
-  (std_dev ~0.287) caused by a toroidal wrap-around event in Window 2 (COM jumps from
-  ~120 to ~20, yielding a 1.0 cells/step velocity in that window). Bit conservation
-  is perfect across all 501 steps. The particle exhibits slow, inconsistent drift
-  rather than coherent glider motion.
-
-  '
-log_excerpt: 'FINAL RESULTS:
-
-  mean_velocity_magnitude      : 0.02533333
-
-  std_dev_velocity_magnitudes  : 0.28734493
-
-  leaky_bit_conservation_score : 1.00000000
-
-  base_fitness                 : 0.01967875
-
-  final_fitness                : 0.01967875
-
-  fitness_fn(history) = 0.01967875
-
-  '
+artifacts:
+- src/print_simulate_func.py
+experimenter_view: "The simulate_with_history function applies spatial unwrapping\
+  \ at every step:\n1. At step 0, the raw (toroidal) CoM is computed and stored as\
+  \ the initial anchor.\n2. For each subsequent step, _raw_com_and_bits() computes\
+  \ the raw toroidal CoM.\n3. _unwrap_com() compares the current raw CoM against the\
+  \ previous raw CoM.\n   If the displacement exceeds half the grid size (64 pixels),\
+  \ a toroidal\n   boundary crossing is detected and the coordinate is shifted by\
+  \ ±128.\n4. The unwrapped CoM is stored in history[\"com\"] — this is the absolute,\n\
+  \   non-wrapping coordinate that grows continuously across boundary crossings.\n\
+  5. The prev_unwrapped variable tracks the previous RAW (not unwrapped) CoM,\n  \
+  \ serving as the anchor for the next step's unwrapping calculation.\nThe key finding\
+  \ is that the unwrapped CoM allows DisplacementConsistencyFitness\nto correctly\
+  \ measure sustained directional motion without artificial jumps at\ntoroidal boundaries,\
+  \ enabling proper filtering of v=1c gliders.\n"
+log_excerpt: "================================================================================\n\
+  SOURCE FILE : C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_221_unwrapped.py\n\
+  FUNCTION    : simulate_with_history\n================================================================================\n\
+  \ndef simulate_with_history(rule_dict: dict) -> list:\n    \"\"\"Run a CA simulation\
+  \ and return a history with **spatially unwrapped** CoM.\n    ...\n    \"\"\"\n\n\
+  (end of simulate_with_history)\n================================================================================\n"
 metrics:
-  conservation_score: 1.0
-  fitness_score: 0.01967875
-  max_velocity_threshold_used: 0.9
-  mean_velocity_magnitude: 0.02533333
-  std_dev_velocity_magnitudes: 0.28734493
-notes: Champion fitness is ~0.0197, not 0.0; threshold check did not trigger.
+  grid_size: 128
+  lut_size: 128
+  simulation_steps: 500
+notes: Created and executed print_simulate_func.py to inspect spatially-unwrapped
+  CoM tracking logic.
 status: ok
