@@ -13,6 +13,7 @@ Outputs:
 
 from __future__ import annotations
 
+import csv
 import json
 import os
 import random
@@ -20,7 +21,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 # ── Ensure src is on path ────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -364,20 +364,31 @@ def main():
     print(f"\nSaved champion rule -> {champion_path}")
 
     # ── Save fitness log CSV ───────────────────────────────────────────
-    log_df = pd.DataFrame(result["gen_log"])
-    # Select only the required columns
-    log_df = log_df[["generation", "mean_fitness", "max_fitness", "min_fitness", "std_fitness"]]
     log_path = OUTPUT_DIR / "fitness_log.csv"
-    log_df.to_csv(log_path, index=False)
+    headers = ["generation", "mean_fitness", "max_fitness", "min_fitness", "std_fitness"]
+    with open(log_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        writer.writeheader()
+        for row in result["gen_log"]:
+            filtered_row = {k: row[k] for k in headers}
+            writer.writerow(filtered_row)
     print(f"Saved fitness log   -> {log_path}")
 
     # ── Print fitness log to stdout ────────────────────────────────────
     print("\n=== Fitness Log ===")
-    print(log_df.to_string(index=False))
+    print(f"{'generation':<12} {'mean_fitness':<12} {'max_fitness':<12} {'min_fitness':<12} {'std_fitness':<12}")
+    for row in result["gen_log"]:
+        print(f"{row['generation']:<12d} {row['mean_fitness']:<12.6f} {row['max_fitness']:<12.6f} {row['min_fitness']:<12.6f} {row['std_fitness']:<12.6f}")
 
     # ── Report on success criterion ────────────────────────────────────
-    mean_gen1 = log_df.loc[log_df["generation"] == 0, "mean_fitness"].values[0]
-    mean_gen5 = log_df.loc[log_df["generation"] == GENERATIONS, "mean_fitness"].values[0]
+    mean_gen1 = None
+    mean_gen5 = None
+    for row in result["gen_log"]:
+        if row["generation"] == 0:
+            mean_gen1 = row["mean_fitness"]
+        if row["generation"] == GENERATIONS:
+            mean_gen5 = row["mean_fitness"]
+
     criterion_met = mean_gen5 >= 2 * mean_gen1
 
     print(f"\n=== Success Criterion Check ===")

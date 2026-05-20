@@ -1,1 +1,1 @@
-Search for and print functions related to C2 symmetry in src/evolution.py, such as those that find symmetric partners or enforce C2-symmetry. Explain how we can write a C2-preserving mutation function.
+Read and print the contents of `src/fitness_functions.py` and `src/validate_fitness.py`. Print them clearly so we can inspect them and identify any imports or logic that can be simplified or corrected to eliminate pandas and breeder exploits.

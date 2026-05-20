@@ -23,6 +23,8 @@ in iter_203.  Two complementary mechanisms:
      match the seed's bit count (3 for the L-tromino), fitness is forced
      to 0.0.  This rejects annihilating/explosive rules that change particle
      mass.
+     Optional `strict_bit_conservation` enforces that bit count must match
+     the expected count at *all steps* of the simulation.
 
     fitness = net_displacement / (1 + final_bb_area)
 
@@ -34,6 +36,8 @@ proportionally to speed and so converges to the lattice speed of light.
 ``SubLightFitness`` introduces a hard velocity gate, an internal-period gate,
 and a period-bonus factor so that sub-light periodic gliders out-score the
 trivial period-1 v=1c glider.
+Optional `strict_bit_conservation` enforces that bit count must match the
+expected count at *all steps* of the simulation.
 
     fitness = displacement * (1 - 1 / period)
 
@@ -51,6 +55,9 @@ particle : list of (int, int)
 expected_bits : int
     Number of bits the seed must have for conservation to pass.
     Defaults to 3 (L-tromino).
+strict_bit_conservation : bool
+    If True, the bit count must be exactly equal to `expected_bits` at every
+    single step of the simulation. Defaults to False.
 """
 
 from __future__ import annotations
@@ -193,6 +200,9 @@ class NetDisplacementFitness:
     expected_bits : int
         Number of bits the seed must have for conservation to pass.
         Defaults to 3 (L-tromino).
+    strict_bit_conservation : bool
+        If True, the bit count must be exactly equal to `expected_bits` at every
+        single step of the simulation. Defaults to False.
     """
 
     name = "NetDisplacementFitness"
@@ -203,11 +213,13 @@ class NetDisplacementFitness:
         simulation_steps: int              = 250,
         particle:         list | None      = None,
         expected_bits:    int              = 3,
+        strict_bit_conservation: bool      = False,
     ) -> None:
         self.grid_size      = int(grid_size)
         self.simulation_steps = int(simulation_steps)
         self.particle       = particle if particle is not None else LTROMINO
         self.expected_bits  = int(expected_bits)
+        self.strict_bit_conservation = bool(strict_bit_conservation)
 
     # ------------------------------------------------------------------
 
@@ -234,8 +246,18 @@ class NetDisplacementFitness:
         initial_bits = int(grid.sum())
 
         # Simulate for the full duration
-        for _ in range(self.simulation_steps):
+        for step in range(1, self.simulation_steps + 1):
             grid = step_grid(grid, lut)
+            if self.strict_bit_conservation:
+                if int(grid.sum()) != self.expected_bits:
+                    return {
+                        "fitness":          0.0,
+                        "reason":           "bit_conservation_failed",
+                        "initial_bits":     initial_bits,
+                        "final_bits":       int(grid.sum()),
+                        "expected_bits":    self.expected_bits,
+                        "step_failed":      step,
+                    }
 
         final_com    = center_of_mass(grid)
         final_bits   = int(grid.sum())
@@ -386,6 +408,9 @@ class SubLightFitness:
     expected_bits : int
         Bit count required for both the initial and final grid for the
         bit-conservation gate (default 3 for the L-tromino).
+    strict_bit_conservation : bool
+        If True, the bit count must be exactly equal to `expected_bits` at every
+        single step of the simulation. Defaults to False.
     """
 
     name = "SubLightFitness"
@@ -402,6 +427,7 @@ class SubLightFitness:
         v_threshold:         float        = 0.9,
         particle:            list | None  = None,
         expected_bits:       int          = 3,
+        strict_bit_conservation: bool     = False,
     ) -> None:
         self.grid_size           = int(grid_size)
         self.simulation_steps    = int(simulation_steps)
@@ -413,6 +439,7 @@ class SubLightFitness:
         self.v_threshold         = float(v_threshold)
         self.particle            = particle if particle is not None else LTROMINO
         self.expected_bits       = int(expected_bits)
+        self.strict_bit_conservation = bool(strict_bit_conservation)
 
         if self.window_start < 0 or self.window_end > self.simulation_steps:
             raise ValueError(
@@ -489,6 +516,19 @@ class SubLightFitness:
 
         for step in range(1, self.simulation_steps + 1):
             grid = step_grid(grid, lut)
+
+            # ── Strict bit-conservation check at every step ───────────────
+            if self.strict_bit_conservation:
+                if int(grid.sum()) != self.expected_bits:
+                    return {
+                        "fitness":       0.0,
+                        "reason":        "bit_conservation_failed",
+                        "initial_bits":  initial_bits,
+                        "final_bits":    int(grid.sum()),
+                        "expected_bits": self.expected_bits,
+                        "step_failed":   step,
+                    }
+
             raw = np.array(_toroidal_center_of_mass(grid, self.grid_size))
             delta = raw - prev_raw
             # Minimum-image wrap correction: any single-step shift larger

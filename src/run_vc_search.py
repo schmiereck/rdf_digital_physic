@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness.
+run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness or SubLightFitness.
 
 Setup
 -----
-* Fitness     : LeakySubLightFitness (leaky bit-conservation gate;
+* Fitness     : LeakySubLightFitness (default; leaky bit-conservation gate;
                 rewards displacement with a continuous conservation penalty)
+                OR SubLightFitness (with strict_bit_conservation=True;
+                enforces that bit count remains exactly equal to the seed bit
+                count at all times to eliminate breeder exploits)
 * Population  : 100 random C2-symmetric rules
 * Generations : 10
 * Seed        : 3-bit L-tromino [(0,0), (0,1), (1,1)] centred on 128x128 grid
-* Simulation  : 200 steps, checkpoints at [50, 100, 150]
+* Simulation  : 200 steps
 
 Outputs (archive/iter_218/results/):
   champion_vc_rule.json    : champion rule + metrics
@@ -35,7 +38,7 @@ from evolution import (
     rule_dict_to_lut,
     step_grid,
 )
-# from fitness_functions import NetDisplacementFitness, _make_particle_grid
+from fitness_functions import SubLightFitness
 from leaky_fitness import LeakySubLightFitness
 
 
@@ -107,29 +110,18 @@ def generate_c2_rule(rng: random.Random, density: int = DENSITY, max_attempts: i
 
 # ── Fitness evaluation ─────────────────────────────────────────────────────────
 
-# Old fitness function (kept for reference — commented out):
-# _FITNESS = NetDisplacementFitness(
-#     grid_size=GRID_SIZE,
-#     simulation_steps=SIMULATION_STEPS,
-#     particle=SEED_PARTICLE,
-# )
-
-# NEW: LeakySubLightFitness with leaky bit-conservation gate
-_FITNESS = LeakySubLightFitness(
-    checkpoints=[50, 100, 150],
-    simulation_steps=SIMULATION_STEPS,
-    bits_per_cell=1,
-    velocity_threshold=0.9,
-)
-
-
-def evaluate_population(population: list) -> tuple[list[float], list[dict]]:
+def evaluate_population(population: list, fitness_fn) -> tuple[list[float], list[dict]]:
     fitnesses: list[float] = []
     metrics_l: list[dict]  = []
     for chrom in population:
         rule_dict = chromosome_to_rule_dict(chrom)
-        rule      = _RuleDict(rule_dict)           # wrap for Simulator
-        fitness, metrics = _FITNESS(rule, SEED_PARTICLE)
+        if hasattr(fitness_fn, "strict_bit_conservation"):
+            # SubLightFitness (uses single dict argument)
+            fitness, metrics = fitness_fn(rule_dict)
+        else:
+            # LeakySubLightFitness (uses wrapped rule and seed_bits)
+            rule = _RuleDict(rule_dict)
+            fitness, metrics = fitness_fn(rule, SEED_PARTICLE)
         fitnesses.append(float(fitness))
         metrics_l.append(metrics)
     return fitnesses, metrics_l
@@ -184,7 +176,7 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
             frames.append((step, grid.copy()))
 
     fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
-    ax.set_title("iter_218 LeakySubLightFitness champion (v<c search)")
+    ax.set_title("v<c glider search champion")
     ax.set_xlabel("col")
     ax.set_ylabel("row")
     img = ax.imshow(
@@ -212,8 +204,8 @@ def render_champion_gif(rule_dict: dict, gif_path: Path, steps: int = SIMULATION
 
 # ── Evolutionary search ────────────────────────────────────────────────────────
 
-def run_search() -> dict:
-    print("=== iter_218 v<c Glider Search (LeakySubLightFitness) ===")
+def run_search(strict: bool = False) -> dict:
+    print("=== iter_218 v<c Glider Search ===")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(RNG_SEED)
 
@@ -223,7 +215,29 @@ def run_search() -> dict:
     print(f"  Grid size       : {GRID_SIZE}x{GRID_SIZE}")
     print(f"  Sim steps       : {SIMULATION_STEPS}")
     print(f"  Seed particle   : {SEED_PARTICLE}")
-    print(f"  Fitness         : LeakySubLightFitness\n")
+    if strict:
+        print(f"  Fitness         : SubLightFitness (STRICT conservation)\n")
+        fitness_fn = SubLightFitness(
+            grid_size=GRID_SIZE,
+            simulation_steps=SIMULATION_STEPS,
+            window_start=100,
+            window_end=200,
+            period_window_start=100,
+            period_window_end=180,
+            max_period=30,
+            v_threshold=0.9,
+            particle=SEED_PARTICLE,
+            expected_bits=3,
+            strict_bit_conservation=True,
+        )
+    else:
+        print(f"  Fitness         : LeakySubLightFitness\n")
+        fitness_fn = LeakySubLightFitness(
+            checkpoints=[50, 100, 150],
+            simulation_steps=SIMULATION_STEPS,
+            bits_per_cell=1,
+            velocity_threshold=0.9,
+        )
 
     # Initial random population
     population = [
@@ -231,7 +245,7 @@ def run_search() -> dict:
         for _ in range(POPULATION_SIZE)
     ]
 
-    fitnesses, metrics_l = evaluate_population(population)
+    fitnesses, metrics_l = evaluate_population(population, fitness_fn)
     best_idx        = int(np.argmax(fitnesses))
     best_fitness    = float(fitnesses[best_idx])
     best_chrom      = population[best_idx].copy()
@@ -264,7 +278,7 @@ def run_search() -> dict:
                 new_pop.append(c2)
 
         population = new_pop
-        fitnesses, metrics_l = evaluate_population(population)
+        fitnesses, metrics_l = evaluate_population(population, fitness_fn)
 
         gen_best_idx = int(np.argmax(fitnesses))
         gen_best     = float(fitnesses[gen_best_idx])
@@ -294,6 +308,7 @@ def run_search() -> dict:
         "best_metrics":    best_metrics,
         "best_generation": best_generation,
         "gen_log":         gen_log,
+        "fitness_function_name": fitness_fn.name,
     }
 
 
@@ -309,7 +324,7 @@ def write_results(result: dict) -> list[str]:
     m         = result["best_metrics"] or {}
     payload = {
         "iteration":          "iter_218",
-        "fitness_function":   "LeakySubLightFitness",
+        "fitness_function":   result["fitness_function_name"],
         "fitness":            result["best_fitness"],
         "generation_of_best": result["best_generation"],
         "num_generations":    NUM_GENERATIONS,
@@ -347,12 +362,16 @@ def write_results(result: dict) -> list[str]:
     print(f"  max_ever        = {result['max_ever']:.6f}")
     print(f"  best_generation = {result['best_generation']}")
     if m:
-        print(f"  base_fitness       = {m.get('base_fitness', 'n/a')}")
-        print(f"  total_conservation = {m.get('total_conservation_score', 'n/a')}")
+        print(f"  base_fitness       = {m.get('base_fitness', m.get('fitness', 'n/a'))}")
+        print(f"  total_conservation = {m.get('total_conservation_score', '1.0 (strict)' if result['fitness_function_name'] == 'SubLightFitness' else 'n/a')}")
         print(f"  avg_velocity       = {m.get('avg_velocity', 'n/a')}")
-        print(f"  net_displacement   = {m.get('net_displacement', 'n/a')}")
+        print(f"  net_displacement   = {m.get('net_displacement', m.get('displacement', 'n/a'))}")
         print(f"  initial_bits       = {m.get('initial_bits', 'n/a')}")
-        print(f"  conservation_factors = {m.get('conservation_factors', 'n/a')}")
+        if 'conservation_factors' in m:
+            print(f"  conservation_factors = {m['conservation_factors']}")
+        if 'period' in m:
+            print(f"  period             = {m['period']}")
+            print(f"  period_bonus       = {m['period_bonus']}")
 
     return artifacts
 
@@ -367,6 +386,11 @@ def main() -> int:
         default=None,
         help="Override champion output path (e.g. archive/iter_218/results/champion_rule.json)",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Enforce strict bit-conservation at all times using SubLightFitness",
+    )
     args = parser.parse_args()
 
     if args.output_file:
@@ -379,7 +403,7 @@ def main() -> int:
         CHAMPION_GIF  = OUTPUT_DIR / "champion_vc_glider.gif"
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    result    = run_search()
+    result    = run_search(strict=args.strict)
     artifacts = write_results(result)
 
     print("\n=== Summary ===")
