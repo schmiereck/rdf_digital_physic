@@ -1,131 +1,354 @@
 
-[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 180, 'end_line': 240})]
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
 
-[Tool Result: --- lines 180 to 240 of 430 ---
-        """
-        self.num_windows = max(2, int(num_windows))
-        self.bits_per_cell = int(bits_per_cell)
-        self.strict_conservation = strict_conservation
-        self.max_bit_threshold = max_bit_threshold
-        self.max_velocity_threshold = max_velocity_threshold
+[Tool Result:       $null
+[DIR] -p
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      edit_fitness.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      goal.md
+      output.txt
+      print_displacement.py
+      print_lines.py
+      python_path_...]
 
-    def __call__(
-        self,
-        sim_history: list[dict[str, Any]],
-    ) -> float:
-        """Compute fitness score from a simulation history.
 
-        Parameters
-        ---------...]
+[Tool Call: grep_search({'pattern': 'history'})]
 
-Here are lines 180–240 of `src/new_fitness.py`:
+[Tool Result: analyze_champion_vc_220.py:10: 3. Feeds the sim_history into DisplacementConsistencyFitness(num_windows=5)
+analyze_champion_vc_220.py:43: def simulate_with_history(rule_dict: dict) -> list[dict]:
+analyze_champion_vc_220.py:44: """Reproduce the exact sim_history from run_evolution_exp_220.py."""
+analyze_champion_vc_220.py:82: sim_history = simulate_with_history(rule_dict)
+analyze_champion_vc_220.py:84: # ---- Inspect the full per-step history ----
+analyze_champion_vc_220.py:86: for i, entry in en...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_champion_trajectory.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      ash_pattern.json
+      asymmetric_collision.py
+      breed_next_generation.py
+      characterize_5bit_glider.py
+      characterize_champion_174.py
+      characterize_glider_200.py
+      characterize_iter_197_2_champion.py
+      characterize_...]
+
+
+[Tool Call: grep_search({'pattern': 'def simulate.*history|history\\.append|record.*com'})]
+
+[Tool Result: analyze_champion_vc_220.py:43: def simulate_with_history(rule_dict: dict) -> list[dict]:
+analyze_iter220_trajectory.py:139: history.append({"step": 0, "com": com, "bit_count": bits})
+analyze_iter220_trajectory.py:152: history.append({"step": t, "com": com, "bit_count": bits})
+edit_fitness.py:49: unwrapped_history.append(unwrapped_entry)
+run_champion_eval.py:30: def simulate_with_history(rule_dict: dict, steps: int, grid_size: int) -> list[dict]:
+run_champion_eval.py:47: history.append({"step": t...]
+
+Let me look at the key evolution simulation files that generate history records:
+
+
+
+[Tool Call: read_file({'end_line': 130, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py', 'start_line': 70})]
+
+[Tool Result: --- lines 70 to 130 of 335 ---
+        lut[int(k)] = int(v)
+    return ((lut >> 6) & 1).astype(np.uint8)
+
+
+# - Simulation + history collection - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def simulate_with_history(rule_dict: dict) -> list:
+    lut  = rule_dict_to_lut(rule_dict)
+    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+    grid[63, 63] = 1
+    grid[64, 63] = 1
+    grid[64, 64] = 1
+
+    def com_and_bits(g):
+        rows, cols = np.where(g > 0)
+        if len(rows) == 0:
+  ...]
+
+
+[Tool Call: read_file({'end_line': 110, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\run_champion_eval.py', 'start_line': 25})]
+
+[Tool Result: --- lines 25 to 110 of 246 ---
+
+from new_fitness import DisplacementConsistencyFitness
+from evolution import rule_dict_to_lut, step_grid, make_ltromino_grid, center_of_mass, GRID_SIZE, LTROMINO_CELLS
+
+
+def simulate_with_history(rule_dict: dict, steps: int, grid_size: int) -> list[dict]:
+    """Run a CA simulation and return the step-by-step history."""
+    lut = rule_dict_to_lut(rule_dict)
+    grid = make_ltromino_grid(grid_size, LTROMINO_CELLS)
+
+    def com_and_bits(g: np.ndarray) -> tuple:
+   ...]
+
+
+[Tool Call: read_file({'end_line': 110, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_functions.py', 'start_line': 500})]
+
+[Tool Result: --- lines 500 to 110 of 638 ---
+]
+
+
+[Tool Call: read_file({'end_line': 570, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_functions.py', 'start_line': 510})]
+
+[Tool Result: --- lines 510 to 570 of 638 ---
+        com_history: list[np.ndarray] = [unwrapped_com.copy()]
+
+        # Period-detection snapshots (configs, not grids — saves memory)
+        period_configs: list[frozenset] = []
+        if self.period_window_start <= 0 < self.period_window_end:
+            period_configs.append(_normalize_config(grid, self.grid_size))
+
+        for step in range(1, self.simulation_steps + 1):
+            grid = step_grid(grid, lut)
+
+            # ── Strict bit-conservation chec...]
+
+
+[Tool Call: read_file({'end_line': 50, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220.py', 'start_line': 1})]
+
+[Tool Result: --- lines 1 to 50 of 335 ---
+#!/usr/bin/env python3
+"""
+run_evolution_exp_220.py  -  20-generation evolutionary search for a stable glider
+
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
+
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+  arc...]
+
+Now let me look at the `new_fitness.py` file where the main simulation and history generation happens:
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+new_fitness.py
+
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
+
+Now let me also check the `fitness_functions.py` which has a `DisplacementConsistencyFitness` that also does its own simulation:
+
+
+
+[Tool Call: read_file({'end_line': 638, 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\fitness_functions.py', 'start_line': 400})]
+
+[Tool Result: --- lines 400 to 638 of 638 ---
+        beyond this are treated as 'no period found' (chaotic) and fitness
+        becomes 0.
+    v_threshold : float
+        Hard upper bound on mean velocity (cells/step, default 0.9).
+        Particles meeting or exceeding this are rejected.
+    particle : list of (int, int)
+        Seed particle as (dr, dc) offsets from grid centre
+        (default: 3-bit L-tromino).
+    expected_bits : int
+        Bit count required for both the initial and final grid for the...]
+
+Now I have a complete picture. Let me also check the evolution.py file to see if the evolution loop itself records history at any checkpoints:
+
+
+
+[Tool Call: grep_search({'pattern': 'history\\s*=|history\\.append', 'include_pattern': 'src/evolution.py'})]
+
+[Tool Result: No matches found.]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+
+Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+
+This penalises annihilation: a rule that destroys the seed gets a ratio near
+zero even if the centre-of-mass technically moves before the grid goes dark.
+Rules that move the particle while preserving its bit count score highest.
+"""
+
+import math
+import random
+
+import numpy as np
+
+# Small constant to guard against the (very unli...]
+
+Now I have a complete picture of how history is generated. Here's my analysis:
+
+---
+
+## Finding: History is generated at EVERY step, not just at checkpoints
+
+### Key Finding
+
+In the main evolution loop (`run_evolution_exp_220.py`), the `simulate_with_history()` function records COM at **every single step** — both the initial state (step 0) AND every step from 1 to 500. There is no checkpoint-based subsampling.
+
+---
+
+### Relevant Code — `src/run_evolution_exp_220.py` (lines 76–97)
 
 ```python
-        """
-        self.num_windows = max(2, int(num_windows))
-        self.bits_per_cell = int(bits_per_cell)
-        self.strict_conservation = strict_conservation
-        self.max_bit_threshold = max_bit_threshold
-        self.max_velocity_threshold = max_velocity_threshold
+def simulate_with_history(rule_dict: dict) -> list:
+    lut  = rule_dict_to_lut(rule_dict)
+    grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+    grid[63, 63] = 1
+    grid[64, 63] = 1
+    grid[64, 64] = 1
 
-    def __call__(
-        self,
-        sim_history: list[dict[str, Any]],
-    ) -> float:
-        """Compute fitness score from a simulation history.
+    def com_and_bits(g):
+        rows, cols = np.where(g > 0)
+        if len(rows) == 0:
+            return (0.0, 0.0), 0
+        return (float(np.mean(rows)), float(np.mean(cols))), int(g.sum())
 
-        Parameters
-        ----------
-        sim_history : list of dict
-            Simulation history recorded at various steps. Each element
-            must be a dict with the following keys:
-
-            - ``'step'`` : int — simulation step index (0-based).
-            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
-            - ``'bit_count'`` : int — number of live cells at that step.
-
-            The history should be ordered chronologically (though the method
-            sorts internally for safety).
-
-        Returns
-        -------
-        float
-            Final fitness score. A score of 0.0 is returned when the
-            history is empty, when the simulation runs for zero steps,
-            or when there is no net displacement.
-
-        Examples
-        --------
-        >>> sim_history = [
-        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
-        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
-        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
-        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
-        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
-        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
-        ... ]
-        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
-        """
-        if not sim_history:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 1. Sort by step (defensive — history should be ordered but
-        #    we sort to be safe)
-        # ------------------------------------------------------------------
-        sorted_history = sorted(sim_history, key=lambda e: e["step"])
-
-        if self.max_bit_threshold is not None:
-            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
-                return 0.0
-
-        if self.strict_conservation:
-            initial_bits = sorted_history[0]["bit_count"]
-            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
+    c0, b0 = com_and_bits(grid)
+    hist = [{"step": 0, "com": c0, "bit_count": b0}]   # ← step 0 recorded
+    for t in range(1, STEPS + 1):                       # ← loop 1..500
+        grid = step_grid(grid, lut)
+        c, b = com_and_bits(grid)
+        hist.append({"step": t, "com": c, "bit_count": b})  # ← EVERY step appended
+    return hist
 ```
 
-**Note:** Line 240 appears to be the end of the `if self.strict_conservation:` block — the file continues beyond that point (it has 430 lines total). The method `DisplacementConsistencyFitness.__call__` is still open at line 240.
+With `STEPS = 500`, this produces **501 history entries per evaluation**.
+
+### The fitness evaluator uses this full history
+
+```python
+_fitness_fn = DisplacementConsistencyFitness(num_windows=5)
+
+def evaluate_rule(rule_dict: dict) -> float:
+    hist  = simulate_with_history(rule_dict)   # ← 501 entries
+    score = _fitness_fn(hist)                   # ← passes ALL of them
+    return float(score)
+```
+
+### `new_fitness.py` — DisplacementConsistencyFitness consumes the full history
+
+The fitness function (`src/new_fitness.py` lines 538–545) iterates over **every single entry** in the history:
+
+```python
+unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]
+for i in range(1, len(sorted_history)):    # iterates all 501 entries
+    prev_com = unwrapped_coms[-1]
+    cur_com = sorted_history[i]["com"]
+    # ... unwrap COM for toroidal grid
+    unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
+```
+
+### Same pattern in `run_champion_eval.py` (lines 30–49)
+
+```python
+def simulate_with_history(rule_dict: dict, steps: int, grid_size: int) -> list[dict]:
+    ...
+    c0, b0 = com_and_bits(grid)
+    history = [{"step": 0, "com": c0, "bit_count": b0}]
+    for t in range(1, steps + 1):
+        grid = step_grid(grid, lut)
+        c, b = com_and_bits(grid)
+        history.append({"step": t, "com": c, "bit_count": b})  # EVERY step
+    return history
+```
+
+### Same in `src/fitness_functions.py` — `SubLightFitness.evaluate()` (lines 538–545)
+
+```python
+for step in range(1, self.simulation_steps + 1):
+    grid = step_grid(grid, lut)
+    # ... strict bit-conservation check at every step ...
+    raw = np.array(_toroidal_center_of_mass(grid, self.grid_size))
+    delta = raw - prev_raw
+    delta -= np.round(delta / self.grid_size) * self.grid_size
+    unwrapped_com = unwrapped_com + delta
+    com_history.append(unwrapped_com.copy())   # EVERY step
+```
+
+---
+
+### Summary
+
+| File | What it records | Frequency |
+|---|---|---|
+| `run_evolution_exp_220.py` `simulate_with_history()` | `{"step", "com", "bit_count"}` | **Every step** (0..500 = 501 entries) |
+| `run_champion_eval.py` `simulate_with_history()` | Same | **Every step** (0..steps) |
+| `src/fitness_functions.py` `SubLightFitness.evaluate()` | Internal `com_history` list | **Every step** (used for window lookups) |
+| `src/new_fitness.py` `DisplacementConsistencyFitness.__call__()` | Consumes full history | Iterates all entries for unwrapping |
+
+**Answer: History records COM at every single step, not just at checkpoints (e.g., every 50 or 100 steps).** With 500-step simulations and a population of 100 evaluated per generation, that's 50,100 COM recordings per generation. The `DisplacementConsistencyFitness` then iterates all of those entries to unwrap COMs and compute per-window velocity vectors.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts: []
-metrics: {}
+metrics:
+  steps_per_simulation: 500
+  history_entries_per_eval: 501
+  population_size: 100
+  total_com_recordings_per_gen: 50100
 log_excerpt: |
-        self.num_windows = max(2, int(num_windows))
-        self.bits_per_cell = int(bits_per_cell)
-        self.strict_conservation = strict_conservation
-        self.max_bit_threshold = max_bit_threshold
-        self.max_velocity_threshold = max_velocity_threshold
-
-    def __call__(
-        self,
-        sim_history: list[dict[str, Any]],
-    ) -> float:
-        """Compute fitness score from a simulation history.
-
-        Parameters
-        ----------
-        sim_history : list of dict
-            Simulation history recorded at various steps. Each element
-            must be a dict with the following keys:
-
-            - ``'step'`` : int — simulation step index (0-based).
-            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
-            - ``'bit_count'`` : int — number of live cells at that step.
-        ...
-        if self.strict_conservation:
-            initial_bits = sorted_history[0]["bit_count"]
-            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
-experimenter_view: |
-  The retrieved code (lines 180-240) implements the `DisplacementConsistencyFitness` class, specifically the logic used to evaluate a simulation's fitness.
+  Found simulate_with_history() in src/run_evolution_exp_220.py (line 76):
+    for t in range(1, STEPS + 1):
+        grid = step_grid(grid, lut)
+        c, b = com_and_bits(grid)
+        hist.append({"step": t, "com": c, "bit_count": b})
   
-  Key observations:
-  1. **Inputs**: It processes a chronological list of dictionaries containing the simulation step, center of mass (com), and live cell count (bit_count).
-  2. **Pre-checks**: 
-     - It sorts the history by step defensively.
-     - It supports a `max_bit_threshold` that returns 0.0 if exceeded.
-     - It supports `strict_conservation`, ensuring the number of live cells remains constant throughout the simulation.
-  3. **Structure**: This appears to be part of a cellular automata (likely Game of Life based) evaluation system where stability and conservation are critical metrics for fitness.
-notes: "Retrieved lines 180-240 of src/new_fitness.py showing DisplacementConsistencyFitness logic."
+  History recorded at EVERY step (0..500 = 501 entries), not checkpoints.
+  Same pattern in run_champion_eval.py, src/fitness_functions.py, new_fitness.py.
+experimenter_view: |
+  History generation was investigated across the codebase. Key finding:
+  COM and bit_count are recorded at EVERY simulation step (not at
+  checkpoints every 50/100 steps). With 500-step simulations and 100
+  population members, this produces ~50,100 COM recordings per generation.
+  The DisplacementConsistencyFitness function then iterates all entries to
+  unwrap toroidal COM jumps and compute per-window velocity vectors.
+  This is computationally expensive but provides fine-grained data for
+  velocity consistency analysis across 5 windows.
+notes: "History records COM at every step (501 entries), not at checkpoints."
 ```

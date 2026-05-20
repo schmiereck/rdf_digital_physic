@@ -1,17 +1,30 @@
-artifacts:
-- src/evolve_glider.py
-- archive/iter_215/results/champion.json
-experimenter_view: 'The evolutionary search successfully discovered a sub-light speed
-  glider.
+artifacts: []
+experimenter_view: 'History generation was investigated across the codebase. Key finding:
 
-  The particle maintains a stable structure of 6 cells and moves with a
+  COM and bit_count are recorded at EVERY simulation step (not at
 
-  velocity of approximately 0.25c. Bit conservation is perfect over 1000 steps.
+  checkpoints every 50/100 steps). With 500-step simulations and 100
+
+  population members, this produces ~50,100 COM recordings per generation.
+
+  The DisplacementConsistencyFitness function then iterates all entries to
+
+  unwrap toroidal COM jumps and compute per-window velocity vectors.
+
+  This is computationally expensive but provides fine-grained data for
+
+  velocity consistency analysis across 5 windows.
 
   '
+log_excerpt: "Found simulate_with_history() in src/run_evolution_exp_220.py (line\
+  \ 76):\n  for t in range(1, STEPS + 1):\n      grid = step_grid(grid, lut)\n   \
+  \   c, b = com_and_bits(grid)\n      hist.append({\"step\": t, \"com\": c, \"bit_count\"\
+  : b})\n\nHistory recorded at EVERY step (0..500 = 501 entries), not checkpoints.\n\
+  Same pattern in run_champion_eval.py, src/fitness_functions.py, new_fitness.py.\n"
 metrics:
-  generations: 50
-  max_fitness: 0.942
-  stable_steps: 1000
-notes: Sub-light glider found and verified.
+  history_entries_per_eval: 501
+  population_size: 100
+  steps_per_simulation: 500
+  total_com_recordings_per_gen: 50100
+notes: History records COM at every step (501 entries), not at checkpoints.
 status: ok
