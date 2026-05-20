@@ -1,169 +1,230 @@
 
-[Tool Call: read_file({'path': 'src/new_fitness.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220_fixed.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-new_fitness.py
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
 
-DisplacementConsistencyFitness
-------------------------------
-A fitness function designed to reward consistent, directional motion and
-penalize stationary or oscillating "drifter" objects in v<c glider discovery.
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
 
-The "drifter" exploit
-~~~~~~~~~~~~~~~~~~~~~
-In cellular-automaton glider searches, evolution can converge on a class of
-objects sometimes called *drifters*: particles that do not travel coherently
-but instead undergo small periodic oscillation...]
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
+
+Outputs:
+  archive/iter_220/results/champion_rule.json
+ ...]
+
+Now let me check the warm-start population file format and the archive structure:
 
 
-[Tool Call: read_file({'path': 'src/fitness_functions.py'})]
 
-[Tool Result: #!/usr/bin/env python3
-"""
-fitness_functions.py
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive'})]
 
-A library of fitness functions for evaluating cellular-automaton rules on the
-128x128 toroidal hexagonal grid used throughout this project.
+[Tool Result: [DIR] archive
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+[DIR] iter_004
+[DIR] iter_005
+[DIR] iter_006
+[DIR] iter_007
+[DIR] iter_008
+[DIR] iter_009
+[DIR] iter_010
+[DIR] iter_011
+[DIR] iter_012
+[DIR] iter_013
+[DIR] iter_014
+[DIR] iter_015
+[DIR] iter_016
+[DIR] iter_017
+[DIR] iter_018
+[DIR] iter_019
+[DIR] iter_020
+[DIR] iter_021
+[DIR] iter_022
+[DIR] iter_023
+[DIR] iter_024
+[DIR] iter_025
+[DIR] iter_026
+[DIR] iter_027
+[DIR] iter_028
+[DIR] iter_029
+[DIR] iter_030
+[DIR] iter_031
+[DIR] iter_032
+[DIR] ...]
 
-NetDisplacementFitness
------------------------
-Designed to defeat the 'compact oscillator' and 'puffer' exploits identified
-in iter_203.  Two complementary mechanisms:
 
-  1. **Net displacement** — measures the Euclidean distance between the
-     centre-of-mass at t=0 and t=max_steps.  Stationary oscillators t...]
+[Tool Call: bash({'command': 'if exist "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\warm_start_population.json" (type "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\warm_start_population.json" & echo. & echo ---FIRST 80 LINES--- & more /E:80 "C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_215\\results\\warm_start_population.json") else (echo File not found)'})]
 
-Here are the contents of both files:
+[Tool Result: exit_code: 0
+stdout: {
+  "description": "Warm-start population for iter_215 evolutionary search. Rules 1-3 are champions from iter_213 (transient drift oscillator), iter_177 (transient bloomer), and iter_153 (fast puffer). Rules 4-100 are per-bit mutations of those seeds.",
+  "seed_sources": {
+    "rule_001": "archive/iter_213.10/results/champion_rule.json",
+    "rule_002": "archive/iter_176/results/gen_5/rule_019.json",
+    "rule_003": "archive/iter_153/results/population_gen3.json::rule_0...]
+
+
+[Tool Call: grep_search({'pattern': 'def generate_random_c2_rule', 'include_pattern': '*.py'})]
+
+[Tool Result: src\evolution.py:59: def generate_random_c2_rule(rng: random.Random, max_attempts: int = 10_000) -> dict:
+src\evolve_velocity_stability.py:74: def generate_random_c2_rule(rng: random.Random, n_pairs: int = KERNEL_PAIRS) -> dict:
+src\iter167_nursery.py:70: def generate_random_c2_rule(rng: random.Random) -> tuple[dict, list]:
+src\main.py:75: def generate_random_c2_rule(rng: random.Random) -> tuple[dict, list]:
+src\measure_baseline.py:82: def generate_random_c2_rule(rng: random.Random, n_pairs: int...]
+
+Here is the complete analysis of the genetic algorithm in `src/run_evolution_exp_220_fixed.py`, plus a clear extension plan for warm-start support:
 
 ---
 
-## 1. `src/new_fitness.py` — `DisplacementConsistencyFitness`
+## 1. How Are the Rules Initialized? (From Scratch)
 
-The file is ~340 lines. The class `DisplacementConsistencyFitness` is the only class. Here are its key methods:
+The GA **always starts from scratch**. In `main()`, line 199:
 
-### `__init__` (lines ~155–175)
 ```python
-def __init__(
-    self,
-    num_windows: int = 5,
-    bits_per_cell: int = 1,
-    strict_conservation: bool = False,
-    max_bit_threshold: int | None = None,
-    max_velocity_threshold: float | None = None,
-) -> None:
+population = generate_population(POPULATION_SIZE, rng)
 ```
 
-### `__call__` (lines ~177–290) — the core method
+This calls `generate_population()` (line 146), which creates random C2-symmetric rules:
 
-**Design**: Divides the simulation into `num_windows` time windows, computes per-window velocity vectors from the centre-of-mass, and uses:
-
-```
-fitness = mean_velocity_magnitude / (1 + std_dev_velocity_magnitudes)
-```
-
-**Steps**:
-1. Sort & unwrap COMs (handle toroidal grid wrap-around at 128).
-2. Enforce `max_bit_threshold` and `strict_conservation` gates.
-3. Compute per-window velocity vectors (dx, dy) and their magnitudes.
-4. Compute mean of the velocity *vectors* (directional drift) and std dev of velocity *magnitudes* (consistency).
-5. Apply the core formula.
-6. Multiply by a "leaky" bit-conservation score from `_compute_conservation_score()`.
-
-### `_compute_conservation_score` (lines ~295–340)
-
-A continuous (not hard-fail) bit-count conservation factor:
 ```python
-if bit_count == initial_bits:
-    factor = 1.0
+def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:
+    pop: list[np.ndarray] = []
+    while len(pop) < size:
+        rule = generate_random_c2_rule(rng)       # random C2 rule from scratch
+        pop.append(rule_dict_to_chromosome(rule))  # convert to chromosome
+    return pop[:size]
+```
+
+Each chromosome is a **128-element `uint8` array** of bits. Each bit `chrom[s]` controls whether the LUT entry `s` has its center-bit (bit 6) flipped relative to the C2-symmetric default (`s | (s >> 6)`).
+
+---
+
+## 2. Where Is the Population Saved?
+
+**Nowhere.** The GA does **not** save the population at any point during or after evolution. It only saves:
+
+| Output | Path |
+|--------|------|
+| `champion_rule.json` | `archive/iter_220/results/champion_rule.json` |
+| `evolution_summary.csv` | `archive/iter_220/results/evolution_summary.csv` |
+| `champion_vc_glider.gif` | `archive/iter_220/results/champion_vc_glider.gif` |
+
+The champion is saved as both a `rule_dict` and a `chromosome` array. There is no `population.json` or `population_save.json` output.
+
+---
+
+## 3. How to Modify/Extend for Warm-Start Support
+
+The warm-start file `archive/iter_215/results/warm_start_population.json` has 100 entries, each with `rule_dict` and `chromosome` fields. The warm start uses 3 "seed" champions (iter_213, iter_177, iter_153) and 97 per-bit mutations at various mutation rates.
+
+Here is the minimal modification needed — add a `--warm-start` / `WARM_START_PATH` parameter:
+
+### Option A: Simple environment variable approach
+
+Add these lines near the top of `main()`, before population generation:
+
+```python
+WARM_START_PATH = os.environ.get("WARM_START_PATH", "")
+```
+
+Then replace the single `population = generate_population(...)` line with:
+
+```python
+if WARM_START_PATH:
+    # Warm-start: load population from file
+    print(f"Loading warm-start population from {WARM_START_PATH} ...")
+    with open(WARM_START_PATH) as f:
+        ws_data = json.load(f)
+    # Support both formats: a list of entries or {"population": [...]}
+    entries = ws_data.get("population", ws_data)
+    population = []
+    for entry in entries:
+        chrom = np.array(entry["chromosome"], dtype=np.uint8)
+        population.append(chrom)
+    print(f"  Loaded {len(population)} rules from warm start.")
 else:
-    factor = min(bit_count, initial_bits) / max(bit_count, initial_bits)
-# total = mean of all per-step factors
+    population = generate_population(POPULATION_SIZE, rng)
+    print(f"Generated {len(population)} random rules.")
 ```
 
----
+### Option B: Command-line argument + smarter seeding
 
-## 2. `src/fitness_functions.py` — `SubLightFitness`
-
-The file is ~470 lines. It contains `NetDisplacementFitness` and `SubLightFitness`. Here is the `SubLightFitness` class:
-
-### `__init__` (lines ~166–208)
-```python
-def __init__(
-    self,
-    grid_size:           int          = 128,
-    simulation_steps:    int          = 1200,
-    window_start:        int          = 600,
-    window_end:          int          = 1000,
-    period_window_start: int          = 600,
-    period_window_end:   int          = 800,
-    max_period:          int          = 64,
-    v_threshold:         float        = 0.9,
-    particle:            list | None  = None,
-    expected_bits:       int          = 3,
-    strict_bit_conservation: bool     = False,
-) -> None:
-```
-
-### `_detect_period` (static, lines ~213–223)
+For a more polished approach, you could also support seeding just the top-N warm-start individuals into a mixed population:
 
 ```python
-@staticmethod
-def _detect_period(configs: list[frozenset], max_period: int) -> int:
-    """Smallest k in [1, max_period] with configs[i] == configs[i+k]
-    for every valid i.  Returns 0 if no such period."""
-    n = len(configs)
-    if n < 2:
-        return 0
-    upper = min(max_period, n - 1)
-    for k in range(1, upper + 1):
-        if all(configs[i] == configs[i + k] for i in range(n - k)):
-            return k
-    return 0
+WARM_START_PATH = os.environ.get("WARM_START_PATH", "")
+WARM_START_TOP_K = int(os.environ.get("WARM_START_TOP_K", "0"))  # 0 = use all
+
+if WARM_START_PATH:
+    with open(WARM_START_PATH) as f:
+        ws_data = json.load(f)
+    entries = ws_data.get("population", ws_data)
+    warm_start_pop = [np.array(e["chromosome"], dtype=np.uint8) for e in entries]
+    
+    if WARM_START_TOP_K and WARM_START_TOP_K < len(warm_start_pop):
+        # Evaluate warm-start individuals and keep the top-K
+        print(f"Evaluating {len(warm_start_pop)} warm-start candidates to select top {WARM_START_TOP_K} ...")
+        ws_scores = evaluate_population(warm_start_pop)
+        top_order = sorted(range(len(ws_scores)), key=lambda i: ws_scores[i], reverse=True)
+        population = [warm_start_pop[i].copy() for i in top_order[:WARM_START_TOP_K]]
+        # Fill the rest with random individuals
+        remaining = POPULATION_SIZE - len(population)
+        population.extend(generate_population(remaining, rng))
+        print(f"  Selected top {WARM_START_TOP_K} + {remaining} random = {len(population)}")
+    else:
+        population = warm_start_pop[:POPULATION_SIZE]
+        print(f"Loaded {len(population)} warm-start rules.")
 ```
 
-### `evaluate` (lines ~228–330) — the core method
+### Usage
 
-**Formula**:
+```bash
+# Warm-start from iter_215 population
+WARM_START_PATH="archive/iter_215/results/warm_start_population.json" python src/run_evolution_exp_220_fixed.py
+
+# Warm-start with only top-20 from file + 80 random
+WARM_START_PATH="archive/iter_215/results/warm_start_population.json" WARM_START_TOP_K=20 python src/run_evolution_exp_220_fixed.py
+
+# Fresh start (default)
+python src/run_evolution_exp_220_fixed.py
 ```
-fitness = displacement * (1 - 1/period)
-```
 
-**Gates / Rejection conditions** (all return `fitness = 0.0`):
-| Gate | Reason |
-|---|---|
-| `initial_bits != expected_bits` or `final_bits != expected_bits` | `"bit_conservation_failed"` |
-| `displacement == 0.0` | `"no_displacement"` |
-| `avg_velocity >= v_threshold` (default 0.9) | `"velocity_at_or_above_threshold"` |
-| `period <= 1` | `"period_too_short"` |
+### Key points about the warm-start file format
 
-**Pipeline**:
-1. Simulate the full `simulation_steps` with unwrapped COM tracking (toroidal-aware).
-2. Collect normalised grid configs during the period-detection window.
-3. Compute late-window displacement between `window_start` and `window_end`.
-4. Detect internal period from the config fingerprint (translation-normalised frozenset).
-5. Apply the formula: `fitness = displacement * (1.0 - 1.0/period)`.
+The file can be loaded in two ways:
+- **Full file** (has `{"population": [{...}, ...], "description": ..., "seed_sources": ...}`)
+- **A list directly** (if someone exports just the list)
 
-### Key difference from `new_fitness.py`
+Both are handled by: `entries = ws_data.get("population", ws_data)`.
 
-| | `SubLightFitness` | `DisplacementConsistencyFitness` |
-|---|---|---|
-| **Core metric** | `displacement × period_bonus` | `mean_velocity / (1 + std_dev)` |
-| **Drifter defence** | Velocity gate + period gate | Windowed velocity std-dev |
-| **Conservation** | Hard gate (initial/final bits) | Leaky continuous score |
-| **Approach** | Rejects v≥1c, rewards structured periods | Penalises inconsistent velocity |
-
-The full source code is provided above — you can see that both classes are designed as drop-in fitness evaluators but take different approaches to distinguishing true gliders from drifters/oscillators.
+Each entry needs only `chromosome` (a list of 128 integers, 0 or 1) — the `rule_dict` and metadata fields are optional for the warm-start loader but are preserved if you want to log which parent each chromosome came from.
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  Successfully read and analyzed src/new_fitness.py (~340 lines) and src/fitness_functions.py (~470 lines).
-  Extracted and detailed the core methods, docstrings, and scoring formulas for DisplacementConsistencyFitness and SubLightFitness.
+  File analysis complete:
+  - Population initialized from scratch via generate_population() -> generate_random_c2_rule()
+  - Population is NOT saved anywhere during/after evolution
+  - Only outputs: champion_rule.json, evolution_summary.csv, champion_vc_glider.gif
+  - Warm-start file exists at archive/iter_215/results/warm_start_population.json (100 entries)
+  - Extension strategy: add WARM_START_PATH env var to load pre-computed population
 experimenter_view: |
-  DisplacementConsistencyFitness defends against drifters by dividing simulations into windows, computing per-window velocity vectors, and penalizing high standard deviation in velocity magnitudes via the formula mean_velocity / (1 + std_dev). It uses a continuous "leaky" bit-conservation multiplier. 
-  SubLightFitness defends against v=1c gliders using a hard velocity gate (<0.9c), an internal period detection gate (>1), and applies a period bonus factor (displacement × (1 - 1/T)). It uses hard bit-conservation gates. 
-  Both classes are designed as drop-in evaluators but implement fundamentally different mathematical strategies for distinguishing true sub-light gliders from oscillators and drifters.
-notes: "Informational task completed: reviewed exact implementations of new fitness functions."
+  The GA in run_evolution_exp_220_fixed.py is a simple generational replacement algorithm
+  with no intermediate state persistence. Rules are 128-bit chromosomes representing
+  C2-symmetric Conway-like CA rules. The warm-start population from iter_215 uses 3 seed
+  champions (iter_213.10, iter_177, iter_153) with per-bit mutations at rates 0.01-0.10.
+  Adding warm-start support requires ~15 lines of code: load the JSON, extract chromosomes,
+  and optionally re-evaluate to select top-K candidates before filling remaining slots randomly.
+notes: "GA analysis complete - no files modified, only analysis provided"
+```
