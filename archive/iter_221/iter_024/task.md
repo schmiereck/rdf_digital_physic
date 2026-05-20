@@ -1,1 +1,3 @@
-Print lines 210 to 255 of src/new_fitness.py. Do not write yaml block or any other files, just print the python code to stdout.
+1. Modify `src/new_fitness.py` to fix the toroidal unwrapping bug. The difference `dx` and `dy` should be computed between consecutive raw center of mass coordinates from sorted_history[i] and sorted_history[i-1], NOT between sorted_history[i] (raw) and unwrapped_coms[-1] (unwrapped).
+2. After applying the fix, run a test to evaluate the champion rule from `archive/iter_221/results/champion_rule.json`. Its true unwrapped velocity is ~1.0, so with `max_velocity_threshold=0.9`, its fitness should now be evaluated as exactly 0.0!
+3. Print the lines of code before and after the fix, and print the test results.
