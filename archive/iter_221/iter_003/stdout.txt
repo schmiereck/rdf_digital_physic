@@ -1,83 +1,107 @@
 
-[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+[Tool Call: read_file({'path': 'src/run_evolution_exp_220_fixed.py'})]
 
-[Tool Result:       $null
-[DIR] -p
-[DIR] .git
-      .gitignore
-[DIR] .venv
-      analyze_champion_vc_220.py
-      analyze_iter220_trajectory.py
-[DIR] archive
-      breakdown_fitness.py
-      config.toml
-      current_state.md
-      debug_output.txt
-      debug_output2.txt
-      debug_sim_vc.py
-      edit_fitness.py
-      err.txt
-      experiment_log.md
-      experiment_log_archive.md
-      experiment_report.yaml
-      goal.md
-      output.txt
-      python_path_info.py
-      RDF-REVIEW-179.md
-      requirement...]
+[Tool Result: #!/usr/bin/env python3
+"""
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
 
-Found `current_state.md` in the root directory. Here are the files:
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
 
-### Root Directory Contents:
-- **Directories**: `.git`, `.venv`, `archive`, `src`
-- **Files**: `.gitignore`, `analyze_champion_vc_220.py`, `analyze_iter220_trajectory.py`, `breakdown_fitness.py`, `config.toml`, `current_state.md`, `debug_output.txt`, `debug_output2.txt`, `debug_sim_vc.py`, `edit_fitness.py`, `err.txt`, `experiment_log.md`, `experiment_log_archive.md`, `experiment_report.yaml`, `goal.md`, `output.txt`, `python_path_info.py`, `RDF-REVIEW-179.md`, `requirements.txt`, `RESEARCH-RESULT-179.md`, `run_champion_eval.py`, `stdout.txt`, `test_sym.py`, `test_sym2.py`, `tmp_output.txt`, `tmp_print.py`, `tmp_print_lines.py`, `tmp_print_lines2.py`, `verify_motion.py`, `verify_output.py`
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
 
-Now let me print the contents of `current_state.md`:
+Outputs:
+  archive/iter_220/results/champion_rule.json
+ ...]
 
-
-
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\current_state.md'})]
-
-[Tool Result: # Current Research State
-Phase: Breeder exploit closed, fitness landscape mapped.
-
-## Goal
-Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
-
-## Confirmed
-- The previous champion was a stationary breathing breeder-oscillator of period 64 (iter_220.9).
-- Setting `max_bit_threshold=12` in `DisplacementConsistencyFitness` completely eliminates breeders, forcing evolution to produce only compact, stable structures (iter_220.23).
-- Hard-gated fitness metrics...]
-
-### `current_state.md` Contents:
+Here is the full content of `src/run_evolution_exp_220_fixed.py`. Let me break down the GA components:
 
 ---
 
-# Current Research State
-**Phase:** Breeder exploit closed, fitness landscape mapped.
+## Summary of the Genetic Algorithm
 
-## Goal
-Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
+### 1. Chromosome Representation
+Each chromosome is a **binary array of 128 bits** (`LUT_SIZE = 128`), where each bit represents the **center cell state** of a 3-bit neighborhood rule in the C2 hexagonal cellular automaton.
 
-## Confirmed
-- The previous champion was a stationary breathing breeder-oscillator of period 64 (iter_220.9).
-- Setting `max_bit_threshold=12` in `DisplacementConsistencyFitness` completely eliminates breeders, forcing evolution to produce only compact, stable structures (iter_220.23).
-- Hard-gated fitness metrics like `SubLightFitness` cause a flat 0.0 fitness landscape when starting from random rules, proving the necessity of leaky conservation and warm-starts (iter_220.80).
-- The codebase in `src/` is fully `pandas`-free, preventing sub-agent execution errors (iter_220.17).
+- `chromosome_to_rule_dict()` — converts a binary chromosome into a full rule dictionary
+- `rule_dict_to_chromosome()` — converts a rule dictionary back into a binary chromosome
 
-## Refuted
-- Naive windowed CoM consistency without a bit-count ceiling is sufficient (it is easily exploited by breeders).
+### 2. Population Initialization
+```python
+def generate_population(size: int, rng: random.Random) -> list[np.ndarray]:
+    pop: list[np.ndarray] = []
+    while len(pop) < size:
+        rule = generate_random_c2_rule(rng)
+        pop.append(rule_dict_to_chromosome(rule))
+    return pop[:size]
+```
+Generates random C2 rules and converts them to chromosomes.
 
-## In Progress
-- Preparing a warm-started evolution run using iter_215's final population combined with the `max_bit_threshold=12` filter.
+### 3. Selection — **Elitism only (no crossover)**
+```python
+def select_top_k(population, scores, k):
+    order = sorted(range(len(population)), key=lambda i: scores[i], reverse=True)
+    return [population[i].copy() for i in order[:k]]
+```
+- Selects the **top-k** individuals by fitness score (tournament/elitism selection).
+- There is **no crossover** operator — the GA is purely **elitist + mutation-based**.
 
-## Open Questions
-- How can we design a C2-preserving crossover operator to maintain rule symmetry?
-- What is the minimum population size needed for warm-start searches to converge?
+### 4. Mutation — **Swap Mutation**
+```python
+def swap_mutate(chrom: np.ndarray, num_swaps: int, rng: random.Random) -> np.ndarray:
+    out = chrom.copy()
+    n   = len(out)
+    for _ in range(num_swaps):
+        i, j     = rng.sample(range(n), 2)
+        out[i], out[j] = out[j], out[i]
+    return out
+```
+- Number of swaps = `round(MUTATION_RATE * LUT_SIZE) = round(0.01 * 128) = 1` swap per child.
+- Two random bit positions are swapped.
+
+### 5. Generational Loop (generational GA)
+```python
+for gen in range(1, GENERATIONS + 1):
+    elites   = select_top_k(population, scores, ELITE_SIZE)   # Select top 10
+    next_pop = [e.copy() for e in elites]                     # Elites pass through
+    while len(next_pop) < POPULATION_SIZE:
+        parent = rng.choice(elites)                           # Random elite parent
+        child  = swap_mutate(parent, num_swaps, rng)          # Mutate
+        next_pop.append(child)                                # Fill remainder
+    population = next_pop
+    scores = evaluate_population(population)
+```
+- **Elitism**: Top `ELITE_SIZE` (10) individuals survive unchanged.
+- **Rest of population**: Generated by randomly picking an elite parent and applying swap mutation.
+- **No crossover** — this is a **simple evolutionary strategy (ES)** rather than a full GA.
+
+### 6. Fitness Function
+Uses `DisplacementConsistencyFitness` from `new_fitness.py` with:
+- `num_windows=5`
+- `max_bit_threshold=12`
+- `max_velocity_threshold=0.9`
+
+### 7. Saving Outputs
+Three output files are produced in `archive/iter_220/results/`:
+
+| File | Description |
+|------|-------------|
+| `champion_rule.json` | Full champion rule dictionary, fitness score, all parameters, seed info, elapsed time, chromosome |
+| `evolution_summary.csv` | Per-generation best/mean fitness (written with `csv` module, no pandas) |
+| `champion_vc_glider.gif` | GIF animation of the champion glider over 500 steps |
 
 ---
 
-The file summarizes the current research progress on discovering a sub-light-speed glider in a 2D hexagonal grid simulation, including key findings, refuted approaches, and open questions.
+**Key architectural notes:**
+- This is a **mutation-only GA** (no crossover), also known as an **Evolutionary Strategy (ES)**.
+- Selection is **deterministic elitism** (top-k survive).
+- The seed particle is always the **3-bit L-tromino** at positions `[63,63], [64,63], [64,64]` on a 128×128 grid.
+- Simulation runs for **500 steps** (`STEPS = 500`).
 
 [NUDGE RESPONSE]
 ```yaml
@@ -85,26 +109,19 @@ status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  [DIR] .git
-  [DIR] .venv
-  [DIR] archive
-  [DIR] src
-  current_state.md
-  
-  # Current Research State
-  Phase: Breeder exploit closed, fitness landscape mapped.
-  
-  ## Goal
-  Discover and characterize a stable, `v<c` (sub-light speed) glider in the 2D hexagonal grid.
-  
-  ## Confirmed
-  - Setting `max_bit_threshold=12` eliminates breeders.
-  - The codebase in `src/` is fully `pandas`-free.
-  
-  ## In Progress
-  - Preparing a warm-started evolution run using iter_215's final population ...
+  File read successfully.
+  Summary of the Genetic Algorithm:
+  - Chromosome: 128-bit binary array representing C2 hexagonal CA rules.
+  - Selection: Deterministic elitism (top-k).
+  - Mutation: Swap mutation (1 swap per child).
+  - Crossover: None (Evolutionary Strategy).
+  - Fitness: DisplacementConsistencyFitness.
+  - Outputs: champion_rule.json, evolution_summary.csv, champion_vc_glider.gif.
 experimenter_view: |
-  The breeder exploit has been closed. The immediate goal is to find a sub-light speed glider.
-  The codebase is clean (pandas-free).
-notes: "Listed files and printed current_state.md."
+  The evolutionary search uses a mutation-only strategy (ES) rather than a full GA with crossover.
+  It starts with a population of 100, evolves for 20 generations with a population size of 100.
+  The top 10 individuals (elite size) are preserved unchanged. The remaining 90 are generated
+  by mutating elite parents (swap mutation). The fitness function searches for directional
+  motion consistency in a hexagonal CA.
+notes: "Code read and analyzed."
 ```
