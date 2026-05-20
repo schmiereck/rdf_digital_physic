@@ -1,0 +1,85 @@
+Now I'll fix the bug and then run tests.
+Now let me check the warm-start file and verify our fix works.
+Previous fitness was 0.0, confirming the bug. Let me run a quick test of the projection fix.
+Active bits = 37, but the fitness is still 0. Let me check iter_215's champion fitness for sanity.
+The projection fix is correct (chromosomes now non-zero with active bits), but the warm-start rules all give 0 fitness under the strict DisplacementConsistencyFitness with max_bit_threshold=12 — because their symmetrized versions blow up to 100+ bits.
+
+Let me proceed with the full evolutionary search as specified — the GA may find good rules through mutation.
+The GA found a stable v<c glider at gen 48 with fitness 0.0597 — speed 0.107c, 4 bits, period 1. Fitness is below the 1.0/2.0 target, but it IS a genuine, verified sub-light speed glider. Let me check the outputs.
+Let me verify the unwrap behavior at the wrap-around boundary.
+All outputs generated. Summary:
+
+**Bug fix**: Replaced `rule_dict_to_chromosome_72` with the correct logic that flips the orbit's default center bit when ANY orbit member appears in `rule_dict`. Verified the fix produces non-zero chromosomes (e.g., 37 active bits in the first warm-start projection vs all zeros previously).
+
+**Warm-start evaluation**: All 100 projected warm-start rules yield fitness = 0 under the strict `DisplacementConsistencyFitness(max_bit_threshold=12)`. This is because the original iter_215 rules (which were non-C2-symmetric and optimized under `LateWindowDisplacementFitness`) produce bit-explosive dynamics (66–14880 bits) once symmetrized. Even direct (non-projected) evaluation of those rules under the new fitness function also yields 0 — the warm-start is incompatible with the new strict fitness, not a projection problem.
+
+**Evolutionary search**: Ran 50 generations × 100 population in parallel. A new champion emerged at gen 48 with fitness **0.0597**.
+
+**Champion characterization** (500 steps):
+- Verdict: **STABLE v<c GLIDER**
+- Speed: **0.107245 cells/step** (≈10.7% of c)
+- Bit count: 3 → 4, max=4 (no growth, no extinction)
+- Period: 1
+- Total displacement: 53.62 cells in diagonal NE direction (Δr=-37.92, Δc=+37.92)
+
+The champion is a genuine, verified sub-light glider, though fitness (0.06) falls short of the 1.0/2.0 target — the GA had only 2 productive generations after first breaking out of fitness 0 at gen 48.
+
+```yaml
+status: ok
+artifacts:
+  - src/run_evolution_exp_222.py
+  - archive/iter_222/results/champion_rule_perfect.json
+  - archive/iter_222/results/evolution_summary_perfect.csv
+  - archive/iter_222/results/champion_vc_glider_perfect.gif
+  - archive/iter_222/results/trajectory_analysis.txt
+metrics:
+  champion_fitness: 0.059691
+  champion_generation: 48
+  generations: 50
+  population_size: 100
+  champion_speed_cells_per_step: 0.107245
+  champion_speed_fraction_of_c: 0.107245
+  champion_total_displacement: 53.6223
+  champion_max_bits: 4
+  champion_initial_bits: 3
+  champion_final_bits: 4
+  champion_period: 1
+  champion_extinction_step: null
+  elapsed_sec: 193.1
+  warm_start_nonzero_fitness_count: 0
+  warm_start_first_chrom_active_bits: 37
+experimenter_view: |
+  The projection bug fix is correct: rule_dict_to_chromosome_72 now correctly
+  flips an orbit's default center bit when any orbit member appears in rule_dict,
+  producing non-zero chromosomes (37 active bits for the first warm-start rule
+  vs all zeros previously). However, the warm-start rules from iter_215 do NOT
+  yield non-zero fitness under DisplacementConsistencyFitness(max_bit_threshold=12)
+  — even directly evaluated (without projection), they grow to 66+ bits. The
+  iter_215 rules were optimized under LateWindowDisplacementFitness which has no
+  bit-budget constraint, and most are not C2-symmetric, so symmetrization
+  amplifies the bit explosion. The GA then explores from fitness 0 and at
+  generation 48 mutation finally lands on a rule with a stable 4-bit C2-symmetric
+  glider moving at v≈0.107c diagonally NE. The glider is verified stable over
+  500 steps (no extinction, bit count locked at 4, period 1). Fitness (0.06)
+  is well below the 1.0/2.0 target because the late discovery left only 2
+  generations to refine, and per-window velocity variance is high due to a CoM
+  wrap-around averaging artifact around step 192. The output is a genuine
+  sub-light glider but the GA needs either better warm-start data (rules
+  pre-vetted under the bit-budget) or a less strict early-fitness landscape
+  to break out of the all-zero plateau sooner.
+log_excerpt: |
+  Gen 47: best=0.000000  mean=0.000000  champion=0.000000
+      ** new champion @ gen 48: 0.059691 **
+  Gen 48: best=0.059691  mean=0.000597  champion=0.059691
+  Gen 49: best=0.059691  mean=0.001194  champion=0.059691
+  Gen 50: best=0.059691  mean=0.002388  champion=0.059691
+  === Search complete in 193.1s ===
+  === Champion characterisation ===
+    extinction_step : None
+    speed           : 0.107245 cells/step
+    total_disp      : 53.6223
+    max_bits        : 4
+    period          : 1
+    verdict         : STABLE v<c GLIDER  (speed = 0.107245 cells/step)
+notes: "Projection fix correct; GA found stable 4-bit v=0.107c diagonal glider at gen 48 (fitness 0.06)."
+```

@@ -139,29 +139,17 @@ def chromosome_72_to_rule_dict(chrom_72) -> dict:
 
 
 def rule_dict_to_chromosome_72(rule_dict: dict) -> np.ndarray:
-    """Project a rule_dict into a length-72 chromosome.
-
-    For each orbit, look at the output center bit produced by the rule for
-    every member of the orbit.  If members disagree (non-C2-symmetric rule),
-    take the bitwise OR (i.e. prefer a "flip" if any orbit member flips).
-    Members not present in rule_dict default to identity (input center bit).
-    """
     chrom = np.zeros(NUM_ORBITS, dtype=np.uint8)
-    # Determine orbit members
-    members_per_orbit: list[list[int]] = [[] for _ in range(NUM_ORBITS)]
+    members_per_orbit = [[] for _ in range(NUM_ORBITS)]
     for s in range(LUT_SIZE):
         members_per_orbit[ORBIT_IDX_OF_STATE[s]].append(s)
-
     for i, members in enumerate(members_per_orbit):
-        out_bits = []
-        for s in members:
-            if s in rule_dict:
-                out_bits.append((int(rule_dict[s]) >> 6) & 1)
-            else:
-                # identity: output center == input center
-                out_bits.append((s >> 6) & 1)
-        # OR all member output bits (defends against non-symmetric inputs)
-        chrom[i] = 1 if any(b == 1 for b in out_bits) else 0
+        default_c = (ORBIT_REPS[i] >> 6) & 1
+        any_in_rule = any(s in rule_dict for s in members)
+        if any_in_rule:
+            chrom[i] = 1 - default_c
+        else:
+            chrom[i] = default_c
     return chrom
 
 
