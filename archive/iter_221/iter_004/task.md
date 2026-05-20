@@ -1,1 +1,1 @@
-Read src/run_vc_search.py and check how it runs. Explain what fitness functions are available in it and if it supports --initial_population_path.
+Read the full src/run_evolution_exp_220_fixed.py code and print it to stdout so we can see the exact function definitions and imports to copy.
