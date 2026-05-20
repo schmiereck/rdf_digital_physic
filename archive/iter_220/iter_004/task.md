@@ -1,7 +1,5 @@
-**Goal:** Execute the exploit reproduction script to confirm the fitness function flaw.
-
-**Task:**
-1.  Locate the script `src/reproduce_exploit.py`.
-2.  Execute it using `python src/reproduce_exploit.py`.
-3.  Capture the output.
-4.  The task is successful if the script finishes and prints the final fitness and displacement values. Check the output to confirm that the fitness score is high while the displacement is low, as predicted.
+1. Inspect src/run_evolution_exp_220.py. Ensure that it writes all of its outputs (champion rule JSON, CSV log, and any rendered GIF or images) to 'archive/iter_220/results/' directory. If not, modify it to do so.
+2. Run the script 'src/run_evolution_exp_220.py' to execute the evolutionary search for a sub-light speed (v<c) glider using the validated DisplacementConsistencyFitness function.
+3. Once the search is finished, analyze the champion rule found. Check its fitness, average velocity, bit conservation, and stability.
+4. Render a GIF of the champion glider moving in the grid and save it to 'archive/iter_220/results/champion_vc_glider.gif'.
+5. Report the full metrics, including the best fitness, corresponding rule, average velocity, and whether it represents a true, stable, bit-conserving sub-light speed glider.
