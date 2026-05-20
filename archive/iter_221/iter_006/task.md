@@ -1,0 +1,1 @@
+Write a python script to read src/run_evolution_exp_220_fixed.py and print its entire contents to stdout. Do not write yaml block or any other files, just print the text of that file to stdout.
