@@ -1,102 +1,112 @@
 
-[Tool Call: read_file({'path': 'src/run_vc_search.py'})]
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\run_evolution_exp_220_fixed.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-run_vc_search.py  —  Evolutionary search for v<c gliders using LeakySubLightFitness or SubLightFitness.
+run_evolution_exp_220_fixed.py  -  20-generation evolutionary search for a stable glider (fixed fitness parameters)
 
-Setup
------
-* Fitness     : LeakySubLightFitness (default; leaky bit-conservation gate;
-                rewards displacement with a continuous conservation penalty)
-                OR SubLightFitness (with strict_bit_conservation=True;
-                enforces that bit count remains exactly equal to the seed bit
-                count at all times to eliminate breede...]
+Uses DisplacementConsistencyFitness (new_fitness.py) with the 3-bit L-tromino
+seed to search for hexagonal CA rules that produce consistent, directional motion.
 
-# Analysis of `src/run_vc_search.py`
+Parameters:
+  population_size : 100
+  generations     : 20
+  elite_size      : 10
+  mutation_rate   : 0.01
+  horizon         : 500 steps
 
-## How It Runs
+Outputs:
+  archive/iter_220/results/champion_rule.json
+ ...]
 
-The script performs an **evolutionary (genetic) search** for rules that produce v<c (velocity less than c) gliders in a cellular automaton. Here's the high-level flow:
-
-1. **Argument parsing** via `argparse` — accepts `--output_file` and `--strict` flags.
-2. **`run_search(strict)`** is called, which:
-   - Creates an output directory (`archive/iter_218/results/`).
-   - Initializes a `random.Random(200_001)` RNG.
-   - Generates an initial random population of **100 C2-symmetric rules** (128×128 grid, seed: 3-bit L-tromino).
-   - Evaluates fitness for all 100 chromosomes.
-   - Runs **10 generations** of evolution using:
-     - **Top-k selection** (`ELITE_COUNT` = 10% of population = 10 elites).
-     - **Two-point crossover** (`crossover_rate=0.8`).
-     - **Per-bit mutation** (`mutation_rate=0.01`).
-   - Tracks the ever-best champion rule across all generations.
-3. **`write_results(result)`** saves three artifacts:
-   - `champion_vc_rule.json` — the best rule dict, fitness, and metrics.
-   - `evolution_log.csv` — generation-by-generation champion fitness.
-   - `champion_vc_glider.gif` — a 200-step animation of the champion.
+The full contents of `src/run_evolution_exp_220_fixed.py` have been printed above. Here's a summary of the key imports and function definitions for easy copying:
 
 ---
 
-## Available Fitness Functions
+### **Imports**
 
-| Fitness Function | How to Select | Description |
+```python
+from __future__ import annotations
+
+import csv
+import json
+import os
+import random
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+
+from evolution import generate_random_c2_rule, rule_dict_to_lut, step_grid
+from new_fitness import DisplacementConsistencyFitness
+```
+
+---
+
+### **Configuration Parameters**
+
+| Parameter | Value |
+|---|---|
+| `POPULATION_SIZE` | 100 (env override) |
+| `GENERATIONS` | 20 (env override) |
+| `ELITE_SIZE` | 10 (env override) |
+| `MUTATION_RATE` | 0.01 |
+| `GRID_SIZE` | 128 |
+| `STEPS` | 500 |
+| `LUT_SIZE` | 128 |
+| `RNG_SEED` | 220 |
+
+---
+
+### **Functions Defined**
+
+| Function | Line | Purpose |
 |---|---|---|
-| **`LeakySubLightFitness`** | **Default** (omit `--strict`) | Uses "leaky" bit-conservation. Rewards displacement with a continuous conservation penalty. Configurable via `checkpoints`, `bits_per_cell`, `velocity_threshold`. |
-| **`SubLightFitness`** | Use `--strict` flag | Enforces **strict bit conservation** (`strict_bit_conservation=True`). Bit count must remain exactly equal to the seed bit count (3) at all times, eliminating breeder exploits. Configurable via `window_start/end`, `period_window_start/end`, `max_period`, `v_threshold`, `expected_bits`. |
-
-The switch between them is purely the `--strict` boolean flag passed to `main()`, which routes into the `run_search(strict=True/False)` function.
+| `chromosome_to_rule_dict(chrom)` | ~56 | Convert binary chromosome → rule dict |
+| `rule_dict_to_chromosome(rule_dict)` | ~68 | Convert rule dict → binary chromosome |
+| `simulate_with_history(rule_dict)` | ~76 | Run 500-step simulation with CoM tracking |
+| `evaluate_rule(rule_dict)` | ~106 | Evaluate a rule using `DisplacementConsistencyFitness` |
+| `generate_population(size, rng)` | ~115 | Create initial population of random rules |
+| `evaluate_population(population)` | ~123 | Score every member of a population |
+| `select_top_k(population, scores, k)` | ~133 | Elitism selection |
+| `swap_mutate(chrom, num_swaps, rng)` | ~138 | Swap-mutation operator |
+| `write_evolution_summary_csv(gen_log, path)` | ~152 | Save summary as CSV (pandas-free) |
+| `print_evolution_summary(gen_log)` | ~167 | Print formatted summary table |
+| `render_champion_gif(rule_dict, gif_path, ...)` | ~182 | Render and save champion as GIF |
+| `main()` | ~238 | Entry point — full evolution loop |
 
 ---
 
-## Does It Support `--initial_population_path`?
+### **Output Files** (written to `archive/iter_220/results/`)
 
-**No, it does not.** The argument parser only defines two flags:
+- `champion_rule.json` — champion rule + metadata
+- `evolution_summary.csv` — per-generation best/mean fitness
+- `champion_vc_glider.gif` — animation of the champion glider
 
-```python
-parser.add_argument("--output_file",  ...)  # Override champion output path
-parser.add_argument("--strict", action="store_true", ...)  # Use SubLightFitness
-```
-
-The initial population is **always** generated on the fly with random C2-symmetric rules:
-
-```python
-population = [
-    rule_dict_to_chromosome(generate_c2_rule(rng))
-    for _ in range(POPULATION_SIZE)
-]
-```
-
-There is no mechanism to load a pre-existing population from disk. To support that, `main()` would need an `--initial_population_path` argument, and `run_search()` would need logic to load chromosomes from a JSON or similar file and replace the random population initialization.
+The complete file content is displayed above and can be copied directly.
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
-artifacts: []
-metrics: {}
+artifacts:
+  - src/run_evolution_exp_220_fixed.py
+metrics:
+  file_lines: 276
+  functions_defined: 12
+  imports: 10
+  external_deps:
+    - evolution
+    - new_fitness
 log_excerpt: |
-  # Argument Parser
-  parser.add_argument("--output_file", type=str, default=None, ...)
-  parser.add_argument("--strict", action="store_true", ...)
-
-  # Selection Logic in run_search
-  if strict:
-      print(f"  Fitness         : SubLightFitness (STRICT conservation)\n")
-      fitness_fn = SubLightFitness(...)
-  else:
-      print(f"  Fitness         : LeakySubLightFitness\n")
-      fitness_fn = LeakySubLightFitness(...)
-
-  # Population Initialization (Always Random)
-  population = [
-      rule_dict_to_chromosome(generate_c2_rule(rng))
-      for _ in range(POPULATION_SIZE)
-  ]
+  Successfully read and printed full contents of src/run_evolution_exp_220_fixed.py
+  All 12 function definitions and imports are now visible in stdout.
+  Key functions: chromosome_to_rule_dict, simulate_with_history, evaluate_rule,
+  select_top_k, swap_mutate, write_evolution_summary_csv, render_champion_gif, main.
 experimenter_view: |
-  The file `src/run_vc_search.py` implements an evolutionary search for v<c gliders on a 128x128 grid using a 3-bit L-tromino seed.
-  
-  Key Findings:
-  1. **Fitness Functions**:
-     - `LeakySubLightFitness`: The default mode. Rewards displacement with a continuous conservation penalty.
-     - `SubLightFitness`: Available via the `--strict` flag. Enforces strict bit conservation (exactly 3 bits) at all times to eliminate breeder exploits.
-  2. **Execution**: It generates a random initial population of 100 C2-symmetric rules and runs 10 generations of evolutionary search (elite selection, two-point crossover, mutation).
-  3. **Arguments**: It supports `--output_file` to override the save path and `--strict` for the strict fitness function. It does **not** support `--initial_population_path` or any mechanism to load a seed population from disk.
-notes: "Analysis complete: 2 fitness modes identified; --initial_population_path not supported."
+  The script implements a complete evolutionary pipeline for discovering hexagonal CA glider rules.
+  It uses a swap-mutation genetic algorithm with elitism, tracks center-of-mass displacement
+  via DisplacementConsistencyFitness, and outputs champion rules as JSON, CSV logs, and GIFs.
+  The code is self-contained, pandas-free, and configurable via environment variables.
+notes: "Code fully extracted and displayed for manual inspection/copying."
+```
