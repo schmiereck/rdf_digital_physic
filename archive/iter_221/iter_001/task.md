@@ -1,0 +1,1 @@
+Examine current_state.md and goal.md in the root directory. List the python files in src/ and their roles. Locate the evolutionary search scripts. Output a summary of your findings.
