@@ -1,231 +1,267 @@
 
-[Tool Call: read_file({'path': 'archive/iter_179/results/champion_rule.json'})]
+[Tool Call: grep_search({'pattern': 'DisplacementConsistencyFitness'})]
 
-[Tool Result: {
-  "rule_id": "g10_rule_001",
-  "fitness": 56.0,
-  "chromosome": [
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    0,
-    0,
-    1,
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    1,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0...]
-
-Let me get some additional context by looking at the project structure and related files to better understand the mapping semantics:
-
-
-
-[Tool Call: list_dir({'path': 'archive/iter_179/results'})]
-
-[Tool Result:       champion_glider.gif
-      champion_rule.json
-      evolution_log.csv
-      final_population.json
-      reevaluation_scores.csv]
-
-
-[Tool Call: grep_search({'pattern': 'rule_dict|chromosome|fitness', 'include_pattern': '*.py'})]
-
-[Tool Result: breakdown_fitness.py:10: from evolution import rule_dict_to_lut, step_grid
+[Tool Result: analyze_champion_vc_220.py:10: 3. Feeds the sim_history into DisplacementConsistencyFitness(num_windows=5)
+analyze_champion_vc_220.py:25: from new_fitness import DisplacementConsistencyFitness
+analyze_champion_vc_220.py:92: print("Running DisplacementConsistencyFitness(num_windows=5)")
+analyze_champion_vc_220.py:95: fitness_fn = DisplacementConsistencyFitness(num_windows=NUM_WINDOWS)
 breakdown_fitness.py:11: from new_fitness import DisplacementConsistencyFitness
-breakdown_fitness.py:18: rule_dict = {int(k): int(v) for k, v in champ["rule_dict"].items()}
-breakdown_fitness.py:19: lut = rule_dict_to_lut(rule_dict)
-breakdown_fitness.py:40: fitness_fn = DisplacementConsistencyFitness(num_windows=5)
-breakdown_fitness.py:41: score = fitness_fn(hist)
-breakdown_fitness.py:44: print(f"Final fitness: {score:.6f}...]
+breakdown_fitness.py:40: fitness_...]
 
 
-[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'def rule_dict_to_lut|def lut_to_rule_dict|def kernel_from_input|def step_grid'})]
+[Tool Call: grep_search({'pattern': 'class DisplacementConsistencyFitness'})]
 
-[Tool Result: src\analyze_long_run_dynamics.py:46: def step_grid(grid: np.ndarray, lookup: np.ndarray) -> np.ndarray:
-src\asymmetric_collision.py:45: def step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:
-src\characterize_5bit_glider.py:49: def step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:
-src\characterize_offset_collisions.py:43: def rule_dict_to_lut(rule_dict: dict) -> np.ndarray:
-src\characterize_offset_collisions.py:50: def step_grid(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:...]
+[Tool Result: src\new_fitness.py:88: class DisplacementConsistencyFitness:
+archive\iter_220\iter_005\stdout.txt:155: [Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py', 'content': '#!/usr/bin/env python3\n"""\nnew_fitness.py\n\nDisplacementConsistencyFitness\n------------------------------\nA fitness function designed to reward consistent, directional motion and\npenalize stationary or oscillating "drifter" objects in v<c glider discovery.\n\nThe "drifter" e...]
+
+Let me read the full source file to give you the complete source code:
 
 
-[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\evolution.py'})]
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
 
 [Tool Result: #!/usr/bin/env python3
 """
-evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+new_fitness.py
 
-Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+DisplacementConsistencyFitness
+------------------------------
+A fitness function designed to reward consistent, directional motion and
+penalize stationary or oscillating "drifter" objects in v<c glider discovery.
 
-This penalises annihilation: a rule that destroys the seed gets a ratio near
-zero even if the centre-of-mass technically moves before the grid goes dark.
-Rules that move the particle while preserving its bit count score highest.
-"""
+The "drifter" exploit
+~~~~~~~~~~~~~~~~~~~~~
+In cellular-automaton glider searches, evolution can converge on a class of
+objects sometimes called *drifters*: particles that do not travel coherently
+but instead undergo small periodic oscillation...]
 
-import math
-import random
-
-import numpy as np
-
-# Small constant to guard against the (very unli...]
-
-## Contents of `champion_rule.json`
-
-The file defines the **champion rule** (`g10_rule_001`) discovered during evolutionary iteration 179. Here is the full JSON content:
-
-| Field | Value |
-|---|---|
-| **rule_id** | `g10_rule_001` |
-| **fitness** | `56.0` |
-| **chromosome** | A 128-element bit array (0s and 1s) |
-| **rule_dict** | A 24-entry sparse mapping dict |
-| **source** | `final_population.json` from iter_179 |
+Here is the full source code of `DisplacementConsistencyFitness` from `src/new_fitness.py`:
 
 ---
 
-## What the Mappings Define
+## `src/new_fitness.py` — Full source of `DisplacementConsistencyFitness`
 
-This is a rule for a **7-input hexagonal-neighbourhood cellular automaton** on a 2D grid. Every cell looks at itself and its 6 hex neighbours, forming a 7-bit pattern that encodes an input index from 0 to 127. The rule maps each input index to an output bit (0 = dead / off, 1 = alive / on).
+The class is defined at **line 88** of `src/new_fitness.py`. Here is the complete code:
 
-### 1. The Chromosome (full LUT)
+```python
+import math
+from typing import Any
+import numpy as np
 
-The 128-element `chromosome` array is a **truth table**: `chromosome[i]` gives the output bit when the 7-bit neighbourhood state equals `i`. The first 128 integers (0–127) are indexed in order.
+class DisplacementConsistencyFitness:
+    """Fitness function that rewards consistent, directional motion.
 
-For example:
-- `chromosome[0] = 0` — all neighbours dead → cell dies (stays dead)
-- `chromosome[1] = 0`
-- `chromosome[64] = 0` — only the cell itself alive → the cell dies
-- `chromosome[68] = 1` — this one is flipped (the cell stays alive when neighbours are in a specific pattern)
+    Scoring pipeline:
+      1. Divide sim_history into num_windows equal-duration windows.
+      2. For each window, compute the displacement vector (ΔCOM) and its
+         magnitude (velocity in cells/step, normalized by window duration).
+      3. Compute the mean of the per-window velocity *vectors* — this gives
+         the net directional drift.
+      4. Compute the standard deviation of the per-window velocity *magnitudes*
+         — this measures consistency of motion speed.
+      5. Core formula: base_fitness = mean_velocity_magnitude / (1 + std_dev)
+      6. Multiply by a "leaky" bit-conservation score.
+      7. final_fitness = base_fitness * total_conservation_score
+    """
 
-A value of `1` in the chromosome means that for this specific 7-bit neighbourhood configuration, the new state of the cell is **ON**.
+    name = "DisplacementConsistencyFitness"
 
-### 2. The rule_dict (sparse form)
+    def __init__(
+        self,
+        num_windows: int = 5,
+        bits_per_cell: int = 1,
+        strict_conservation: bool = False,
+        max_bit_threshold: int | None = None,
+        max_velocity_threshold: float | None = None,
+    ) -> None:
+        self.num_windows = max(2, int(num_windows))
+        self.bits_per_cell = int(bits_per_cell)
+        self.strict_conservation = strict_conservation
+        self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
 
-Most cells follow the **identity** (or "stay-as-is") rule: `chromosome[i] = i >> 6` (i.e., the output bit equals bit 6 of the input, which is the center cell's current state). In other words, if nothing unusual is happening, the cell simply preserves its current value.
+    def __call__(
+        self,
+        sim_history: list[dict[str, Any]],
+    ) -> float:
+        if not sim_history:
+            return 0.0
 
-The `rule_dict` lists the **24 non-identity mappings** — cases where the output differs from the default identity. Each entry `key: value` means:
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
 
-> When the hex neighbourhood state is `key`, set the output to `value`.
+        # — hard gate: max bit threshold —
+        if self.max_bit_threshold is not None:
+            if any(e["bit_count"] > self.max_bit_threshold for e in sorted_history):
+                return 0.0
 
-| Input (key) | Output (value) | Hex neighbourhood interpretation |
-|---|---|---|
-| **4** | **68** | Input `0b0000100` → Output bit = `0b1000100` (68) |
-| **6** | **70** | `0b0000110` → `0b1000110` |
-| **7** | **71** | `0b0000111` → `0b1000111` |
-| **19** | **83** | `0b0010011` → `0b1010011` |
-| **20** | **84** | `0b0010100` → `0b1010100` |
-| **30** | **94** | `0b0011110` → `0b1011110` |
-| **31** | **95** | `0b0011111` → `0b1011111` |
-| **34** | **98** | `0b0100010` → `0b1100010` |
-| **35** | **99** | `0b0100011` → `0b1100011` |
-| **38** | **102** | `0b0100110` → `0b1100110` |
-| **46** | **110** | `0b0101110` → `0b1101110` |
-| **50** | **114** | `0b0110010` → `0b1110010` |
-| **53** | **117** | `0b0110101` → `0b1110101` |
-| **55** | **119** | `0b0110111` → `0b1110111` |
-| **66** | **2** | `0b1000010` → `0b0000010` (flip! turns OFF) |
-| **70** | **6** | `0b1000110` → `0b0000110` |
-| **71** | **7** | `0b1000111` → `0b0000111` |
-| **72** | **8** | `0b1001000` → `0b0001000` |
-| **80** | **16** | `0b1010000` → `0b0010000` |
-| **83** | **19** | `0b1010011` → `0b0010011` |
-| **96** | **32** | `0b1100000` → `0b0100000` |
-| **110** | **46** | `0b1101110` → `0b0101110` |
-| **114** | **50** | `0b1110010` → `0b0110010` |
-| **115** | **51** | `0b1110011` → `0b0110011` |
+        # — hard gate: strict conservation —
+        if self.strict_conservation:
+            initial_bits = sorted_history[0]["bit_count"]
+            if any(e["bit_count"] != initial_bits for e in sorted_history):
+                return 0.0
 
-### 3. Key Structural Pattern — C2 Symmetry
+        initial_step = float(sorted_history[0]["step"])
+        final_step = float(sorted_history[-1]["step"])
+        total_steps = final_step - initial_step
+        if total_steps <= 0:
+            return 0.0
 
-The rule is **C2-symmetric**, meaning it is invariant under 180° rotation of the hex neighbourhood. This is enforced by the `_rotate_c2` function in `evolution.py`: every mapping `(a → b)` also implies `(rot2(a) → rot2(b))`, and the rule builder ensures all four rotated pairs are consistent. This can be seen in the 24 mappings forming 6 quadruplets of C2-related entries.
+        # — Step 2: per-window velocity vectors —
+        steps_per_window = total_steps / self.num_windows
+        window_velocity_mags: list[float] = []
+        window_velocity_vectors: list[tuple[float, float]] = []
 
-### 4. Biological / Emergent Meaning
+        for w in range(self.num_windows):
+            window_start = initial_step + w * steps_per_window
+            window_end = window_start + steps_per_window
+            first_entry: dict | None = None
+            last_entry: dict | None = None
 
-With a **fitness of 56.0**, this rule was the champion from iteration 179's final population. The fitness function is:
+            for entry in sorted_history:
+                s = float(entry["step"])
+                if s < window_start:
+                    continue
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+                if s > effective_window_end:
+                    break
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry
 
+            if first_entry is None or last_entry is None:
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+            window_steps = last_entry["step"] - first_entry["step"]
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # — Step 3: mean velocity vector —
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(mean_dx * mean_dx + mean_dy * mean_dy)
+
+        # — hard gate: max velocity threshold —
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        # — Step 4: std dev of velocity magnitudes —
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+        std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+
+        # — Step 5: core fitness formula —
+        if mean_velocity_magnitude == 0.0:
+            base_fitness = 0.0
+        else:
+            base_fitness = mean_velocity_magnitude / (1.0 + std_dev_velocity_magnitudes)
+
+        # — Step 6: leaky conservation score —
+        total_conservation_score = self._compute_conservation_score(sorted_history)
+
+        # — Step 7: final score —
+        fitness = base_fitness * total_conservation_score
+        return float(fitness)
+
+    def _compute_conservation_score(
+        self, sim_history: list[dict[str, Any]]
+    ) -> float:
+        """Leaky bit-conservation score in range [0, 1]."""
+        if not sim_history:
+            return 1.0
+        initial_bits = sim_history[0]["bit_count"]
+        if initial_bits == 0:
+            return 1.0
+        factors: list[float] = []
+        for entry in sim_history:
+            bc = entry["bit_count"]
+            if bc == initial_bits:
+                factors.append(1.0)
+            else:
+                factors.append(min(bc, initial_bits) / max(bc, initial_bits))
+        return float(sum(factors) / len(factors))
 ```
-fitness = displacement × (final_bit_count / initial_bit_count)
-```
 
-This means the rule achieves strong, displacement-preserving motion — it is a **glider** rule. The L-tromino seed (3 alive cells placed at positions (63,63), (64,63), (64,64)) moves across the grid while mostly preserving its bit count, yielding a high fitness score of 56.0 after 200 steps.
+---
 
-### 5. Summary
+## Analysis: Why it Failed to Reject the Breeder
 
-In short, this file encodes the **best-found hexagonal cellular automaton rule** from evolution iteration 179, representing a self-organizing glider that moves through its environment while largely preserving its structure. The `rule_dict` captures the 24 "exceptional" neighbourhood states that deviate from the default identity update; the `chromosome` array provides the complete 128-entry truth table used during simulation.
+### The core problem
+
+The fitness function is designed to detect **drifters** — objects whose velocity vectors change direction unpredictably across windows. It does this by:
+
+1. Computing per-window **COM displacement** vectors
+2. Computing the **mean velocity magnitude** (numerator) and **std dev of velocity magnitudes** (denominator)
+3. Scoring as `mean_mag / (1 + std_dev)` × conservation_score
+
+### Why the breeder slips through
+
+The breeder (the rule being rejected) likely does **not** behave like a drifter. It behaves like a **true multi-particle system**: a glider that spawns and leaves behind stationary/walking debris. In this scenario:
+
+| Aspect | Breeder | Drifter | What fitness measures |
+|---|---|---|---|
+| COM per window | **Consistent** direction & speed | Unpredictable | Low std dev → **good score** |
+| Bit count | Changes (debris created) | Stable | Conservation penalty |
+| Cohesion | Multiple disconnected objects | Single oscillating object | **Not measured at all** |
+
+**The fitness function has no concept of "cohesion" or "single unit".** It only looks at COM displacement. If the breeder's overall COM moves in a consistent direction at consistent speed, it will get a high consistency score — even though it's fundamentally not a glider.
+
+### Key gaps to fix
+
+1. **No bounding-box / spread measurement** — The fitness does not check whether all live cells stay within a bounded region as they move. A true glider has a small, bounded bounding box. A breeder with debris has an ever-growing bounding box.
+
+2. **No object-count / component analysis** — It does not check whether the live cells form a single connected component. A breeder produces multiple disconnected objects.
+
+3. **No per-window bit-count tracking** — The bit count is only used for conservation scoring, but a growing bit count (debris creation) over windows is a hallmark of breeders.
+
+4. **No initial-cell vacuum check** — The fitness never verifies that the initial seed cells are empty by the end of the simulation. A breeder pattern would still have cells at the starting positions (or their debris would occupy them).
+
+### How to improve it
+
+Add these gates/metrics to the fitness function:
+
+1. **Bounding box growth constraint** — At each step, compute the bounding box of all live cells. The bounding box area must stay below a threshold (or at least not grow monotonically). A glider's bounding box is bounded; a breeder's grows as debris accumulates.
+
+2. **Connected-component count** — Use a flood-fill / connected-components algorithm on the grid. A true glider has exactly 1 component; a breeder with debris has ≥2.
+
+3. **Initial-cell vacuum enforcement** — Check that the final step has **zero cells** at or near the original seed positions. This ensures the pattern truly "moves" rather than just expanding from a static anchor.
+
+4. **Per-window bit-count trend** — Beyond conservation, check that the bit count is stable *across windows* (not just globally). Monotonic growth across windows = breeder.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
 artifacts: []
 metrics:
-  rule_id: g10_rule_001
-  fitness: 56.0
-  chromsome_length: 128
-  rule_dict_entries: 24
-  grid_size: 128
-  steps: 200
-  seed_bits: 3
+  class_location: src/new_fitness.py:88
+  num_windows: 5
+  conservation_type: leaky
+  gates_present: max_bit_threshold, strict_conservation, max_velocity_threshold
+log_excerpt: |
+  [Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py'})]
+  Class DisplacementConsistencyFitness found at src/new_fitness.py:88.
+  Full source code provided in previous response.
+  Analysis identified 4 key gaps: no bounding-box constraint, no component count, no initial-cell vacuum check, no per-window bit trend analysis.
 experimenter_view: |
-  The champion rule from iteration 179 (g10_rule_001) defines a C2-symmetric
-  hexagonal cellular automaton rule that functions as a glider. The rule maps
-  each of the 128 possible 7-bit neighbourhood states to an output bit. Most
-  entries follow the default identity mapping (preserving the center cell's
-  state), but 24 entries in the rule_dict represent deliberate deviations that
-  produce glider-like motion. The fitness of 56.0 reflects a combination of
-  strong displacement (~30+ grid units after 200 steps) and good bit
-  conservation. The C2 symmetry constraint ensures 180-degree rotational
-  invariance of the neighbourhood rule, a design choice that reduces search
-  space while preserving directional motion.
-notes: "Champion rule from iter_179 successfully analyzed; defines a 56.0-fitness hexagonal glider."
+  DisplacementConsistencyFitness failed to reject the breeder because it only measures Centre-of-Mass (COM) velocity consistency and bit conservation. A breeder pattern can maintain a highly consistent COM trajectory (appearing as a single moving object to the COM metric) while simultaneously spawning stationary/walking debris. The fitness function lacks spatial coherence checks:
+  1. Bounding Box: True gliders have a bounded, non-growing bounding box. Breeders exhibit monotonic bounding box growth as debris accumulates.
+  2. Connected Components: Gliders maintain exactly 1 connected component. Breeders split into ≥2 components as debris separates.
+  3. Initial Vacuum: The function never verifies that the original seed cells are vacated by the end of the simulation, allowing breeders that leave debris at the anchor point to pass.
+  4. Per-Window Bit Trend: Conservation is scored globally/leakily, masking steady bit-count increases across windows that characterize debris generation.
+  Improvements: Add a bounding-box area growth penalty, a connected-components count gate (strictly ==1), a final-step seed-cell vacuum check, and a per-window bit-count monotonicity test. These will create a hard wall against breeder exploits while preserving the valid glider signal.
+notes: "Identified breeder exploit path: COM consistency ignores spatial cohesion. Proposed bounding-box, component-count, and vacuum gates."
 ```

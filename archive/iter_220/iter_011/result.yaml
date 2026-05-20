@@ -1,34 +1,44 @@
 artifacts: []
-experimenter_view: 'The champion rule from iteration 179 (g10_rule_001) defines a
-  C2-symmetric
+experimenter_view: 'DisplacementConsistencyFitness failed to reject the breeder because
+  it only measures Centre-of-Mass (COM) velocity consistency and bit conservation.
+  A breeder pattern can maintain a highly consistent COM trajectory (appearing as
+  a single moving object to the COM metric) while simultaneously spawning stationary/walking
+  debris. The fitness function lacks spatial coherence checks:
 
-  hexagonal cellular automaton rule that functions as a glider. The rule maps
+  1. Bounding Box: True gliders have a bounded, non-growing bounding box. Breeders
+  exhibit monotonic bounding box growth as debris accumulates.
 
-  each of the 128 possible 7-bit neighbourhood states to an output bit. Most
+  2. Connected Components: Gliders maintain exactly 1 connected component. Breeders
+  split into ≥2 components as debris separates.
 
-  entries follow the default identity mapping (preserving the center cell''s
+  3. Initial Vacuum: The function never verifies that the original seed cells are
+  vacated by the end of the simulation, allowing breeders that leave debris at the
+  anchor point to pass.
 
-  state), but 24 entries in the rule_dict represent deliberate deviations that
+  4. Per-Window Bit Trend: Conservation is scored globally/leakily, masking steady
+  bit-count increases across windows that characterize debris generation.
 
-  produce glider-like motion. The fitness of 56.0 reflects a combination of
+  Improvements: Add a bounding-box area growth penalty, a connected-components count
+  gate (strictly ==1), a final-step seed-cell vacuum check, and a per-window bit-count
+  monotonicity test. These will create a hard wall against breeder exploits while
+  preserving the valid glider signal.
 
-  strong displacement (~30+ grid units after 200 steps) and good bit
+  '
+log_excerpt: '[Tool Call: read_file({''path'': ''C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\new_fitness.py''})]
 
-  conservation. The C2 symmetry constraint ensures 180-degree rotational
+  Class DisplacementConsistencyFitness found at src/new_fitness.py:88.
 
-  invariance of the neighbourhood rule, a design choice that reduces search
+  Full source code provided in previous response.
 
-  space while preserving directional motion.
+  Analysis identified 4 key gaps: no bounding-box constraint, no component count,
+  no initial-cell vacuum check, no per-window bit trend analysis.
 
   '
 metrics:
-  chromsome_length: 128
-  fitness: 56.0
-  grid_size: 128
-  rule_dict_entries: 24
-  rule_id: g10_rule_001
-  seed_bits: 3
-  steps: 200
-notes: Champion rule from iter_179 successfully analyzed; defines a 56.0-fitness hexagonal
-  glider.
+  class_location: src/new_fitness.py:88
+  conservation_type: leaky
+  gates_present: max_bit_threshold, strict_conservation, max_velocity_threshold
+  num_windows: 5
+notes: 'Identified breeder exploit path: COM consistency ignores spatial cohesion.
+  Proposed bounding-box, component-count, and vacuum gates.'
 status: ok
