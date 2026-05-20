@@ -1,1 +1,1 @@
-Write and run a Python script to replace the incorrect unwrapping code in src/new_fitness.py with the corrected version (which calculates dx, dy between sorted_history[i] and sorted_history[i-1] instead of unwrapped_coms[-1]). Confirm success.
+Write a python script to search for com_and_bits in src/run_evolution_exp_221.py and print its definition. Run this script.
