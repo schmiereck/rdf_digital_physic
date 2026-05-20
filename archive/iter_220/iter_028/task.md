@@ -1,8 +1,5 @@
-Characterize the NEW sub-light consistency champion rule from `archive/iter_220/results/champion_vc_rule_consistency.json`:
-1. Load the rule dict from the JSON.
-2. Run a 500-step simulation on a 128x128 toroidal grid with the 3-bit L-tromino seed.
-3. Measure and record: CoM, active cell count, displacement, and step velocity.
-4. Detect its period of oscillation and canonical shapes.
-5. Classify the motion (STATIONARY, OSCILLATING, MOVING/GLIDER) and determine its exact average velocity `v`.
-6. Verify if it is a true, stable `v<c` glider that perfectly or near-perfectly conserves its size without growing or breeding.
-7. Save the detailed trajectory analysis to `archive/iter_220/results/trajectory_log_consistency.txt` (or similar file inresults/). Ensure that it runs without errors and print the final trajectory summary.
+1. Create `src/run_evolution_exp_220_sublight.py` by copying the structure of `src/run_evolution_exp_220.py` but modifying the fitness function to use `SubLightFitness` from `src/fitness_functions.py`.
+2. Configure it with:
+   _fitness_fn = SubLightFitness(simulation_steps=500, window_start=200, window_end=400, period_window_start=200, period_window_end=400)
+3. Run the script to execute the evolutionary search for a true, periodic, sub-light speed (v<c) glider.
+4. Output the results (the final fitness of the champion, its chromosome, and whether a true v<c glider was found). Ensure the results are saved to `archive/iter_220/results/`.
