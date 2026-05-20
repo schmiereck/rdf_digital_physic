@@ -1,1 +1,1 @@
-List all files in src/ directory. Also print the class definitions and docstrings from src/new_fitness.py and src/fitness_functions.py to understand what fitness functions are available.
+List all key python files in src/ related to evolution, fitness, and simulation. Check if src/run_evolution_exp_220_fixed.py and src/new_fitness.py are present, and print the first 50 lines of both to understand their structure and imports.
