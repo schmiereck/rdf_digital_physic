@@ -1,1 +1,1 @@
-Examine current_state.md and goal.md in the root directory. List the python files in src/ and their roles. Locate the evolutionary search scripts. Output a summary of your findings.
+List all files in src/ directory. Also print the class definitions and docstrings from src/new_fitness.py and src/fitness_functions.py to understand what fitness functions are available.
