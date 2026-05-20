@@ -1,0 +1,28 @@
+Search through our archived populations and rules for any rule that supports BOTH a sub-light glider (v<c) and a light-speed glider (v=1c).
+Write a Python script `src/search_mixed_glider_rules.py` that will search:
+1. `archive/iter_215/results/champion_rule.json`
+2. All rules in `archive/iter_215/results/final_population.json`
+3. All rules in `archive/iter_215/results/warm_start_population.json`
+4. `archive/iter_218/results/champion_rule.json`
+5. `archive/iter_218/results/champion_vc_rule.json`
+6. `archive/iter_221/results/champion_rule.json`
+7. `archive/iter_221/results/champion_rule_perfect.json`
+8. `archive/iter_221/results/champion_rule_unwrapped.json`
+9. `archive/iter_221/results/champion_vc_rule.json`
+10. `archive/iter_222/results/champion_rule_perfect.json`
+
+For each rule, test all 11 contiguous 3-bit seeds and 44 contiguous 4-bit seeds for 200 steps on a 128x128 grid.
+A glider is defined as:
+- Perfect or near-perfect size conservation (final_bit_count == initial_bit_count, or within ±1).
+- Stable period (detected and <= 20).
+- Consistent velocity (velocity magnitude std_dev across 5 windows < 0.05).
+- v<c glider: mean speed between 0.1 and 0.9.
+- v=1c glider: mean speed > 0.9.
+
+If you find any matching rules:
+- Save details (the rule, the source file, the seed and velocity of the v<c glider, and the seed and velocity of the v=1c glider) to `archive/iter_223/results/found_mixed_rules.json`.
+- If you find a rule that supports both, run a collision simulation between the two gliders! Try to place them at a distance, oriented toward each other, and simulate the collision for 300 steps. Try different offsets and initial positions.
+- Record the collision results (does it conserve bits? does it scatter elastically or merge or explode?).
+- Save the results to `archive/iter_223/results/mixed_collision_results.json`.
+
+Summarize your findings in detail in the final response.
