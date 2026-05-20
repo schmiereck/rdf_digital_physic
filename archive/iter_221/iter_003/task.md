@@ -1,1 +1,1 @@
-List files in the root directory. If current_state.md exists, print its contents.
+Read the full src/run_evolution_exp_220_fixed.py file or print its contents so that we can see how the GA is written, including selection, mutation, crossover, and saving.
