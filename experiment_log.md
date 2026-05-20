@@ -938,3 +938,28 @@ The stable, sub-light speed (`v<c`) glider discovered via the 72-orbit C2-symmet
 
 **Notes:** v<c glider fully characterized and validated: moves at 0.469c with excellent velocity consistency (std_dev = 0.0044).
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 223
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_223: strategy_error
+
+**Analysis:** [Errno 11001] getaddrinfo failed
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: [Errno 11001] getaddrinfo failed
+
