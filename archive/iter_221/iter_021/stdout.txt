@@ -1,7 +1,7 @@
 
-[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 200, 'end_line': 260})]
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 200, 'end_line': 280})]
 
-[Tool Result: --- lines 200 to 260 of 430 ---
+[Tool Result: --- lines 200 to 280 of 461 ---
             - ``'com'``  : tuple[float, float] — centre of mass (row, col).
             - ``'bit_count'`` : int — number of live cells at that step.
 
@@ -15,97 +15,122 @@
             history is empty, when the simulation runs for zero steps,
             ...]
 
-Here are lines 200–260 of `src/new_fitness.py`:
-
----
+Here are lines 200–280 of `src/new_fitness.py`:
 
 ```
-            - ``'com'``  : tuple[float, float] — centre of mass (row, col).
-            - ``'bit_count'`` : int — number of live cells at that step.
-
-            The history should be ordered chronologically (though the method
-            sorts internally for safety).
-
-        Returns
-        -------
-        float
-            Final fitness score. A score of 0.0 is returned when the
-            history is empty, when the simulation runs for zero steps,
-            or when there is no net displacement.
-
-        Examples
-        --------
-        >>> sim_history = [
-        ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
-        ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
-        ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
-        ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
-        ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
-        ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
-        ... ]
-        >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
-        """
-        if not sim_history:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 1. Sort by step (defensive — history should be ordered but
-        #    we sort to be safe)
-        # ------------------------------------------------------------------
-        sorted_history = sorted(sim_history, key=lambda e: e["step"])
-
-        if self.max_bit_threshold is not None:
-            if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
-                return 0.0
-
-        if self.strict_conservation:
-            initial_bits = sorted_history[0]["bit_count"]
-            if any(entry["bit_count"] != initial_bits for entry in sorted_history):
-                return 0.0
-
-        initial_step = float(sorted_history[0]["step"])
-        final_step = float(sorted_history[-1]["step"])
-        total_steps = final_step - initial_step
-
-        if total_steps <= 0:
-            return 0.0
-
-        # ------------------------------------------------------------------
-        # 2. Compute per-window velocity vectors
-        # ------------------------------------------------------------------
-        steps_per_window = total_steps / self.num_windows
-
-        window_velocity_mags: list[float] = []
-        window_velocity_vectors: list[tuple[float, float]] = []
-
-        for w in range(self.num_windows):
-            window_start = initial_step + w * steps_per_window
-            window_end = window_start + steps_per_window
+200          """Calculate a fitness score for a given simulation history.
+201 
+202         The score rewards consistent, linear displacement of the
+203         centre of mass (COM) across evenly-spaced time windows.
+204 
+205         Parameters
+206         ----------
+207         sim_history : list[dict]
+208             Each dict represents one simulation frame and must contain:
+209             - ``'step'``     : int  — step number.
+210             - ``'com'``      : tuple[float, float] — centre of mass (row, col).
+211             - ``'bit_count'`` : int — number of live cells at that step.
+212 
+213             The history should be ordered chronologically (though the method
+214             sorts internally for safety).
+215 
+216         Returns
+217         -------
+218         float
+219             Final fitness score. A score of 0.0 is returned when the
+220             history is empty, when the simulation runs for zero steps,
+221             or when there is no net displacement.
+222 
+223         Examples
+224         --------
+225         >>> sim_history = [
+226         ...     {"step": 0,  "com": (64.0, 64.0),  "bit_count": 3},
+227         ...     {"step": 50, "com": (60.0, 60.5),  "bit_count": 3},
+228         ...     {"step": 100,"com": (56.0, 57.0),  "bit_count": 3},
+229         ...     {"step": 150,"com": (52.0, 53.5),  "bit_count": 3},
+230         ...     {"step": 200,"com": (48.0, 50.0),  "bit_count": 3},
+231         ...     {"step": 250,"com": (44.0, 46.5),  "bit_count": 3},
+232         ... ]
+233         >>> fitness = DisplacementConsistencyFitness(num_windows=5)(sim_history)
+234         """
+235         if not sim_history:
+236             return 0.0
+237 
+238         # ------------------------------------------------------------------
+239         # 1. Sort by step (defensive — history should be ordered but
+240         #    we sort to be safe)
+241         # ------------------------------------------------------------------
+242         sorted_history = sorted(sim_history, key=lambda event: event["step"])
+243         # ------------------------------------------------------------------
+244         # Center-of-mass unwrapping to handle toroidal grid boundaries.
+245         # When the COM jumps from near one edge to the opposite edge,
+246         # raw displacement would be wrong.  We unwrap consecutive COM
+247         # deltas to remove artificial discontinuities.
+248         # ------------------------------------------------------------------
+249         unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]
+250         for i in range(1, len(sorted_history)):
+251             prev_com = unwrapped_coms[-1]
+252             cur_com = sorted_history[i]["com"]
+253             dx = cur_com[0] - prev_com[0]
+254             dy = cur_com[1] - prev_com[1]
+255             # Assume grid wraps at 128 (GRID_SIZE).  Unwrap deltas:
+256             if dx > 64:
+257                 dx -= 128.0
+258             elif dx < -64:
+259                 dx += 128.0
+260             if dy > 64:
+261                 dy -= 128.0
+262             elif dy < -64:
+263                 dy += 128.0
+264             unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
+265 
+266         # Replace the raw COMs with unwrapped ones for downstream calc.
+267         unwrapped_history: list[dict] = []
+268         for i, entry in enumerate(sorted_history):
+269             unwrapped_entry = dict(entry)
+270             unwrapped_entry["com"] = unwrapped_coms[i]
+271             unwrapped_history.append(unwrapped_entry)
+272         sorted_history = unwrapped_history
+273 
+274 
+275         if self.max_bit_threshold is not None:
+276             if any(entry["bit_count"] > self.max_bit_threshold for entry in sorted_history):
+277                 return 0.0
+278 
+279         if self.strict_conservation:
+280             initial_bits = sorted_history[0]["bit_count"]
 ```
 
-**What this reveals about history parsing and center-of-mass computation:**
+## Summary of History & COM Unwrapping Handling
 
-1. **History format:** `sim_history` is a list of dictionaries, each with:
-   - `"step"` — the simulation step number
-   - `"com"` — a `(row, col)` tuple representing the center of mass at that step
-   - `"bit_count"` — the number of live cells at that step
+The key logic for handling the **center of mass (COM) history** and **unwrapping** works as follows:
 
-2. **Center of mass usage:** The `com` value is used to compute per-window velocity vectors. The method splits the total simulation into `num_windows` equal-size windows, then calculates the velocity (displacement over time) within each window. Consistency of these velocities across windows is what the fitness score evaluates.
+1. **Sorting (line 242):** The simulation history is sorted by step number defensively, even though it should already be chronologically ordered.
 
-3. **Validation:** The method enforces bit conservation (`strict_conservation` mode or `max_bit_threshold`) and returns `0.0` if the history is empty or has zero total steps.
+2. **Toroidal unwrapping (lines 249–264):** On a grid that wraps around at 128 (GRID_SIZE), raw COM positions could show a large jump when the COM crosses a boundary (e.g., from row 5 to row 123). The unwrapping logic:
+   - Starts with the first COM as the anchor.
+   - For each subsequent step, computes the delta (`dx`, `dy`) from the previously *unwrapped* COM.
+   - If the delta exceeds half the grid size (> 64 or < -64), it assumes the COM crossed a toroidal boundary and corrects the delta by ±128.
+   - The corrected delta is accumulated to produce a monotonically unwrapped COM trajectory.
+
+3. **Replacement (lines 267–272):** The unwrapped COM coordinates replace the raw ones in the history, so all downstream calculations (displacement consistency, etc.) operate on the physically correct, discontinuity-free trajectory.
+
+4. **Bit conservation checks (lines 275–280):** If `max_bit_threshold` or `strict_conservation` is set, the history entries' `bit_count` is validated — returning 0.0 fitness if live-cell count exceeds a threshold or isn't conserved.
 
 [NUDGE RESPONSE]
+```yaml
 status: ok
 artifacts: []
 metrics: {}
 log_excerpt: |
-  # lines 200 to 260 of 430 ---
-  - ``'com'``  : tuple[float, float] — centre of mass (row, col).
-  - ``'bit_count'`` : int — number of live cells at that step.
-  ...
-  sorted_history = sorted(sim_history, key=lambda e: e["step"])
-  ...
-  steps_per_window = total_steps / self.num_windows
+  Successfully read and analyzed lines 200–280 of src/new_fitness.py.
+  Key logic extracted:
+  - Defensive chronological sorting by `step`.
+  - Toroidal unwrapping loop computes deltas from the previous *unwrapped* COM.
+  - Deltas exceeding ±64 are corrected by ±128 to handle 128-grid boundary crossings.
+  - Unwrapped COM coordinates replace raw values in each history dictionary.
+  - Downstream checks enforce bit conservation if `max_bit_threshold` or `strict_conservation` is active.
 experimenter_view: |
-  The code reveals that `sim_history` is a list of dictionaries containing 'step' (int/float), 'com' (tuple of floats representing row/col center of mass), and 'bit_count' (int). The fitness function sorts this history by step number to ensure chronological order. It then calculates velocities by dividing the total simulation duration into `num_windows` segments, computing the displacement vectors between the centers of mass at the start and end of each window. Strict bit conservation is enforced if `strict_conservation` is true.
-notes: "Successfully displayed lines 200-260 of src/new_fitness.py."
+  The `DisplacementConsistencyFitness` implementation correctly handles toroidal boundary artifacts. By accumulating corrected deltas instead of using absolute coordinates, it guarantees a monotonic, discontinuity-free COM trajectory. This is critical for accurate linear displacement scoring on wrapped grids. The optional bit-conservation filters ensure that only valid, closed-system simulations contribute to the fitness landscape.
+notes: "Task completed; tool read_file used directly to inspect COM unwrapping logic."
+```
