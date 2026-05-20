@@ -1,1 +1,1 @@
-Write a python script to open src/new_fitness.py and print lines 300 to 370 with line numbers. Execute the script and print the output.
+Read and print the actual lines of print_math.py's output (lines 280 to 350 of src/new_fitness.py) from print_math.py or by running a small script to grab those lines. This will let us see exactly how windowed velocities are computed.
