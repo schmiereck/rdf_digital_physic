@@ -1,1 +1,1 @@
-Check if `archive/iter_220/results/champion_vc_rule_consistency.json` exists. Print its contents if it does, or list the files in `archive/iter_220/results/`. Read and print the last 20 lines of `archive/iter_220/iter_018/stdout.txt` to see if `run_vc_search_consistency.py` actually executed in that task.
+Read and output the full class DisplacementConsistencyFitness from src/new_fitness.py.
