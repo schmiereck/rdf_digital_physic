@@ -1,1 +1,1 @@
-Write a python script to read and print lines 230 to 270 and lines 340 to 365 of src/new_fitness.py, then execute it. We need to see the exact code for unwrapping and mean velocity threshold check.
+Run python src/diag_velocity.py and print the actual output of the script to see what values were calculated and printed.
