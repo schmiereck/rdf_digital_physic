@@ -1,40 +1,10 @@
+I'll read the specified lines from the file to analyze the displacement computation and toroidal unwrapping logic.
 
-[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 260, 'end_line': 330})]
 
-[Tool Result: --- lines 260 to 330 of 430 ---
-            window_end = window_start + steps_per_window
 
-            # Find the first and last entries in this window's step range.
-            # The history is sorted, so we iterate and break early for
-            # efficiency once we pass the window boundary.
-            first_entry: dict | None = None
-            last_entry: dict | None = None
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 310, 'end_line': 365})]
 
-            for entry in sorted_history:
-                s = float(entry["step"])
-
-                # Skip entries bef...]
-
-```python
-            window_end = window_start + steps_per_window
-
-            # Find the first and last entries in this window's step range.
-            # The history is sorted, so we iterate and break early for
-            # efficiency once we pass the window boundary.
-            first_entry: dict | None = None
-            last_entry: dict | None = None
-
-            for entry in sorted_history:
-                s = float(entry["step"])
-
-                # Skip entries before this window
-                if s < window_start:
-                    continue
-
-                # Stop processing once we're past this window's end
-                # (the very last entry of the global history belongs to
-                #  the last window only, so we clamp window_end to
-                #  final_step for the final window to avoid excluding it).
+[Tool Result: --- lines 310 to 365 of 461 ---
                 effective_window_end = window_end
                 if w == self.num_windows - 1:
                     effective_window_end = final_step
@@ -47,65 +17,130 @@
                     first_entry = entry
                 last_entry = entry  # overwrite on every match → last one wins
 
-            if first_entry is None or last_entry is None:
-                # No data points in this window — zero velocity.
-                window_velocity_mags.append(0.0)
-                window_velocity_vectors.append((0.0, 0.0))
-                continue
+            if first_en...]
 
-            window_steps = last_entry["step"] - first_entry["step"]
+The file appears to end before line 365. Let me also check if there's any toroidal unwrapping logic elsewhere in the file by searching for it.
 
-            dx = last_entry["com"][0] - first_entry["com"][0]
-            dy = last_entry["com"][1] - first_entry["com"][1]
-            velocity_mag = math.sqrt(dx * dx + dy * dy)
 
-            if window_steps > 0:
-                velocity_mag = velocity_mag / window_steps
-                dx = dx / window_steps
-                dy = dy / window_steps
-            else:
-                velocity_mag = 0.0
-                dx = 0.0
-                dy = 0.0
 
-            window_velocity_mags.append(velocity_mag)
-            window_velocity_vectors.append((dx, dy))
+[Tool Call: grep_search({'pattern': 'toroidal|unwrap|periodic|boundary', 'include_pattern': 'src/new_fitness.py'})]
 
+[Tool Result: src\new_fitness.py:14: but instead undergo small periodic oscillations in place (stationary
+src\new_fitness.py:234: # Center-of-mass unwrapping to handle toroidal grid boundaries.
+src\new_fitness.py:236: # raw displacement would be wrong.  We unwrap consecutive COM
+src\new_fitness.py:239: unwrapped_coms: list[tuple[float, float]] = [sorted_history[0]["com"]]
+src\new_fitness.py:241: prev_com = unwrapped_coms[-1]
+src\new_fitness.py:254: unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
+s...]
+
+Lines 310-365 show the displacement computation within each window. Let me also read the toroidal unwrapping section (lines 234-262) to give the full picture.
+
+
+
+[Tool Call: read_file({'end_line': 262, 'path': 'src/new_fitness.py', 'start_line': 230})]
+
+[Tool Result: --- lines 230 to 262 of 461 ---
+        #    we sort to be safe)
         # ------------------------------------------------------------------
-        # 3. Calculate mean of windowed velocity vectors (directional drift)
+        sorted_history = sorted(sim_history, key=lambda e: e["step"])
         # ------------------------------------------------------------------
-        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
-        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
-        mean_velocity_magnitude = math.sqrt(
-            mean_dx * mean_dx + mean_dy * mean_dy
-        )
+        # Center-of-mass unwrapping to handle toroidal grid boundaries.
+        # When the COM jumps from near one edge to the opposite edge,
+        # raw displacement would be wrong.  We unwrap consecutive COM...]
 
-        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
-            return 0.0
+I already have the content from lines 310-365. Let me write a Python script that reads and prints those lines.
 
-        # ------------------------------------------------------------------
-        # 4. Calculate standard deviation of windowed velocity magnitudes
-        # ------------------------------------------------------------------
-        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\print_displacement.py', 'content': '"""\nScript to read and print lines 310-365 of src/new_fitness.py.\nThis reveals how displacement is computed and whether it handles\ntoroidal unwrapping.\n"""\n\ndef main():\n    filepath = "src/new_fitness.py"\n    start_line = 310\n    end_line = 365\n\n    with open(filepath, "r") as f:\n        lines = f.readlines()\n\n    total = len(lines)\n    print(f"File has {total} lines. Reading lines {start_line}–{end_line}.")\n    print("=" * 80)\n\n    for i, line in enumerate(lines[start_line - 1:end_line], start=start_line):\n        print(f"{i:4d}: {line}", end="")\n\n    print("=" * 80)\n    print("Done.")\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\print_displacement.py]
+
+Now let me run the script to demonstrate it works:
+
+
+
+[Tool Call: bash({'command': 'python print_displacement.py'})]
+
+[Tool Result: exit_code: 0
+stdout: File has 461 lines. Reading lines 310�365.
+================================================================================
+ 310:                 effective_window_end = window_end
+ 311:                 if w == self.num_windows - 1:
+ 312:                     effective_window_end = final_step
+ 313: 
+ 314:                 if s > effective_window_end:
+ 315:                     break
+ 316: 
+ 317:                 # This entry falls within the current window.
+ 318:       ...]
+
+The script works. Here's the analysis:
+
+## How Displacement is Computed (lines 310–365)
+
+The displacement within each time window is computed **naively** — it simply subtracts the raw COM coordinates:
+
+```python
+dx = last_entry["com"][0] - first_entry["com"][0]   # line 330
+dy = last_entry["com"][1] - first_entry["com"][1]   # line 331
 ```
+
+Then velocity magnitude is `sqrt(dx² + dy²) / window_steps` (lines 332–337).
+
+## Toroidal Unwrapping — Handled **Before** This Section
+
+**Yes, toroidal unwrapping *is* handled**, but it happens in the **upstream preprocessing** (lines 234–262 of the file). The unwrapping logic:
+
+1. Iterates through all history entries sorted by step
+2. For each consecutive pair of COM positions, computes the delta
+3. If the delta exceeds half the grid size (64 for a 128-grid), it corrects by ±128:
+   ```python
+   if dx > 64:    dx -= 128.0
+   elif dx < -64: dx += 128.0
+   ```
+4. The *cumulative* unwrapped positions are stored and replace the raw COMs in the history
+5. The downstream windowed displacement calculation (lines 310–365) then operates on these **already-unwrapped** COM values
+
+### Conclusion
+
+The displacement computation **relies on pre-unwrapped COM data**, so toroidal boundary crossings are correctly handled. The simple subtraction in line 330 is valid *because* the COM values coming in are continuous (no 0↔128 jumps). Without the unwrapping step (lines 234–262), a particle crossing a boundary would show an artificial jump of ~128 units in displacement, corrupting the velocity calculation.
 
 [NUDGE RESPONSE]
 ```yaml
 status: ok
-artifacts: []
-metrics: {}
+artifacts:
+  - print_displacement.py
+metrics:
+  file_total_lines: 461
+  lines_analyzed: "310-365"
 log_excerpt: |
-  --- lines 260 to 330 of 430 ---
-              window_end = window_start + steps_per_window
-
-              # Find the first and last entries in this window's step range.
-              # The history is sorted, so we iterate and break early for
-              # efficiency once we pass the window boundary.
-              first_entry: dict | None = None
-              last_entry: dict | None = None
-...
-              velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+  File has 461 lines. Reading lines 310–365.
+  ================================================================================
+    310:                 effective_window_end = window_end
+    311:                 if w == self.num_windows - 1:
+    312:                     effective_window_end = final_step
+    313: 
+    314:                 if s > effective_window_end:
+    315:                     break
+    ...
+    330:             dx = last_entry["com"][0] - first_entry["com"][0]
+    331:             dy = last_entry["com"][1] - first_entry["com"][1]
+    332:             velocity_mag = math.sqrt(dx * dx + dy * dy)
+    ...
+    362:         std_dev_velocity_magnitudes = float(np.std(velocity_magnitudes))
+    363: 
+    364:         # ------------------------------------------------------------------
+    365:         # 5. Core fitness formula
+  ================================================================================
+  Done.
 experimenter_view: |
-  Successfully retrieved lines 260-330 from src/new_fitness.py. The code snippet contains the logic for calculating windowed velocity vectors and standard deviation.
-notes: "Requested file lines printed to stdout."
+  The displacement within each time window is computed as a simple difference of
+  COM coordinates (lines 330-331), which would be incorrect on a toroidal grid.
+  However, toroidal unwrapping IS handled upstream in lines 234-262: consecutive
+  COM deltas are corrected when they exceed half the grid size (±64 for a 128
+  grid), producing continuous unwrapped COM values. The downstream velocity
+  calculation then operates on these unwrapped values, so boundary crossings are
+  handled correctly without artificial jumps.
+notes: "Toroidal unwrapping handled upstream via cumulative delta correction before windowed displacement calculation."
 ```
