@@ -1,1 +1,1 @@
-Find and print all lines containing self.max_velocity_threshold in src/new_fitness.py, along with 10 lines of context before and after each. Do not write yaml block or any other files, just print the python code to stdout.
+Read src/run_evolution_exp_221.py and print the part where DisplacementConsistencyFitness is instantiated. Is max_velocity_threshold passed to it?
