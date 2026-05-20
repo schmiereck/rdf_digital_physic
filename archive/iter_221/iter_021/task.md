@@ -1,0 +1,1 @@
+Print lines 200 to 260 of src/new_fitness.py so we see how history is parsed and how center of mass is computed. Do not write yaml block or any other files.
