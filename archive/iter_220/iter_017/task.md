@@ -1,1 +1,1 @@
-Check if `src/run_vc_search_consistency.py` exists, and check if `src/new_fitness.py` has been modified to include `strict_conservation` and `max_bit_threshold`. Print a few lines of both files to confirm.
+Search for all python files in src/ that import pandas. Output the list of files and how they use pandas. If we want to run evolutionary search without pandas, which files do we need to modify?
