@@ -1,0 +1,1 @@
+Read and print the contents of `archive/iter_220/results/champion_vc_rule_consistency.json`. Let us know what the new fitness, rule_dict size, and configuration are! Check if it succeeded in finding a champion with non-zero fitness.
