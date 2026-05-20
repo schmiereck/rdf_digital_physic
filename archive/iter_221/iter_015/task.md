@@ -1,0 +1,1 @@
+Print the exact lines of DisplacementConsistencyFitness in src/new_fitness.py. Keep it focused on the __init__ and __call__ or evaluate methods. Do not write yaml block or any other files, just print the python code to stdout.
