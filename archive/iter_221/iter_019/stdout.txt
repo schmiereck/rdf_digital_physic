@@ -1,0 +1,111 @@
+
+[Tool Call: read_file({'path': 'src/new_fitness.py', 'start_line': 260, 'end_line': 330})]
+
+[Tool Result: --- lines 260 to 330 of 430 ---
+            window_end = window_start + steps_per_window
+
+            # Find the first and last entries in this window's step range.
+            # The history is sorted, so we iterate and break early for
+            # efficiency once we pass the window boundary.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                # Skip entries bef...]
+
+```python
+            window_end = window_start + steps_per_window
+
+            # Find the first and last entries in this window's step range.
+            # The history is sorted, so we iterate and break early for
+            # efficiency once we pass the window boundary.
+            first_entry: dict | None = None
+            last_entry: dict | None = None
+
+            for entry in sorted_history:
+                s = float(entry["step"])
+
+                # Skip entries before this window
+                if s < window_start:
+                    continue
+
+                # Stop processing once we're past this window's end
+                # (the very last entry of the global history belongs to
+                #  the last window only, so we clamp window_end to
+                #  final_step for the final window to avoid excluding it).
+                effective_window_end = window_end
+                if w == self.num_windows - 1:
+                    effective_window_end = final_step
+
+                if s > effective_window_end:
+                    break
+
+                # This entry falls within the current window.
+                if first_entry is None:
+                    first_entry = entry
+                last_entry = entry  # overwrite on every match → last one wins
+
+            if first_entry is None or last_entry is None:
+                # No data points in this window — zero velocity.
+                window_velocity_mags.append(0.0)
+                window_velocity_vectors.append((0.0, 0.0))
+                continue
+
+            window_steps = last_entry["step"] - first_entry["step"]
+
+            dx = last_entry["com"][0] - first_entry["com"][0]
+            dy = last_entry["com"][1] - first_entry["com"][1]
+            velocity_mag = math.sqrt(dx * dx + dy * dy)
+
+            if window_steps > 0:
+                velocity_mag = velocity_mag / window_steps
+                dx = dx / window_steps
+                dy = dy / window_steps
+            else:
+                velocity_mag = 0.0
+                dx = 0.0
+                dy = 0.0
+
+            window_velocity_mags.append(velocity_mag)
+            window_velocity_vectors.append((dx, dy))
+
+        # ------------------------------------------------------------------
+        # 3. Calculate mean of windowed velocity vectors (directional drift)
+        # ------------------------------------------------------------------
+        mean_dx = sum(v[0] for v in window_velocity_vectors) / self.num_windows
+        mean_dy = sum(v[1] for v in window_velocity_vectors) / self.num_windows
+        mean_velocity_magnitude = math.sqrt(
+            mean_dx * mean_dx + mean_dy * mean_dy
+        )
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
+
+        # ------------------------------------------------------------------
+        # 4. Calculate standard deviation of windowed velocity magnitudes
+        # ------------------------------------------------------------------
+        velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+```
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics: {}
+log_excerpt: |
+  --- lines 260 to 330 of 430 ---
+              window_end = window_start + steps_per_window
+
+              # Find the first and last entries in this window's step range.
+              # The history is sorted, so we iterate and break early for
+              # efficiency once we pass the window boundary.
+              first_entry: dict | None = None
+              last_entry: dict | None = None
+...
+              velocity_magnitudes = np.array(window_velocity_mags, dtype=np.float64)
+experimenter_view: |
+  Successfully retrieved lines 260-330 from src/new_fitness.py. The code snippet contains the logic for calculating windowed velocity vectors and standard deviation.
+notes: "Requested file lines printed to stdout."
+```
