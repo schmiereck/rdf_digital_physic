@@ -1,1 +1,1 @@
-Read and print the complete contents of `src/new_fitness.py` and `src/run_vc_search.py` so we see exactly how they are implemented, how bit conservation is calculated, and how the search is configured.
+List all python files in src/ by running a simple python script that prints their filenames and first 5 lines of each. Do not run pip list or any other heavy commands.
