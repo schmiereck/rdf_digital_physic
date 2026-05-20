@@ -4,7 +4,7 @@ run_vc_search_consistency.py  -  Evolutionary search for v<c gliders using Displ
 
 Setup
 -----
-* Fitness     : DisplacementConsistencyFitness with num_windows=5 and max_bit_threshold=6
+* Fitness     : DisplacementConsistencyFitness with num_windows=5, max_bit_threshold=6 and max_velocity_threshold=0.9
 * Population  : 100 random C2-symmetric rules
 * Generations : 20
 * Seed        : 3-bit L-tromino seed [[63, 63], [64, 63], [64, 64]]
@@ -236,6 +236,7 @@ def main() -> int:
     fitness_fn = DisplacementConsistencyFitness(
         num_windows=5,
         max_bit_threshold=6,
+        max_velocity_threshold=0.9,
     )
 
     t0 = time.time()

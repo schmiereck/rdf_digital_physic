@@ -140,9 +140,11 @@ class DisplacementConsistencyFitness:
     bits_per_cell : int
         Bits per cell (reserved for future multi-bit support). Default 1.
     strict_conservation : bool
-        If True, any bit count change makes the fitness 0.0.
+        Whether to enforce perfect, non-leaky mass conservation.
     max_bit_threshold : int or None
         If specified, any step exceeding this bit count makes the fitness 0.0.
+    max_velocity_threshold : float or None
+        If specified, any mean velocity magnitude >= this value returns 0.0.
 
     Attributes
     ----------
@@ -158,6 +160,7 @@ class DisplacementConsistencyFitness:
         bits_per_cell: int = 1,
         strict_conservation: bool = False,
         max_bit_threshold: int | None = None,
+        max_velocity_threshold: float | None = None,
     ) -> None:
         """Initialise the fitness function.
 
@@ -172,11 +175,14 @@ class DisplacementConsistencyFitness:
             Whether to enforce perfect, non-leaky mass conservation.
         max_bit_threshold : int, optional
             Maximum allowed bit count at any step.
+        max_velocity_threshold : float, optional
+            Maximum allowed mean velocity magnitude.
         """
         self.num_windows = max(2, int(num_windows))
         self.bits_per_cell = int(bits_per_cell)
         self.strict_conservation = strict_conservation
         self.max_bit_threshold = max_bit_threshold
+        self.max_velocity_threshold = max_velocity_threshold
 
     def __call__(
         self,
@@ -303,6 +309,9 @@ class DisplacementConsistencyFitness:
         mean_velocity_magnitude = math.sqrt(
             mean_dx * mean_dx + mean_dy * mean_dy
         )
+
+        if self.max_velocity_threshold is not None and mean_velocity_magnitude >= self.max_velocity_threshold:
+            return 0.0
 
         # ------------------------------------------------------------------
         # 4. Calculate standard deviation of windowed velocity magnitudes
