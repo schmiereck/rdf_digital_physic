@@ -1,1 +1,1 @@
-Inspect archive/iter_179/results/final_population.json. Print the keys and structure of the first individual in the population list to see how rules are represented in the population.
+Read and print the complete contents of `src/new_fitness.py` and `src/run_vc_search.py` so we see exactly how they are implemented, how bit conservation is calculated, and how the search is configured.
