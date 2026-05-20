@@ -1,74 +1,45 @@
 artifacts:
-- print_lines.py
-experimenter_view: 'The unwrapped Center of Mass (COM) correctly replaces the raw
-  COM values.
+- src/print_diag_history.py
+experimenter_view: 'UNWRAPPING HAD NO EFFECT. The champion rule''s COM never jumps
+  more than 64 cells
 
-  The code first accumulates unwrapped coordinates in a separate list
+  between consecutive steps, so the minimum-image correction in DisplacementConsistencyFitness
 
-  (lines 240-254), accounting for grid wrapping at 128 pixels. Then it
+  never triggers. The raw COM values show the pattern oscillates within the grid
 
-  iterates through the original sorted_history, creates a deep copy of
+  (r values: 14→92→120→20→48→76→...), but each individual step delta is always <64,
 
-  each entry, and overwrites the "com" key with the unwrapped value
+  so no wrap correction is applied. The velocity of ~0.025 cels/step is genuine:
 
-  (lines 257-262). Finally, sorted_history is reassigned to this new
+  the particle barely moves directionally — window 2 shows a 1-cell backward shift,
 
-  list. Downstream calculations (lines 265+) operate on the unwrapped
+  while other windows show only ~0.28 cells/step forward. The fitness of 0.019679
+  is
 
-  data. No bug was detected in this section; the replacement logic is
+  simply mean_velocity / (1 + std_dev) = 0.025333 / (1 + 0.2873) = 0.019679.
 
-  sound provided that unwrapped_coms is correctly initialized before
-
-  the loop and has a length matching sorted_history.
-
-  '
-log_excerpt: '240 |         for i in range(1, len(sorted_history)):
-
-  241 |             prev_com = unwrapped_coms[-1]
-
-  242 |             cur_com = sorted_history[i]["com"]
-
-  243 |             dx = cur_com[0] - prev_com[0]
-
-  244 |             dy = cur_com[1] - prev_com[1]
-
-  245 |             # Assume grid wraps at 128 (GRID_SIZE).  Unwrap deltas:
-
-  246 |             if dx > 64:
-
-  247 |                 dx -= 128.0
-
-  248 |             elif dx < -64:
-
-  249 |                 dx += 128.0
-
-  250 |             if dy > 64:
-
-  251 |                 dy -= 128.0
-
-  252 |             elif dy < -64:
-
-  253 |                 dy += 128.0
-
-  254 |             unwrapped_coms.append((prev_com[0] + dx, prev_com[1] + dy))
-
-  255 |
-
-  256 |         # Replace the raw COMs with unwrapped ones for downstream calc.
-
-  257 |         unwrapped_history: list[dict] = []
-
-  258 |         for i, entry in enumerate(sorted_history):
-
-  259 |             unwrapped_entry = dict(entry)
-
-  260 |             unwrapped_entry["com"] = unwrapped_coms[i]
-
-  261 |             unwrapped_history.append(unwrapped_entry)
-
-  262 |         sorted_history = unwrapped_history
+  This is NOT an artifact of unwrapping — it reflects genuinely slow, inconsistent
+  motion.
 
   '
-metrics: {}
-notes: Unwrapped COM replacement confirmed correct; no bug in lines 240-285.
+log_excerpt: ">>> SUMMARY: Did unwrapping change the result?\nBefore unwrapping (raw\
+  \ COMs):\n  avg velocity  = 0.025333  cells/step\n  base fitness  = 0.01967875\n\
+  After  unwrapping (corrected COMs):\n  avg velocity  = 0.025333  cells/step\n  base\
+  \ fitness  = 0.01967875\n>> Unwrapping had negligible effect (velocity 0.02533333\
+  \ vs 0.02533333)\n>> This means the simulation already stored unwrapped COMs,\n\
+  >> or the pattern never crossed a toroidal boundary during steps 0-500.\n>>> FULL\
+  \ RAW COM AT 50-STEP INTERVALS (to see toroidal wrapping)\n    step  |    raw_com_r\
+  \  |    raw_com_c  |   corr_r  |   corr_c\n       0  |      63.6667  |      63.3333\
+  \  |     +0.0  |     +0.0\n      50  |      14.3333  |      63.3333  |     +0.0\
+  \  |     +0.0\n     100  |      92.3333  |      63.3333  |     +0.0  |     +0.0\n\
+  \     200  |     120.3333  |      63.3333  |     +0.0  |     +0.0\n     300  | \
+  \     20.3333  |      63.3333  |     +0.0  |     +0.0\n     500  |      76.3333\
+  \  |      63.3333  |     +0.0  |     +0.0\n"
+metrics:
+  avg_velocity: 0.025333
+  conservation_score: 1.0
+  fitness: 0.019679
+  num_steps: 500
+  total_displacement: 12.6667
+notes: Unwrapping is harmless but unnecessary for this rule; velocity ~0.025 is genuine.
 status: ok
