@@ -1,0 +1,1 @@
+Find all files in the project workspace (including src/, archive/ and root) whose name contains 'v2' or 'warm_start' or 'champion_v2'. Print their paths and sizes, and if there are any JSON or CSV files, read and print their first few lines.
