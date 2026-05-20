@@ -1,0 +1,1 @@
+Inspect the population initialization and mutation code in src/run_evolution_exp_220.py. Print how the initial population is generated (random or warm-start?) and how rules are mutated.
