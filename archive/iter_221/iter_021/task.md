@@ -1,1 +1,1 @@
-Write a python script to read and print lines 200 to 280 of src/new_fitness.py. We need to see how the history and unwrapping of center of mass are handled.
+Write and run a python script src/print_detailed_diag.py that imports and runs DisplacementConsistencyFitness on the champion rule, but prints out the exact first_entry and last_entry, the dx and dy, and the window_steps for EACH of the 5 windows. This will show us why window 2 has magnitude 1.0 while other windows have different values, and why the mean velocity magnitude is so low (0.0253).
