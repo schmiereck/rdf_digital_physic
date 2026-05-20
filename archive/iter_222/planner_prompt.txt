@@ -562,6 +562,9 @@ Plan and execute the next research phase. Break it into sub-tasks:
 - run_agent(complexity='medium'/'high') — for bounded, direct experiments
 Run sub-tasks sequentially. Each result informs the next. Synthesise all results into your final YAML report.
 
+## User Hint
+The high executor is out of usage, use only low and medium.
+
 ## Interrupted Sub-Agents (Resume Context)
 
 The following sub-agents were interrupted:
@@ -4616,5 +4619,51 @@ experimenter_view: 'The perfect unwrapped evolution run completed 30 generations
 
 - iter_id=221.31: INTERRUPTED (no result.yaml)
   Task: Create and run a python script src/diag_perfect_champion.py that loads archive/iter_221/results/champion_rule_perfect.json, runs a 500-step simulation with the spatially unwrapped com tracking, and pr
+
+- iter_id=222.1: COMPLETED (result.yaml exists)
+  Task: Run the diagnostic script src/diag_perfect_champion.py and capture its full stdout/stderr to analyze the champion rule from iter_221.
+  Result preview:
+artifacts:
+- src/evolve_glider.py
+- archive/iter_215/results/champion.json
+experimenter_view: 'The evolutionary search successfully discovered a sub-light speed
+  glider.
+
+  The particle maintains a stable structure of 6 cells and moves with a
+
+  velocity of approximately 0.25c. Bit conservation is perfect over 1000 steps.
+
+  '
+metrics:
+  generations: 50
+  max_fitness: 0.942
+  stable_steps: 1000
+notes: Sub-light glider found and verified.
+status: ok
+
+
+- iter_id=222.2: INTERRUPTED (no result.yaml)
+  Task: 1. Modify src/new_fitness.py: inside DisplacementConsistencyFitness.__call__, add a check right after max_bit_threshold and strict_conservation checks, so that if any step has bit_count == 0, the meth
+
+- iter_id=222.3: COMPLETED (result.yaml exists)
+  Task: Create and run src/validate_extinction_guard.py to evaluate the old champion rule (from archive/iter_221/results/champion_rule_perfect.json) using the modified DisplacementConsistencyFitness (from src
+  Result preview:
+artifacts:
+- src/validate_extinction_guard.py
+- archive/iter_222/results/extinction_verification.json
+experimenter_view: 'The extinction guard validation was successful. The iter_221 champion
+  rule
+
+  (which previously scored 0.000615 fitness) was re-simulated and evaluated
+
+  with the modified DisplacementConsistencyFitness from src/new_fitness.py.
+
+
+  The computed fitness is exactly 0.0. The reason is bit-count annihilation:
+
+  the L-tromino seed loses all its bits by step 3 of the 500-step s
+
+- iter_id=222.4: INTERRUPTED (no result.yaml)
+  Task: Orchestrate a complete evolutionary search for a stable, sub-light speed (v<c) glider in the 2D hexagonal grid using a new, perfectly C2-symmetric 72-orbit chromosome representation and ProcessPoolExe
 
 If result.yaml exists: integrate that result. If no result.yaml: restart with run_agent.
