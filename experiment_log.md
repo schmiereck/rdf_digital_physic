@@ -921,3 +921,28 @@ Our systematic collision experiments across transverse offsets from -4 to +4 (it
 
 **Notes:** Collision dynamics of the v=0.469c sub-light speed glider fully characterized, showing strictly local cross-section, inelastic chaotic explosion, and perfect mutual annihilation.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 224
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_224: strategy_error
+
+**Analysis:** 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+
