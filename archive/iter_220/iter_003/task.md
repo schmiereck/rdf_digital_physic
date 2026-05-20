@@ -1,10 +1,1 @@
-**Goal:** Conduct a short "probe" evolutionary search to determine if the `DisplacementConsistencyFitness` function creates a searchable fitness landscape.
-
-**Task:**
-1.  Configure and run an evolutionary search for a `v<c` glider using the `DisplacementConsistencyFitness` function.
-2.  Start from a fresh, random population of 100 C2-symmetric rules.
-3.  Use the standard 3-bit L-tromino seed, a 128x128 grid, and a simulation horizon of 500 steps.
-4.  Run the evolution for **exactly 5 generations**.
-5.  **Primary Success Criterion:** The mean fitness of the population must show a clear increasing trend over the 5 generations. The mean fitness of generation 5 should be at least 2x greater than the mean fitness of generation 1.
-6.  Archive the best rule found (`champion_rule.json`) and a CSV of the fitness statistics per generation (`fitness_log.csv`) to `archive/iter_220/results/`.
-7.  The final report must clearly state whether the success criterion was met.
+Print the contents of src/run_evolution_exp_220.py and explain how we can run the evolutionary search for a sub-light speed (v<c) glider using the validated DisplacementConsistencyFitness function, without any pandas dependency (or rewriting the parts that use pandas to use the csv module).
