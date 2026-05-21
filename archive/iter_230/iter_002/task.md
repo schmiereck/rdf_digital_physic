@@ -1,0 +1,1 @@
+Run `python src/engine_d4_dynamic.py` and print its output to verify that all self-tests pass.
