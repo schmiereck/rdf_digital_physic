@@ -1,0 +1,1 @@
+Run `python src/d4_lensing.py` and redirect its output to `archive/iter_227/results/lensing_test_output.txt`. Make sure the results directory exists.
