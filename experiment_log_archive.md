@@ -9344,3 +9344,28 @@ status: code_error
 
 **Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 207
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_207: strategy_error
+
+**Analysis:** MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
+
