@@ -1,0 +1,3 @@
+Run this exact python command to run `src/d4_lensing.py` and append its output as a comment to the bottom of `src/d4_lensing.py` itself:
+`python -c "import subprocess; out = subprocess.check_output(['python', 'src/d4_lensing.py'], text=True); content = open('src/d4_lensing.py', 'r').read(); open('src/d4_lensing.py', 'w').write(content + '\n# OUTPUT_START\n' + '\n'.join('# ' + line for line in out.splitlines()) + '\n# OUTPUT_END\n')"`
+Return `src/d4_lensing.py` as the only artifact in your result YAML. This ensures the appended output is saved and accessible to the parent Orchestrator.
