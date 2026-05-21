@@ -16,7 +16,7 @@ Establish a discrete 3D+1 spacetime on the 4D FCC (D4) lattice, define the speed
 - The assumption that spatial light bending cannot be represented on a discrete coordinate grid; it is a direct consequence of Fermat's principle of least time on the lattice graph.
 
 ## In Progress
-- Constructing a fully coupled 3D+1 lattice gas cellular automaton (LGCA) on the D4 lattice.
+- Constructing a fully coupled 3D+1 lattice gas cellular automaton (LGCA) on the D4 lattice (Phase 228, interrupted).
 
 ## Open Questions
 - Can we construct a fully coupled 3D+1 LGCA on the D4 lattice that supports stable 3D gliders?

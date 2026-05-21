@@ -4,31 +4,6 @@
 ---
 ```yaml
 cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 209
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_209: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 210. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** No sub-agent ran for iteration 209. Planner may have used wrong iter_id prefix. Results discarded.
-
-
----
-```yaml
-cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
 input_tokens: 0
@@ -963,4 +938,32 @@ By utilizing Dijkstra's shortest-path algorithm to find Fermat geodesics (minimu
 1. Sh
 
 **Notes:** D4 spacetime lensing simulation successfully executed and verified over a 9-parameter sweep.
+
+
+---
+```yaml
+cached_tokens: 3118314
+cost_usd: 1.67762
+hypothesis: 'phase-228: Establish a 3D+1 spacetime Lattice Gas Cellular Automaton
+  (LGCA) on the D4 lattice with localized rest-mass channels.'
+input_tokens: 3980580
+iter: 228
+metrics:
+  simulations_run: 0
+  steps_completed: 0
+output_tokens: 11926
+status: token_limit
+```
+
+## iter_228: phase-228: Establish a 3D+1 spacetime Lattice Gas Cellular Automaton (LGCA) on the D4 lattice with localized rest-mass channels.
+
+**Analysis:** The research orchestrator received a termination instruction due to an execution limit. No sub-goals for Phase 228 could be initiated or completed. The current state remains identical to the completion of Phase 4.3 (iter_227), where we successfully demonstrated discrete Fermat geodesics, gravitational lensing, and Shapiro time delay on the 3D+1 D4 discrete spacetime.
+
+**Status:** token_limit
+
+**Metrics:** `{'steps_completed': 0, 'simulations_run': 0}`
+
+**Experimenter view:** The phase was interrupted by the execution limit (token limit reached) before any new sub-agents could be executed or completed. No changes were made to the codebase, and no new experiments were run.
+
+**Notes:** Phase 228 interrupted due to execution/token limit.
 
