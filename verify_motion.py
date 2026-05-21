@@ -1,32 +1,25 @@
 import json
 import numpy as np
-import sys
-from pathlib import Path
+from src.engine_3d import stream, collide
+from src.search_3d_gliders import compute_com_circular
 
-PROJECT_ROOT = Path(".").resolve()
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+# Load the glider data
+with open('archive/iter_224/results/glider_02_lut21_sub01.json') as f:
+    d = json.load(f)
 
-from evolution import rule_dict_to_lut, step_grid
+particle = d['particle']
+lut = np.array(d['lut'], dtype=np.uint16)
 
-CHAMPION_JSON = PROJECT_ROOT / "archive" / "iter_220" / "results" / "champion_rule.json"
+# Create 16x16x16 grid
+L = 16
+grid = np.zeros((L, L, L, 12), dtype=np.uint8)
+cx, cy, cz = L//2, L//2, L//2
+for (dl, dr, dc, ch) in particle:
+    grid[(cx + dl)%L, (cy + dr)%L, (cz + dc)%L, ch] = 1
 
-with open(CHAMPION_JSON) as f:
-    champ = json.load(f)
-
-rule_dict = {int(k): int(v) for k, v in champ["rule_dict"].items()}
-lut = rule_dict_to_lut(rule_dict)
-
-GRID_SIZE = 128
-grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
-grid[63, 63] = 1
-grid[64, 63] = 1
-grid[64, 64] = 1
-
-for t in range(201):
-    rows, cols = np.where(grid > 0)
-    if len(rows) > 0:
-        com_r, com_c = np.mean(rows), np.mean(cols)
-        print(f"step={t:3d} | bits={len(rows):3d} | CoM=({com_r:.3f}, {com_c:.3f}) | bbox=({rows.min()}-{rows.max()}, {cols.min()}-{cols.max()})")
-    else:
-        print(f"step={t:3d} | DEAD")
-    grid = step_grid(grid, lut)
+print('Initial state active bits:', grid.sum())
+for step in range(11):
+    com, bc = compute_com_circular(grid)
+    print(f'Step {step:2d}: COM={com}, bits={bc}')
+    grid = stream(grid)
+    grid = collide(grid, lut)
