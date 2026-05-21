@@ -1,0 +1,1 @@
+Run the command `python src/d4_lensing.py` and print its full output to stdout so we can read it directly. Do not redirect to any file.
