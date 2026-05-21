@@ -11,43 +11,42 @@ with open(glider_path) as f:
 lut = np.array(glider_data['lut'], dtype=np.uint16)
 particle = glider_data['particle']
 
-# Add src to python path
 sys.path.insert(0, os.path.abspath('src'))
 from engine_3d import stream, collide
 
-L, H, W = 32, 16, 16
+L, H, W = 16, 16, 16
 
 def run_simulation(with_gravity=False):
     grid = np.zeros((L, H, W, 12), dtype=np.uint8)
-    l0, r0, c0 = 0, 8, 8
+    l0, r0, c0 = 8, 8, 8
     for dl, dr, dc, ch in particle:
         grid[(l0 + dl) % L, (r0 + dr) % H, (c0 + dc) % W, ch] = 1
         
-    unwrapped_l = 0.0
-    prev_wrapped_l = 0.0
+    unwrapped_c = 0.0
+    prev_wrapped_c = 0.0
     T = 0.0
     history = []
     
     for t in range(31):
         occupied = grid.sum(axis=-1) > 0
         ls, rs, cs = np.where(occupied)
-        if len(ls) > 0:
-            wrapped_l = float(np.mean(ls))
+        if len(cs) > 0:
+            wrapped_c = float(np.mean(cs))
         else:
-            wrapped_l = prev_wrapped_l
+            wrapped_c = prev_wrapped_c
             
         if t == 0:
-            unwrapped_l = wrapped_l
+            unwrapped_c = wrapped_c
         else:
-            diff = wrapped_l - prev_wrapped_l
-            if diff > L / 2:
-                diff -= L
-            elif diff < -L / 2:
-                diff += L
-            unwrapped_l += diff
+            diff = wrapped_c - prev_wrapped_c
+            if diff > W / 2:
+                diff -= W
+            elif diff < -W / 2:
+                diff += W
+            unwrapped_c += diff
             
-        dist_l = min(abs(wrapped_l - 16.0), L - abs(wrapped_l - 16.0))
-        U = 2.0 * np.exp(- (dist_l**2) / (2.0 * 3.0**2))
+        dist_c = min(abs(wrapped_c - 8.0), W - abs(wrapped_c - 8.0))
+        U = 2.0 * np.exp(- (dist_c**2) / (2.0 * 2.0**2))
         step_latency = 1.0 + U if with_gravity else 1.0
         
         if t > 0:
@@ -55,13 +54,13 @@ def run_simulation(with_gravity=False):
             
         history.append({
             'step': t,
-            'wrapped_l': wrapped_l,
-            'unwrapped_l': unwrapped_l,
+            'wrapped_c': wrapped_c,
+            'unwrapped_c': unwrapped_c,
             'physical_time': T,
             'latency': step_latency
         })
         
-        prev_wrapped_l = wrapped_l
+        prev_wrapped_c = wrapped_c
         grid = stream(grid)
         grid = collide(grid, lut)
         
@@ -71,12 +70,24 @@ vac_hist = run_simulation(with_gravity=False)
 grav_hist = run_simulation(with_gravity=True)
 
 # Print markdown table
-print("| Step | Vac unwrapped L | Vac Phys Time | Grav unwrapped L | Grav Phys Time | Local Latency | Time Dilation (Grav/Vac) |")
-print("|------|-----------------|---------------|------------------|----------------|---------------|--------------------------|")
+print("| Step | Vac unwrapped C | Vac Phys Time | Vac Vel (C/T) | Grav unwrapped C | Grav Phys Time | Grav Vel (C/T) | Local Latency | Time Dilation |")
+print("|------|-----------------|---------------|---------------|------------------|----------------|----------------|---------------|---------------|")
 for v, g in zip(vac_hist, grav_hist):
     step = v['step']
     dil = g['physical_time'] / v['physical_time'] if v['physical_time'] > 0 else 1.0
-    print(f"| {step:4d} | {v['unwrapped_l']:15.3f} | {v['physical_time']:13.3f} | {g['unwrapped_l']:16.3f} | {g['physical_time']:14.3f} | {g['latency']:13.3f} | {dil:24.3f} |")
+    
+    # instantaneous velocity
+    if step == 0:
+        vac_vel = 0.0
+        grav_vel = 0.0
+    else:
+        # relative to previous step
+        prev_v = vac_hist[step-1]
+        prev_g = grav_hist[step-1]
+        vac_vel = (v['unwrapped_c'] - prev_v['unwrapped_c']) / (v['physical_time'] - prev_v['physical_time'])
+        grav_vel = (g['unwrapped_c'] - prev_g['unwrapped_c']) / (g['physical_time'] - prev_g['physical_time'])
+        
+    print(f"| {step:4d} | {v['unwrapped_c']:15.3f} | {v['physical_time']:13.3f} | {vac_vel:13.3f} | {g['unwrapped_c']:16.3f} | {g['physical_time']:14.3f} | {grav_vel:14.3f} | {g['latency']:13.3f} | {dil:13.3f} |")
 
 # Save report
 report_data = {
