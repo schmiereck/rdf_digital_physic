@@ -1,0 +1,1 @@
+Run the shell command: `python src/run_dynamic_attraction.py > src/results_output.txt 2>&1` and wait for it to finish.
