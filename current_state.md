@@ -1,23 +1,22 @@
 # Current Research State
-Phase: Phase 3 (2D Hex Glider and Collision Dynamics) successfully completed.
+Phase: Phase 4.1 (3D Cuboctahedron CA and Local Latency) successfully completed.
 
 ## Goal
-Discover and physically characterize stable sub-light speed (v<c) gliders and their multi-body interaction properties on the 2D hexagonal grid.
+Establish a reversible, bit-conserving 3D simulation space on the FCC lattice, discover stable 3D gliders under O_h symmetry, and validate gravitational time dilation through the local latency analogy.
 
 ## Confirmed
-- A stable, period-1, diagonal-moving sub-light speed glider exists under a C2-symmetric, bit-conserving rule (`champion_rule_perfect.json`, iter_222.4.2) and moves at exactly `0.469c` with exceptional velocity stability (std_dev = 0.0044, iter_222.7).
-- The sub-light speed glider's physical interaction cross-section is strictly local (iter_223.8). At transverse offsets outside [0, 1, 2] (specifically offsets -4, -3, -2, -1, +3, +4), two colliding gliders pass each other completely unaffected, maintaining their NW and SE trajectories and speed (v ≈ 0.460c after step 190).
-- Head-on (offset 0) and offset 2 collisions are highly inelastic and trigger a runaway chaotic explosion, with the bit count growing from 6 to 364 (offset 0) and 343 (offset 2) by step 200 (iter_223.7, iter_223.8).
-- Offset 1 collisions result in **perfect mutual annihilation** (iter_223.8). The two gliders completely destroy each other and leave a perfect vacuum (0 bits) by step 190, which persists through step 200, serving as a clean deterministic analog to matter-antimatter annihilation.
-- The v<c and v=1c glider regimes represent disjoint rule classes under our current evolutionary corpus (iter_223.4.1); none of the 151 scanned rules supported both.
+- A 3D Cuboctahedron (FCC lattice) CA simulation engine has been developed and verified as perfectly reversible and bit-conserving (iter_224.2).
+- The 12 nearest-neighbor directions of the cuboctahedron map onto 6 in-plane hexagonal and 6 out-of-plane z-stack directions, ensuring perfect stack compatibility (iter_224.1).
+- The 48-order octahedral symmetry group O_h acts faithfully on the 12-channel state space, dividing it into 144 orbits (iter_224.3).
+- Four stable, bit-conserving, moving 3D gliders were discovered under fully equivariant symmetric bijections, with the cleanest candidate traveling along the column axis at v=1.0c (iter_224.3).
+- Gravitational time dilation has been demonstrated and characterized using the local latency / CPU-throttling analogy. A Gaussian potential well (depth=2.0, sigma=2.0) slows the glider's coordinate velocity from -1.0c to -0.336c, resulting in a physical delay of 18.609 proper-time units over 30 simulation steps (iter_224.7).
 
 ## Refuted
-- The assumption that sub-light gliders exhibit elastic (bouncing) collisions under Rule A (`champion_rule_perfect.json`) (iter_223.8).
-- The assumption that mixed-speed glider co-existence can be easily found in rule pools evolved under single-speed regimes (iter_223.4.1).
+- The assumption that 3D gliders cannot be easily found from random starts; under O_h-symmetric orbit-pairing, stable gliders are highly evolvable.
 
 ## In Progress
-- Initiating Phase 4.1: Devising the 3D Cuboctahedron (FCC lattice) CA simulation engine.
+- Preparing Phase 4.2: Representing the FCC lattice as a 2D+1 space-time geometry.
 
 ## Open Questions
-- Can we evolve rules that explicitly support the co-existence of both v<c and v=1c gliders?
-- How do the 12 spatial directions of the 3D Cuboctahedron affect glider stability and speed?
+- Can we evolve 3D gliders that move strictly below the speed of light (v<c)?
+- How do 3D gliders behave during 3D collisions?
