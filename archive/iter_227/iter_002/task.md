@@ -1,0 +1,1 @@
+Run the script `src/d4_lensing.py` using python and print the output. This will allow us to see whether the discrete shortest path (Fermat geodesic) on the D4 lattice in gravity bends towards or away from the mass.
