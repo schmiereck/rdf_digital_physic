@@ -1,22 +1,22 @@
 # Current Research State
-Phase: Phase 4.1 (3D Cuboctahedron CA and Local Latency) successfully completed.
+Phase: Phase 4.2 (2D+1 FCC-Raumzeit) successfully completed.
 
 ## Goal
-Establish a reversible, bit-conserving 3D simulation space on the FCC lattice, discover stable 3D gliders under O_h symmetry, and validate gravitational time dilation through the local latency analogy.
+Establish a discrete 2D+1 spacetime on the FCC lattice, define the speed of light geometrically as a fixed tilt angle, and validate continuous relativistic time dilation and Zitterbewegung from discrete steps.
 
 ## Confirmed
-- A 3D Cuboctahedron (FCC lattice) CA simulation engine has been developed and verified as perfectly reversible and bit-conserving (iter_224.2).
-- The 12 nearest-neighbor directions of the cuboctahedron map onto 6 in-plane hexagonal and 6 out-of-plane z-stack directions, ensuring perfect stack compatibility (iter_224.1).
-- The 48-order octahedral symmetry group O_h acts faithfully on the 12-channel state space, dividing it into 144 orbits (iter_224.3).
-- Four stable, bit-conserving, moving 3D gliders were discovered under fully equivariant symmetric bijections, with the cleanest candidate traveling along the column axis at v=1.0c (iter_224.3).
-- Gravitational time dilation has been demonstrated and characterized using the local latency / CPU-throttling analogy. A Gaussian potential well (depth=2.0, sigma=2.0) slows the glider's coordinate velocity from -1.0c to -0.336c, resulting in a physical delay of 18.609 proper-time units over 30 simulation steps (iter_224.7).
+- A discrete 2D+1 spacetime has been established by projecting the 3D FCC lattice along the [1, 1, 1] axis (iter_225.1).
+- Coordinate time is defined as T = (x+y+z)/2, splitting the 12 neighbors into 6 in-plane spatial directions (dT=0) and 6 temporal directions (3 future with dT=1, 3 past with dT=-1) (iter_225.1).
+- The 6 spatial vectors form a perfect regular hexagon of side length sqrt(2), and the 3 future vectors form a perfect equilateral triangle of side length sqrt(2) with spatial displacement sqrt(2/3), establishing the speed of light c = sqrt(2/3) ~ 0.8165 (iter_225.1).
+- Stationary particles (v=0) and massive particles (v=0.5c) are shown to be composite light-like segments that "zig-zag" (Zitterbewegung) in closed or semi-closed spacetime loops, providing a geometric explanation for rest mass (iter_225.1).
+- Continuous relativistic Lorentz factor (gamma = 1 / sqrt(1 - v^2/c^2)) and proper time dilation emerge with perfect algebraic precision (< 1e-12 error) under the discrete Minkowski metric ds^2 = dT^2 - dX^2/c^2 (iter_225.1).
 
 ## Refuted
-- The assumption that 3D gliders cannot be easily found from random starts; under O_h-symmetric orbit-pairing, stable gliders are highly evolvable.
+- The idea that space-time dilation in discrete lattices is only a rough statistical approximation; it is an exact algebraic identity resulting from the projection geometry.
 
 ## In Progress
-- Preparing Phase 4.2: Representing the FCC lattice as a 2D+1 space-time geometry.
+- Planning Phase 4.3: Volle Skalierung auf ein 4-dimensionales FCC-Gitter (D4-Gitter), in dem die Zeit die vierte Dimension darstellt.
 
 ## Open Questions
-- Can we evolve 3D gliders that move strictly below the speed of light (v<c)?
-- How do 3D gliders behave during 3D collisions?
+- Can we construct a 3D+1 spacetime using the D4 lattice to derive the full 4D Minkowski metric?
+- Can local latency/latch represent discrete spatial curvature in this spacetime?

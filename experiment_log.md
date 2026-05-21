@@ -7,31 +7,6 @@ cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
 input_tokens: 0
-iter: 206
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_206: strategy_error
-
-**Analysis:** MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
-
-**Status:** code_error
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner call failed: MockPlanner.call_async() got an unexpected keyword argument 'initial_history'
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
 iter: 207
 metrics: {}
 output_tokens: 0
@@ -912,4 +887,45 @@ First, we designed a projection mapping the 3D FCC lattice onto a stack of hexag
 The 3D CA engine was mathematically verified for perfect reversibility and bit conservation (iter_224.2). Using the octahedral group O_h (order 48), we reduced the 12-channel state space into 144 orbits and developed a fully equivariant symm
 
 **Notes:** All Phase 4.1 goals successfully completed. 3D simulation, 3D gliders, and gravitational time dilation successfully validated.
+
+
+---
+```yaml
+cached_tokens: 1723860
+campaign: Phase 4 - Das Kuboktaeder-Universum (3D bis 4D)
+cost_usd: 0.78797
+hypothesis: 'phase-225: Establish 2D+1 FCC spacetime projection, demonstrate emergent
+  speed of light (c=sqrt(2/3)) and Zitterbewegung, and validate proper-time Lorentz
+  factor with perfect accuracy.'
+input_tokens: 2071819
+iter: 225
+metrics:
+  massless_final_proper_time: 0.0
+  massless_final_velocity: 0.816496580927726
+  moving_massive_error: 2.22e-16
+  moving_massive_final_proper_time: 259.8076211353316
+  moving_massive_final_velocity: 0.408248290463863
+  moving_massive_gamma_experimental: 1.1547005383792517
+  moving_massive_gamma_theoretical: 1.1547005383792517
+  speed_of_light_c: 0.816496580927726
+  stationary_final_proper_time: 300.0
+  stationary_final_velocity: 0.0
+output_tokens: 3017
+status: ok
+```
+
+## iter_225: phase-225: Establish 2D+1 FCC spacetime projection, demonstrate emergent speed of light (c=sqrt(2/3)) and Zitterbewegung, and validate proper-time Lorentz factor with perfect accuracy.
+
+**Analysis:** In this phase, we executed Phase 4.2 of our roadmap, transitioning from classica spatial 3D simulations (Phase 4.1) to representing the 3D FCC lattice as a static 2D+1 spacetime geometry. 
+By choosing the [1, 1, 1] projection as our discrete time axis T, we achieved an incredibly elegant physical formulation: the 12 nearest-neighbors split exactly into 6 spatial directions (forming a regular hexag
+
+**Status:** ok
+
+**Metrics:** `{'speed_of_light_c': 0.816496580927726, 'stationary_final_velocity': 0.0, 'stationary_final_proper_time': 300.0, 'moving_massive_final_velocity': 0.408248290463863, 'moving_massive_final_proper_time': 259.8076211353316, 'moving_massive_gamma_experimental': 1.1547005383792517, 'moving_massive_gamma_theoretical': 1.1547005383792517, 'moving_massive_error': 2.22e-16, 'massless_final_velocity': 0.816496580927726, 'massless_final_proper_time': 0.0}`
+
+**Experimenter view:** We have successfully completed a comprehensive mathematical and numerical characterization of the 2D+1 spacetime projection of the FCC lattice. 
+By projecting the FCC lattice along the [1, 1, 1] axis, we show that:
+- Discrete time T = (x+y+z)/2 naturally divides the 12 nearest neighbors into 6 in-plane spatial directions (dT=0) and 6 temporal steps (3 future-directed with dT=1, 3 past-directed wit
+
+**Notes:** Phase 4.2 successfully completed. Relativistic time dilation and Lorentz factor mathematically and numerically validated on the 2D+1 FCC discrete spacetime.
 
