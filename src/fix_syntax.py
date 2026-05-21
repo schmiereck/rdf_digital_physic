@@ -1,51 +1,22 @@
 #!/usr/bin/env python3
 """
-src/run_latching_lensing_sweep.py — Systematic parameter sweep for local latching & lensing.
-
-This script performs a 3D+1 Spacetime LGCA parameter sweep over:
-  - latch_duration: [5, 10, 15]
-  - mass_value: [5.0, 10.0, 15.0]
-  - threshold: [3.0, 5.0, 7.0]
-
-For each combination, it:
-  1. Measures Shapiro Delay at different impact parameters b in [0, 1, 2, 3, 4] using microscopic LGCA simulation.
-  2. Runs Dijkstra Fermat pathfinding to calculate maximum deflection (light bending) and coordinate travel time.
-  3. Saves results in JSON and generates a comprehensive Markdown report.
+src/fix_syntax.py — Robustly fixes syntax errors in `src/run_latching_lensing_sweep.py`.
 """
 
 import os
-import sys
-import json
-from datetime import datetime, timezone
-import numpy as np
 
-# Ensure imports work from project root
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
+def main():
+    target_path = "src/run_latching_lensing_sweep.py"
+    
+    if not os.path.exists(target_path):
+        print(f"Error: {target_path} not found.")
+        return
 
-from src.engine_d4_latching import (
-    LatchingEngine,
-    run_dijkstra_pathfinding,
-    get_path_deflection,
-    measure_shapiro_delay
-)
+    with open(target_path, "r", encoding="utf-8") as f:
+        content = f.read()
 
-def calculate_path_cost(engine: LatchingEngine, path: list) -> float:
-    """Calculates the physical coordinate travel time along a Dijkstra path."""
-    M = engine.compute_local_density()
-    cost = 0.0
-    for i in range(len(path) - 1):
-        v = path[i+1]
-        v_density = M[v]
-        latching_delay = engine.latch_duration if v_density >= engine.threshold else 0
-        cost += 1.0 + latching_delay
-    return cost
-
-def generate_markdown_report(results, report_path, latch_durations, mass_values, thresholds):
+    # Define the corrected generate_markdown_report function
+    corrected_function = r'''def generate_markdown_report(results, report_path, latch_durations, mass_values, thresholds):
     """Generates a beautiful, professionally-designed Markdown report summarizing the findings."""
     
     # Compute some statistics for the summary
@@ -198,104 +169,25 @@ where $n(\mathbf{r}) = 1 + \tau$ acts as an emergent refractive index of the gra
 - Natural emergent gravitational lensing (light bending) from Fermat's principle of least time.
 
 This discrete model provides an incredibly efficient, exact, and fully conservative simulation of curved spacetime phenomena on a cellular lattice, paving the way for simulating complex cosmological structures and black hole accretion disks in a purely discrete, bit-conserving framework.
-""")
+""")'''
 
-def main():
-    # Define sweep parameters
-    latch_durations = [5, 10, 15]
-    mass_values = [5.0, 10.0, 15.0]
-    thresholds = [3.0, 5.0, 7.0]
-    impact_parameters = [0, 1, 2, 3, 4]
+    start_token = "def generate_markdown_report(results, report_path, latch_durations, mass_values, thresholds):"
+    end_token = "def main():"
     
-    sweep_results = []
-    
-    print("=" * 80)
-    print("3D+1 Spacetime LGCA: Latching & Lensing Parameter Sweep")
-    print("=" * 80)
-    print(f"Latching Durations : {latch_durations}")
-    print(f"Mass Values        : {mass_values}")
-    print(f"Thresholds         : {thresholds}")
-    print(f"Impact Parameters  : {impact_parameters}")
-    print("-" * 80)
-    
-    total_runs = len(latch_durations) * len(mass_values) * len(thresholds)
-    run_idx = 0
-    
-    for latch_dur in latch_durations:
-        for m_val in mass_values:
-            for thresh in thresholds:
-                run_idx += 1
-                print(f"[{run_idx}/{total_runs}] Running: latch_duration={latch_dur}, mass_value={m_val:.1f}, threshold={thresh:.1f}")
-                
-                # 1. Run Shapiro Delay LGCA simulation
-                shapiro_results = measure_shapiro_delay(
-                    latch_duration=latch_dur,
-                    threshold=thresh,
-                    mass_value=m_val
-                )
-                
-                b_details = []
-                for b in impact_parameters:
-                    # 2. Run Dijkstra Pathfinding
-                    engine = LatchingEngine(L=32, latch_duration=latch_dur, threshold=thresh)
-                    engine.permanent_mass[16, 16, 16] = m_val
-                    
-                    y_start = 16 - b
-                    start_node = (0, y_start, 16)
-                    
-                    path = run_dijkstra_pathfinding(engine, start_node)
-                    deflection = get_path_deflection(path, start_node, 32)
-                    path_length = len(path) - 1
-                    path_cost = calculate_path_cost(engine, path)
-                    
-                    shapiro_steps = shapiro_results.get(b, None)
-                    # Vacuum steps is 31
-                    shapiro_delay = (shapiro_steps - 31) if shapiro_steps is not None else None
-                    
-                    b_details.append({
-                        "b": b,
-                        "lgca_travel_time": shapiro_steps,
-                        "shapiro_delay": shapiro_delay,
-                        "dijkstra_path_cost": path_cost,
-                        "dijkstra_shapiro_delay": path_cost - 31.0,
-                        "dijkstra_deflection": deflection,
-                        "dijkstra_path_length": path_length,
-                        "dijkstra_excess_length": path_length - 31,
-                        "path": [list(node) for node in path]
-                    })
-                
-                sweep_results.append({
-                    "latch_duration": latch_dur,
-                    "mass_value": m_val,
-                    "threshold": thresh,
-                    "b_results": b_details
-                })
-                
-    # Define and create output directories
-    output_dir = os.path.join(parent_dir, "archive", "iter_229", "results")
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Save results to JSON
-    json_path = os.path.join(output_dir, "latching_lensing_sweep.json")
-    with open(json_path, "w") as f:
-        json.dump({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "sweep_parameters": {
-                "latch_durations": latch_durations,
-                "mass_values": mass_values,
-                "thresholds": thresholds,
-                "impact_parameters": impact_parameters
-            },
-            "results": sweep_results
-        }, f, indent=2)
+    if start_token not in content or end_token not in content:
+        print("Error: Could not locate start/end tokens of the function in the target file.")
+        return
         
-    print(f"\n[SUCCESS] Saved raw JSON results to: {json_path}")
+    start_idx = content.find(start_token)
+    end_idx = content.find(end_token)
     
-    # Generate Markdown Report
-    report_path = os.path.join(output_dir, "latching_lensing_report.md")
-    generate_markdown_report(sweep_results, report_path, latch_durations, mass_values, thresholds)
-    print(f"[SUCCESS] Generated and saved Markdown report to: {report_path}")
-    print("=" * 80)
+    # Replace the old function definition with the corrected one, adding newlines to maintain separation
+    new_content = content[:start_idx] + corrected_function + "\n\n" + content[end_idx:]
+    
+    with open(target_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+        
+    print(f"Successfully updated {target_path} and converted LaTeX strings to raw strings!")
 
 if __name__ == "__main__":
     main()
