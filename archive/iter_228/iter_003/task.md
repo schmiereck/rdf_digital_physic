@@ -1,0 +1,1 @@
+Create a very simple file `src/test_haiku.py` containing a print statement `print("Haiku works!")`, execute it, and check if it runs without errors. This is to test if the low-complexity executor is stable.
