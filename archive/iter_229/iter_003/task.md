@@ -1,0 +1,1 @@
+Run the python script `src/run_latching_lensing_sweep.py` using the shell command `python src/run_latching_lensing_sweep.py` to perform the systematic parameter sweep and generate the JSON and Markdown report files. Verify that the files are successfully written to `archive/iter_229/results/latching_lensing_sweep.json` and `archive/iter_229/results/latching_lensing_report.md`.
