@@ -1,0 +1,1 @@
+Execute `python src/run_dynamic_attraction.py` in the terminal and write its output to `archive/iter_230/run_output.txt`. Let's see if there are any errors or if it completes successfully.
