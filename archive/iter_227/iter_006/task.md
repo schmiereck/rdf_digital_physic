@@ -1,0 +1,3 @@
+Run this python command:
+`python -c "import subprocess; out = subprocess.check_output(['python', 'src/d4_lensing.py'], text=True); open('src/lensing_test_output.txt', 'w').write(out)"`
+This will run `src/d4_lensing.py` and save its output to `src/lensing_test_output.txt`. Since `src/` is a persistent directory, the file will be saved in the root `src/` folder where it can be read. Do not use bash or any other commands, just run the python command.
