@@ -5,8 +5,7 @@ This engine features a closed-loop coupling where moving bits deposit local "cha
 a latency field. This field then diffuses and decays according to a discrete heat-like equation:
     new_latency = (1.0 - gamma) * latency_field + kappa * Laplacian + deposition.
 
-To prevent infinite numerical dispersion/underflow, an optimized update mask limits calculations
-to cells within a cutoff radius of active bits or non-trivial latency (> 1e-4).
+To prevent infinite numerical dispersion/underflow, an optimized update update clamps values below 1e-5 to 0.0.
 Trapping of bits is determined by the total potential:
     M = latency_field + permanent_mass
 where the latching duration is scaled by alpha.
@@ -51,7 +50,7 @@ class ClosedLoopLatchingEngine:
             eta: Deposition rate of latency charge per active bit.
             threshold: Potential threshold M for trapping.
             alpha: Scaling factor for trapping duration.
-            cutoff_radius: Radius around active bits / non-trivial latency for update mask.
+            cutoff_radius: Radius around active bits / non-trivial latency for update mask (kept for compatibility).
             exponent: Exponent for the duration scaling (duration = round(alpha * (M**exponent))).
             lut_seed: Seed to generate symmetric collision lookup table.
             use_12_channels: True to use 12-channel FCC grid (default), False for 6-channel D4 spacetime.
@@ -102,14 +101,12 @@ class ClosedLoopLatchingEngine:
         1. Timer decrement and release: release expired latched bits back to temporal grid
            if the target temporal channel is empty. If blocked, keep the timer at 1.
         2. Compute deposition: deposition = eta * active_bits.
-        3. Construct optimized update mask using periodic roll.
-        4. Compute discrete diffusion and decay of latency field inside the mask, and
-           clear potential float noise outside the mask to exactly 0.0.
-        5. Trapping: for any cell with M = latency_field + permanent_mass >= threshold,
+        3. Compute discrete diffusion and decay of latency field, and clamp values below 1e-5 to 0.0.
+        4. Trapping: for any cell with M = latency_field + permanent_mass >= threshold,
            trap incoming temporal bits (except those just released in this step) into
            the latched grid, setting their timers to round(alpha * (M ** exponent)).
-        6. Collision: apply standard Oh collision.
-        7. Streaming: stream temporal bits.
+        5. Collision: apply standard Oh collision.
+        6. Streaming: stream temporal bits.
         """
         # 1. Timer decrement and release
         want_to_release = (self.latched_grid == 1) & (self.timers == 1)
@@ -129,23 +126,7 @@ class ClosedLoopLatchingEngine:
         active_bits = self.temporal_grid.sum(axis=-1).astype(np.float64) + self.latched_grid.sum(axis=-1).astype(np.float64)
         deposition = self.eta * active_bits
 
-        # 3. Construct optimized update mask
-        # Sources are cells with active bits or non-trivial latency
-        sources = (active_bits > 0) | (self.latency_field > 1e-4)
-        
-        # Dilate mask up to cutoff_radius using periodic roll
-        mask = sources.copy()
-        for _ in range(self.cutoff_radius):
-            next_mask = mask.copy()
-            for dx, dy, dz in [
-                (1, 0, 0), (-1, 0, 0),
-                (0, 1, 0), (0, -1, 0),
-                (0, 0, 1), (0, 0, -1)
-            ]:
-                next_mask |= np.roll(mask, shift=(dx, dy, dz), axis=(0, 1, 2))
-            mask = next_mask
-
-        # 4. Discrete diffusion and decay of the latency_field inside the mask
+        # 3. Discrete diffusion and decay of the latency_field
         # Compute the 3D discrete Laplacian with periodic boundaries
         laplacian = np.zeros_like(self.latency_field)
         for dx, dy, dz in [
@@ -157,13 +138,12 @@ class ClosedLoopLatchingEngine:
         laplacian -= 6.0 * self.latency_field
 
         # Update latency field using: new_latency = (1.0 - gamma) * latency_field + kappa * Laplacian + deposition
-        new_latency = (1.0 - self.gamma) * self.latency_field + self.kappa * laplacian + deposition
+        self.latency_field = (1.0 - self.gamma) * self.latency_field + self.kappa * laplacian + deposition
         
-        # Set the updated latency field inside the mask, and clear potential float noise outside to exactly 0.0
-        self.latency_field[mask] = new_latency[mask]
-        self.latency_field[~mask] = 0.0
+        # Clamp values below 1e-5 to 0.0 (prevent subnormal underflow and clean up numerical noise)
+        self.latency_field[self.latency_field < 1e-5] = 0.0
 
-        # 5. Trapping
+        # 4. Trapping
         # Total potential M = latency_field + permanent_mass
         M = self.latency_field + self.permanent_mass
         
@@ -185,8 +165,8 @@ class ClosedLoopLatchingEngine:
         self.latched_grid[trap_mask] = 1
         self.timers[trap_mask] = duration_4d[trap_mask]
 
-        # 6. Collision: apply the Oh symmetric LUT on remaining temporal bits
+        # 5. Collision: apply the Oh symmetric LUT on remaining temporal bits
         self.temporal_grid = self._collide(self.temporal_grid, self.lut)
 
-        # 7. Streaming: stream temporal bits
+        # 6. Streaming: stream temporal bits
         self.temporal_grid = self._stream(self.temporal_grid)
