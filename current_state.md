@@ -1,8 +1,8 @@
 # Current Research State
-Phase: Emergent Gravitational Attraction and the Cavendish Unit Test (Phase 5.1) successfully completed.
+Phase: Emergent Gravitational Attraction and the Cavendish Unit Test (Phase 5.1) completed.
 
 ## Goal
-Demonstrate that localized mass-energy densities (modeled as a static potential well) generate coordinate time dilation that naturally bends the trajectories of propagating sub-light-speed gliders (the Cavendish test) on a physical CA grid under strict localism and bit conservation.
+Demonstrate that localized mass-energy densities generate coordinate time dilation that naturally bends the trajectories of propagating sub-light-speed gliders (the Cavendish test) on a physical CA grid under strict localism and bit conservation.
 
 ## Confirmed
 - The 12-channel 3D DynamicLatchingEngine has been updated to support a permanent background mass distribution (iter_232.1).
@@ -17,10 +17,10 @@ Demonstrate that localized mass-energy densities (modeled as a static potential 
 - The assumption that sub-light gliders would disintegrate or get permanently stuck when encountering a strong local coordinate latency field; with tuned Gaussian smoothing (sigma = 2.5) and mass, gliders exhibit clean, stable, curved geodesic trajectories (iter_232.2).
 
 ## Best Result
-- A central permanent mass of 35.0 (sigma = 2.5) attracts a 4-bit 3D sub-light glider, producing a clean, stable deflection of up to +0.50 lattice units in Y with perfect bit conservation.
+- A central permanent mass of 35.0 (sigma = 2.5) attracts a 4-bit 3D sub-light glider, producing a clean, stable deflection of up to +0.50 lattice units in Y with perfect bit conservation (iter_232.2).
 
 ## In Progress
-- Scaling to a fully dynamic two-body active simulation where two co-moving sub-light gliders write to each other's latency fields, demonstrating mutual attraction and emergent orbits.
+- Implementing a "Local Mass-Density" Source Term with Exponential Decay to enable dynamic self-consistent gravity (Phase 5.2).
 
 ## Open Questions
 - Can we observe mutual attraction and orbital fallback between two co-moving gliders?

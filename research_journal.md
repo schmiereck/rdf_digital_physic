@@ -2,22 +2,23 @@
 
 ## 1. High-Level Strategy & Trajectory
 *   **Current Phase:** Phase 5 (Multi-body Dynamic Mass Interactions & Discrete General Relativity).
-*   **Active Direction:** Phase 5.1 (Emergent Gravitational Attraction / Cavendish Unit Test) is **COMPLETED**. We are now pivoting to Phase 5.2: fully dynamic two-body active simulations where co-moving sub-light gliders generate, update, and respond to each other's local coordinate latency fields in real time.
-*   **Confidence Score:** 95% (Upgraded from 90% after the physical demonstration of bidirectional gravitational deflection of a stable 3D sub-light glider with perfect bit conservation and zero structural breakdown).
-*   **Roadmap Status:** Phase 4 is fully completed. Phase 5 is actively progressing through its sub-phases. We have established that gravity is not an added equation but an emergent geometric consequence of asymmetric latching in coordinate-latency gradients.
+*   **Active Direction:** Phase 5.2 (Dynamic two-body active simulations). 
+*   **Trajectory Update (Iteration 233):** The attempt to transition from a static gravitational mass background (Phase 5.1) to dynamic, self-consistent two-body gravity (Phase 5.2) in Iteration 233 was halted due to a platform-level `token_limit` error. No new simulation data was recorded.
+*   **Immediate Strategy:** Prioritize codebase and output token efficiency. The next iteration must implement the active local mass-density source term using extremely compact, modular Python scripts to bypass the context window/token limits that caused the Iteration 233 failure.
+*   **Confidence Score:** 90% (Temporarily adjusted down from 95% due to platform resource constraints, though the underlying physics model remains highly sound).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **The Asymmetric Zitterbewegung Mechanism:** This is the core physical mechanism behind emergent gravity in our CA. When a sub-light glider (which operates via periodic internal latching/unlatching cycles, i.e., Zitterbewegung) enters a spatial gradient of coordinate latency, the bits on the mass-facing side experience longer latching durations than those on the far side. This differential delay causes a local propagation slowdown on one side of the particle, naturally rotating its net velocity and momentum vector toward the mass.
-*   **Glider Robustness in Gradients:** We refuted the concern that strong spatial gradients would tear discrete composite particles apart. By using tuned Gaussian smoothing ($\sigma = 2.5$) for the mass distribution, the 4-bit 3D sub-light glider (LUT-08) remained structurally intact and perfectly conserved its bit count across 80 simulation steps while experiencing coordinate acceleration.
-*   **Bidirectional Gravitational Validation:**
-    *   Glider below the central mass deflected *upwards* by $+0.50$ lattice units.
-    *   Glider above the central mass deflected *downwards* by $-0.25$ lattice units.
-    This asymmetry in deflection magnitude (due to grid coordinate projection alignments) confirms that discrete space anisotropy must be carefully handled but validates that the attraction is fundamentally isotropic in its sign.
+*   **Resource-Constrained Coding Policy:** The primary constraint is no longer physical, but computational/platform-centric. To prevent repeated `token_limit` errors, future sub-agents must avoid generating verbose code outputs, excessive trace dumps, or redundant execution steps.
+*   **Asymmetric Zitterbewegung Mechanism (Core Physics):** Verified in Phase 5.1. A sub-light glider operating via periodic internal latching/unlatching cycles experiences differential latching durations when traversing a coordinate latency gradient. This asymmetric delay naturally slows down propagation on the mass-facing side, rotating the velocity vector toward the mass without requiring explicit "force" or "gravitational" equations.
+*   **Glider Structural Integrity:** Tuning the Gaussian spatial smoothing ($\sigma = 2.5$) prevents the strong discrete gradients from tearing the 4-bit composite glider (LUT-08) apart, ensuring perfect bit conservation (4 bits) across its accelerated geodesic trajectory.
 
 ## 3. Loop & Bottleneck Detection
-*   **Static to Dynamic Field Coupling (The Self-Consistency Bottleneck):** In Phase 5.1, the background mass was modeled as a static, permanent Gaussian potential. To achieve true discrete General Relativity (Phase 5.2), we must close the loop: the glider's coordinates must dynamically update the background latency field at every step. This requires implementing a local "energy-momentum tensor" projection where active bits write to the local latching grid, which then diffuses or updates dynamically.
-*   **Grid Resolution and Finite Size Effects:** On a small $32^3$ torus, toroidal boundary effects and field truncation can corrupt long-term orbital simulations. We need to scale to $64^3$ or $128^3$ for stable multi-body orbits, requiring performance-optimized engine loops.
+*   **Platform-Level Token Bottleneck:** The primary bottleneck is the execution environment's token and runtime limit. High-dimensional 3D lattices combined with dynamic field updates can cause execution loops to balloon in size and context depth.
+*   **Mitigation Strategy:** 
+    1. Use smaller spatial test grids ($32^3$) during the initial development of Phase 5.2.
+    2. Refactor the `DynamicLatchingEngine` to use direct array operations (NumPy) to minimize trace logging.
+    3. Avoid sprawling agent-subplanner loops by specifying highly structured, single-pass implementation targets.
 
 ## 4. Alternate Research Paths
-*   **Discrete Event Horizon (Schwarzschild Limit):** Mathematically explore the extreme parameter limit where local latency $\tau \rightarrow \infty$ (latching probability $P = 1.0$), making the coordinate speed of light $c = 0$ inside a critical radius, simulating a discrete black hole.
-*   **Emergent Orbital Capture:** Sweep the impact parameters and initial velocities of the sub-light glider to find the exact boundary between hyperbolic scattering, orbital capture (elliptical-like orbits), and gravitational collapse (falling into the mass center).
+*   **Simplified Dynamic Mass-field Diffusion:** If a fully self-consistent $T_{\mu\nu}$ analogue is too computationally heavy, implement a simplified local decay/diffusion model where active glider cells leave a decaying "trail" of coordinate latency (similar to a pheromone path in ant colony algorithms), which then acts as the gravity well for the other body.
+*   **Discrete Event Horizon Limit:** Mathematically explore the parameter boundary where coordinate latency $\tau \rightarrow \infty$ (latching probability $P = 1.0$). At this limit, the coordinate speed of light $c$ drops to $0$, creating a physical "trapping" region that acts as a discrete Schwarzschild black hole.
