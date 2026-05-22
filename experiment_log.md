@@ -3,38 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 125018
-cost_usd: 0.3201
-hypothesis: 'phase-216: All scientific progress was blocked by critical platform errors
-  (timeout and token limits), forcing a pivot to platform stability diagnosis.'
-input_tokens: 178688
-iter: 216
-metrics:
-  platform_errors_encountered: 2
-  successful_simulations: 0
-output_tokens: 2178
-status: code_error
-```
-
-## iter_216: phase-216: All scientific progress was blocked by critical platform errors (timeout and token limits), forcing a pivot to platform stability diagnosis.
-
-**Analysis:** This phase was intended to characterize the newly discovered v<c glider. However, all attempts were blocked by severe platform instability.
-
-The first attempt (216.1, initial run) was stopped after exceeding its estimated runtime by over 130%, indicating a potential performance issue or a hung process.
-
-A second, more cautious diagnostic attempt (216.1, re-run) failed immediately with a `token_lim
-
-**Status:** code_error
-
-**Metrics:** `{'platform_errors_encountered': 2, 'successful_simulations': 0}`
-
-**Experimenter view:** The attempt to characterize the v<c glider was completely blocked by platform instability. An initial long-running simulation attempt (216.1) was manually stopped after it ran for over 700 seconds (estimated 300s), suggesting it was hung. A follow-up diagnostic run with a shorter 250-step simulation failed instantly with a `token_limit` error. This indicates a critical issue with the execution env
-
-**Notes:** The platform appears unstable. Deferring all scientific goals to first validate the environment's reliability.
-
-
----
-```yaml
 cached_tokens: 163218
 cost_usd: 0.34765
 hypothesis: 'phase-216: Resolve platform instability, re-characterize the supposed
@@ -1017,4 +985,46 @@ Our check_oh_transform script (iter_235.4) revealed that O_h symmetry is broken 
 2. We found that rotated parallel gliders naturally drift apart (disperse) under vacuum control by 
 
 **Notes:** Octahedral symmetry breaking verified; long-term sustained bound state of two mass packets demonstrated with 5 periapsis returns.
+
+
+---
+```yaml
+cached_tokens: 302340
+cost_usd: 0.31752
+hypothesis: 'phase-236: Establish first-class null result for N-body stability under
+  baseline parameters and re-interpret 2-body orbits as ballistic recurrence.'
+input_tokens: 536825
+iter: 236
+metrics:
+  active_captured: 0
+  active_drifted: 4
+  active_runs: 4
+  bit_conservation_violations: 0
+  control_captured: 1
+  control_drifted: 3
+  control_runs: 4
+  delta_3body_perm0: 3.83
+  delta_3body_perm10: 6.75
+  delta_4body_perm0: 2.67
+  delta_4body_perm10: 3.53
+  steps_per_run: 160
+output_tokens: 2482
+status: ok
+```
+
+## iter_236: phase-236: Establish first-class null result for N-body stability under baseline parameters and re-interpret 2-body orbits as ballistic recurrence.
+
+**Analysis:** We transitioned to Phase 5.4 to test the N-body stability of the self-generated dynamic latency field (the T00 analog).
+Following our pre-registration and falsification criteria, we matching-paired active runs (eta=2.0) and vacuum controls (eta=0.0) across N=3 and N=4 configurations under Permutation 0 (identity) and Permutation 10 (90-degree stack rotation).
+The active runs were systematically mo
+
+**Status:** ok
+
+**Metrics:** `{'active_runs': 4, 'control_runs': 4, 'steps_per_run': 160, 'bit_conservation_violations': 0, 'active_captured': 0, 'active_drifted': 4, 'control_captured': 1, 'control_drifted': 3, 'delta_3body_perm0': 3.83, 'delta_3body_perm10': 6.75, 'delta_4body_perm0': 2.67, 'delta_4body_perm10': 3.53}`
+
+**Experimenter view:** Across the four active N-body runs (3-body & 4-body, perm 0 & 10): Captured = 0, Drifted = 4, Escaped = 0, Latching/Collapse = 0.
+Under active coupling (eta=2.0), the self-generated latency field was systematically MORE dispersive (by +2.67 to +6.75 cells in mean max pair distance) than its matched vacuum control (eta=0.0) in all cases tested.
+This provides a first-class null result against N-body
+
+**Notes:** First-class null result: active coordinate-latency field is dispersive, not binding, for N >= 3; 2-body bound state is re-interpreted as ballistic recurrence.
 

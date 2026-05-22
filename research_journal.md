@@ -2,19 +2,18 @@
 
 ## 1. High-Level Strategy & Trajectory
 *   **Current Phase:** Phase 5 (Discrete General Relativity).
-*   **Active Direction:** Phase 5.4 (N-Body Stability & Many-Body Gravitational Configurations).
-*   **Trajectory Update (Iteration 235):** Phase 5.3 (Orbital Dynamics) is completed. We have demonstrated a long-term, self-consistent two-body bound state exhibiting five distinct periapsis returns under active latency coupling ($\eta = 2.0$), maintaining perfect 8-bit conservation. However, the exact $O_h$-covariance test was refuted as a linear coordinate operation due to discretization noise (up to 1.75 grid units) inherent to the non-orthogonal layer-stacking grid projection.
-*   **Immediate Strategy:** Transition to Phase 5.4. Investigate three-body and many-body stability regimes on the $32^3$ and $64^3$ grids, keeping in mind the coordinate-transformation constraints identified in Phase 5.3.
-*   **Confidence Score:** 85% (Adjusted down from 98% because the coordinate-transformation noise limits the exact application of the $O_h$ symmetry group as a validator for physical covariance).
+*   **Active Direction:** Remediation of Phase 5.2 / 5.3 (Self-consistent attraction and orbits).
+*   **Trajectory Update (Iteration 236):** Phase 5.4 has successfully refuted the gravitational origin of our Phase 5.3 "bound states." Matching-paired control runs showed that the apparent 2-body orbit was a **ballistic recurrence** on the toroidal grid, and that the active latency field is actually dispersive for $N \ge 3$. We are paused on Phase 5.4/5.5 and must redirect to redesigning the local coupling mechanism.
+*   **Confidence Score:** 40% (Re-evaluated drastically downward from 85% because our primary attraction/orbital mechanism has been shown to be an artifact of toroidal geometry and discrete velocity alignment).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **Coordinate-Rounding Induced Symmetry Breaking:** The 48 permutations of the octahedral group ($O_h$) are broken on the discrete layer-stacking grid due to the non-orthogonal coordinate projection. Rounding fractional transformed coordinates to integer lattice positions perturbs the relative launch alignment of rotated parallel gliders. This introduces a baseline drift of up to 19.69 cells over 80 steps in vacuum controls.
-*   **Dynamic Binding Against Discretization Noise:** The emergent coordinate-latency field ($\eta = 2.0$) is sufficiently strong to overcome this severe discretization drift. The attraction acts as a self-correcting potential well, pulling the dispersing gliders back into a stable, oscillating bound state (~2.75 to 2.89 cells separation).
-*   **Lattice-Anisotropy vs. Physics:** The bound state is highly sensitive to orientation. In some coordinate permutations, the discretization noise exceeds the binding potential, causing early dispersion. Thus, discrete gravity on this grid representation is anisotropic at small scales.
+*   **The Ballistic Recurrence Illusion:** On a finite $32^3$ torus, discrete velocity alignments can cause gliders to repeatedly cross paths or remain within a small spatial volume, mimicking a "bound state." Without a matching vacuum control ($\eta=0.0$), this kinematics can be easily mistaken for dynamic gravitational binding.
+*   **Dispersive Latency Fields:** The current pheromone latency scheme ($\eta=2.0$, $\sigma=2.5$, $\gamma=0.9$) acts as a dispersive barrier rather than an attractive potential well for multi-body systems, accelerating dispersion relative to the vacuum control.
+*   **Skepticism Validation:** This iteration demonstrates the absolute necessity of Gate 2 (Falsification Audit) and running identical vacuum controls. A major false positive has been successfully purged.
 
 ## 3. Loop & Bottleneck Detection
-*   **The Projection Bottleneck:** Representing 3D FCC space via a hexagonal layer-stacking projection introduces coordinate distortions under rotation. This is a fundamental constructional bottleneck. To test true isotropic physics, we must eventually scale to a larger grid resolution ($64^3$ or $128^3$) where rounding errors represent a negligible fraction of the glider separation, or utilize a native 4D coordinate system ($D_4$) that projects dynamically without coordinate rounding.
+*   **Toroidal Boundary Bottleneck:** Simulating on small tori ($32^3$) makes it virtually impossible to distinguish long-term orbits from toroidal wrap-around recurrence. Future orbital tests *must* use either absorbing boundary conditions (where dispersing gliders escape the grid) or vastly larger grids ($128^3+$) where the recurrence time is orders of magnitude longer than the orbital period.
 
 ## 4. Alternate Research Paths
-*   **Native Orthogonal D4 Engines:** Develop a 3D simulation engine operating on a native, orthogonal coordinate basis to eliminate the coordinate rounding noise during symmetry transformations.
-*   **Symmetry-Preserving Initial Conditions:** Explore whether specific subsets of $O_h$ that map to exact integer permutations on the hexagonal grid can be isolated to demonstrate exact, noiseless covariance.
+*   **Absorbing/Infinite Boundaries:** Port the simulation to an open boundary grid where gliders that escape the central region are deleted or allowed to propagate infinitely without wrap-around.
+*   **Gradient-Based Gravitational Latching:** Redesign the latency deposition to create a sharp local gradient that actively traps glider bits, rather than a smooth isotropic pheromone field which dilutes and scatters.
