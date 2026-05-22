@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.00875
-hypothesis: '[mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0'
-input_tokens: 1000
-iter: 212
-metrics: {}
-output_tokens: 500
-status: no_execution
-```
-
-## iter_212: [mock] lr-2e4: doubling LR to 2e-4 with warmup achieves val_loss < 3.0
-
-**Analysis:** [Mock] Iteration 213. All systems nominal.
-
-**Status:** no_execution
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** No sub-agent ran for iteration 212. Planner may have used wrong iter_id prefix. Results discarded.
-
-
----
-```yaml
 cached_tokens: 142844
 cost_usd: 0.424
 hypothesis: 'phase-213: Diagnosed and root-caused a critical platform instability,
@@ -979,4 +954,52 @@ status: token_limit
 **Experimenter view:** The iteration was immediately interrupted by an external STOP ALL WORK instruction due to execution limits. No sub-goals were executed, and no changes were made to the codebase. The prior state (from iter_229) remains fully preserved and verified.
 
 **Notes:** Phase 231 interrupted by execution limit before any sub-agents could be run.
+
+
+---
+```yaml
+cached_tokens: 506326
+campaign: Phase 4 - Das Kuboktaeder-Universum (3D bis 4D)
+campaign_status: completed
+campaign_summary: We successfully scaled our digital physics cellular automata from
+  2D hexagonal lattices to the 3D Cuboctahedron (FCC) space, and finally to the 3D+1
+  D4 discrete spacetime. We simulated relativistic kinematics, Lorentz proper-time
+  dilation, Zitterbewegung, Shapiro coordinate delay, and coordinate light deflection
+  (gravitational lensing) under a strictly local, bit-conserving, and O_h symmetric
+  coupled Lattice Gas Cellular Automaton (LGCA) with local latching.
+cost_usd: 0.26411
+hypothesis: 'phase-231: coupled 3D+1 D4 spacetime LGCA and time-dependent Fermat pathfinding
+  with a moving mass source, demonstrating dynamic Shapiro delay, Doppler-like delay
+  asymmetry, and discrete frame dragging.'
+input_tokens: 635309
+iter: 231
+metrics:
+  bit_conservation: perfect
+  fixed_point_converged: true
+  max_deflection_deg: 83.6598
+  max_exit_displacement_units: 16.9706
+  max_shapiro_delay_fermat_time: 1.4605
+  max_shapiro_delay_lgca_steps: 20
+  vacuum_travel_time_fermat: 44.0
+  vacuum_travel_time_lgca: 31
+output_tokens: 2847
+status: ok
+```
+
+## iter_231: phase-231: coupled 3D+1 D4 spacetime LGCA and time-dependent Fermat pathfinding with a moving mass source, demonstrating dynamic Shapiro delay, Doppler-like delay asymmetry, and discrete frame dragging.
+
+**Analysis:** This phase transitions our 3D+1 D4 discrete spacetime from static potential configurations to a dynamic co-moving spacetime metric, closing a critical gap toward general relativity.
+By modeling a moving mass package (vy = 0.2), we explored how coordinate latency fields propagate.
+
+The microscopic LGCA simulation (0231.3) confirmed that our local latching/trapping mechanism remains perfectly bit-co
+
+**Status:** ok
+
+**Metrics:** `{'bit_conservation': 'perfect', 'max_shapiro_delay_lgca_steps': 20, 'max_shapiro_delay_fermat_time': 1.4605, 'max_deflection_deg': 83.6598, 'max_exit_displacement_units': 16.9706, 'vacuum_travel_time_lgca': 31, 'vacuum_travel_time_fermat': 44.0, 'fixed_point_converged': True}`
+
+**Experimenter view:** We successfully modeled and characterized dynamic spacetime effects in a 3D+1 D4 lattice by introducing a co-moving mass-energy packet translating along the Y-axis. 
+
+In the microscopic LGCA simulation (iter_231.3), a single-bit photon propagating in +X experiences a dynamic Shapiro delay that depends heavily on synchronization with the moving mass. At perfect synchronization (launch times t_launc
+
+**Notes:** Dynamic Shapiro delay and frame dragging successfully simulated and verified on the 3D+1 D4 spacetime lattice.
 

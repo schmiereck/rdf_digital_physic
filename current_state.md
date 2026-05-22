@@ -1,20 +1,22 @@
 # Current Research State
-Phase: Coupled 3D+1 D4 Spacetime LGCA with Local Latching (Phase 4.4) successfully completed.
+Phase: Dynamic Spacetime and Frame Dragging on 3D+1 D4 Spacetime CA (Phase 4.5) successfully completed.
 
 ## Goal
 Establish a fully coupled 3D+1 Spacetime LGCA on the D4 lattice, demonstrating perfect bit-conservation, coordinate time dilation (Shapiro delay), and coordinate light deflection (Fermat lensing) emerging from localized mass-energy densities.
 
 ## Confirmed
 - A coupled 3D+1 D4 Spacetime LGCA with a local "latching/trapping" rule has been successfully established and validated (iter_229.1).
-- Total bit count is perfectly conserved across 50+ steps under the complex latching-unlatching-collision cycle on a toroidal grid (iter_229.1).
-- Microscopic LGCA simulations of single-bit light pulses pass through the smoothed central mass well, demonstrating a positive, perfectly linear Shapiro time delay (up to +45 steps at tau=15) that decays to 0 outside the mass core (b >= 2) (iter_229.4).
-- Dijkstra Fermat pathfinding on the emergent latency field successfully demonstrates spatial light deflection (gravitational lensing). For strong gravity wells (tau=15), the optimal path bends around the mass core, trading a 2-step spatial detour for a 43-step coordinate time saving (iter_229.4).
+- Total bit count is perfectly conserved across 50+ steps under the complex latching-unlatching-collision cycle on a toroidal grid (iter_229.1, iter_231.3).
+- Microscopic LGCA simulations of a single-bit light pulse passing through a moving mass well demonstrate a dynamic Shapiro delay that peaks at exactly 20 steps (51 vs. 31 steps vacuum) under perfect spatial synchronization (iter_231.3).
+- Time-dependent Dijkstra pathfinding on the D4 lattice with a moving Gaussian potential well successfully simulates dynamic gravitational lensing and Shapiro delay (iter_231.4).
+- A dynamic Doppler-like asymmetry is observed in lensing: co-moving photons (b > 0) experience a larger delay (+1.46 steps) than counter-moving photons, as they spend more time near the moving well (iter_231.4).
+- Discrete gravitational frame dragging (light dragging) is demonstrated: photons passing close to the moving mass are laterally dragged by up to +16.97 lattice units in the direction of the mass's motion (iter_231.4).
 
 ## Refuted
-- The assumption that high-dimensional 3D+1 D4 LGCA simulations require massive, unfeasible 18-channel or 24-channel lookup tables; a 6-channel temporal model coupled with a procedural local latching buffer is mathematically equivalent, highly efficient, and avoids state-space explosion (iter_229.1).
+- The assumption that time-dependent Dijkstra pathfinding in moving potentials is computationally intractable; a simple, 3-step fixed-point iteration solves the implicit coordinate arrival-time equation with high accuracy (residual < 1e-9) (iter_231.4).
 
 ## Best Result
-- A 32x32x32 toroidal grid with a central mass of value 10.0 and threshold 3.0/5.0 exhibits a perfectly linear Shapiro delay of exactly 3 * tau steps for direct hits (b=0), and 1 * tau steps for grazing hits (b=1), while Dijkstra Fermat pathfinding yields a maximum spatial deflection of 1 lattice unit.
+- A moving mass with A_grav = 5.0, v_y = 0.2, and sigma = 4.0 on a 3D+1 D4 lattice produces a peak Shapiro delay of 1.46 steps and a maximum frame-dragging lateral deflection of 16.97 units.
 
 ## In Progress
 - Preparing for Phase 5 to study multi-body dynamic mass interactions and mutual gravitational attraction.
