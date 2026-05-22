@@ -1,0 +1,1 @@
+Run the script src/moving_mass_shapiro.py to simulate the 3D+1 D4 Spacetime LGCA with a moving mass packet. Verify perfect bit conservation, measure the Shapiro delay for launch times 0 to 30, and write the output files to archive/iter_231/results/moving_mass_shapiro.json and archive/iter_231/results/moving_mass_shapiro_report.md.
