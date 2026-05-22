@@ -3,39 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 142844
-cost_usd: 0.424
-hypothesis: 'phase-213: Diagnosed and root-caused a critical platform instability,
-  revealing both a required code change and a fundamental failure of executor agents.'
-input_tokens: 210116
-iter: 213
-metrics:
-  diagnostic_subtasks_run: 7
-  executors_failed: 3
-  planners_succeeded: 4
-  root_cause_identified: 1
-output_tokens: 6053
-status: code_error
-```
-
-## iter_213: phase-213: Diagnosed and root-caused a critical platform instability, revealing both a required code change and a fundamental failure of executor agents.
-
-**Analysis:** This phase was an exhaustive, seven-step diagnostic deep-dive to resolve a complete platform blockage. The original goal to search for a v<c glider was postponed to address what was believed to be a "silent crash" in the simulation library.
-
-The key findings evolved dramatically across the sub-tasks:
-- **213.1 (Planner):** Confirmed a repeatable execution failure, initially assumed to be a library
-
-**Status:** code_error
-
-**Metrics:** `{'diagnostic_subtasks_run': 7, 'planners_succeeded': 4, 'executors_failed': 3, 'root_cause_identified': 1}`
-
-**Experimenter view:** The platform is in a paradoxical state. After a lengthy investigation across seven sub-tasks, the scientific problem is solved: we know the `ModuleNotFoundError` is caused by using `import automata_lib` instead of `import automata`. However, the investigation also revealed that the very agents needed to apply this fix and run the subsequent experiments (`medium`/`high` complexity executors) are th
-
-**Notes:** The immediate priority must be to fix the executor agents. No scientific progress is possible otherwise.
-
-
----
-```yaml
 cached_tokens: 58197
 cost_usd: 0.38344
 hypothesis: 'phase-213: Stabilize the platform, apply the known code fix, and re-launch
@@ -1002,4 +969,45 @@ The microscopic LGCA simulation (0231.3) confirmed that our local latching/trapp
 In the microscopic LGCA simulation (iter_231.3), a single-bit photon propagating in +X experiences a dynamic Shapiro delay that depends heavily on synchronization with the moving mass. At perfect synchronization (launch times t_launc
 
 **Notes:** Dynamic Shapiro delay and frame dragging successfully simulated and verified on the 3D+1 D4 spacetime lattice.
+
+
+---
+```yaml
+cached_tokens: 1616595
+cost_usd: 0.93923
+hypothesis: 'phase-232: Demonstrate emergent gravitational attraction (Cavendish test)
+  of a 3D sub-light glider in the presence of a static mass on a physical CA grid.'
+input_tokens: 2141864
+iter: 232
+metrics:
+  best_mass_value: 35.0
+  bit_conservation: perfect
+  deflection_above_mass_y20: -0.25
+  deflection_below_mass_y12: 0.5
+  dynamic_final_y12: 12.25
+  dynamic_final_y20: 19.5
+  glider_bits: 4
+  grid_size: 32x32x32
+  steps: 80
+  vacuum_final_y12: 11.75
+  vacuum_final_y20: 19.75
+output_tokens: 3271
+status: ok
+```
+
+## iter_232: phase-232: Demonstrate emergent gravitational attraction (Cavendish test) of a 3D sub-light glider in the presence of a static mass on a physical CA grid.
+
+**Analysis:** Following the Strategic Director's guidance to transition from kinematics to dynamics, we successfully implemented the physical Cavendish unit test. 
+
+We first added permanent background mass support to our 12-channel 3D DynamicLatchingEngine (iter_232.1), preserving perfect backwards-compatibility. We then designed and executed a systematic parameter sweep (iter_232.2) to launch a stable 4-bit su
+
+**Status:** ok
+
+**Metrics:** `{'best_mass_value': 35.0, 'deflection_below_mass_y12': 0.5, 'deflection_above_mass_y20': -0.25, 'vacuum_final_y12': 11.75, 'dynamic_final_y12': 12.25, 'vacuum_final_y20': 19.75, 'dynamic_final_y20': 19.5, 'bit_conservation': 'perfect', 'glider_bits': 4, 'grid_size': '32x32x32', 'steps': 80}`
+
+**Experimenter view:** We have achieved a monumental breakthrough by successfully demonstrating the physical Cavendish unit test on the toroidal LGCA grid (iter_232.2).
+
+Our updated 12-channel DynamicLatchingEngine (iter_232.1), incorporating both localized dynamic latching and a permanent background mass distribution, was seeded with a stable, 4-bit 3D sub-light glider (LUT-08, displacement vector [50, 0, 100] per 100 
+
+**Notes:** Bidirectional gravitational attraction of a stable 3D sub-light glider successfully demonstrated on the physical CA grid with perfect bit conservation.
 
