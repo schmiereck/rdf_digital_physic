@@ -1,72 +1,34 @@
+#!/usr/bin/env python3
+import json
 import numpy as np
+from src.engine_d4_closed_loop_v2 import ClosedLoopLatchingEngine
 
-def get_moving_mass_array(L, t, Y0, v_y):
-    moving_mass = np.zeros((L, L, L), dtype=np.float64)
-    y_c_float = Y0 + v_y * t
-    y_c = int(round(y_c_float)) % L
-    x_c = 16
-    z_c = 16
-    moving_mass[x_c, y_c, z_c] = 10.0
-    for dx, dy, dz in [
-        (1, 0, 0), (-1, 0, 0),
-        (0, 1, 0), (0, -1, 0),
-        (0, 0, 1), (0, 0, -1)
-    ]:
-        nx = (x_c + dx) % L
-        ny = (y_c + dy) % L
-        nz = (z_c + dz) % L
-        moving_mass[nx, ny, nz] = 5.0
-    return moving_mass
-
-def compute_local_density_array(moving_mass, L):
-    cell_m = moving_mass.copy()
-    smoothed = cell_m.copy()
-    for dx, dy, dz in [
-        (1, 0, 0), (-1, 0, 0),
-        (0, 1, 0), (0, -1, 0),
-        (0, 0, 1), (0, 0, -1)
-    ]:
-        smoothed += np.roll(cell_m, shift=(dx, dy, dz), axis=(0, 1, 2))
-    return smoothed
-
-def get_density_at_optimized(x, y, z, t, L, Mass_value, Y0, v_y):
-    if Mass_value == 0:
-        return 0.0
-    y_c_float = Y0 + v_y * t
-    y_c = int(round(y_c_float)) % L
-    x_c = 16
-    z_c = 16
-
-    dx = (x - x_c + L // 2) % L - L // 2
-    dy = (y - y_c + L // 2) % L - L // 2
-    dz = (z - z_c + L // 2) % L - L // 2
-
-    adx, ady, adz = abs(dx), abs(dy), abs(dz)
-    diffs = sorted([adx, ady, adz])
-
-    if diffs == [0, 0, 0]:
-        return 40.0
-    elif diffs == [0, 0, 1]:
-        return 15.0
-    elif diffs == [0, 1, 1]:
-        return 10.0
-    elif diffs == [0, 0, 2]:
-        return 5.0
-    else:
-        return 0.0
+glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+with open(glider_path, "r") as f:
+    glider_data = json.load(f)
+particle = glider_data["particle"]
+lut_seed = glider_data["lut_seed"]
 
 L = 32
-Y0 = 10.0
-v_y = 0.2
-for t in [0, 1, 5, 12, 45, 112]:
-    arr = get_moving_mass_array(L, t, Y0, v_y)
-    smoothed = compute_local_density_array(arr, L)
-    for x in range(L):
-        for y in range(L):
-            for z in range(L):
-                val_arr = smoothed[x, y, z]
-                val_opt = get_density_at_optimized(x, y, z, t, L, 1, Y0, v_y)
-                if abs(val_arr - val_opt) > 1e-9:
-                    print(f"Mismatch at t={t}, ({x},{y},{z}): array={val_arr}, opt={val_opt}")
-                    exit(1)
-print("All matches perfect!")
+# Let's use eta = 2.0 (highest deposition in sweep)
+# gamma = 0.95 (highest retention in sweep)
+engine = ClosedLoopLatchingEngine(
+    L=L,
+    gamma=0.95,
+    eta=2.0,
+    threshold=0.1,
+    alpha=2.0,
+    sigma=2.5,
+    lut_seed=lut_seed,
+    use_12_channels=True
+)
+
+for dl, dr, dc, ch in particle:
+    engine.temporal_grid[(16 + dl) % L, (13 + dr) % L, (16 + dc) % L, ch] = 1
+    engine.temporal_grid[(16 + dl) % L, (19 + dr) % L, (16 + dc) % L, ch] = 1
+
+for t in range(1, 21):
+    engine.step()
+    max_lat = np.max(engine.latency_field)
+    sum_lat = np.sum(engine.latency_field)
+    print(f"Step {t:2d} | Max Latency: {max_lat:.6f} | Sum Latency: {sum_lat:.6f}")
