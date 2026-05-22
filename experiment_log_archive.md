@@ -9593,3 +9593,36 @@ The subsequent evolutionary search for a `v<c` glider, managed by planner 213.10
 
 **Notes:** The platform is fixed, but the `v<c` glider search requires a more robust fitness function to proceed.
 
+
+---
+```yaml
+cached_tokens: 57904
+cost_usd: 0.18701
+hypothesis: 'phase-214: Develop, validate, and deploy an exploit-resistant fitness
+  function, revealing that a simple evolutionary search is insufficient to find v<c
+  gliders.'
+input_tokens: 91340
+iter: 214
+metrics:
+  best_fitness: 0.0
+  generations_run: 10
+  non_zero_fitness_rules_found: 0
+  validation_fitness_on_exploit: 0.0
+output_tokens: 1840
+status: experiment_failed
+```
+
+## iter_214: phase-214: Develop, validate, and deploy an exploit-resistant fitness function, revealing that a simple evolutionary search is insufficient to find v<c gliders.
+
+**Analysis:** This phase successfully addressed the "transient drift" fitness exploit identified in iter_213. The work was decomposed into three sequential and logical steps. First, in sub-task 214.1, a new `LateWindowDisplacementFitness` function was implemented to measure motion only in a later time window (steps 500-1000), explicitly ignoring initial settling. Second, sub-task 214.2 validated this new functi
+
+**Status:** experiment_failed
+
+**Metrics:** `{'best_fitness': 0.0, 'validation_fitness_on_exploit': 0.0, 'generations_run': 10, 'non_zero_fitness_rules_found': 0}`
+
+**Experimenter view:** The phase executed perfectly from an engineering perspective. The `LateWindowDisplacementFitness` function was created as specified (214.1) and then rigorously validated against the known 'transient drift' exploit from iter_213.10. The validation (214.2) confirmed a fitness of 0.0, proving the new metric successfully ignores the initial settling phase.
+
+The subsequent 10-generation evolutionary se
+
+**Notes:** The new fitness function is a success, but the search for a v<c glider has hit a 'flat landscape' problem.
+

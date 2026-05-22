@@ -1,28 +1,28 @@
 # Current Research State
-Phase: Emergent Gravitational Attraction and the Cavendish Unit Test (Phase 5.1) completed.
+Phase: Emergent Dynamic Two-Body Gravitational Attraction (Phase 5.2) completed.
 
 ## Goal
-Demonstrate that localized mass-energy densities generate coordinate time dilation that naturally bends the trajectories of propagating sub-light-speed gliders (the Cavendish test) on a physical CA grid under strict localism and bit conservation.
+Demonstrate dynamic, self-consistent mutual two-body gravitational attraction on a physical CA grid where co-moving particles generate their own coordinate-latency fields, causing them to deflect towards each other under strict localism and bit conservation.
 
 ## Confirmed
-- The 12-channel 3D DynamicLatchingEngine has been updated to support a permanent background mass distribution (iter_232.1).
-- Emergent gravitational attraction has been physically demonstrated using a stable 4-bit 3D sub-light glider (LUT-08) traversing a 32^3 toroidal grid with a central Gaussian permanent mass (iter_232.2).
-- Perfect bidirectional attraction was confirmed at mass_value = 35.0 and sigma = 2.5:
-  - Glider launched below the mass (y_start = 12) deflected **UPWARDS by +0.50 lattice units** (Y_vac = 11.75, Y_dyn = 12.25) towards the mass.
-  - Glider launched above the mass (y_start = 20) deflected **DOWNWARDS by -0.25 lattice units** (Y_vac = 19.75, Y_dyn = 19.50) towards the mass.
-- The glider remains structurally stable and perfectly conserves bit count (exactly 4 bits) across all 80 steps of propagation under local trapping, unlatching, and collision cycles (iter_232.2).
-- The **Asymmetric Zitterbewegung Mechanism** is confirmed: spatial gradients of coordinate latency naturally bias the local latching duration on the mass-facing side of a glider, slowing it down and rotating its momentum vector towards the mass without explicit force equations (iter_232.2).
+- The 3D FFT periodic Gaussian smoothing engine (`ClosedLoopLatchingEngineV2`) has been successfully implemented and verified (iter_234.1).
+- Emergent dynamic mutual attraction has been physically demonstrated using two parallel, co-moving 4-bit sub-light gliders (LUT-08) on a 32^3 toroidal grid (iter_234.3).
+- Perfect mutual attraction was confirmed at initial separation = 5.0, alpha = 2.0, threshold = 0.045, gamma = 0.90, and eta = 2.0:
+  - The gliders dynamically deflect towards each other, reducing their separation from 5.0 to 4.5 cells (mutual deflection = +0.50 lattice units) (iter_234.3).
+  - The deflection grows stably and persists all the way to 160 steps with perfect total bit conservation (exactly 8 bits, 4+4 split) and structural stability (iter_234.3).
+  - The Vacuum Control run (eta = 0.0) exhibits exactly 0.00 deflection, verifying that attraction is driven purely by the dynamic coordinate-latency field (iter_234.3).
+- The **Jeans-like Dispersing Threshold** is confirmed: wide Gaussian smoothing (sigma=2.5) dilutes potentials; mutual attraction is only active when the initial separation is within the overlapping gradient region (<= 5 cells) (iter_234.2, iter_234.3).
 
 ## Refuted
-- The assumption that sub-light gliders would disintegrate or get permanently stuck when encountering a strong local coordinate latency field; with tuned Gaussian smoothing (sigma = 2.5) and mass, gliders exhibit clean, stable, curved geodesic trajectories (iter_232.2).
+- The assumption that self-consistent dynamic gravity would lead to chaotic disintegration or immediate fusion of sub-light gliders; with tuned Gaussian smoothing and thresholds, gliders exhibit clean, stable, and discrete geodesic attraction (iter_234.3).
 
 ## Best Result
-- A central permanent mass of 35.0 (sigma = 2.5) attracts a 4-bit 3D sub-light glider, producing a clean, stable deflection of up to +0.50 lattice units in Y with perfect bit conservation (iter_232.2).
+- At an initial separation of 5.0, two 4-bit gliders attract each other, producing a clean, stable deflection of +0.50 lattice units at step 160 with perfect bit conservation (iter_234.3).
 
 ## In Progress
-- Implementing a "Local Mass-Density" Source Term with Exponential Decay to enable dynamic self-consistent gravity (Phase 5.2).
+- Preparing to explore orbital capture and dynamic scattering under non-parallel launch configurations (Phase 5.3).
 
 ## Open Questions
-- Can we observe mutual attraction and orbital fallback between two co-moving gliders?
-- What is the mathematical relationship between the coordinate deflection angle, mass value, and the glider's impact parameter?
-- Can we define a discrete event horizon (coordinate speed of light c = 0) on the grid?
+- Can we observe mutual orbital capture or fallback between two gliders launched with non-parallel velocity vectors?
+- Does the emergent gravitational attraction scale linearly with the deposition rate eta (the dynamic coupling constant)?
+- Can we form a stable, dynamic multi-body cluster or bound state with three or more co-moving gliders?

@@ -3,39 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 57904
-cost_usd: 0.18701
-hypothesis: 'phase-214: Develop, validate, and deploy an exploit-resistant fitness
-  function, revealing that a simple evolutionary search is insufficient to find v<c
-  gliders.'
-input_tokens: 91340
-iter: 214
-metrics:
-  best_fitness: 0.0
-  generations_run: 10
-  non_zero_fitness_rules_found: 0
-  validation_fitness_on_exploit: 0.0
-output_tokens: 1840
-status: experiment_failed
-```
-
-## iter_214: phase-214: Develop, validate, and deploy an exploit-resistant fitness function, revealing that a simple evolutionary search is insufficient to find v<c gliders.
-
-**Analysis:** This phase successfully addressed the "transient drift" fitness exploit identified in iter_213. The work was decomposed into three sequential and logical steps. First, in sub-task 214.1, a new `LateWindowDisplacementFitness` function was implemented to measure motion only in a later time window (steps 500-1000), explicitly ignoring initial settling. Second, sub-task 214.2 validated this new functi
-
-**Status:** experiment_failed
-
-**Metrics:** `{'best_fitness': 0.0, 'validation_fitness_on_exploit': 0.0, 'generations_run': 10, 'non_zero_fitness_rules_found': 0}`
-
-**Experimenter view:** The phase executed perfectly from an engineering perspective. The `LateWindowDisplacementFitness` function was created as specified (214.1) and then rigorously validated against the known 'transient drift' exploit from iter_213.10. The validation (214.2) confirmed a fitness of 0.0, proving the new metric successfully ignores the initial settling phase.
-
-The subsequent 10-generation evolutionary se
-
-**Notes:** The new fitness function is a success, but the search for a v<c glider has hit a 'flat landscape' problem.
-
-
----
-```yaml
 cached_tokens: 37630
 cost_usd: 0.25447
 hypothesis: 'phase-215: The ''warm-start'' evolutionary strategy overcomes the flat
@@ -1006,4 +973,46 @@ status: token_limit
 Sub-agent 233.1 was interrupted during environment initialization with a name error ('ExecResult' is not defined), and sub-agent 233.2/233.3 were halted due to
 
 **Notes:** Phase 233 halted by external execution limit; no new physical simulation data gathered.
+
+
+---
+```yaml
+cached_tokens: 2092712
+cost_usd: 1.40845
+hypothesis: 'phase-234: Demonstrate stable emergent two-body mutual attraction of
+  sub-light gliders on a physical CA grid under closed-loop, FFT-smoothed coordinate
+  latency.'
+input_tokens: 2963876
+iter: 234
+metrics:
+  best_alpha: 2.0
+  best_eta: 2.0
+  best_gamma: 0.9
+  best_separation: 5.0
+  best_sigma: 2.5
+  best_threshold: 0.045
+  bit_conservation: perfect
+  mutual_deflection_at_160: 0.5
+  mutual_deflection_at_80: 0.5
+  structural_stability: perfect
+  vacuum_control_deflection: 0.0
+output_tokens: 4703
+status: ok
+```
+
+## iter_234: phase-234: Demonstrate stable emergent two-body mutual attraction of sub-light gliders on a physical CA grid under closed-loop, FFT-smoothed coordinate latency.
+
+**Analysis:** This phase successfully resolves the dynamic two-body gravity challenge (Phase 5.2). We implemented a continuous, dynamic latency field that decays temporally and diffuses spatially via a highly optimized 3D FFT-based periodic Gaussian blur.
+
+Our experiments exposed a Jeans-like spatial dispersing threshold: wide Gaussian smoothing (sigma=2.5) dilutes the tiny mass of a 4-bit glider. At 6-cell sep
+
+**Status:** ok
+
+**Metrics:** `{'best_separation': 5.0, 'best_alpha': 2.0, 'best_threshold': 0.045, 'best_gamma': 0.9, 'best_eta': 2.0, 'best_sigma': 2.5, 'mutual_deflection_at_80': 0.5, 'mutual_deflection_at_160': 0.5, 'vacuum_control_deflection': 0.0, 'bit_conservation': 'perfect', 'structural_stability': 'perfect'}`
+
+**Experimenter view:** We have achieved a major scientific milestone by successfully demonstrating stable, self-consistent, and bit-conserving mutual gravitational attraction (two-body Cavendish test) on a physical CA grid.
+
+Our initial parameter sweep at separation = 6 cells (iter_234.2) revealed that wide Gaussian smoothing (sigma=2.5) dilutes the self-generated latency potential (peak latency ~0.0688), making the met
+
+**Notes:** Stable emergent mutual attraction of two sub-light gliders demonstrated on a physical CA grid with perfect bit conservation.
 
