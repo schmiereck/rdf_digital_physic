@@ -47,6 +47,7 @@ class DynamicLatchingEngine:
         self.temporal_grid = np.zeros((L, L, L, self.C), dtype=np.uint8)
         self.latched_grid = np.zeros((L, L, L, self.C), dtype=np.uint8)
         self.timers = np.zeros((L, L, L, self.C), dtype=np.int32)
+        self.permanent_mass = np.zeros((L, L, L), dtype=np.float64)
 
         # Import and generate LUT dynamically
         if self.use_12_channels:
@@ -78,6 +79,7 @@ class DynamicLatchingEngine:
         cell_m = (
             self.temporal_grid.sum(axis=-1).astype(np.float64)
             + self.latched_grid.sum(axis=-1).astype(np.float64)
+            + self.permanent_mass
         )
 
         # Smooth with its 6 nearest spatial neighbors (using periodic roll)
