@@ -1,0 +1,61 @@
+The script ran successfully and produced all three artifacts. Here are the key findings:
+
+**Best configuration (Q1):** `alpha=2.5, threshold=0.4, gamma=0.05, kappa=0.08, eta=2.0` → `mutual_attraction = +0.5` (Y1 moved +0.5 toward Y2; Y2 stayed put).
+
+**Mutual attraction check (Q2):** Only 5 / 1080 configs achieved positive deflection — and all five give the *same* +0.5 quarter-cell jump (they differ only in threshold, which is flat at the optimum). The 120-step long run with the best parameters collapses back to **mutual = 0.0**, so the apparent attraction is a transient lattice fluctuation, not a sustained pull.
+
+**Trajectory artifacts (Q3):** Saved `best_trajectory.png` and `best_trajectory.csv`. The trajectory oscillates by ±0.25–0.5 cells around the seed positions with no net inward drift.
+
+**Parameter-sweep advice (Q4):**
+- `alpha` — sharp isolated peak at 2.5 (both 2.0 and 3.0 are zero) → refine between 2.0–3.0.
+- `gamma` — optimum on the LOW boundary (0.05) → sweep below 0.05.
+- `kappa` — optimum on the HIGH boundary (0.08) → sweep above 0.08.
+- `eta` — optimum on the HIGH boundary (2.0) → sweep above 2.0.
+- `threshold` — completely flat → no need to refine.
+- Also recommend: longer integration (240/480/960 steps), smaller initial separation (to lift signal above quarter-cell noise), and averaging over LUT seeds.
+
+```yaml
+status: ok
+artifacts:
+  - src/analyze_two_body_sweep.py
+  - archive/iter_233/results/best_trajectory.png
+  - archive/iter_233/results/best_trajectory.csv
+  - archive/iter_233/results/two_body_sweep_analysis.txt
+metrics:
+  total_configurations: 1080
+  stable_configurations: 1080
+  configs_with_positive_mutual_attraction: 5
+  max_mutual_attraction_80_steps: 0.5
+  long_run_mutual_attraction_120_steps: 0.0
+  best_alpha: 2.5
+  best_threshold: 0.4
+  best_gamma: 0.05
+  best_kappa: 0.08
+  best_eta: 2.0
+  initial_separation: 6
+  min_separation_observed: 5.5
+experimenter_view: |
+  The sweep claims a "best" configuration at alpha=2.5, gamma=0.05,
+  kappa=0.08, eta=2.0 with mutual deflection of +0.5 cells over 80 steps
+  (5/1080 configs, all only differing in the inert threshold axis).
+  However, the 120-step long run with those very parameters returns
+  mutual_attraction=0.0 — the +0.5 deflection is a single quarter-cell
+  lattice fluctuation, not a persistent attractive force. None of the
+  1080 stable configurations produced a sustained mutual attraction.
+  The optimum sits on the parameter-grid boundary for gamma (low),
+  kappa (high), and eta (high), and is a sharp interior peak for alpha,
+  so a re-sweep extending those axes and increasing integration time is
+  warranted. Reducing the initial inter-glider separation (currently 6
+  cells) would also lift the signal above the quarter-cell discretisation
+  noise floor.
+log_excerpt: |
+  Q4. SHOULD WE SWEEP MORE PARAMETERS?
+    - alpha: optimum is a SHARP interior peak at 2.5; refine the grid between 2.0 and 3.0.
+    - threshold: completely flat at the optimum -> no information; widening this axis would be wasteful.
+    - gamma: optimum sits on the LOW boundary (0.05); extend the sweep DOWN below 0.05.
+    - kappa: optimum sits on the HIGH boundary (0.08); extend the sweep UP above 0.08.
+    - eta: optimum sits on the HIGH boundary (2.0); extend the sweep UP above 2.0.
+    - The 80-step 'attraction' (mutual=+0.5) collapses to 0 at 120 steps -> sweep LONGER integration times.
+  Saved text report to archive/iter_233/results/two_body_sweep_analysis.txt
+notes: "Best config is a transient quarter-cell jitter; needs wider gamma/kappa/eta and longer integration."
+```
