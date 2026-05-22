@@ -9696,3 +9696,37 @@ A second, more cautious diagnostic attempt (216.1, re-run) failed immediately wi
 
 **Notes:** The platform appears unstable. Deferring all scientific goals to first validate the environment's reliability.
 
+
+---
+```yaml
+cached_tokens: 163218
+cost_usd: 0.34765
+hypothesis: 'phase-216: Resolve platform instability, re-characterize the supposed
+  v<c glider as v=1c, and implement a new, velocity-gated fitness function.'
+input_tokens: 213017
+iter: 216
+metrics:
+  glider_avg_velocity: 1.0
+  glider_bit_conservation: true
+  new_fitness_period_gate: true
+  new_fitness_velocity_threshold: 0.9
+output_tokens: 2908
+status: ok
+```
+
+## iter_216: phase-216: Resolve platform instability, re-characterize the supposed v<c glider as v=1c, and implement a new, velocity-gated fitness function.
+
+**Analysis:** This phase served as a critical platform and methodology reset. It began by addressing the platform instability that blocked iter_216.1. The successful retry in 216.2 not only confirmed platform stability but also yielded a crucial, unexpected scientific result: the particle discovered in iter_215 and believed to be a `v<c` glider is, in fact, a `v=1c` (speed of light) glider.
+
+This discovery imme
+
+**Status:** ok
+
+**Metrics:** `{'glider_avg_velocity': 1.0, 'glider_bit_conservation': True, 'new_fitness_velocity_threshold': 0.9, 'new_fitness_period_gate': True}`
+
+**Experimenter view:** The platform is now stable; a 500-step simulation completed in under a second (216.2). The primary finding of this phase is that the `v<c` glider from iter_215 is actually a `v=1c` glider, moving at exactly 1.0 cell/step with perfect 3-bit conservation.
+
+The analysis in 216.3 confirmed that the fitness function used for its discovery was structurally biased towards maximum speed, making this outco
+
+**Notes:** Course correction complete. Platform stable, v<c claim refuted, and a new, more robust fitness function is ready for the next search.
+

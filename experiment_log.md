@@ -3,40 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 163218
-cost_usd: 0.34765
-hypothesis: 'phase-216: Resolve platform instability, re-characterize the supposed
-  v<c glider as v=1c, and implement a new, velocity-gated fitness function.'
-input_tokens: 213017
-iter: 216
-metrics:
-  glider_avg_velocity: 1.0
-  glider_bit_conservation: true
-  new_fitness_period_gate: true
-  new_fitness_velocity_threshold: 0.9
-output_tokens: 2908
-status: ok
-```
-
-## iter_216: phase-216: Resolve platform instability, re-characterize the supposed v<c glider as v=1c, and implement a new, velocity-gated fitness function.
-
-**Analysis:** This phase served as a critical platform and methodology reset. It began by addressing the platform instability that blocked iter_216.1. The successful retry in 216.2 not only confirmed platform stability but also yielded a crucial, unexpected scientific result: the particle discovered in iter_215 and believed to be a `v<c` glider is, in fact, a `v=1c` (speed of light) glider.
-
-This discovery imme
-
-**Status:** ok
-
-**Metrics:** `{'glider_avg_velocity': 1.0, 'glider_bit_conservation': True, 'new_fitness_velocity_threshold': 0.9, 'new_fitness_period_gate': True}`
-
-**Experimenter view:** The platform is now stable; a 500-step simulation completed in under a second (216.2). The primary finding of this phase is that the `v<c` glider from iter_215 is actually a `v=1c` glider, moving at exactly 1.0 cell/step with perfect 3-bit conservation.
-
-The analysis in 216.3 confirmed that the fitness function used for its discovery was structurally biased towards maximum speed, making this outco
-
-**Notes:** Course correction complete. Platform stable, v<c claim refuted, and a new, more robust fitness function is ready for the next search.
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.16991
 hypothesis: 'phase-218: A ''leaky'' fitness function that provides partial credit
@@ -1027,4 +993,34 @@ Under active coupling (eta=2.0), the self-generated latency field was systematic
 This provides a first-class null result against N-body
 
 **Notes:** First-class null result: active coordinate-latency field is dispersive, not binding, for N >= 3; 2-body bound state is re-interpreted as ballistic recurrence.
+
+
+---
+```yaml
+cached_tokens: 2922316
+cost_usd: 1.18725
+hypothesis: 'phase-237: Re-evaluate and redesign coupling mechanisms to avoid toroidal
+  boundary and ballistic recurrence artifacts'
+input_tokens: 3365181
+iter: 237
+metrics:
+  active_runs: 4
+  bit_conservation_violations: 0
+  control_runs: 4
+  delta_3body_dispersal: 6.75
+output_tokens: 4603
+status: token_limit
+```
+
+## iter_237: phase-237: Re-evaluate and redesign coupling mechanisms to avoid toroidal boundary and ballistic recurrence artifacts
+
+**Analysis:** We have been instructed to stop all work immediately due to reaching the execution limit. No new sub-agents were executed in this phase. The next step of our research plan was to redesign the coupling mechanism to produce a true, isotropic coordinate-latency attraction that avoids toroidal boundary illusions (either using absorbing/open boundaries or a sub-light horizon limit with $T < L/c$ on lar
+
+**Status:** token_limit
+
+**Metrics:** `{'active_runs': 4, 'control_runs': 4, 'bit_conservation_violations': 0, 'delta_3body_dispersal': 6.75}`
+
+**Experimenter view:** The research orchestrator was interrupted by an execution limit before launching the active sub-agents for Phase 237. Prior to this, Phase 236 established a robust null result for N-body configurations, demonstrating that the self-generated latency field ($\eta = 2.0$) is dispersive rather than binding for $N \ge 3$, and exposing previous apparent 2-body orbits as ballistic recurrence artifacts of
+
+**Notes:** Execution limit reached. Work stopped as requested.
 

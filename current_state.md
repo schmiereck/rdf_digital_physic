@@ -6,7 +6,7 @@ Characterize three-body and many-body configurations: stability regimes, hierarc
 
 ## Confirmed
 - **No Active N-Body Binding:** The self-generated latency field ($\eta = 2.0$) is dispersive rather than binding for $N \ge 3$, yielding mean max pair distances that are systematically $+2.67$ to $+6.75$ lattice units larger than vacuum controls across 3-body and 4-body configurations (iter_236.1).
-- **Ballistic Recurrence:** The apparent 2-body "bound state" observed in iter_235 is most parsimoniously re-interpreted as a ballistic recurrence artifact of rotated gliders on the discrete torus. In 3-body configurations, the Permutation 10 vacuum control ($\eta = 0.0$) was captured (mean max pair distance $7.73 \le L/3$) due to lattice-direction velocity alignment alone (iter_236.1).
+- **Ballistic Recurrence:** The apparent 2-body \"bound state\" observed in iter_235 is most parsimoniously re-interpreted as a ballistic recurrence artifact of rotated gliders on the discrete torus. In 3-body configurations, the Permutation 10 vacuum control ($\eta = 0.0$) was captured (mean max pair distance $7.73 \le L/3$) due to lattice-direction velocity alignment alone (iter_236.1).
 - **Perfect Bit Conservation:** Perfect bit and structural conservation ($4 \times N$ bits) was maintained across all N-body runs (iter_236.1).
 - **Escape Velocity Monotonicity:** The escape velocity probe shows a monotonically growing max pair distance with launch offset, failing to isolate a sharp, physical binding energy threshold (iter_236.1).
 
