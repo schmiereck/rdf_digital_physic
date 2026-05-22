@@ -1,0 +1,122 @@
+I have enough context. Let me now plan the implementation and start writing the experiment script.
+Now I have enough understanding. Let me create the N-body experiment script.
+Now let me run the script.
+The simulations ran but the verdicts indicate "Escaped" for all configurations including the active eta=2.0 runs. Looking more carefully, this is because I'm using maximum unwrapped pair distance which can exceed L/2 even in a bound oscillating state (as seen in the iter_235 reference where separation oscillates between 2.7 and 22). I need to use torus-correct distances and time-averaged statistics for meaningful classification.
+Now let me also fix the classification logic and add time-averaged metrics:
+Now let me also update the markdown report writer to use the new statistics:
+Now let me also update the per-config print line and re-run:
+Now let me re-run the experiment:
+The data is much more revealing now. The key finding: with torus-correct distances, **active (eta=2.0) runs are MORE dispersive than vacuum control** in all four configurations. This is a striking negative result. Let me read the current report and add a more pointed comparison section.
+The results reveal a critical negative finding: **the active (eta=2.0) field is systematically *more* dispersive than vacuum control across all four configurations**. Let me make the honest verdict section more rigorous and quantitative, then regenerate:
+Also let me improve the limitations section now that we know the data:
+Now let me re-run to regenerate the report with the improved verdict:
+The report is comprehensive and rigorously documents the negative result. Let me also verify the CSV files were generated:
+Let me verify git status and the report is properly written:
+All artifacts are in place. Now let me summarize the experiment outcome:
+
+The Phase 5.4 N-Body Stability experiments have been executed and documented. Key findings:
+
+1. **Implementation complete** — `src/test_nbody_stability.py` runs 3-body and 4-body configurations under permutations 0 and 10, with matched active/vacuum controls plus a 6-point escape-velocity probe.
+
+2. **All 14 runs are bit-conserving** — no latching merger, F1 and F3 not triggered.
+
+3. **Key negative finding** — in all 4 active-vs-control comparisons, the active (eta=2.0) field produced **more dispersive** mean max pair distances than vacuum (deltas of +2.67, +3.53, +3.83, +6.75). The closed-loop latency field that sustained iter_235's 2-body bound state does *not* scale to 3-/4-body binding at the Phase 5.3 envelope.
+
+4. **Re-interpretation of iter_235** — The only configuration that achieved *Captured* verdict was 3-body **vacuum** under Permutation 10, with no latency field active. This suggests iter_235's 2-body localization was orientation-dependent ballistic recurrence on the torus, not coordinate-latency binding.
+
+5. **Escape probe** — Mean max pair distance grows monotonically with third-glider offset (14.34 → 20.68); no sharp escape transition isolated.
+
+```yaml
+status: ok
+artifacts:
+  - src/test_nbody_stability.py
+  - archive/iter_236/results/nbody_stability_report.md
+  - archive/iter_236/results/nbody_summary.json
+  - archive/iter_236/results/nbody_escape_velocity.csv
+  - archive/iter_236/results/nbody_3body_hier__perm0__active.csv
+  - archive/iter_236/results/nbody_3body_hier__perm0__control.csv
+  - archive/iter_236/results/nbody_3body_hier__perm10__active.csv
+  - archive/iter_236/results/nbody_3body_hier__perm10__control.csv
+  - archive/iter_236/results/nbody_4body_dblbin__perm0__active.csv
+  - archive/iter_236/results/nbody_4body_dblbin__perm0__control.csv
+  - archive/iter_236/results/nbody_4body_dblbin__perm10__active.csv
+  - archive/iter_236/results/nbody_4body_dblbin__perm10__control.csv
+metrics:
+  n_active_runs: 4
+  n_control_runs: 4
+  n_escape_probe_offsets: 6
+  steps_per_run: 160
+  L: 32
+  bit_conservation_violations: 0
+  active_captured: 0
+  active_drifted: 4
+  active_escaped: 0
+  active_latching: 0
+  control_captured: 1
+  control_drifted: 3
+  delta_3body_perm0: 3.83
+  delta_3body_perm10: 6.75
+  delta_4body_perm0: 2.67
+  delta_4body_perm10: 3.53
+  active_mp_mean_3body_perm0: 16.48
+  control_mp_mean_3body_perm0: 12.65
+  active_mp_mean_3body_perm10: 14.48
+  control_mp_mean_3body_perm10: 7.73
+  active_mp_mean_4body_perm0: 17.25
+  control_mp_mean_4body_perm0: 14.58
+  active_mp_mean_4body_perm10: 16.10
+  control_mp_mean_4body_perm10: 12.57
+log_excerpt: |
+  --- 3body_hier  N=3  Perm=0 ---
+    active: bit_ok=True mp_mean=16.48 mp_max=21.13 verdict=Drifted (intermediate)
+    control: bit_ok=True mp_mean=12.65 mp_max=13.00 verdict=Drifted (intermediate)
+  --- 3body_hier  N=3  Perm=10 ---
+    active: bit_ok=True mp_mean=14.48 mp_max=25.21 verdict=Drifted (intermediate)
+    control: bit_ok=True mp_mean=7.73 mp_max=15.03 verdict=Captured (mean max pair dist <= L/3)
+  --- 4body_dblbin  N=4  Perm=0 ---
+    active: bit_ok=True mp_mean=17.25 mp_max=23.45 verdict=Drifted (intermediate)
+    control: bit_ok=True mp_mean=14.58 mp_max=15.70 verdict=Drifted (intermediate)
+  --- 4body_dblbin  N=4  Perm=10 ---
+    active: bit_ok=True mp_mean=16.10 mp_max=26.60 verdict=Drifted (intermediate)
+    control: bit_ok=True mp_mean=12.57 mp_max=14.01 verdict=Drifted (intermediate)
+  Escape probe (offsets 4..14, Perm 0, eta=2.0): all -> Captured bucket
+  (mean max pair dist grows monotonically 14.34 -> 20.68; no sharp transition)
+experimenter_view: |
+  First-class null result for N-body binding at the Phase 5.3 envelope.
+  The closed-loop coordinate-latency field (eta=2.0, sigma=2.5, gamma=0.9,
+  threshold=0.045, alpha=2.0, LUT-08 glider) does NOT extend the 2-body
+  bound-state behaviour observed in iter_235 to 3- or 4-body
+  configurations. Across all four (config x perm) active runs, the
+  time-averaged torus-correct max pair distance is 2.67 to 6.75 lattice
+  units LARGER than the matched vacuum control — i.e. the latency field
+  is dispersive, not binding, for N >= 3 at this envelope.
+
+  The only run that achieved a *Captured* verdict (mean max pair dist
+  <= L/3 = 10.67) was 3-body Permutation 10 with eta=0 (vacuum control).
+  Because there is no latency field in that case, the localization must
+  be attributed to ballistic alignment of the rotated glider's
+  lattice-direction velocities on the torus — an orientation-dependent
+  recurrence effect, not coordinate-latency binding. This suggests the
+  iter_235 2-body "bound state" was most parsimoniously the same
+  ballistic-recurrence artefact rather than emergent gravitational-like
+  binding.
+
+  All 14 simulations preserved bit count (4*N) at every step;
+  falsification criteria F1 (bit drift) and F3 (coalescence singularity)
+  were not triggered. Criterion F2 (dispersion exceeds vacuum control) is
+  triggered in a qualitative sense for all four active configurations:
+  the active runs are *more* dispersive than their vacuum baselines,
+  though we cannot fit a 1-sigma noise band without repeated trials.
+
+  The escape-velocity probe (third_offset = 4..14, Perm 0, eta=2.0) shows
+  monotonically growing mean max pair distance with no sharp transition;
+  there is no extractable binding-energy-like threshold at this envelope.
+
+  Recommendation for next iteration: either (a) widen the parameter
+  envelope (this is explicitly prohibited by the Manager's note absent an
+  a priori physical justification), or (b) treat the iter_235 result as
+  an orientation-dependent ballistic recurrence rather than a
+  gravitational-like binding, and design Phase 5.5 around that
+  re-interpretation.
+notes: "First-class null: active eta=2.0 field is dispersive, not binding, for N>=3."
+```
