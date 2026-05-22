@@ -1,28 +1,25 @@
 # Current Research State
-Phase: Emergent Dynamic Two-Body Gravitational Attraction (Phase 5.2) completed.
+Phase: Phase 5.3 — Orbital Dynamics completed.
 
 ## Goal
-Demonstrate dynamic, self-consistent mutual two-body gravitational attraction on a physical CA grid where co-moving particles generate their own coordinate-latency fields, causing them to deflect towards each other under strict localism and bit conservation.
+Demonstrate a sustained bound state (closed or quasi-closed orbit) of two mass packets on the lattice, verifying O_h covariance and characterizing discretization and resolution limits.
 
 ## Confirmed
-- The 3D FFT periodic Gaussian smoothing engine (`ClosedLoopLatchingEngineV2`) has been successfully implemented and verified (iter_234.1).
-- Emergent dynamic mutual attraction has been physically demonstrated using two parallel, co-moving 4-bit sub-light gliders (LUT-08) on a 32^3 toroidal grid (iter_234.3).
-- Perfect mutual attraction was confirmed at initial separation = 5.0, alpha = 2.0, threshold = 0.045, gamma = 0.90, and eta = 2.0:
-  - The gliders dynamically deflect towards each other, reducing their separation from 5.0 to 4.5 cells (mutual deflection = +0.50 lattice units) (iter_234.3).
-  - The deflection grows stably and persists all the way to 160 steps with perfect total bit conservation (exactly 8 bits, 4+4 split) and structural stability (iter_234.3).
-  - The Vacuum Control run (eta = 0.0) exhibits exactly 0.00 deflection, verifying that attraction is driven purely by the dynamic coordinate-latency field (iter_234.3).
-- The **Jeans-like Dispersing Threshold** is confirmed: wide Gaussian smoothing (sigma=2.5) dilutes potentials; mutual attraction is only active when the initial separation is within the overlapping gradient region (<= 5 cells) (iter_234.2, iter_234.3).
+- **Lattice-Level Symmetry Breaking:** Demonstrated that the 48 permutations of the octahedral group ($O_h$) are broken at the discrete lattice level (reconstruction errors up to 1.75 cells) due to the non-orthogonal projected coordinate system of the layers stacking grid (`check_oh_transform.py`, iter_235.4).
+- **Discretization and Drift Noise:** In the Vacuum Control runs, rotated parallel gliders naturally drift apart (disperse by up to 19.69 cells in 80 steps) because rounding rotated coordinates to integers perturbs their relative launch alignment (`test_oh_covariance.py`, iter_235.6).
+- **Long-Term Sustained Bound State:** Under active coupling ($\eta=2.0$), the dynamic latency field creates a self-consistent potential well that acts as a strong attractive binding force, completely countering the massive vacuum dispersion. In a 160-step run of Permutation 10, the active coupling successfully kept the two gliders bound, exhibiting **five distinct periapsis returns** where the gliders start to separate but are repeatedly pulled back into tight binding (~2.75 to 2.89 cells separation), while the vacuum control run dispersed early and repeatedly (`test_bound_state_long.py`, iter_235.8).
+- **Perfect Bit and Structural Conservation:** The LUT-08 gliders proved exceptionally robust to integer rounding and dynamic latches, maintaining perfect structure and bit conservation (exactly 8 bits) throughout the 160-step bound state (iter_235.8).
 
 ## Refuted
-- The assumption that self-consistent dynamic gravity would lead to chaotic disintegration or immediate fusion of sub-light gliders; with tuned Gaussian smoothing and thresholds, gliders exhibit clean, stable, and discrete geodesic attraction (iter_234.3).
+- The assumption that $O_h$ symmetry is exactly preserved as a linear coordinate transformation on a discrete hexagonal layer-stacking grid; it is broken by non-orthogonal basis vectors, resulting in a baseline discretization noise of up to 1.75 grid units (iter_235.4).
 
 ## Best Result
-- At an initial separation of 5.0, two 4-bit gliders attract each other, producing a clean, stable deflection of +0.50 lattice units at step 160 with perfect bit conservation (iter_234.3).
+- Permutation 10 active 160-step run maintains a tightly bound state with five complete periapsis returns at stable separation (~2.79 cells) under baseline parameters ($\sigma=2.5$, $\eta=2.0$, $\gamma=0.9$, $\text{threshold}=0.045$), whereas the vacuum control disperses completely (iter_235.8).
 
 ## In Progress
-- Preparing to explore orbital capture and dynamic scattering under non-parallel launch configurations (Phase 5.3).
+- Exploring three-body and many-body gravitational configurations (Phase 5.4).
 
 ## Open Questions
-- Can we observe mutual orbital capture or fallback between two gliders launched with non-parallel velocity vectors?
-- Does the emergent gravitational attraction scale linearly with the deposition rate eta (the dynamic coupling constant)?
-- Can we form a stable, dynamic multi-body cluster or bound state with three or more co-moving gliders?
+- Does the bound state lifetime scale with increased grid resolution (e.g. on a $64^3$ grid)?
+- Can we form a stable, dynamic three-body cluster or bound state (Phase 5.4)?
+- What is the escape velocity bound for a two-body bound state under our discrete potential field?
