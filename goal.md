@@ -1,155 +1,155 @@
-# Forschungsziel: Emergenz digitaler Physik (Bit-Gitter-Universum)
+# Research Goal: Emergence of Digital Physics (Bit-Grid Universe)
 
-Dieses Projekt erforscht die Reduktion physikalischer Gesetze auf fundamentale, binäre Operationen innerhalb eines diskreten Gitters. Ziel ist es, nachzuweisen, dass komplexe Phänomene wie Masse, Gravitation und Zeitdilatation keine mathematischen Axiome sind, sondern als emergente Effekte aus einem minimalen Satz lokaler, reversibler Regeln auf einem hochsymmetrischen Gitter hervorgehen.
+This project explores the reduction of physical laws to fundamental, binary operations within a discrete grid. The objective is to demonstrate that complex phenomena such as mass, gravity, and time dilatation are not mathematical axioms, but rather emerge as emergent effects from a minimal set of local, reversible rules on a highly symmetric grid.
 
-Das Universum wird hierbei als ein verteiltes System betrachtet, in dem Information die einzige Substanz ist. Die Lichtgeschwindigkeit wird durch die Gittertopologie (1 Stab pro Takt) definiert, während Gravitation als lokale Latenzzeit (Rechenlast-Verzögerung) interpretiert wird.
-
----
-
-## 1. Strategischer Ansatz: Der "Unit-Test"-Workflow
-
-Die Suche nach der "Weltformel" erfolgt nicht durch blindes Raten in hoher Dimension, sondern durch eine hierarchische Skalierung. Jede niedrigere Dimension dient als kontrollierter Unit-Test für die nächsthöhere Ebene:
-
-* **Stufe 1 (1D):** Suche nach Regeln, die grundlegende Erhaltungssätze (Energie/Bit-Summe) erfüllen und stabile "Solitonen" (Gleiter) erzeugen.
-* **Stufe 2 (2D Hex):** Erweiterung auf hexagonale Symmetrie, um Winkel-Interaktionen und Streuprozesse (elastische Stöße) zu validieren.
-* **Stufe 3 (3D Kuboktaeder):** Übertragung der Logik auf die 12-fache Symmetrie des Kuboktaeders. Die Geometrie wird hierbei als Stapel hexagonaler Ebenen betrachtet, was die Übertragbarkeit der 2D-Schwingungsmuster sicherstellt.
+The universe is viewed here as a distributed system in which information is the sole substance. The speed of light is defined by the grid topology (1 link per tick), while gravity is interpreted as local latency (computational load delay).
 
 ---
 
-## 2. Die Experimentator-Architektur (Pipeline)
+## 1. Strategic Approach: The "Unit-Test" Workflow
 
-Um den exponentiell explodierenden Regelraum zu bändigen, nutzt das Framework eine dreistufige Filter-Architektur:
+The search for the "Theory of Everything" is not conducted by blind guessing in high dimensions, but through hierarchical scaling. Each lower dimension serves as a controlled unit test for the next higher level:
 
-1.  **Formaler Filter (Symbolic Math):**
-    * **Bijektivität:** Nur Permutationen des Zustandsraums werden zugelassen (Garantie für Reversibilität).
-    * **Linearitäts-Check:** Ausschluss trivialer Regeln (reine Rotation/Identität).
-    * **Symmetrie-Kompression:** Nutzung der $O_h$-Symmetriegruppe des Kuboktaeders zur Reduktion der Wahrheitstabellen.
-2.  **KI-Prädiktor (Neural Rule Scoring):**
-    * Einstufung der Regel-Komplexität (Eis, Dampf oder Leben) basierend auf dem Lambda-Parameter und Langton-Metriken.
-    * KI-gestützte Vorhersage der Stabilität von Gleiter-Mustern.
-3.  **Evolutionärer Loop (Genetic Algorithm):**
-    * Start mit einem Pool aus 1000 validierten Regeln.
-    * Crossover und Mutation von Wahrheitstabellen basierend auf der "Fitness" (Überlebensdauer komplexer Strukturen in Mini-Simulationen).
+* **Stage 1 (1D):** Search for rules that satisfy fundamental conservation laws (energy/bit sum) and produce stable "solitons" (gliders).
+* **Stage 2 (2D Hex):** Extension to hexagonal symmetry to validate angular interactions and scattering processes (elastic collisions).
+* **Stage 3 (3D Cuboctahedron):** Transferring the logic to the 12-fold symmetry of the cuboctahedron. The geometry is treated here as a stack of hexagonal planes, ensuring the transferability of the 2D oscillation patterns.
 
 ---
 
-## 3. Iterativer Masterplan (Roadmap)
+## 2. The Experimenter Architecture (Pipeline)
 
-Das Projekt ist in vier Sprints unterteilt, die jeweils mit einem "Savegame" des Wissensstandes enden:
+To tame the exponentially exploding rule space, the framework utilizes a three-stage filter architecture:
 
-### Phase 1: Der 1D-Symmetrie-Sieber (Grundlagen) ✓ ABGESCHLOSSEN
-* **Ziel:** Identifikation aller reversiblen, bit-erhaltenden Regeln für $n=3$ Bits.
-* **Meilenstein:** Katalog von "Naturkonstanten" (Regelsätzen), die einfache Fortbewegung erlauben.
-* **Ergebnis (iter_001–002):** 33 nicht-triviale Regeln gefunden; 22 davon erzeugen v=c-Gleiter,
-  11 stabile Festpunkte. Details: `archive/iter_001/results/valid_rules.json`.
+1.  **Formal Filter (Symbolic Math):**
+    * **Bijectivity:** Only permutations of the state space are permitted (guaranteeing reversibility).
+    * **Linearity Check:** Exclusion of trivial rules (pure rotation/identity).
+    * **Symmetry Compression:** Utilizing the $O_h$ symmetry group of the cuboctahedron to reduce the truth tables.
+2.  **AI Predictor (Neural Rule Scoring):**
+    * Classification of rule complexity (ice, steam, or life) based on the Lambda parameter and Langton metrics.
+    * AI-assisted prediction of the stability of glider patterns.
+3.  **Evolutionary Loop (Genetic Algorithm):**
+    * Starting with a pool of 1000 validated rules.
+    * Crossover and mutation of truth tables based on "fitness" (survival time of complex structures in mini-simulations).
 
-### Phase 2: Der "Zappel"-Detektor (Innere Schwingung) ✓ ABGESCHLOSSEN
-* **Ziel:** Erweiterung der Bit-Tiefe (2-3 Bits pro Zelle), um interne Oszillationen zu ermöglichen.
-* **Meilenstein:** Erzeugung von Teilchen mit effektiven Geschwindigkeiten $v < c$ (Masse-Simulation).
-* **Ergebnis (iter_003–006):** 2-Bit/Zelle-System: Periode-2-Oszillator (v=0) und v=c/2-Gleiter
-  (Einzel- und Composite-Partikel) per Konstruktion nachgewiesen. Kollisionscharakterisierung
-  in 1D: 8 elastisch, 6 Fusion, 8 chaotisch (iter_007 / iter_018).
+---
 
-### Phase 3: Die 2D-Hex-Kollision (Streuung) ⟳ IN BEARBEITUNG
-* **Ziel:** Validierung der Interaktions-Logik bei elastischen Stößen im hexagonalen Gitter.
-* **Meilenstein:** Beobachtung von deterministischer Winkeländerung ohne Informationsverlust.
-* **Zwischenergebnis (iter_179, Milestone `milestone-glider-discovery`):**
-  Ein stabiler v=1c-Gleiter (3-Bit L-Tromino, Regel `g10_rule_001`) wurde durch evolutionäre
-  Suche entdeckt. Bit-Erhaltung perfekt, 400 Zellen Versatz in 400 Schritten, null Dispersion.
+## 3. Iterative Master Plan (Roadmap)
+
+The project is divided into four sprints, each ending with a "savegame" of the knowledge state:
+
+### Phase 1: The 1D Symmetry Sifter (Foundations) ✓ COMPLETED
+* **Goal:** Identification of all reversible, bit-preserving rules for $n=3$ bits.
+* **Milestone:** Catalog of "physical constants" (rule sets) that allow simple propagation.
+* **Result (iter_001–002):** 33 non-trivial rules found; 22 of them produce v=c gliders,
+  11 stable fixed points. Details: `archive/iter_001/results/valid_rules.json`.
+
+### Phase 2: The "Wiggle" Detector (Internal Oscillation) ✓ COMPLETED
+* **Goal:** Extending the bit depth (2-3 bits per cell) to enable internal oscillations.
+* **Milestone:** Generation of particles with effective velocities $v < c$ (mass simulation).
+* **Result (iter_003–006):** 2-bit/cell system: period-2 oscillator (v=0) and v=c/2 gliders
+  (single and composite particles) proven by construction. Collision characterization
+  in 1D: 8 elastic, 6 fusion, 8 chaotic (iter_007 / iter_018).
+
+### Phase 3: The 2D Hex Collision (Scattering) ⟳ IN PROGRESS
+* **Goal:** Validating interaction logic in elastic collisions within the hexagonal grid.
+* **Milestone:** Observation of deterministic angle changes without loss of information.
+* **Intermediate Result (iter_179, Milestone `milestone-glider-discovery`):**
+  A stable v=1c glider (3-bit L-tromino, rule `g10_rule_001`) was discovered through evolutionary
+  search. Perfect bit preservation, 400 cells offset in 400 steps, zero dispersion.
   Animation: `archive/iter_179/results/champion_glider.gif`.
-* **Offen:** Kollisionsdynamik zweier Gleiter; v<c-Gleiter durch interne Oszillation.
+* **Open:** Collision dynamics of two gliders; v<c glider via internal oscillation.
 
-### Phase 4: Das Kuboktaeder-Universum (3D bis 4D)
-In dieser Phase wird die Logik auf die volle Ziel-Geometrie übertragen. Wir unterscheiden dabei zwischen der Simulation im Raum und der Repräsentation als statische Raumzeit-Geometrie.
+### Phase 4: The Cuboctahedron Universe (3D to 4D)
+In this phase, the logic is transferred to the full target geometry. We distinguish between simulation in space and representation as static spacetime geometry.
 
-#### Phase 4.1: 3D-Raum mit internem Zeitschritt
-* **Fokus**: Klassische 3D-Simulation, bei der die Zeit durch die Iterationsschleife des Orchestrators definiert wird.
-* **Technik**: Volle Ausnutzung der 12 Nachbarn des Kuboktaeders im 3D-Raum unter Verwendung der 0,5-Taktung (Knoten-Kante-Austausch).
-* **Ziel**: Stabilisierung von 3D-Gleitern und Nachweis der Zeitdilatation durch lokale Rechenlast-Verzögerung (CPU-Throttling-Analogie).
+#### Phase 4.1: 3D Space with Internal Time Step
+* **Focus**: Classical 3D simulation where time is defined by the orchestrator's iteration loop.
+* **Technique**: Full utilization of the 12 neighbors of the cuboctahedron in 3D space using 0.5-ticking (node-edge exchange).
+* **Goal**: Stabilization of 3D gliders and proof of time dilation via local computational load delay (CPU throttling analogy).
 
-#### Phase 4.2: 2D+1 (3D FCC-Raumzeit)
-* **Fokus**: Behandlung der dritten Dimension des FCC-Gitters als Zeitachse.
-* **Technik**: Definition von "geraden" Achsen (reiner Zeitfluss am Ort) und "geneigten" Achsen (Bewegung durch den 2D-Raum über die Zeit). Ein Zeitschritt entspricht einem Sprung entlang einer Gitterkante in der Raumzeit.
-* **Ziel**: Geometrische Darstellung der Lichtgeschwindigkeit als festen Neigungswinkel im Gitter. Untersuchung, wie Bits entlang der Raumzeit-Pfade "zappeln".
+#### Phase 4.2: 2D+1 (3D FCC Spacetime)
+* **Focus**: Treating the third dimension of the FCC grid as the time axis.
+* **Technique**: Definition of "straight" axes (pure flow of time in place) and "tilted" axes (movement through 2D space over time). A time step corresponds to a jump along a grid edge in spacetime.
+* **Goal**: Geometric representation of the speed of light as a fixed angle of inclination in the grid. Investigation of how bits "wiggle" along spacetime paths.
 
-#### Phase 4.3: 3D+1 (4D FCC-Raumzeit)
-* **Fokus**: Volle Skalierung auf ein 4-dimensionales FCC-Gitter (D4-Gitter), in dem die Zeit die vierte Dimension darstellt.
-* **Technik**: Modellierung der Weltlinien als Pfade im 4D-Gitter. Zeitschritte erfolgen entlang der 4D-Vektoren zu den nächsten Nachbarn (entspricht den 24 Nachbarn der 4D-Kugelpackung).
-* **Meilenstein**: Vollständige Abbildung der Minkowski-Metrik auf ein diskretes Bit-Gitter. Nachweis, dass die Zeitdilatation geometrisch durch die Pfadlänge im 4D-Gitter (Eigenzeit) repräsentiert wird.
+#### Phase 4.3: 3D+1 (4D FCC Spacetime)
+* **Focus**: Full scaling to a 4-dimensional FCC grid (D4 grid), where time represents the fourth dimension.
+* **Technique**: Modeling world lines as paths in the 4D grid. Time steps occur along the 4D vectors to the nearest neighbors (corresponding to the 24 neighbors of the 4D sphere packing).
+* **Milestone**: Complete mapping of the Minkowski metric to a discrete bit grid. Proof that time dilation is geometrically represented by the path length in the 4D grid (proper time).
 ---
 
-## 4. Gesichertes Wissen und methodische Lektionen (Stand: iter_179)
+## 4. Confirmed Knowledge and Methodological Lessons (As of: iter_179)
 
-Dieser Abschnitt ist das "Savegame" des bisherigen Wissensstands. Neue Agenten sollen ihn
-lesen, bevor sie Experimente planen, um bereits bekannte Sackgassen zu vermeiden.
+This section is the "savegame" of the knowledge gained so far. New agents must read it
+before planning experiments in order to avoid already known dead ends.
 
-### 4.1 Bestätigte Fakten
+### 4.1 Confirmed Facts
 
-| Fakt | Iterationen |
+| Fact | Iterations |
 |------|------------|
-| 33 reversible, bit-erhaltende 1D-Regeln existieren (3-Bit-Nachbarschaft) | iter_001 |
-| 22 davon erzeugen v=c-Gleiter; 11 stabile Festpunkte | iter_002 |
-| 2-Bit/Zelle: v=c/2-Gleiter durch interne Oszillation möglich (Masse-Emergenz) | iter_003–006 |
-| Stabiler v=1c-Gleiter im 2D-Hex-Gitter evolutionär entwickelt (`g10_rule_001`) | iter_179 |
-| Fitness-Score 56.0 entspricht echtem Gleiter (visuell verifiziert, kein Exploit) | iter_179.4 |
-| Alle "Champion"-Regeln aus iter_174 und iter_176 sind unter `CheckpointFitness` instabil (Score 0.0) | iter_179.1 |
+| 33 reversible, bit-preserving 1D rules exist (3-bit neighborhood) | iter_001 |
+| 22 of these produce v=c gliders; 11 stable fixed points | iter_002 |
+| 2-bit/cell: v=c/2 gliders possible via internal oscillation (mass emergence) | iter_003–006 |
+| Stable v=1c glider evolutionarily developed in 2D hex grid (`g10_rule_001`) | iter_179 |
+| Fitness score 56.0 corresponds to a real glider (visually verified, no exploit) | iter_179.4 |
+| All "champion" rules from iter_174 and iter_176 are unstable under `CheckpointFitness` (Score 0.0) | iter_179.1 |
 
-### 4.2 Bekannte Exploits der Fitness-Funktion
+### 4.2 Known Exploits of the Fitness Function
 
-Jeder dieser Exploits hat frühere evolutionäre Läufe invalidiert. Bei neuen Fitness-Funktionen
-müssen sie explizit ausgeschlossen werden:
+Each of these exploits invalidated previous evolutionary runs. They must be explicitly excluded
+in new fitness functions:
 
-| Exploit | Symptom | Lösung |
+| Exploit | Symptom | Solution |
 |---------|---------|--------|
-| **Settler** | Ruhende Regel erzielt hohen Score, weil std_dev = 0 | Displacement-Term erzwingen |
-| **Annihilator** | Alle Bits gelöscht → CoM-Bewegung relativ groß | `final_bits / initial_bits`-Term |
-| **Transient Puffer** | Hohe Anfangsbewegung, dann Stillstand | Spät-Fenster oder Checkpoint-Messung |
-| **Explosive Bloomer** | Bit-Zahl explodiert, CoM driftet nur kurz | `max_bit_count`-Strafe |
-| **C2-Symmetrie-Bug** | C2-Regel + C2-symmetrischer Seed → CoM-Invarianz (immer 0) | Asymmetrischen Seed verwenden (L-Tromino) |
+| **Settler** | Stationary rule scores high because std_dev = 0 | Enforce displacement term |
+| **Annihilator** | All bits deleted → CoM movement relatively large | `final_bits / initial_bits` term |
+| **Transient Buffer** | High initial movement, then stasis | Late-window or checkpoint measurement |
+| **Explosive Bloomer** | Bit count explodes, CoM drifts only briefly | `max_bit_count` penalty |
+| **C2 Symmetry Bug** | C2 rule + C2-symmetric seed → CoM invariance (always 0) | Use asymmetric seed (L-tromino) |
 
-### 4.3 Robuste Fitness-Funktion: `CheckpointFitness`
+### 4.3 Robust Fitness Function: `CheckpointFitness`
 
-Die bisher einzige Fitness-Funktion, die alle bekannten Exploits ablehnt.
-Implementierung: `src/run_iter_179_evolution.py` (iter_179).
+The only fitness function so far that rejects all known exploits.
+Implementation: `src/run_iter_179_evolution.py` (iter_179).
 
-**Prinzip:** Das Partikel wird an mehreren Zeitpunkten (Checkpoints) gemessen.
-Fitness = Netto-Versatz × Anzahl Checkpoints, an denen die Bit-Zahl exakt stabil ist.
-Eine Regel, die auch nur an einem Checkpoint die falsche Bit-Zahl hat, bekommt Fitness 0.
+**Principle:** The particle is measured at multiple points in time (checkpoints).
+Fitness = Net displacement × number of checkpoints where the bit count is exactly stable.
+A rule that has the wrong bit count at even one checkpoint receives a fitness of 0.
 
-**Standardmäßig zu verwenden** für alle zukünftigen evolutionären Läufe, bis eine bessere
-Metrik mit expliziter Begründung eingeführt wird.
+**To be used by default** for all future evolutionary runs, until a better metric is
+introduced with explicit justification.
 
-### 4.4 Standardkonfiguration evolutionäre Suche (2D Hex)
+### 4.4 Standard Configuration for Evolutionary Search (2D Hex)
 
-Aus iter_170–179 destilliert; direkt übertragbar auf neue Kampagnen im 2D-Hex-Gitter:
+Distilled from iter_170–179; directly transferable to new campaigns in the 2D hex grid:
 
-* **Seed-Partikel:** 3-Bit L-Tromino (asymmetrisch, C2-symmetrische Seeds sind unbrauchbar)
-* **Gittergröße:** 128×128 Torus
-* **Checkpoint-Abstände:** 4 gleichmäßige Punkte über den Simulationshorizont
-* **Populations-Größe:** 100 Regeln; Elite-Anteil 10%
-* **Erwartetes Verhalten:** Phasen-Transition (sprungartiger Fitness-Anstieg) kann in Gen 5–10 auftreten;
-  nicht abbrechen, wenn frühe Generationen stagnieren (iter_174: Plateau bis Gen 6, dann Sprung)
+* **Seed Particle:** 3-bit L-tromino (asymmetric, C2-symmetric seeds are useless)
+* **Grid Size:** 128×128 torus
+* **Checkpoint Intervals:** 4 uniform points across the simulation horizon
+* **Population Size:** 100 rules; elite ratio 10%
+* **Expected Behavior:** Phase transition (sudden fitness increase) can occur in Gen 5–10;
+  do not abort if early generations stagnate (iter_174: plateau until Gen 6, then jump)
 
-### 4.5 Warnung: Triviale 2D-Regeln
+### 4.5 Warning: Trivial 2D Rules
 
-Einfache lokale Regeln im 2D-Hex-Gitter (Bit-Rotation, Nachbar-Swap) sind typischerweise
-äquivalent zu einem globalen Gitter-Shift und produzieren keine echten lokalen Teilchen
-(iter_016–017). Für nicht-triviale Dynamik ist evolutionäre Suche notwendig.
-
----
-
-## 6. Erfolgskriterien
-
-* **Deterministische Gleiter:** Stabile Bit-Muster, die sich über weite Distanzen ohne Zerfall bewegen.
-* **Quantisierte Zwischenwerte:** Emergenz kontinuierlich wirkender Geschwindigkeiten durch statistische Richtungswechsel (Duty Cycles).
-* **Physikalische Äquivalenz:** Konsistente Behandlung von Kollisionen unabhängig von der topologischen Distanz (Case 1 vs. Case 2 Lösung über 0,5-Takt).
-* **E=mc² Analogie:** Regeln, bei denen kinetische Bit-Energie in interne Zustands-Energie (Ruhemasse) umgewandelt werden kann.
+Simple local rules in the 2D hex grid (bit rotation, neighbor swap) are typically
+equivalent to a global grid shift and do not produce real local particles
+(iter_016–017). Evolutionary search is necessary for non-trivial dynamics.
 
 ---
 
-## 7. Technische Beschränkungen
+## 6. Success Criteria
 
-* **Strikte Lokalität:** Kein Zugriff auf nicht-benachbarte Knoten (Ausnahme: Explizite Verschränkungs-Pointer auf Quell-Events).
-* **Binäre Reinheit:** Keine Nutzung von Float-Werten innerhalb der Physik-Engine.
-* **Hardware-Symmetrie:** Alle Regeln müssen invariant gegenüber den Rotationen des Kuboktaeders sein.
-* **Ressourcen-Kontrolle:** Jede Iteration erfordert eine manuelle Freigabe [y] nach Sichtung des Strategie-Reports.
+* **Deterministic Gliders:** Stable bit patterns that propagate over long distances without decay.
+* **Quantized Intermediate Values:** Emergence of continuously acting velocities through statistical directional changes (duty cycles).
+* **Physical Equivalence:** Consistent handling of collisions independent of topological distance (Case 1 vs. Case 2 solution via 0.5-ticking).
+* **E=mc² Analogy:** Rules where kinetic bit energy can be converted into internal state energy (rest mass).
+
+---
+
+## 7. Technical Constraints
+
+* **Strict Locality:** No access to non-neighboring nodes (Exception: Explicit entanglement pointers to source events).
+* **Binary Purity:** No use of float values within the physics engine.
+* **Hardware Symmetry:** All rules must be invariant under rotations of the cuboctahedron.
+* **Resource Control:** Each iteration requires a manual release [y] after reviewing the strategy report.
