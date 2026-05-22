@@ -1,0 +1,1 @@
+Parse `archive/iter_233/results/closed_loop_attraction.json` using a Python script. Find the maximum `mutual_attraction` value, and the parameters that achieved it. Identify how many configurations were stable and had positive mutual attraction, and summarize the range of parameters that work best. Save a text summary to `archive/iter_233/results/sweep_analysis.txt` and print it.
