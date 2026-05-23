@@ -1,0 +1,21 @@
+Write a self-contained python script `src/glider_annihilation_analysis.py` that:
+1. Loads the standard 12-bit LUT and the 4-bit sub-light glider LUT-08 from `archive/iter_224/results/glider_00_lut08_sub03.json`.
+2. Computes the velocity of the original glider pA in vacuum over 80 steps to establish its velocity vector v_A.
+3. Uses the 48 O_h symmetry transformations to identify all stable antiparticle candidates pB that propagate with velocity -v_A.
+4. Sweeps over:
+   - These stable antiparticle candidates pB.
+   - Relative phase in {0, 1} (where phase 1 is obtained by simulating the original glider for 1 step).
+   - Alignments: we place the original glider at oa = (6, 16, 6) and the antiparticle at ob = (26 + dl, 16 + dr, 26 + dc) with dl, dr, dc swept in [-4, 4].
+5. For each setup, simulates for 80 steps using a sparse CA simulator (highly optimized to run thousands of runs in seconds) and checks for "clean annihilation" at step 80:
+   - Total bit count == 8.
+   - Bounding box of size 10x10x10 centered at (16, 16, 16) is completely empty of any active bits.
+   - All 8 bits are isolated (pairwise Manhattan distance on torus >= 6), proving they are independent, uncoupled 1-bit states.
+6. If a clean annihilation is found, perform the CPT-symmetry reconstruction test:
+   - Apply CPT to the state at step 80 (coordinates l,r,c become (-l)%L, (-r)%L, (-c)%L on torus L=32, channel remains unchanged).
+   - Simulate for 80 steps forward under the forward rule.
+   - Apply CPT again.
+   - Verify that it perfectly matches the initial step 0 grid (to bit-level precision).
+7. If multiple configurations work, choose the cleanest and print out the parameters.
+8. Write a JSON summary of the results to `archive/iter_243/results/annihilation_summary.json` and a markdown report to `archive/iter_243/results/CPT_annihilation_report.md`.
+
+Execute the script and output the results. Make sure that all paths (including 'archive/iter_224/results/glider_00_lut08_sub03.json' and 'archive/iter_243/results/') are handled robustly. Ensure the script runs with standard Python 3 + numpy.
