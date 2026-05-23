@@ -42,12 +42,6 @@ from src.search_3d_gliders import get_oh_permutations  # noqa: E402
 # ---------------------------------------------------------------------------
 
 def build_oh_transforms():
-    """Return list of (perm, M_g_int) for all 48 octahedral group elements.
-
-    M_g is an integer 3x3 matrix (entries in {-1, 0, 1}) such that for any
-    coordinate vector x = (l, r, c), the transformed coordinate is M_g @ x
-    and the transformed channel is perm[ch].
-    """
     S = np.array(SHIFTS, dtype=float)
     S_pinv = np.linalg.pinv(S)
     perms = get_oh_permutations()
@@ -56,12 +50,11 @@ def build_oh_transforms():
     for perm in perms:
         S_rot = np.array([S[perm[i]] for i in range(12)], dtype=float)
         M_g = S_rot.T @ S_pinv.T
-        M_g_int = np.rint(M_g).astype(int)
-        # Sanity check
-        pred = S @ M_g_int.T.astype(float)
+        # Sanity check using floats
+        pred = S @ M_g.T
         err = float(np.max(np.abs(pred - S_rot)))
         max_err = max(max_err, err)
-        transforms.append((perm, M_g_int))
+        transforms.append((perm, M_g))
     assert max_err < 1e-8, f"O_h transform reconstruction error too large: {max_err}"
     return transforms
 
@@ -83,14 +76,15 @@ def particle_translation_canon(particle):
 
 
 def oh_canonical(particle, transforms):
-    """Return the lex-min translationally canonical form over all 48 O_h
-    images of the particle. This is the canonical orbit representative."""
     best = None
     for perm, M_g in transforms:
         transformed = []
         for (l, r, c, ch) in particle:
-            v = M_g @ np.array([l, r, c], dtype=int)
-            transformed.append((int(v[0]), int(v[1]), int(v[2]), int(perm[ch])))
+            v = M_g @ np.array([l, r, c], dtype=float)
+            nl = int(np.round(v[0]))
+            nr = int(np.round(v[1]))
+            nc = int(np.round(v[2]))
+            transformed.append((nl, nr, nc, int(perm[ch])))
         canon = particle_translation_canon(transformed)
         if best is None or canon < best:
             best = canon
