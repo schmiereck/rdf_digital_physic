@@ -1,0 +1,3 @@
+Run a short diagnostic to verify how the LUT-08 glider propagates.
+Write a python script `src/test_non_periodic_glider.py` that loads the glider from `archive/iter_224/results/glider_00_lut08_sub03.json`, seeds a single glider at (32, 32, 32) in a `ClosedLoopLatchingEngine` of L=64, runs it for 60 steps in vacuum (threshold=100.0, alpha=0.0), and prints the glider's centroid coordinates (X, Y, Z) and total bit count at every 10 steps.
+Run this script and print the output.
