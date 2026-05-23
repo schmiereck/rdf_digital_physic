@@ -23,4 +23,4 @@ Demonstrate that mass, gravity, time dilation, and ultimately quantum phenomena 
 
 ## Open Questions
 - What is the CPT-reversed counterpart of the LUT-08 sub-light glider?
-- Do other 3D O_h-symmetric rules support multiple stable glider species with additive charges that undergo pair production?
+- Do other 3D O_h-symmetric rules support a broader particle zoo (W > 12)?

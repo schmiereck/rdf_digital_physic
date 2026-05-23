@@ -9890,3 +9890,34 @@ This plan was immediately blocked. Four consecutive attempts to launch a sub
 
 **Notes:** Phase completely blocked by a persistent platform-level execution error.
 
+
+---
+```yaml
+cached_tokens: 311379
+cost_usd: 0.57289
+hypothesis: 'phase-220: Diagnosed the ''drifter'' exploit and developed a new, theoretically-sound
+  fitness function, but validation was blocked by platform errors.'
+input_tokens: 383492
+iter: 220
+metrics:
+  exploit_reproduction_avg_velocity: 0.26
+  exploit_reproduction_fitness: 84.34
+  new_fitness_theoretical_drifter_penalty: 6.7
+output_tokens: 4575
+status: experiment_failed
+```
+
+## iter_220: phase-220: Diagnosed the 'drifter' exploit and developed a new, theoretically-sound fitness function, but validation was blocked by platform errors.
+
+**Analysis:** The phase began by successfully diagnosing and resolving the platform instability that blocked previous work (220.1). With a stable platform, the scientific work began by reproducing the fitness function exploit from iter_219. Agents 220.3 and 220.4 confirmed that the old `LeakySubLightFitness` function rewarded any slow, persistent drift, fundamentally confusing net displacement with coherent mot
+
+**Status:** experiment_failed
+
+**Metrics:** `{'exploit_reproduction_fitness': 84.34, 'exploit_reproduction_avg_velocity': 0.26, 'new_fitness_theoretical_drifter_penalty': 6.7}`
+
+**Experimenter view:** This phase successfully stabilized the platform (220.1) and then systematically diagnosed the previous `v<c` glider failure. Sub-agents (220.3, 220.4) successfully reproduced the exploit, confirming that the old fitness function incorrectly awarded a high score (84.34) to a stationary pattern that was slowly drifting at ~0.26 cells/step.
+
+A new, exploit-resistant fitness function, `DisplacementCon
+
+**Notes:** Developed a promising new fitness function, but final validation was blocked by repeated platform errors.
+

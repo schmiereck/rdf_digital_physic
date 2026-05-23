@@ -3,37 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 311379
-cost_usd: 0.57289
-hypothesis: 'phase-220: Diagnosed the ''drifter'' exploit and developed a new, theoretically-sound
-  fitness function, but validation was blocked by platform errors.'
-input_tokens: 383492
-iter: 220
-metrics:
-  exploit_reproduction_avg_velocity: 0.26
-  exploit_reproduction_fitness: 84.34
-  new_fitness_theoretical_drifter_penalty: 6.7
-output_tokens: 4575
-status: experiment_failed
-```
-
-## iter_220: phase-220: Diagnosed the 'drifter' exploit and developed a new, theoretically-sound fitness function, but validation was blocked by platform errors.
-
-**Analysis:** The phase began by successfully diagnosing and resolving the platform instability that blocked previous work (220.1). With a stable platform, the scientific work began by reproducing the fitness function exploit from iter_219. Agents 220.3 and 220.4 confirmed that the old `LeakySubLightFitness` function rewarded any slow, persistent drift, fundamentally confusing net displacement with coherent mot
-
-**Status:** experiment_failed
-
-**Metrics:** `{'exploit_reproduction_fitness': 84.34, 'exploit_reproduction_avg_velocity': 0.26, 'new_fitness_theoretical_drifter_penalty': 6.7}`
-
-**Experimenter view:** This phase successfully stabilized the platform (220.1) and then systematically diagnosed the previous `v<c` glider failure. Sub-agents (220.3, 220.4) successfully reproduced the exploit, confirming that the old fitness function incorrectly awarded a high score (84.34) to a stationary pattern that was slowly drifting at ~0.26 cells/step.
-
-A new, exploit-resistant fitness function, `DisplacementCon
-
-**Notes:** Developed a promising new fitness function, but final validation was blocked by repeated platform errors.
-
-
----
-```yaml
 cached_tokens: 281151
 cost_usd: 0.60653
 hypothesis: 'phase-220: All scientific progress was blocked by a persistent, unrecoverable
@@ -1032,4 +1001,46 @@ The results confirm a robust
 2. We successfully executed a "Smoke-Test Protocol" on exactly two configurati
 
 **Notes:** Glider Taxonomy search completed successfully with a robust null result under a strict code and token budget.
+
+
+---
+```yaml
+cached_tokens: 3610617
+cost_usd: 1.35226
+hypothesis: 'phase-242: mathematically define and verify chirality Z2 enantiomorphism,
+  sub-lattice parities, and additive conservation laws across 100% elastic collisions
+  under the LUT-08 rule on 3D FCC grid.'
+input_tokens: 4037709
+iter: 242
+metrics:
+  M_perm_sigma: (3, 2, 1, 0)
+  chi_even_step: -4.0
+  chi_odd_step: 2.0
+  chi_period: 2
+  elastic_collisions_ratio: 10/10
+  incoming_vs_outgoing_chi_conservation: 10/10
+  incoming_vs_outgoing_q_conservation: 10/10
+  q_period: 2
+  reflected_bit_stable: true
+  reflected_chi_even: 4.0
+  reflected_chi_odd: -2.0
+output_tokens: 7506
+status: ok
+```
+
+## iter_242: phase-242: mathematically define and verify chirality Z2 enantiomorphism, sub-lattice parities, and additive conservation laws across 100% elastic collisions under the LUT-08 rule on 3D FCC grid.
+
+**Analysis:** We have systematically addressed the Research Manager's Strategic Notes by analyzing both the kinematics in vacuum and the dynamics during interactions. 
+While the cyclic permutation of the sub-lattice occupancy vector during vacuum propagation is a direct geometric consequence of grid projection, we have shown that during collisions, the asymptotic sub-lattice parities and the total chirality sum
+
+**Status:** ok
+
+**Metrics:** `{'chi_even_step': -4.0, 'chi_odd_step': 2.0, 'chi_period': 2, 'q_period': 2, 'reflected_chi_even': 4.0, 'reflected_chi_odd': -2.0, 'reflected_bit_stable': True, 'M_perm_sigma': '(3, 2, 1, 0)', 'elastic_collisions_ratio': '10/10', 'incoming_vs_outgoing_chi_conservation': '10/10', 'incoming_vs_outgoing_q_conservation': '10/10'}`
+
+**Experimenter view:** We have successfully completed Phase 7.2 by defining and verifying the internal conserved charges of the LUT-08 sub-light glider on the 3D Face-Centered Cubic (FCC) grid, and evaluating their conservation across 10 distinct collision runs. 
+
+The key findings are:
+1. Chirality (signed volume of the 4 bits in Cartesian FCC space) alternates between -4.0 (even steps) and +2.0 (odd steps), displaying 
+
+**Notes:** Phase 7.2 completed successfully, establishing chirality and sub-lattice distributions as conserved quantities under 100% elastic collisions.
 

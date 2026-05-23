@@ -1,20 +1,19 @@
 # Research Manager Journal & Strategic State
 
 ## 1. High-Level Strategy & Trajectory
-*   **Current Phase:** Phase 7 (Particle Zoo) - Sub-phase 7.1 (Glider Taxonomy)
-*   **Active Direction:** Broadening the search for stable 3D sub-light gliders on the FCC lattice across alternative O_h symmetric rule spaces, following the verification of the isolation of the LUT-08 glider under its native rule.
-*   **Trajectory Update (Iteration 241):** The token limit bottleneck was successfully resolved by introducing a two-stage Smoke-Test Protocol and restricting code complexity. The empirical search of the localized configuration space ($W \le 5$) under the LUT-08 rule yielded a robust null result. This indicates that the LUT-08 glider is highly isolated within its rule space.
-*   **Confidence Score:** 35% (Elevated by resolving platform limitations and establishing a clean, reproducible null result with functioning positive controls).
+*   **Current Phase:** Phase 7 (Particle Zoo) - Sub-phase 7.3 (Antiparticles & CPT Symmetries)
+*   **Active Direction:** Formulating, constructing, and testing time-reversed counterparts (antiparticles) of the stable LUT-08 sub-light glider on the 3D FCC lattice, and evaluating whether particle-antiparticle annihilation can be achieved while preserving strict binary and structural purity.
+*   **Trajectory Update (Iteration 242):** Phase 7.2 is fully completed. The internal kinematics and charge profiles of the LUT-08 glider have been thoroughly mapped. We established that the glider carries a discrete $Z_2$ chirality charge and that total chirality and sub-lattice distributions are asymptotically conserved across 100% elastic collisions (10 independent configurations evaluated).
+*   **Confidence Score:** 55% (Elevated by the rigorous verification of 100% elastic collisions and additive conservation laws, confirming the particle-like stability of the gliders).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **Local Rule Isolation:** The native rule of the LUT-08 glider does not support other small ($W \le 5$), stable, sub-light propagating patterns in its immediate configuration neighborhood. This suggests that stable 3D gliders on the FCC lattice are highly sparse, and discovery requires sweeping alternative O_h symmetric rule sets rather than scaling configuration seeds within a single rule.
-*   **Positive Controls for Search Verification:** In discrete searches, running the known target (LUT-08) as an in-line positive control is mandatory to rule out false negatives caused by script or boundary errors.
-*   **Software Hygiene:** Restricting script sizes to under 110 lines and utilizing pre-compiled modular utilities is an effective strategy to mitigate LLM context exhaustion.
+*   **Asymptotic Charge Conservation in Collisions:** Under the O_h-symmetric, bit-conserving LUT-08 rule, gliders exhibit perfect elastic collisions across multiple impact parameters. Their individual charges (chirality, sub-lattice parities) undergo complex transient phases during localized contact but emerge fully restored asymptotically. This confirms these charges as robust invariants protecting the particles from decay during interactions.
+*   **Enantiomer Stability:** The stability and propagation of the mirror-reflected glider ($x \to -x$) with perfectly negated chirality demonstrates that the rule supports dual chiral enantiomers, acting as a classical analog to parity-symmetric states.
 
 ## 3. Loop & Bottleneck Detection
-*   **Resolved Loop (Token Limits):** The token-limit loop observed in Iterations 240 and 241 has been successfully bypassed. The "Code-Sparsity Budget" and modular execution of `src/rigorous_glider_audit.py` successfully kept execution within bounds.
-*   **Future Bottlenecks:** Sweeping broader rule spaces (rather than configuration spaces) will exponentially increase the combinatorial complexity. To prevent future timeouts, any rule sweep must be constrained by conservation laws (e.g., pre-filtering for strict bit-conservation and O_h symmetry).
+*   **Resolved Loop:** By using standard-library-only analytical python scripts and strictly restricting execution steps, we successfully avoided context/token timeouts and platform-level dependencies.
+*   **Future Bottlenecks:** Constructing the exact time-reversed counterpart of the glider (for Phase 7.3) requires precise inversion of both spatial offsets and internal state-phase transitions. If simple bit-inversion fails to produce a stable antiparticle, a wider algebraic mapping of the O_h group and the state transitions must be conducted.
 
 ## 4. Alternate Research Paths
-*   **Random Rule Search under O_h Constraints:** Generate and test random, strictly bit-conserving, O_h-symmetric 3D rules for stable gliders using a sparse genetic or cellular probing approach.
-*   **Phase 6 (Quantum Emergence) Initial Setup:** If 3D glider species remain extremely sparse, begin Phase 6 using ensembles of the known 2D sub-light glider to establish statistical superposition and interference.
+*   **CPT-Inversion Mapping:** If standard time-reversal on the lattice does not yield a propagating glider, explore combined parity-charge-time (CPT) operations where state-space bit inversions are coupled with spatial reflections.
+*   **Phase 6 (Quantum Emergence) Setup:** If Phase 7.3 completes successfully, statistical ensembles of these stable, colliding, and annihilating particles can be prepared to probe statistical superposition.
