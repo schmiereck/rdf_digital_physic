@@ -1,0 +1,12 @@
+Write a python script `src/rigorous_glider_audit.py` to rigorously analyze and audit all 163 gliders in `archive/iter_240/results/new_glider_*.json` and the reference LUT-08 glider.
+
+The script must do the following:
+1. Load `archive/iter_224/results/glider_00_lut08_sub03.json` to get the LUT-08 LUT and reference particle.
+2. Load all 163 json files from `archive/iter_240/results/new_glider_*.json`.
+3. Implement the full 48-element O_h group symmetry coordinate and channel transformations to canonicalize particles. Use `src/check_oh_transform.py` logic: for each of the 48 permutations `perm` from `get_oh_permutations()`, compute M_g = S_rot.T @ np.linalg.pinv(S).T where S is the 12x3 matrix of `SHIFTS` and S_rot is S permuted by `perm`. This maps (l, r, c) coordinates perfectly. For a particle, its transformed coordinates are M_g @ np.array([l, r, c]) rounded to nearest integer, and its channel is perm[ch]. The canonical rep under O_h is the lex-minimum translationally-canonicalized form over all 48 transformations.
+4. Group all 163 gliders + the reference glider into equivalence classes using this full O_h canonical rep.
+5. For each equivalence class, run its representative particle for 200 steps (5 complete periods) in vacuum on an L=32 toroidal grid using `stream` and `collide` from `engine_3d`. Verify bit conservation (total_bits == initial_bits) and bounding extent <= 6 on EVERY single step. If verified, mark as "STABLE".
+6. Calculate the exact period P (smallest p > 0 where shapes[t] == shapes[t % p] for all t), the coordinate velocity v_coord = ||cumulative_displacement|| / 200, and the normalized speed v/c = v_coord / sqrt(2) since c_max = sqrt(2).
+7. Print a detailed list of all unique equivalence classes found, their stability status, their period, their normalized velocity, and whether they are equivalent to the reference LUT-08 glider.
+8. Save the audited taxonomy to `archive/iter_240/results/audited_glider_taxonomy.json` and a detailed markdown report to `archive/iter_240/results/audited_glider_taxonomy_report.md`.
+9. Execute the script with `PYTHONPATH=. python src/rigorous_glider_audit.py` and print its full output. Ensure there are no coordinate rounding or out of bound index errors.
