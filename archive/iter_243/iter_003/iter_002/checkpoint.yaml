@@ -1,0 +1,157 @@
+complexity: low
+estimated_runtime_sec: 300
+iter_id: 243.3.2
+started_at: '2026-05-23T16:29:35.314503'
+status: running
+task: "Write the python script `src/glider_annihilation_analysis.py`. Below is the\
+  \ complete code for the script:\n\n```python\nimport os\nimport sys\nimport json\n\
+  import numpy as np\nfrom itertools import permutations as iperms, product\n\nSHIFTS\
+  \ = [\n    (0, 1, 0),\n    (0, -1, 0),\n    (0, 0, 1),\n    (0, 0, -1),\n    (0,\
+  \ 1, -1),\n    (0, -1, 1),\n    (1, 1, 1),\n    (1, 1, 0),\n    (1, 0, 1),\n   \
+  \ (-1, -1, -1),\n    (-1, -1, 0),\n    (-1, 0, -1),\n]\n\ndef fcc_neighbor_vectors():\n\
+  \    vecs = []\n    for i in range(3):\n        for j in range(i + 1, 3):\n    \
+  \        for si in (-1, 1):\n                for sj in (-1, 1):\n              \
+  \      v = [0, 0, 0]\n                    v[i] = si\n                    v[j] =\
+  \ sj\n                    vecs.append(tuple(v))\n    return np.array(vecs, dtype=int)\n\
+  \ndef get_oh_permutations():\n    vecs = fcc_neighbor_vectors()\n    vec_to_idx\
+  \ = {tuple(v): i for i, v in enumerate(vecs)}\n    perms = []\n    for perm in iperms(range(3)):\n\
+  \        for signs in product((-1, 1), repeat=3):\n            sigma = []\n    \
+  \        ok = True\n            for v in vecs:\n                v_new = [0, 0, 0]\n\
+  \                for k in range(3):\n                    v_new[perm[k]] = signs[k]\
+  \ * int(v[k])\n                key = tuple(v_new)\n                if key not in\
+  \ vec_to_idx:\n                    ok = False\n                    break\n     \
+  \           sigma.append(vec_to_idx[key])\n            if not ok:\n            \
+  \    continue\n            perms.append(tuple(sigma))\n    return sorted(set(perms))\n\
+  \ndef rotate_particle_list(part, g, perms):\n    perm = perms[g]\n    S = np.array(SHIFTS,\
+  \ dtype=float)\n    S_pinv = np.linalg.pinv(S)\n    S_rot = np.zeros_like(S)\n \
+  \   for i in range(12):\n        S_rot[i] = S[perm[i]]\n    M_g = S_rot.T @ S_pinv.T\n\
+  \    rotated = []\n    for (dl, dr, dc, ch) in part:\n        pos = np.array([dl,\
+  \ dr, dc], dtype=float)\n        pos_rot = np.round(M_g @ pos).astype(int)\n   \
+  \     ch_rot = perm[ch]\n        rotated.append([int(pos_rot[0]), int(pos_rot[1]),\
+  \ int(pos_rot[2]), int(ch_rot)])\n    return rotated\n\ndef compute_single_centroid(cells,\
+  \ L=32):\n    cells = np.array(cells, dtype=float)[:, :3]\n    anchor = cells[0]\n\
+  \    unwrapped = np.zeros_like(cells)\n    for d in range(3):\n        unwrapped[:,\
+  \ d] = anchor[d] + np.mod(cells[:, d] - anchor[d] + L/2, L) - L/2\n    return np.mean(unwrapped,\
+  \ axis=0)\n\ndef simulate_sparse(initial_bits, lut, steps=80, L=32):\n    current_bits\
+  \ = list(initial_bits)\n    for step in range(steps):\n        coords_dict = {}\n\
+  \        for x, y, z, ch in current_bits:\n            key = (x, y, z)\n       \
+  \     if key not in coords_dict:\n                coords_dict[key] = []\n      \
+  \      coords_dict[key].append(ch)\n        collided_bits = []\n        for (x,\
+  \ y, z), channels in coords_dict.items():\n            state = 0\n            for\
+  \ ch in channels:\n                state |= (1 << ch)\n            new_state = lut[state]\n\
+  \            for ch in range(12):\n                if (new_state >> ch) & 1:\n \
+  \                   collided_bits.append((x, y, z, ch))\n        current_bits =\
+  \ []\n        for x, y, z, ch in collided_bits:\n            dl, dr, dc = SHIFTS[ch]\n\
+  \            nx = (x + dl) % L\n            ny = (y + dr) % L\n            nz =\
+  \ (z + dc) % L\n            current_bits.append((nx, ny, nz, ch))\n    return current_bits\n\
+  \ndef compute_glider_velocity(particle, lut, steps=80, L=32):\n    current_bits\
+  \ = [((16 + dl) % L, (16 + dr) % L, (16 + dc) % L, ch) for (dl, dr, dc, ch) in particle]\n\
+  \    c_0 = compute_single_centroid(current_bits, L)\n    c_prev = c_0.copy()\n \
+  \   c_continuous = c_0.copy()\n    for step in range(steps):\n        current_bits\
+  \ = simulate_sparse(current_bits, lut, steps=1, L=L)\n        if len(current_bits)\
+  \ != 4:\n            return None, False\n        c_t = compute_single_centroid(current_bits,\
+  \ L)\n        step_change = np.mod(c_t - c_prev + L/2, L) - L/2\n        c_continuous\
+  \ += step_change\n        c_prev = c_t.copy()\n    velocity = c_continuous - c_0\n\
+  \    return velocity, True\n\ndef apply_cpt_sparse(bits, L=32):\n    return [((-x)\
+  \ % L, (-y) % L, (-z) % L, ch) for (x, y, z, ch) in bits]\n\ndef main():\n    print(\"\
+  Loading glider and LUT data...\")\n    glider_path = \"archive/iter_224/results/glider_00_lut08_sub03.json\"\
+  \n    with open(glider_path, \"r\") as f:\n        data = json.load(f)\n    pA =\
+  \ data[\"particle\"]\n    lut = np.array(data[\"lut\"], dtype=np.uint16)\n    L\
+  \ = 32\n    \n    print(\"Computing velocity of original glider pA...\")\n    v_A,\
+  \ ok = compute_glider_velocity(pA, lut, steps=80, L=L)\n    if not ok:\n       \
+  \ print(\"Failed to compute pA velocity.\")\n        sys.exit(1)\n    print(f\"\
+  v_A over 80 steps: {v_A}\")\n    \n    print(\"Generating O_h point group symmetries...\"\
+  )\n    perms = get_oh_permutations()\n    print(f\"Generated {len(perms)} permutations.\"\
+  )\n    \n    print(\"Identifying stable antiparticle candidates...\")\n    candidates\
+  \ = []\n    for g in range(48):\n        pB = rotate_particle_list(pA, g, perms)\n\
+  \        v_B, stable = compute_glider_velocity(pB, lut, steps=80, L=L)\n       \
+  \ if stable and np.linalg.norm(v_B + v_A) < 1e-4:\n            candidates.append((g,\
+  \ pB, v_B))\n            print(f\"g={g:2d}: stable antiparticle, velocity={v_B}\"\
+  )\n            \n    print(f\"Found {len(candidates)} stable antiparticle candidates.\"\
+  )\n    \n    print(\"Starting parameter sweep...\")\n    working_configs = []\n\
+  \    scanned_count = 0\n    \n    for g, pB, v_B in candidates:\n        for phase\
+  \ in [0, 1]:\n            # Cache the original glider's bits for this phase\n  \
+  \          if phase == 0:\n                pA_bits = [((6 + dl) % L, (16 + dr) %\
+  \ L, (6 + dc) % L, ch) for (dl, dr, dc, ch) in pA]\n            else:\n        \
+  \        pA_bits = [((6 + dl) % L, (16 + dr) % L, (6 + dc) % L, ch) for (dl, dr,\
+  \ dc, ch) in pA]\n                pA_bits = simulate_sparse(pA_bits, lut, steps=1,\
+  \ L=L)\n            \n            for dl, dr, dc in product(range(-4, 5), repeat=3):\n\
+  \                scanned_count += 1\n                pB_bits = [((26 + dl + dl_b)\
+  \ % L, (16 + dr + dr_b) % L, (26 + dc + dc_b) % L, ch) for (dl_b, dr_b, dc_b, ch)\
+  \ in pB]\n                initial_bits = pA_bits + pB_bits\n                \n \
+  \               # Simulate 80 steps\n                final_bits = simulate_sparse(initial_bits,\
+  \ lut, steps=80, L=L)\n                if len(final_bits) != 8:\n              \
+  \      continue\n                \n                # Check empty bounding box\n\
+  \                box_empty = True\n                for x, y, z, ch in final_bits:\n\
+  \                    if 11 <= x <= 20 and 11 <= y <= 20 and 11 <= z <= 20:\n   \
+  \                     box_empty = False\n                        break\n       \
+  \         if not box_empty:\n                    continue\n                \n  \
+  \              # Check isolation (pairwise Manhattan distance >= 6)\n          \
+  \      isolated = True\n                min_dist = 999\n                for i in\
+  \ range(8):\n                    for j in range(i + 1, 8):\n                   \
+  \     p1 = final_bits[i][:3]\n                        p2 = final_bits[j][:3]\n \
+  \                       dist = 0\n                        for d in range(3):\n \
+  \                           diff = abs(p1[d] - p2[d])\n                        \
+  \    dist += min(diff, L - diff)\n                        if dist < min_dist:\n\
+  \                            min_dist = dist\n                        if dist <\
+  \ 6:\n                            isolated = False\n                           \
+  \ break\n                    if not isolated:\n                        break\n \
+  \               if not isolated:\n                    continue\n               \
+  \ \n                # Perform CPT-symmetry reconstruction test\n               \
+  \ cpt_bits = apply_cpt_sparse(final_bits, L)\n                reconstructed_bits\
+  \ = simulate_sparse(cpt_bits, lut, steps=80, L=L)\n                final_reconstructed\
+  \ = apply_cpt_sparse(reconstructed_bits, L)\n                \n                reconstruction_success\
+  \ = set(final_reconstructed) == set(initial_bits)\n                if reconstruction_success:\n\
+  \                    working_configs.append({\n                        \"antiparticle_g\"\
+  : g,\n                        \"phase\": phase,\n                        \"dl\"\
+  : dl,\n                        \"dr\": dr,\n                        \"dc\": dc,\n\
+  \                        \"min_pairwise_distance\": min_dist,\n                \
+  \        \"cpt_reconstruction_success\": True\n                    })\n        \
+  \            print(f\"Annihilation found! g={g}, phase={phase}, offset=({dl},{dr},{dc}),\
+  \ min_dist={min_dist}\")\n                    \n    print(f\"Sweep complete. Scanned\
+  \ {scanned_count} setups, found {len(working_configs)} working configurations.\"\
+  )\n    \n    # Select cleanest\n    best_config = None\n    if working_configs:\n\
+  \        best_config = max(working_configs, key=lambda c: (c[\"min_pairwise_distance\"\
+  ], -(c[\"dl\"]**2 + c[\"dr\"]**2 + c[\"dc\"]**2)))\n        print(f\"Best Configuration:\
+  \ {best_config}\")\n        \n    # Write summary files\n    os.makedirs(\"archive/iter_243/results\"\
+  , exist_ok=True)\n    summary_path = \"archive/iter_243/results/annihilation_summary.json\"\
+  \n    with open(summary_path, \"w\") as f:\n        json.dump({\n            \"\
+  success\": len(working_configs) > 0,\n            \"v_A\": v_A.tolist(),\n     \
+  \       \"scanned_count\": scanned_count,\n            \"antiparticles_g\": [c[0]\
+  \ for c in candidates],\n            \"num_working_configs\": len(working_configs),\n\
+  \            \"best_config\": best_config,\n            \"all_working_configs\"\
+  : working_configs\n        }, f, indent=2)\n    print(f\"Written summary to: {summary_path}\"\
+  )\n    \n    # Write CPT_annihilation_report.md\n    report_path = \"archive/iter_243/results/CPT_annihilation_report.md\"\
+  \n    with open(report_path, \"w\") as f:\n        f.write(\"# CPT-Symmetry and\
+  \ Glider Annihilation Report\\\\n\\\\n\")\n        f.write(\"## Overview\\\\n\"\
+  )\n        f.write(\"This report presents the results of the 3D Face-Centered Cubic\
+  \ (FCC) Lattice Gas Cellular Automaton (LGCA) glider annihilation study.\\\\n\\\\\
+  n\")\n        f.write(f\"The original glider $pA$ has displacement vector $v_A =\
+  \ {v_A.tolist()}$ over 80 steps.\\\\n\\\\n\")\n        f.write(\"## Stable Antiparticles\\\
+  \\n\")\n        f.write(\"Using the 48 octahedral $O_h$ symmetry transformations,\
+  \ we identified the following stable antiparticles propagating with velocity exactly\
+  \ $-v_A$:\\\\n\\\\n\")\n        f.write(\"| POINT GROUP g | STABLE | VELOCITY vector\
+  \ (over 80 steps) |\\\\n\")\n        f.write(\"| --- | --- | --- |\\\\n\")\n   \
+  \     for g, _, v_B in candidates:\n            f.write(f\"| {g} | Yes | {v_B.tolist()}\
+  \ |\\\\n\")\n        f.write(\"\\\\n\")\n        f.write(\"## Sweeps and Clean Annihilation\\\
+  \\n\")\n        f.write(f\"We scanned {scanned_count} relative alignments and phases.\
+  \ We found {len(working_configs)} configurations that cleanly annihilate into 8\
+  \ isolated 1-bit radiation states.\\\\n\\\\n\")\n        if best_config:\n     \
+  \       f.write(\"### Best Annihilation Configuration\\\\n\")\n            f.write(f\"\
+  - **Antiparticle point group g:** {best_config['antiparticle_g']}\\\\n\")\n    \
+  \        f.write(f\"- **Relative phase:** {best_config['phase']}\\\\n\")\n     \
+  \       f.write(f\"- **Alignment offset (dl, dr, dc):** ({best_config['dl']}, {best_config['dr']},\
+  \ {best_config['dc']})\\\\n\")\n            f.write(f\"- **Min pairwise Manhattan\
+  \ distance at step 80:** {best_config['min_pairwise_distance']}\\\\n\")\n      \
+  \      f.write(f\"- **CPT-symmetry reconstruction success:** {best_config['cpt_reconstruction_success']}\\\
+  \\n\\\\n\")\n            f.write(\"## CPT Reconstruction Verification\\\\n\")\n\
+  \            f.write(\"The chosen cleanest configuration perfectly passed the CPT-symmetry\
+  \ reconstruction test. \")\n            f.write(\"By inverting coordinates of the\
+  \ step 80 state, simulating 80 steps forward under the forward rule, and inverting\
+  \ coordinates again, \")\n            f.write(\"we reconstructed the initial step\
+  \ 0 grid to perfect, bit-level precision. This provides a rigorous algebraic verification\
+  \ \")\n            f.write(\"of the time-reversibility of the underlying rule.\\\
+  \\n\")\n        else:\n            f.write(\"### No clean annihilation configurations\
+  \ found.\\\\n\")\n    print(f\"Written report to: {report_path}\")\n\nif __name__\
+  \ == '__main__':\n    main()\n```\n\nSave this code to `src/glider_annihilation_analysis.py`,\
+  \ run it, and capture its output. Verify that the files are written."
