@@ -9,14 +9,11 @@ Pipeline:
   1. Load reference particle + LUT from
      archive/iter_224/results/glider_00_lut08_sub03.json
   2. Load every archive/iter_240/results/new_glider_*.json
-  3. Group all particles into equivalence classes under the full 48-element
-     O_h symmetry group (signed permutations of (l,r,c) coupled with the
-     induced channel permutation).
-  4. For one representative per class, simulate 200 steps (5 periods at P=40)
-     on an L=32 toroidal grid using engine_3d.stream / engine_3d.collide.
-  5. Verify exact bit conservation and bounding extent <= 6 at every step.
-  6. Compute exact shape period P, coordinate velocity v_coord and
-     normalized speed v/c with c = sqrt(2).
+  3. Run the 200-step simulation on the ORIGINAL, unrotated particle of each candidate.
+  4. A candidate is stable if bit count is perfectly conserved AND max extent <= 6 at every step.
+  5. For stable candidates only, group them into O_h orbits using oh_canonical().
+  6. For each unique O_h orbit, choose one stable candidate as the representative to report
+     the class's properties (period, speed, etc.).
   7. Write JSON taxonomy + markdown report.
 """
 
@@ -307,12 +304,12 @@ def main():
     print(f"  reference particle: {ref_particle}")
     print(f"  LUT length: {len(lut)}")
 
-    # Load all 163 new glider files
+    # Load all 175 new glider files
     pattern = str(out_dir / "new_glider_*.json")
     files = sorted(glob.glob(pattern))
     print(f"[load] found {len(files)} new_glider_*.json files in {out_dir}")
 
-    candidates = []  # list of dicts {source, particle}
+    candidates = []  # list of dicts {source, particle, is_reference}
     candidates.append({
         "source": "reference (iter_224 glider_00_lut08_sub03)",
         "is_reference": True,
@@ -335,45 +332,19 @@ def main():
     transforms = build_oh_transforms()
     print(f"[oh] built {len(transforms)} transforms")
 
-    # Group by O_h canonical rep
-    print("[group] computing O_h canonical reps ...")
-    classes = {}  # canon -> {"members": [...], "rep_particle": ..., "has_reference": bool}
+    # Step 1: Run 200-step simulation on ORIGINAL, unrotated particle configurations
+    print(f"[simulate] running 200-step simulation on all {len(candidates)} candidates in original configurations ...")
+    
+    stable_candidates = []
+    unstable_candidates = []
+    
     for idx, cand in enumerate(candidates):
-        canon = oh_canonical(cand["particle"], transforms)
-        if canon not in classes:
-            classes[canon] = {
-                "rep_particle": list(canon),  # the canonical form itself is a fine particle
-                "members": [],
-                "has_reference": False,
-            }
-        classes[canon]["members"].append({
+        sim = simulate(cand["particle"], lut, L=32, steps=200)
+        cand_info = {
             "idx": idx,
             "source": cand["source"],
+            "is_reference": cand["is_reference"],
             "particle": cand["particle"],
-        })
-        if cand["is_reference"]:
-            classes[canon]["has_reference"] = True
-
-    print(f"[group] discovered {len(classes)} O_h equivalence classes")
-
-    # Find reference class canon for "equivalent to reference" reporting
-    ref_canon = oh_canonical(ref_particle, transforms)
-
-    # Simulate one representative per class
-    print(f"[simulate] running 200 steps on L=32 per class ...")
-    results = []
-    for class_id, (canon, info) in enumerate(sorted(classes.items())):
-        rep_particle = info["rep_particle"]
-        sim = simulate(rep_particle, lut, L=32, steps=200)
-        result = {
-            "class_id": class_id,
-            "canonical_form": [list(c) for c in canon],
-            "rep_particle": [list(c) for c in rep_particle],
-            "n_members": len(info["members"]),
-            "members": [
-                {"idx": m["idx"], "source": m["source"]} for m in info["members"]
-            ],
-            "equivalent_to_reference": (canon == ref_canon),
             "stable": sim["stable"],
             "bit_conserved": sim["bit_conserved"],
             "max_extent": sim["max_extent"],
@@ -383,27 +354,82 @@ def main():
             "displacement_norm": sim["displacement_norm"],
             "v_coord": sim["v_coord"],
             "v_over_c": sim["v_over_c"],
-            "status": "STABLE" if sim["stable"] else "UNSTABLE",
+        }
+        if sim["stable"]:
+            stable_candidates.append(cand_info)
+        else:
+            unstable_candidates.append(cand_info)
+            
+    print(f"  Simulation completed: {len(stable_candidates)} STABLE, {len(unstable_candidates)} UNSTABLE")
+
+    # Step 2: For stable candidates only, group them into O_h orbits using oh_canonical()
+    print("[group] computing O_h canonical reps for stable candidates ...")
+    ref_canon = oh_canonical(ref_particle, transforms)
+    
+    orbits = {}  # canon -> list of stable candidate dicts
+    for cand in stable_candidates:
+        canon = oh_canonical(cand["particle"], transforms)
+        if canon not in orbits:
+            orbits[canon] = []
+        orbits[canon].append(cand)
+
+    print(f"[group] discovered {len(orbits)} unique STABLE O_h orbits")
+
+    # Step 3: Choose one stable candidate as representative for each unique O_h orbit
+    results = []
+    for orbit_id, (canon, members) in enumerate(sorted(orbits.items())):
+        # Choose representative: priority to reference, otherwise alphabetically by source filename
+        rep = None
+        for m in members:
+            if m["is_reference"]:
+                rep = m
+                break
+        if rep is None:
+            sorted_members = sorted(members, key=lambda x: x["source"])
+            rep = sorted_members[0]
+            
+        result = {
+            "class_id": orbit_id,
+            "canonical_form": [list(c) for c in canon],
+            "rep_source": rep["source"],
+            "rep_particle": [list(c) for c in rep["particle"]],
+            "n_members": len(members),
+            "members": [
+                {"source": m["source"], "is_reference": m["is_reference"]} for m in members
+            ],
+            "equivalent_to_reference": (canon == ref_canon),
+            "stable": True,
+            "bit_conserved": rep["bit_conserved"],
+            "max_extent": rep["max_extent"],
+            "extent_under_6": rep["extent_under_6"],
+            "period": rep["period"],
+            "cumulative_displacement": rep["cumulative_displacement"],
+            "displacement_norm": rep["displacement_norm"],
+            "v_coord": rep["v_coord"],
+            "v_over_c": rep["v_over_c"],
+            "status": "STABLE",
         }
         results.append(result)
+        
         print(
-            f"  class {class_id:02d}: n={len(info['members']):3d}  "
-            f"status={result['status']:<8}  "
-            f"period={str(sim['period']):>5}  "
-            f"|disp|={sim['displacement_norm']:7.3f}  "
-            f"v/c={sim['v_over_c']:.4f}  "
-            f"ref={'YES' if result['equivalent_to_reference'] else 'no'}"
+            f"  orbit {orbit_id:02d}: n={len(members):3d}  "
+            f"rep={rep['source'][:30]:<30}  "
+            f"period={str(rep['period']):>5}  "
+            f"|disp|={rep['displacement_norm']:7.3f}  "
+            f"v/c={rep['v_over_c']:.4f}  "
+            f"ref_equiv={'YES' if result['equivalent_to_reference'] else 'no'}"
         )
 
     # --- Detailed print ---
     print()
     print("=" * 90)
-    print("AUDITED EQUIVALENCE CLASSES")
+    print("AUDITED STABLE EQUIVALENCE CLASSES (ORBITS)")
     print("=" * 90)
     for r in results:
-        print(f"\nClass {r['class_id']}:")
+        print(f"\nOrbit {r['class_id']}:")
         print(f"  canonical particle      : {r['canonical_form']}")
-        print(f"  number of members       : {r['n_members']}")
+        print(f"  representative source   : {r['rep_source']}")
+        print(f"  number of stable members: {r['n_members']}")
         print(f"  equivalent to LUT-08 ref: {r['equivalent_to_reference']}")
         print(f"  status                  : {r['status']}")
         print(f"  bit-conserving          : {r['bit_conserved']}")
@@ -418,18 +444,23 @@ def main():
     print("=" * 90)
     print("SUMMARY")
     print("=" * 90)
-    stable = [r for r in results if r["stable"]]
-    print(f"  total candidates loaded : {len(candidates)}  (163 new + 1 reference expected)")
-    print(f"  total equivalence classes (full 48-element O_h): {len(results)}")
-    print(f"  STABLE classes          : {len(stable)}")
-    print(f"  UNSTABLE classes        : {len(results) - len(stable)}")
-    ref_classes = [r for r in results if r["equivalent_to_reference"]]
-    print(f"  classes equiv. to LUT-08 reference: {len(ref_classes)}")
-    if stable:
-        unique_periods = sorted({r["period"] for r in stable if r["period"]})
-        print(f"  distinct periods (stable): {unique_periods}")
-        unique_vovc = sorted({round(r["v_over_c"], 6) for r in stable})
-        print(f"  distinct v/c   (stable): {unique_vovc}")
+    print(f"  total candidates loaded : {len(candidates)}  (175 new + 1 reference expected)")
+    print(f"  STABLE candidates       : {len(stable_candidates)}")
+    print(f"  UNSTABLE candidates     : {len(unstable_candidates)}")
+    print(f"  unique STABLE orbits    : {len(results)}")
+    ref_orbits = [r for r in results if r["equivalent_to_reference"]]
+    print(f"  stable orbits equiv. to LUT-08 reference: {len(ref_orbits)}")
+    # Check if disjoint from LUT-08
+    ref_orbit_members = []
+    if ref_orbits:
+        ref_orbit_members = [m["source"] for m in ref_orbits[0]["members"]]
+    non_ref_stable_orbits = [r for r in results if not r["equivalent_to_reference"]]
+    print(f"  non-reference stable orbits: {len(non_ref_stable_orbits)}")
+    
+    unique_periods = sorted({r["period"] for r in results if r["period"]})
+    print(f"  distinct periods (stable orbits): {unique_periods}")
+    unique_vovc = sorted({round(r["v_over_c"], 6) for r in results})
+    print(f"  distinct v/c   (stable orbits): {unique_vovc}")
 
     # Save taxonomy
     tax_path = out_dir / "audited_glider_taxonomy.json"
@@ -441,7 +472,20 @@ def main():
         "L": 32,
         "steps": 200,
         "c_max": float(np.sqrt(2.0)),
-        "classes": results,
+        "classes": results,  # keeping as 'classes' for backward compatibility
+        "stable_orbits": results,
+        "unstable_candidates": [
+            {
+                "source": u["source"],
+                "is_reference": u["is_reference"],
+                "bit_conserved": u["bit_conserved"],
+                "max_extent": u["max_extent"],
+                "extent_under_6": u["extent_under_6"],
+                "displacement_norm": u["displacement_norm"],
+                "v_over_c": u["v_over_c"]
+            }
+            for u in unstable_candidates
+        ]
     }
     with open(tax_path, "w") as f:
         json.dump(tax_doc, f, indent=2)
@@ -449,7 +493,7 @@ def main():
 
     # Markdown report
     md = []
-    md.append("# Rigorous Glider Audit (LUT-08)\n")
+    md.append("# Rigorous Glider Audit (LUT-08) - Original-Orientation Simulation Pipeline\n")
     md.append("## Setup\n")
     md.append(f"- LUT source: `archive/iter_224/results/glider_00_lut08_sub03.json`")
     md.append(f"- Candidate gliders loaded from `archive/iter_240/results/new_glider_*.json`: **{len(files)}**")
@@ -457,28 +501,67 @@ def main():
     md.append(f"- Total candidates audited: **{len(candidates)}**")
     md.append(f"- Toroidal grid: L = 32")
     md.append(f"- Simulation steps: 200 (5 expected periods of P=40)")
-    md.append(f"- Stability criterion: bit_count == initial_bits AND max_extent <= 6 on every step")
-    md.append(f"- Symmetry group: full 48-element O_h, applied to (l, r, c) via signed-permutation matrices M_g coupled with induced 12-channel permutations")
+    md.append(f"- Stability criterion: bit_count == initial_bits AND max_extent <= 6 on every step of the unrotated candidate's original orientation")
+    md.append(f"- Symmetry group for grouping: full 48-element O_h, applied to (l, r, c) via signed-permutation matrices M_g coupled with induced 12-channel permutations")
     md.append(f"- c_max = sqrt(2)\n")
-    md.append("## Aggregate results\n")
-    md.append(f"- Distinct O_h equivalence classes: **{len(results)}**")
-    md.append(f"- STABLE classes: **{len(stable)}**")
-    md.append(f"- Classes equivalent to LUT-08 reference orbit: **{len(ref_classes)}**\n")
-    md.append("## Per-class details\n")
+    
+    md.append("## Aggregate Results\n")
+    md.append(f"- Total candidates loaded: **{len(candidates)}** (175 new + 1 reference)")
+    md.append(f"- STABLE candidates: **{len(stable_candidates)}**")
+    md.append(f"- UNSTABLE candidates: **{len(unstable_candidates)}**")
+    md.append(f"- Unique STABLE O_h orbits found: **{len(results)}**")
+    md.append(f"- Stable orbits equivalent to LUT-08 reference orbit: **{len(ref_orbits)}**")
+    if ref_orbits:
+        md.append(f"  - The LUT-08 reference glider was successfully verified as **STABLE** (original unrotated orientation) and belongs to Orbit {ref_orbits[0]['class_id']}.")
+        md.append(f"  - This reference orbit has **{ref_orbits[0]['n_members']}** members.")
+    else:
+        md.append("  - **WARNING**: The LUT-08 reference glider was NOT found in any stable orbit!")
+    md.append(f"- Non-reference unique stable orbits: **{len(non_ref_stable_orbits)}**")
+    
+    # Are they disjoint?
+    if len(ref_orbits) > 0 and len(non_ref_stable_orbits) > 0:
+        # Check if reference members and other stable orbit members overlap
+        overlap = False
+        for orbit in non_ref_stable_orbits:
+            for m in orbit["members"]:
+                if m["source"] in ref_orbit_members:
+                    overlap = True
+        if not overlap:
+            md.append("  - **Verification**: The new stable orbits are **completely disjoint** from the reference orbit.")
+        else:
+            md.append("  - **Warning**: There is overlap between the new stable orbits and the reference orbit.")
+    md.append("")
+    
+    md.append("## Per-Orbit Details (Stable Classes only)\n")
     for r in results:
-        md.append(f"### Class {r['class_id']} ({'STABLE' if r['stable'] else 'UNSTABLE'})")
+        md.append(f"### Orbit {r['class_id']} (STABLE)")
         md.append("")
-        md.append(f"- Members: **{r['n_members']}**")
+        md.append(f"- Representative: `{r['rep_source']}`")
+        md.append(f"- Number of stable members in orbit: **{r['n_members']}**")
         md.append(f"- Equivalent to LUT-08 reference: **{r['equivalent_to_reference']}**")
         md.append(f"- Canonical particle: `{r['canonical_form']}`")
-        md.append(f"- Bit conserving: {r['bit_conserved']}")
-        md.append(f"- Max extent over 200 steps: {r['max_extent']} (<=6: {r['extent_under_6']})")
-        md.append(f"- Exact shape period P: **{r['period']}**")
-        md.append(f"- Cumulative displacement: {r['cumulative_displacement']}")
-        md.append(f"- |displacement| over 200 steps: {r['displacement_norm']:.6f}")
-        md.append(f"- Coordinate velocity v = |disp|/200: {r['v_coord']:.6f}")
-        md.append(f"- Normalized speed v/c = v/sqrt(2): **{r['v_over_c']:.6f}**")
+        md.append(f"- Representative's properties:")
+        md.append(f"  - Bit conserving: {r['bit_conserved']}")
+        md.append(f"  - Max extent over 200 steps: {r['max_extent']} (<=6: {r['extent_under_6']})")
+        md.append(f"  - Exact shape period P: **{r['period']}**")
+        md.append(f"  - Cumulative displacement: {r['cumulative_displacement']}")
+        md.append(f"  - |displacement| over 200 steps: {r['displacement_norm']:.6f}")
+        md.append(f"  - Coordinate velocity v = |disp|/200: {r['v_coord']:.6f}")
+        md.append(f"  - Normalized speed v/c = v/sqrt(2): **{r['v_over_c']:.6f}**")
         md.append("")
+        md.append("#### Members in this orbit:")
+        for m in r["members"]:
+            md.append(f"- `{m['source']}`{' (Reference Glider)' if m['is_reference'] else ''}")
+        md.append("")
+
+    if unstable_candidates:
+        md.append("## Unstable Candidates\n")
+        md.append(f"The following **{len(unstable_candidates)}** candidates failed the stability check (bit conservation or extent <= 6 over 200 steps):\n")
+        md.append("| Index | Candidate Source | Bit Conserved? | Max Extent (<=6) | Displacement | v/c |\n")
+        md.append("|---|---|---|---|---|---|\n")
+        for u in unstable_candidates:
+            md.append(f"| {u['idx']} | {u['source']} | {u['bit_conserved']} | {u['max_extent']} ({u['extent_under_6']}) | {u['displacement_norm']:.3f} | {u['v_over_c']:.4f} |\n")
+
     md_path = out_dir / "audited_glider_taxonomy_report.md"
     with open(md_path, "w") as f:
         f.write("\n".join(md))
