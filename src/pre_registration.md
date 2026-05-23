@@ -1,27 +1,30 @@
 # RDF Scientific Pre-Registration
 
-*   **Iteration:** 241
+*   **Iteration:** 242
 *   **Pre-Registration File:** src/pre_registration.md
 
 ## 1. Hypothesis
-The 3D Face-Centered Cubic (FCC) lattice cellular automaton, under the reversible, O_h-symmetric rule that supports the known 'LUT-08' sub-light glider, admits at least one other distinct species of stable, propagating sub-light glider. This new species is defined as a localized, periodic bit pattern propagating with a constant coordinate velocity 0 < ||v|| < sqrt(2), is stable for at least 1000 steps, and belongs to a completely different O_h symmetry orbit (equivalence class under the 48 octahedral rotations and reflections, translations, and temporal phase-shifts) than the LUT-08 glider.
+The LUT-08 sub-light glider on the 3D Face-Centered Cubic (FCC) lattice possesses two independent, discrete conserved physical quantities:
+1. A chiral charge \(\chi \in \mathbb{R}\), defined by the signed volume of the tetrahedron formed by its 4-bit coordinate vectors relative to its center of mass:
+   \(\chi = (\mathbf{r}_2 - \mathbf{r}_1) \cdot [(\mathbf{r}_3 - \mathbf{r}_1) \times (\mathbf{r}_4 - \mathbf{r}_1)]\),
+   which is invariant under vacuum propagation (modulo periodic phase translation), swaps sign under spatial reflection, and is conserved in all elastic interactions.
+2. A sub-lattice charge vector \(\mathbf{q} = (q_0, q_1, q_2, q_3) \in \mathbb{Z}^4\) representing bit-occupancy on the four independent simple cubic sub-lattices of the FCC grid, which transforms via a fixed permutation matrix \(M\) during each propagation step and is additively conserved under all local collisions.
 
 ## 2. Falsification Criterion
 The hypothesis will be refuted if any of the following occur:
-1. A systematic search over seeds of Hamming weight W <= 12 within a 3x3x3 bounding box under the LUT-08 rule finds no stable propagating gliders other than LUT-08 and its O_h-symmetric equivalent orbits.
-2. Any newly discovered glider candidate is shown to be O_h-equivalent to LUT-08 under one of the 48 coordinate transformations and a temporal phase shift.
-3. Any newly discovered glider is unstable when the simulation is run to 1000 steps (e.g., it degrades to vacuum, expands, or halts).
-4. The newly discovered glider's velocity is equal to the speed-of-light limit (||v|| = sqrt(2)), violating the "sub-light" requirement.
-5. The newly discovered glider's behavior is not O_h-covariant (i.e., rotating the initial seed by an O_h operation does not yield a glider propagating in the rotated direction).
+1. The tetrahedral signed volume \(\chi(t)\) of the LUT-08 glider is identically zero at all steps of its periodic propagation cycle (proving it is achiral).
+2. A spatially reflected configuration of the glider (enantiomer) fails to propagate stably under the same rules, or fails to exhibit the exact opposite sign of chirality (\(-\chi\)).
+3. The sub-lattice charge vector \(\mathbf{q}(t)\) does not follow a strict cyclic permutation relation \(\mathbf{q}(t+1) = M \mathbf{q}(t)\) in vacuum.
+4. In any of 10 independent, distinct elastic collision runs of two gliders, the sum of incoming chiralities or sub-lattice charge vectors does not equal the sum of outgoing chiralities or sub-lattice charge vectors (violating additive conservation).
 
 ## 3. Proposed Method
-1. Create a pre-registration file `src/pre_registration.md` outlining the hypothesis, parameters, and falsification criteria.
-2. Implement an O_h symmetry group checker (`src/fcc_symmetry.py`) that generates the 48 coordinate transformations (permutations and signs) and maps both position vectors and the 12 FCC channel indices under each transformation.
-3. Locate the LUT-08 rule and glider structure (e.g., from `archive/iter_224/` or existing CA code in `src/`).
-4. Build a high-throughput 3D FCC simulation and search engine (`src/fcc_glider_search.py`) that generates localized initial states (W <= 12) and simulates them for 200 steps, filtering for stable, non-zero constant velocity propagation.
-5. For any surviving candidate, run an extended stability verification up to 1000 steps.
-6. Apply the O_h symmetry checker to group all surviving stable gliders into unique equivalence classes (orbits), and compare them against the LUT-08 orbit.
-7. Verify O_h covariance by rotating the seed of any new glider species and checking if its propagation matches the rotated velocity.
+1. Write a pre-registration file `src/pre_registration.md` outlining the mathematical definitions, the 10 planned test collision configurations, and the exact code implementations.
+2. Create `src/glider_charge_analysis.py` to load the canonical LUT-08 glider and track its coordinates, center of mass, and sub-lattice occupancy over 100 steps of vacuum propagation.
+3. Compute and analyze \(\chi(t)\) and \(\mathbf{q}(t)\) to determine if they satisfy the symmetry and permutation criteria.
+4. Apply a spatial reflection transformation to the LUT-08 glider, run it in vacuum, and verify its stability and inverted chiral charge.
+5. Setup a collision sweep on the 3D FCC engine to identify at least 10 independent, non-trivial elastic collision events.
+6. Compute the incoming and outgoing sum of chiral charges and sub-lattice parities for each collision to verify additive conservation.
+7. Compile the results in `RESEARCH-RESULT-242.md` and update `current_state.md`.
 
 ---
 *Created automatically by the RDF Orchestrator prior to iteration execution.*
