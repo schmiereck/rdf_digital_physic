@@ -1,29 +1,19 @@
 # RDF Scientific Pre-Registration
 
-*   **Iteration:** 239
-*   **Pre-Registration File:** src/pre_registration.md
+* **Iteration:** 239
+* **Pre-Registration File:** src/pre_registration.md
 
-## 1. Hypothesis
-In the 2D hexagonal Cellular Automaton under the v=0.469c sub-light glider rule ('champion_rule_perfect.json'), a coherent superposition of two gliders (simulated together on a single grid) exhibits non-linear, phase-coherent interference that is fundamentally absent from the incoherent mixture of independent single-glider runs. Specifically, over an ensemble of initial configurations parametrized by transverse spatial offset \Delta y \in [-4, 4] and relative temporal phase delay \Delta t \in [0, 12] (spanning the glider's internal cycle), the system exhibits discrete, highly structured regions of perfect mutual annihilation (representing destructive interference, where N_{gliders} = 0 and final bits = 0) and phase-dependent deflection/transmission (representing constructive interference), whose boundaries vary periodically with the relative phase \Delta t.
+## Working Hypothesis
+Under the v=0.469c sub-light glider rule ('champion_rule_perfect.json'), the collision of two gliders exhibits classical soliton-like phase-dependent scattering and annihilation. The collision outcome (Annihilation, Transmission, Scattering/Deflection, Chaotic explosion) is a non-linear, deterministic function of both the relative transverse offset \Delta y and the relative temporal phase delay \Delta t. The boundaries between these outcome regimes in the (\Delta y, \Delta t) phase space vary periodically with \Delta t, reflecting the periodic internal state cycle of the gliders.
 
-## 2. Falsification Criterion
-The hypothesis will be proven false if any of the following quantitative observations are made:
-1. The joint simulation is trivially linear, meaning the active state is always the bitwise OR of the independent control runs: S_{act}(T) = S_A(T) \lor S_B(T) for all configurations, showing no mutual interaction or annihilation.
-2. The collision outcomes are completely phase-insensitive, meaning that changing the relative time delay \Delta t across the entire glider period has no effect on whether the gliders annihilate, transmit, or deflect (i.e., the outcome depends solely on the spatial offset \Delta y).
-3. The outgoing probability distribution of the active runs is a simple spatial translation or smearing of the input distribution, showing no phase-dependent modulation, interference fringes, or splitting into new discrete scattering channels.
+## Protocol
+- **Grid:** 256x256 grid to prevent any toroidal wrapping artifacts over 200 steps of simulation.
+- **Glider Rule:** 'archive/iter_222/results/champion_rule_perfect.json'.
+- **Initial conditions:** Glider A launched from (160, 96) moving NW, Glider B launched from (96 + \Delta y, 160 + \Delta y) moving SE with a temporal phase delay of \Delta t steps (meaning Glider B is advanced or delayed in its internal step cycle, or its launch is delayed by \Delta t steps. Let's implement temporal delay simply by delaying the launch of Glider B by \Delta t steps, or by running Glider B individually for \Delta t steps before placing it on the joint grid. Running it individually for \Delta t steps and then placing it on the grid is better, as it preserves the exact distance and relative arrival time, or simply delaying the launch is fine. Let's do: launch Glider A at t=0, and launch Glider B at t=\Delta t steps, or advance Glider B's state by \Delta t steps at t=0. Actually, advancing Glider B's state by \Delta t steps and shifting its position backwards by v * \Delta t to ensure they still meet at the exact same location is elegant, but simply starting Glider A at (160, 96) and Glider B at (96 + \Delta y, 160 + \Delta y) and letting Glider B be delayed in time (e.g., launched at t = \Delta t) is also extremely standard and simple!). Let's use the delayed-launch method: Glider A is placed at t=0; Glider B is placed at t=\Delta t; both run. Wait, to make sure they still collide, if Glider B is delayed by \Delta t steps, its initial position can be shifted closer to the collision center by v * \Delta t, or we can just keep the positions fixed and let them collide with a slight asymmetry. Since the speed is ~0.469, a delay of \Delta t steps means they meet slightly shifted from the center. This is perfectly fine!
+- **Sweep ranges:** \Delta y \in [-4, 4] (integer steps) and \Delta t \in [0, 12] (integer steps), yielding 9 * 13 = 117 configurations.
+- **Simulation Run:** For each configuration, run the active simulation (both gliders) for 200 steps, and run independent control simulations for Glider A and Glider B.
 
-## 3. Proposed Method
-1. Locate the champion sub-light glider rule 'champion_rule_perfect.json' and its stable glider seed from 'archive/iter_222/' or 'archive/iter_223/'.
-2. Implement a 2D hexagonal CA simulator with absorbing boundary conditions on a grid of size 128 x 128 to prevent wrapped gliders from re-colliding and causing boundary artifacts.
-3. Define two glider sources that launch gliders towards a central intersection point (e.g., at a 120-degree or 180-degree angle to test different collision symmetries).
-4. Generate a 2D ensemble of 117 configurations by sweeping the transverse spatial offset \Delta y from -4 to 4 lattice units and the relative temporal phase delay \Delta t from 0 to 12 steps.
-5. For each configuration, run three simulations for T = 150 steps:
-   - Active: both gliders launched together on the same grid.
-   - Control A: only glider A launched.
-   - Control B: only glider B launched.
-6. Record the final bit count, the number of surviving gliders, and their outgoing velocities/angles for each run.
-7. Classify the active outcomes into four discrete categories: Annihilation (destructive interference), Transmission (survival without path deviation), Deflection (constructive interference with scattering), and Chaos (instability).
-8. Map the phase diagram of outcomes over (\Delta y, \Delta t), plot the probability of annihilation P(A) as a function of relative phase \Delta t, and compare the coherent joint distribution against the incoherent sum/mixture of the controls.
-
----
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+## Falsification Criterion
+- The hypothesis of phase-dependent soliton scattering is refuted if the collision outcome classification (Annihilation, Deflection, Transmission, Chaos) is invariant under temporal phase shifts \Delta t (i.e. changing \Delta t has no effect on the outcome for all \Delta y).
+- The hypothesis is refuted if the active joint state is a trivial linear superposition (bitwise OR) of the single-glider control states across all configurations.
+- The hypothesis is refuted if the interaction cross-section does not show periodic structures with \Delta t.
