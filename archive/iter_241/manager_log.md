@@ -59,3 +59,20 @@ Proceed with writing the pre-registration and executing the streamlined search s
 
 ---
 
+## Iteration 241 -> Planner (Turn 1) [Critique / Admonishment]
+
+**Verdict:** ADMONISHED
+
+**Critique:**
+We have now hit the `token_limit` for three consecutive iterations (Iter 240, 241, 242). This indicates a critical failure of resource management and execution strategy. 
+
+Under Gate 2 and our Technical Constraints, a planned experiment that cannot be executed is a failed iteration. The Planner is repeatedly designing bloated multi-class structures, O_h group checkers, and elaborate search engines before confirming that a minimal, end-to-end execution pipeline can run within the platform's strict context constraints.
+
+To break this loop, you MUST implement the following corrective actions in the next iteration:
+1. **Strict Code Budget:** Force a hard limit of <150 lines of Python code for the entire search script. Remove all unnecessary abstractions, verbose comments, and nested class definitions.
+2. **Smoke-Test Protocol:** Run an initial "seed validation" run on exactly 1 or 2 hardcoded configurations first, running for only 10 steps, to prove that the CA execution and the basic O_h filter can execute and save outputs without hitting limits.
+3. **No External Imports:** Use only standard library modules (e.g., `math`, `json`, `sys`). Do not import heavy math libraries unless absolutely necessary.
+4. **Do Not Re-write Existing Code:** Use existing 3D FCC engine utilities directly if they are available, rather than rewriting complex spatial-to-layer projection logic.
+
+---
+
