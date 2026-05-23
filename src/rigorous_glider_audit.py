@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.engine_3d import SHIFTS, stream, collide  # noqa: E402
-from src.search_3d_gliders import get_oh_permutations  # noqa: E402
+from src.search_3d_gliders import fcc_neighbor_vectors, get_oh_permutations  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -44,18 +44,29 @@ from src.search_3d_gliders import get_oh_permutations  # noqa: E402
 def build_oh_transforms():
     S = np.array(SHIFTS, dtype=float)
     S_pinv = np.linalg.pinv(S)
-    perms = get_oh_permutations()
+    C = fcc_neighbor_vectors().astype(float)
+    C_pinv = np.linalg.pinv(C)
+    B = S.T @ C_pinv.T
+    P = []
+    for i in range(12):
+        v_proj = B @ C[i]
+        diffs = np.linalg.norm(S - v_proj, axis=1)
+        j = np.argmin(diffs)
+        P.append(j)
+    perms_cart = get_oh_permutations()
     transforms = []
     max_err = 0.0
-    for perm in perms:
-        S_rot = np.array([S[perm[i]] for i in range(12)], dtype=float)
+    for p_cart in perms_cart:
+        p_proj = [0] * 12
+        for i in range(12):
+            p_proj[P[i]] = P[p_cart[i]]
+        p_proj = tuple(p_proj)
+        S_rot = np.array([S[p_proj[i]] for i in range(12)], dtype=float)
         M_g = S_rot.T @ S_pinv.T
-        # Sanity check using floats
-        pred = S @ M_g.T
-        err = float(np.max(np.abs(pred - S_rot)))
+        err = np.max(np.abs(S @ M_g.T - S_rot))
         max_err = max(max_err, err)
-        transforms.append((perm, M_g))
-    assert max_err < 1e-8, f"O_h transform reconstruction error too large: {max_err}"
+        transforms.append((p_proj, M_g))
+    assert max_err < 1e-10, f"O_h transform reconstruction error too large: {max_err}"
     return transforms
 
 
