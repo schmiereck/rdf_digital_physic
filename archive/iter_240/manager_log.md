@@ -84,3 +84,52 @@ Your iteration 240 results fail our scientific rigour gates on taxonomic definit
 
 ---
 
+## Iteration 240 -> Manager [Proposed Research Plan]
+
+**Proposed Hypothesis:**
+The 3D FCC CA rule supporting LUT-08 admits at least one other distinct stable, bit-conserving, propagating glider species (with non-zero coordinate velocity) of Hamming weight W <= 12 that belongs to an O_h symmetry orbit distinct from that of LUT-08, with its coordinate speed strictly less than the diagonal speed of light limit c = sqrt(2).
+
+**Proposed Falsification Criterion:**
+The hypothesis will be refuted if:
+1. The systematic search of all initial configurations with Hamming weight W <= 12 within a 4x4x4 bounding box simulated for 200 steps yields zero stable, propagating gliders (non-zero velocity, period-stable) that belong to an O_h orbit distinct from LUT-08.
+2. Any newly discovered glider species exhibits a normalized speed |v|/c >= 1.0.
+3. The O_h orbit equivalence classification fails to group known symmetry-related configurations of LUT-08 into a single orbit of size 48 (or appropriate subgroup divisor).
+
+**Proposed Method:**
+1. Implement a 3D FCC CA search engine in `src/fcc_search.py` that utilizes the established LUT-08 CA rule.
+2. Implement an initial condition generator to sweep configurations of Hamming weights W = 4 to 12 within a 4x4x4 bounding box.
+3. Simulate each candidate for 200 steps. Filter out candidates that die (W=0), blow up (W > 24), or remain stationary (displacement of CoM is 0).
+4. Verify stability of surviving gliders by confirming that the velocity and bit pattern are periodic over the final 100 steps.
+5. Implement an O_h symmetry checker in `src/fcc_symmetry.py` that applies the 48 elements of the octahedral group to group the discovered gliders into unique orbit equivalence classes.
+6. Analyze and document the discovered species, computing their normalized velocity vector and confirming |v| < sqrt(2).
+
+---
+
+## Iteration 240 -> Planner [Strategic Guidance]
+
+### Manager's Note: Strategic Guidance for Iteration 241
+
+To ensure this iteration does not stall due to execution limits or produce unscientific results, you must address three critical issues before running your simulations:
+
+#### 1. The Combinatorial Explosion (Urgent Resource Bottleneck)
+Your proposed plan to *"sweep configurations of Hamming weights $W = 4$ to $12$ within a $4\times4\times4$ bounding box"* contains a fatal mathematical bottleneck. 
+* A $4\times4\times4$ spatial grid has $64$ nodes. 
+* On the 12-channel 3D FCC lattice, this translates to $64 \times 12 = 768$ binary state slots.
+* Even for a tiny Hamming weight of $W=4$, the number of possible initial configurations is $\binom{768}{4} \approx 1.47 \times 10^{10}$. 
+
+A brute-force sweep of this size in Python is computationally impossible and will guarantee another `token_limit` or timeout failure. **You must dramatically constrain your search space.** 
+* *Alternative:* Shift from brute-force to an evolutionary search (similar to the successful genetic algorithms of Phase 3), or restrict the brute-force sweep to a much smaller spatial bounding box (e.g., $2\times2\times2$, which has $8 \times 12 = 96$ slots, yielding a manageable $\binom{96}{4} \approx 3.3 \times 10^6$ combinations) with low Hamming weights ($W \le 6$).
+
+#### 2. Unit Testing the $O_h$ Symmetry Orbit Checker
+Before trusting your new `fcc_symmetry.py` to classify undiscovered gliders, you must validate it on known configurations to prevent both taxonomic inflation and incorrect pruning. 
+* **Mandate:** Write a unit test that takes the known glider `LUT-08` and applies the 48 operations of the octahedral group ($O_h$). The checker must successfully group all 48 rotated/reflected representations of `LUT-08` into a **single, unique orbit**. If the test fails, or if it groups them into multiple orbits, the symmetry checker is flawed and cannot be used to filter the search results.
+
+#### 3. Mathematical Pre-Registration
+You must write and commit your exact hypothesis, search constraints, and quantitative falsification criteria to `src/pre_registration.md` before executing any search scripts. 
+* Ensure your definition of coordinate velocity $\mathbf{v}$ and the diagonal speed limit $c_{\text{limit}} = \sqrt{2}$ are mathematically explicit. 
+* Maintain strict language hygiene: if new gliders are found, they "provide evidence for" a rich discrete particle spectrum; do not use promotional terms like "breakthrough" or "proves." A clean null result (e.g., no stable gliders exist in the restricted search space other than LUT-08) is a highly valuable, successful scientific outcome and should be recorded honestly.
+
+*You are cleared to proceed with drafting `src/pre_registration.md` and implementing the constrained search architecture once these adjustments are integrated.*
+
+---
+

@@ -1,35 +1,42 @@
-falsification_criterion: 'A systematic search of all unique (up to O_h rotation) initial
-  configurations of bit-weight 4 <= W <= 8 within a bounding box of size 4x4x4 on
-  the 3D FCC lattice under the LUT-08 rule yields zero stable sub-light gliders (0
-  < |v| < c, periodic shape recurrence, constant bit-weight) that are in a different
-  O_h orbit than LUT-08.
+falsification_criterion: 'The hypothesis will be refuted if:
+
+  1. The systematic search of all initial configurations with Hamming weight W <=
+  12 within a 4x4x4 bounding box simulated for 200 steps yields zero stable, propagating
+  gliders (non-zero velocity, period-stable) that belong to an O_h orbit distinct
+  from LUT-08.
+
+  2. Any newly discovered glider species exhibits a normalized speed |v|/c >= 1.0.
+
+  3. The O_h orbit equivalence classification fails to group known symmetry-related
+  configurations of LUT-08 into a single orbit of size 48 (or appropriate subgroup
+  divisor).
 
   '
-hypothesis: 'The 3D FCC lattice cellular automata under the O_h symmetric rule that
-  supports the LUT-08 glider admits at least one other stable, propagating sub-light
-  glider species (with bit-weight 4 <= W <= 8, period P, and average velocity 0 <
-  |v| < c) that belongs to an O_h symmetry orbit disjoint from that of LUT-08.
+hypothesis: 'The 3D FCC CA rule supporting LUT-08 admits at least one other distinct
+  stable, bit-conserving, propagating glider species (with non-zero coordinate velocity)
+  of Hamming weight W <= 12 that belongs to an O_h symmetry orbit distinct from that
+  of LUT-08, with its coordinate speed strictly less than the diagonal speed of light
+  limit c = sqrt(2).
 
   '
 pre_registration_file: src/pre_registration.md
-proposed_method: '1. Implement or load the 3D FCC CA engine with the 12-channel cuboctahedron
-  neighborhood and the O_h-symmetric rule from iter_224 that supports LUT-08.
+proposed_method: '1. Implement a 3D FCC CA search engine in `src/fcc_search.py` that
+  utilizes the established LUT-08 CA rule.
 
-  2. Implement a seed generator that creates all unique spatial configurations of
-  active bits with total weight W in [4, 8] within a 4x4x4 bounding box, using the
-  48-element O_h symmetry group to filter out equivalent configurations.
+  2. Implement an initial condition generator to sweep configurations of Hamming weights
+  W = 4 to 12 within a 4x4x4 bounding box.
 
-  3. Simulate each unique candidate seed for T = 80 steps on a 32x32x32 open-boundary
-  grid.
+  3. Simulate each candidate for 200 steps. Filter out candidates that die (W=0),
+  blow up (W > 24), or remain stationary (displacement of CoM is 0).
 
-  4. Track the active bit-count, center of mass (CoM), and spatial shape. Identify
-  candidates that show a constant or periodic bit-count, non-zero net displacement,
-  and perfect shape recurrence after a period P (i.e. shape is translationally invariant).
+  4. Verify stability of surviving gliders by confirming that the velocity and bit
+  pattern are periodic over the final 100 steps.
 
-  5. Check if any discovered glider species belong to an O_h orbit disjoint from LUT-08''s
-  orbit.
+  5. Implement an O_h symmetry checker in `src/fcc_symmetry.py` that applies the 48
+  elements of the octahedral group to group the discovered gliders into unique orbit
+  equivalence classes.
 
-  6. Document the discovered gliders (their velocity, period, weight, and symmetry
-  orbits) or record a clean null result if no new species exist in this search space.
+  6. Analyze and document the discovered species, computing their normalized velocity
+  vector and confirming |v| < sqrt(2).
 
   '
