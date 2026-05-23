@@ -1,0 +1,85 @@
+I will begin by listing the contents of the `src/` directory to inspect the current state of our codebase and find what search engines, lattices, or symmetry checkers are already implemented or require work.
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+I will list all the completed iterations to understand the exact history of files, rules, and findings.
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+I will search for occurrences of "LUT-08" or "fcc" in the codebase using `grep_search` to find relevant files and paths.
+
+[Tool Call: grep_search({'pattern': 'LUT-08'})]
+
+[Tool Result: Tool not available: grep_search]
+
+I will try to read the research project's `goal.md` to see if that tool is available.
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+```yaml
+hypothesis: |
+  The 3D Face-Centered Cubic (FCC) lattice cellular automaton, under the reversible, O_h-symmetric rule that supports the known 'LUT-08' sub-light glider, admits at least one other distinct species of stable, propagating sub-light glider. This new species is defined as a localized, periodic bit pattern propagating with a constant coordinate velocity 0 < ||v|| < sqrt(2), is stable for at least 1000 steps, and belongs to a completely different O_h symmetry orbit (equivalence class under the 48 octahedral rotations and reflections, translations, and temporal phase-shifts) than the LUT-08 glider.
+falsification_criterion: |
+  The hypothesis will be refuted if any of the following occur:
+  1. A systematic search over seeds of Hamming weight W <= 12 within a 3x3x3 bounding box under the LUT-08 rule finds no stable propagating gliders other than LUT-08 and its O_h-symmetric equivalent orbits.
+  2. Any newly discovered glider candidate is shown to be O_h-equivalent to LUT-08 under one of the 48 coordinate transformations and a temporal phase shift.
+  3. Any newly discovered glider is unstable when the simulation is run to 1000 steps (e.g., it degrades to vacuum, expands, or halts).
+  4. The newly discovered glider's velocity is equal to the speed-of-light limit (||v|| = sqrt(2)), violating the "sub-light" requirement.
+  5. The newly discovered glider's behavior is not O_h-covariant (i.e., rotating the initial seed by an O_h operation does not yield a glider propagating in the rotated direction).
+proposed_method: |
+  1. Create a pre-registration file `src/pre_registration.md` outlining the hypothesis, parameters, and falsification criteria.
+  2. Implement an O_h symmetry group checker (`src/fcc_symmetry.py`) that generates the 48 coordinate transformations (permutations and signs) and maps both position vectors and the 12 FCC channel indices under each transformation.
+  3. Locate the LUT-08 rule and glider structure (e.g., from `archive/iter_224/` or existing CA code in `src/`).
+  4. Build a high-throughput 3D FCC simulation and search engine (`src/fcc_glider_search.py`) that generates localized initial states (W <= 12) and simulates them for 200 steps, filtering for stable, non-zero constant velocity propagation.
+  5. For any surviving candidate, run an extended stability verification up to 1000 steps.
+  6. Apply the O_h symmetry checker to group all surviving stable gliders into unique equivalence classes (orbits), and compare them against the LUT-08 orbit.
+  7. Verify O_h covariance by rotating the seed of any new glider species and checking if its propagation matches the rotated velocity.
+pre_registration_file: "src/pre_registration.md"
+```
+
+## Detailed Research Plan & Context
+
+### 1. Scientific Context
+In Phase 4, we successfully constructed the 3D FCC Lattice Gas Cellular Automaton (LGCA) and identified a 4-bit sub-light speed glider designated **LUT-08**. 
+
+However, as highlighted by the Research Manager in the project's **Falsification Protocol**, progress is frequently threatened by **Taxonomic Inflation**—claiming that rotated, reflected, translated, or phase-shifted variations of an existing glider are "new species." To build a true, emergent "Particle Zoo" (Phase 7), we must establish a mathematically rigorous, automated taxonomy framework. 
+
+This experiment (Phase 7.1) aims to systematically search for new glider species on the 3D FCC lattice and classify them using the full **$O_h$ Octahedral Symmetry Group** (order 48).
+
+### 2. Experimental Protocol
+
+#### A. Symmetry Group Representation ($O_h$)
+We will write a symmetry checker `src/fcc_symmetry.py` to represent the 48 symmetry operations of the $O_h$ group. Each operation $g \in O_h$ consists of:
+1. A permutation of the coordinate axes: $x, y, z \to \pi(x, y, z)$ (6 possible permutations).
+2. A sign mapping: $(\pm x, \pm y, \pm z)$ (8 possible sign combinations).
+
+We define the 12 neighbor vectors of the FCC lattice (the vertices of the cuboctahedron):
+$$\mathbf{e}_d \in \{ (\pm 1, \pm 1, 0), (\pm 1, 0, \pm 1), (0, \pm 1, \pm 1) \}$$
+
+For each of the 48 operations $g$, we will pre-compute:
+- The coordinate mapping $g(\mathbf{r})$ for position offsets.
+- The channel permutation matrix $P_g$ mapping each channel $d \to d'$ such that $g(\mathbf{e}_d) = \mathbf{e}_{d'}$.
+
+Two configurations $A$ and $B$ are **O_h-equivalent** if there exists a transformation $g \in O_h$, a spatial translation $\mathbf{t}$, and a temporal phase shift $\tau$ such that:
+$$B(t=0) = g(A(t=\tau)) + \mathbf{t}$$
+
+#### B. Search Space and Bounding
+We will set up a search engine `src/fcc_glider_search.py` that sweeps localized configurations of active channels:
+- **Symmetry-invariant rules:** The reversible, O_h-symmetric FCC rule that supports `LUT-08`.
+- **Bounding Box:** Initial bits must fit within a $3 \times 3 \times 3$ grid.
+- **Hamming Weight:** $W \le 12$ active bits.
+- **Velocity Normalization:** Measured speed $||v||$ must be strictly less than the speed limit $c_{limit} = \sqrt{2}$.
+
+#### C. Evaluation Flow
+1. **Simulation Phase:** Each seed is simulated on a sufficiently large grid (e.g., $64 \times 64 \times 64$ with open or periodic boundaries) for 200 steps.
+2. **First-Stage Filter:** Eliminate configurations that explode, decay to 0 bits, or remain completely static (average velocity $||v|| = 0$).
+3. **Linearity and Periodicity Verification:** Verify that the center of mass moves linearly, and the configuration repeats with some period $T$ (i.e. is periodic in its co-moving frame).
+4. **Long-Term Stability Check:** Run surviving candidates for up to 1000 steps to ensure they are true solitons and not long-lived transients.
+5. **Orbits Extraction:** Group all valid gliders into equivalence classes under $O_h \times \mathbb{Z} \times \mathbb{Z}_T$.
+6. **Species Comparison:** Verify whether there exists any orbit distinct from that of `LUT-08`.

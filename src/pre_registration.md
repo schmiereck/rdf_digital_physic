@@ -1,24 +1,27 @@
 # RDF Scientific Pre-Registration
 
-*   **Iteration:** 240
+*   **Iteration:** 241
 *   **Pre-Registration File:** src/pre_registration.md
 
 ## 1. Hypothesis
-The 3D FCC CA rule supporting LUT-08 admits at least one other distinct stable, bit-conserving, propagating glider species (with non-zero coordinate velocity) of Hamming weight W <= 12 that belongs to an O_h symmetry orbit distinct from that of LUT-08, with its coordinate speed strictly less than the diagonal speed of light limit c = sqrt(2).
+The 3D Face-Centered Cubic (FCC) lattice cellular automaton, under the reversible, O_h-symmetric rule that supports the known 'LUT-08' sub-light glider, admits at least one other distinct species of stable, propagating sub-light glider. This new species is defined as a localized, periodic bit pattern propagating with a constant coordinate velocity 0 < ||v|| < sqrt(2), is stable for at least 1000 steps, and belongs to a completely different O_h symmetry orbit (equivalence class under the 48 octahedral rotations and reflections, translations, and temporal phase-shifts) than the LUT-08 glider.
 
 ## 2. Falsification Criterion
-The hypothesis will be refuted if:
-1. The systematic search of all initial configurations with Hamming weight W <= 12 within a 4x4x4 bounding box simulated for 200 steps yields zero stable, propagating gliders (non-zero velocity, period-stable) that belong to an O_h orbit distinct from LUT-08.
-2. Any newly discovered glider species exhibits a normalized speed |v|/c >= 1.0.
-3. The O_h orbit equivalence classification fails to group known symmetry-related configurations of LUT-08 into a single orbit of size 48 (or appropriate subgroup divisor).
+The hypothesis will be refuted if any of the following occur:
+1. A systematic search over seeds of Hamming weight W <= 12 within a 3x3x3 bounding box under the LUT-08 rule finds no stable propagating gliders other than LUT-08 and its O_h-symmetric equivalent orbits.
+2. Any newly discovered glider candidate is shown to be O_h-equivalent to LUT-08 under one of the 48 coordinate transformations and a temporal phase shift.
+3. Any newly discovered glider is unstable when the simulation is run to 1000 steps (e.g., it degrades to vacuum, expands, or halts).
+4. The newly discovered glider's velocity is equal to the speed-of-light limit (||v|| = sqrt(2)), violating the "sub-light" requirement.
+5. The newly discovered glider's behavior is not O_h-covariant (i.e., rotating the initial seed by an O_h operation does not yield a glider propagating in the rotated direction).
 
 ## 3. Proposed Method
-1. Implement a 3D FCC CA search engine in `src/fcc_search.py` that utilizes the established LUT-08 CA rule.
-2. Implement an initial condition generator to sweep configurations of Hamming weights W = 4 to 12 within a 4x4x4 bounding box.
-3. Simulate each candidate for 200 steps. Filter out candidates that die (W=0), blow up (W > 24), or remain stationary (displacement of CoM is 0).
-4. Verify stability of surviving gliders by confirming that the velocity and bit pattern are periodic over the final 100 steps.
-5. Implement an O_h symmetry checker in `src/fcc_symmetry.py` that applies the 48 elements of the octahedral group to group the discovered gliders into unique orbit equivalence classes.
-6. Analyze and document the discovered species, computing their normalized velocity vector and confirming |v| < sqrt(2).
+1. Create a pre-registration file `src/pre_registration.md` outlining the hypothesis, parameters, and falsification criteria.
+2. Implement an O_h symmetry group checker (`src/fcc_symmetry.py`) that generates the 48 coordinate transformations (permutations and signs) and maps both position vectors and the 12 FCC channel indices under each transformation.
+3. Locate the LUT-08 rule and glider structure (e.g., from `archive/iter_224/` or existing CA code in `src/`).
+4. Build a high-throughput 3D FCC simulation and search engine (`src/fcc_glider_search.py`) that generates localized initial states (W <= 12) and simulates them for 200 steps, filtering for stable, non-zero constant velocity propagation.
+5. For any surviving candidate, run an extended stability verification up to 1000 steps.
+6. Apply the O_h symmetry checker to group all surviving stable gliders into unique equivalence classes (orbits), and compare them against the LUT-08 orbit.
+7. Verify O_h covariance by rotating the seed of any new glider species and checking if its propagation matches the rotated velocity.
 
 ---
 *Created automatically by the RDF Orchestrator prior to iteration execution.*
