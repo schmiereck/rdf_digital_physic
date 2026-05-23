@@ -1,30 +1,29 @@
 # RDF Scientific Pre-Registration
 
-*   **Iteration:** 238
+*   **Iteration:** 239
 *   **Pre-Registration File:** src/pre_registration.md
 
 ## 1. Hypothesis
-Two LUT-08 sub-light gliders (v = 0.469c) on a 3D FCC grid (L = 64) over T = 80 steps will exhibit isotropic, field-driven mutual attraction (deflection towards each other) when coupled via a self-generated coordinate-latency field computed with a non-periodic, zero-padded FFT solver. This attraction is physical and not an artifact of discrete boundary wrapping, lattice-axis alignment, or post-hoc parameter tuning.
+In the 2D hexagonal Cellular Automaton under the v=0.469c sub-light glider rule ('champion_rule_perfect.json'), a coherent superposition of two gliders (simulated together on a single grid) exhibits non-linear, phase-coherent interference that is fundamentally absent from the incoherent mixture of independent single-glider runs. Specifically, over an ensemble of initial configurations parametrized by transverse spatial offset \Delta y \in [-4, 4] and relative temporal phase delay \Delta t \in [0, 12] (spanning the glider's internal cycle), the system exhibits discrete, highly structured regions of perfect mutual annihilation (representing destructive interference, where N_{gliders} = 0 and final bits = 0) and phase-dependent deflection/transmission (representing constructive interference), whose boundaries vary periodically with the relative phase \Delta t.
 
 ## 2. Falsification Criterion
-The hypothesis will be refuted if any of the following occur:
-1. The minimum separation between the two gliders in the active run (with coupling strength eta = 2.0 and smoothing sigma = 1.5) is not closer than that of the vacuum control (eta = 0.0) by at least 2.0 lattice units (i.e., d_vacuum_min - d_active_min < 2.0).
-2. The mutual attraction disappears or varies significantly (difference in separation trajectory > 1.75 lattice units) when the initial positions and velocities are rotated through any of the O_h symmetry group operations.
-3. Any glider or its non-zero latency field touches the boundaries of the L = 64 grid during the T = 80 steps, indicating a boundary leak.
-4. Perfect bit-conservation is violated during the active simulation run (indicating the latency gradient breaks the glider structure).
+The hypothesis will be proven false if any of the following quantitative observations are made:
+1. The joint simulation is trivially linear, meaning the active state is always the bitwise OR of the independent control runs: S_{act}(T) = S_A(T) \lor S_B(T) for all configurations, showing no mutual interaction or annihilation.
+2. The collision outcomes are completely phase-insensitive, meaning that changing the relative time delay \Delta t across the entire glider period has no effect on whether the gliders annihilate, transmit, or deflect (i.e., the outcome depends solely on the spatial offset \Delta y).
+3. The outgoing probability distribution of the active runs is a simple spatial translation or smearing of the input distribution, showing no phase-dependent modulation, interference fringes, or splitting into new discrete scattering channels.
 
 ## 3. Proposed Method
-1. Modify or create a simulation script (e.g., `src/non_periodic_attraction.py` or modify the existing physics runner) to support an L = 64 grid and a zero-padded FFT solver for the latency field:
-   - Pad the L x L x L density grid to 2L x 2L x 2L with zeros before performing FFT.
-   - Convolve with a Gaussian kernel (sigma = 1.5) and crop the resulting latency field back to L x L x L.
-2. Set up the initial conditions:
-   - Two LUT-08 sub-light gliders placed at a separation of 16-20 lattice units in the central region of the 64^3 grid.
-   - Set their initial velocities such that they would pass each other at a closest distance of 6-8 lattice units in the vacuum control.
-3. Run the following simulation groups:
-   - Active Run (eta = 2.0, non-periodic FFT).
-   - Vacuum Control (eta = 0.0).
-   - Rotated Active & Vacuum Runs: Apply O_h rotations to the initial state to verify isotropy.
-4. Measure and save the separation distance d(t) as a function of step t, verify bit conservation, and confirm that the latency/density at the boundaries remains exactly zero.
+1. Locate the champion sub-light glider rule 'champion_rule_perfect.json' and its stable glider seed from 'archive/iter_222/' or 'archive/iter_223/'.
+2. Implement a 2D hexagonal CA simulator with absorbing boundary conditions on a grid of size 128 x 128 to prevent wrapped gliders from re-colliding and causing boundary artifacts.
+3. Define two glider sources that launch gliders towards a central intersection point (e.g., at a 120-degree or 180-degree angle to test different collision symmetries).
+4. Generate a 2D ensemble of 117 configurations by sweeping the transverse spatial offset \Delta y from -4 to 4 lattice units and the relative temporal phase delay \Delta t from 0 to 12 steps.
+5. For each configuration, run three simulations for T = 150 steps:
+   - Active: both gliders launched together on the same grid.
+   - Control A: only glider A launched.
+   - Control B: only glider B launched.
+6. Record the final bit count, the number of surviving gliders, and their outgoing velocities/angles for each run.
+7. Classify the active outcomes into four discrete categories: Annihilation (destructive interference), Transmission (survival without path deviation), Deflection (constructive interference with scattering), and Chaos (instability).
+8. Map the phase diagram of outcomes over (\Delta y, \Delta t), plot the probability of annihilation P(A) as a function of relative phase \Delta t, and compare the coherent joint distribution against the incoherent sum/mixture of the controls.
 
 ---
 *Created automatically by the RDF Orchestrator prior to iteration execution.*
