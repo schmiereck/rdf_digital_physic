@@ -17,14 +17,27 @@ def main():
     S_sub = S[[0, 2, 6]]
     
     BT = np.linalg.inv(C_sub) @ S_sub
-    B = BT.T
-    print("B:")
-    print(B)
-    print("Determinant of B:", np.linalg.det(B))
+    print("BT:")
+    print(BT)
     
-    B_inv = np.linalg.inv(B)
-    print("B_inv:")
-    print(B_inv)
+    P = [0, 10, 7, 1, 2, 11, 8, 3, 6, 4, 5, 9]
+    for i in range(12):
+        v_proj = C[i] @ BT
+        j = P[i]
+        diff = np.linalg.norm(v_proj - S[j])
+        print(f"C[{i}] = {C[i]} projected: {v_proj} matches S[{j}] = {S[j]} (diff = {diff:.6e})")
+
+    # Now verify inverse mapping transforms grid shifts to Cartesian fcc_neighbor_vectors
+    BT_inv = np.linalg.inv(BT)
+    print("\nBT_inv:")
+    print(BT_inv)
+    
+    for i in range(12):
+        j = P[i]
+        # s @ BT_inv should map back to c
+        v_back = S[j] @ BT_inv
+        diff_back = np.linalg.norm(v_back - C[i])
+        print(f"S[{j}] = {S[j]} mapped back: {v_back} matches C[{i}] = {C[i]} (diff = {diff_back:.6e})")
 
 if __name__ == "__main__":
     main()
