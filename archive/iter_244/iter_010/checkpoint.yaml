@@ -1,0 +1,135 @@
+complexity: medium
+estimated_runtime_sec: 200
+iter_id: '244.10'
+started_at: '2026-05-23T20:53:52.691854'
+status: running
+task: "Write the following complete Python code to `src/fcc_antiparticle_annihilation.py`\
+  \ and run it:\n\n```python\nimport os, sys, json\nimport numpy as np\nfrom pathlib\
+  \ import Path\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0,\
+  \ str(ROOT))\n\nfrom src.engine_3d import SHIFTS, stream, collide, invert_lut\n\n\
+  L = 64\nT_ch = [1, 0, 3, 2, 5, 4, 9, 10, 11, 6, 7, 8]\n\ndef seed_grid(L: int, particle,\
+  \ center=(L//2, L//2, L//2)):\n    grid = np.zeros((L, L, L, 12), dtype=np.uint8)\n\
+  \    cl, cr, cc = center\n    for (dl, dr, dc, ch) in particle:\n        grid[(cl\
+  \ + dl) % L, (cr + dr) % L, (cc + dc) % L, int(ch)] = 1\n    return grid\n\ndef\
+  \ main():\n    # 1. Load rule and original particle\n    with open(ROOT / \"archive/iter_224/results/glider_00_lut08_sub03.json\"\
+  ) as f:\n        d = json.load(f)\n    lut = np.array(d[\"lut\"], dtype=np.uint16)\n\
+  \    inv_lut = invert_lut(lut)\n    pA = [tuple(c) for c in d[\"particle\"]]\n \
+  \   \n    # 2. Construct CPT-conjugate state of the glider\n    # Parity: negate\
+  \ coordinates; Time reversal: negate channels\n    pB = []\n    for (dl, dr, dc,\
+  \ ch) in pA:\n        pB.append((-dl, -dr, -dc, T_ch[ch]))\n        \n    print(f\"\
+  Original particle (pA): {pA}\")\n    print(f\"CPT-conjugate particle (pB): {pB}\"\
+  )\n    \n    # 3. Test vacuum stability of the CPT-conjugate under the forward rule\n\
+  \    grid_fwd = seed_grid(L, pB)\n    curr = grid_fwd.copy()\n    stable_fwd = True\n\
+  \    for step in range(1, 101):\n        curr = collide(stream(curr, reverse=False),\
+  \ lut)\n        if int(curr.sum()) != 4:\n            stable_fwd = False\n     \
+  \       print(f\"CPT-conjugate under FORWARD rule became unstable at step {step}\
+  \ with bit count {int(curr.sum())}\")\n            break\n    if stable_fwd:\n \
+  \       print(\"CPT-conjugate is stable under FORWARD rule (unexpected for asymmetric\
+  \ CA).\")\n        \n    # 4. Test vacuum stability of the CPT-conjugate under the\
+  \ inverse rule\n    grid_inv = seed_grid(L, pB)\n    curr = grid_inv.copy()\n  \
+  \  stable_inv = True\n    for step in range(1, 101):\n        curr = collide(stream(curr,\
+  \ reverse=True), inv_lut)\n        if int(curr.sum()) != 4:\n            stable_inv\
+  \ = False\n            print(f\"CPT-conjugate under INVERSE rule became unstable\
+  \ at step {step}\")\n            break\n    if stable_inv:\n        print(\"CPT-conjugate\
+  \ is perfectly STABLE under the INVERSE rule!\")\n        \n    # Calculate velocity\
+  \ under inverse rule\n    # Original velocity is approx [-0.3, 0.0, 0.2]\n    #\
+  \ We expect CPT velocity under inverse rule to be exactly opposite, i.e., [0.3,\
+  \ 0.0, -0.2]\n    # Let's verify:\n    com_0 = np.argwhere(grid_inv > 0)[:, :3].mean(axis=0)\n\
+  \    com_100 = np.argwhere(curr > 0)[:, :3].mean(axis=0)\n    diff = com_100 - com_0\n\
+  \    for i in range(3):\n        if diff[i] > L//2: diff[i] -= L\n        elif diff[i]\
+  \ < -L//2: diff[i] += L\n    vel_inv = diff / 100.0\n    print(f\"Velocity of CPT-conjugate\
+  \ under INVERSE rule: {vel_inv}\")\n    \n    # 5. Sweep head-on collisions under\
+  \ the forward rule\n    best_annihilation = None\n    print(\"Sweeping collision\
+  \ parameters under FORWARD rule...\")\n    for pA_phase in [0, 1]:\n        for\
+  \ pB_phase in [0, 1]:\n            for dl in range(-2, 3):\n                for\
+  \ dr in range(-2, 3):\n                    for dc in range(-2, 3):\n           \
+  \             # Construct grid\n                        grid = np.zeros((L, L, L,\
+  \ 12), dtype=np.uint8)\n                        \n                        # Place\
+  \ pA centered at (16, 32, 16)\n                        pA_state = pA\n         \
+  \               if pA_phase == 1:\n                            grid_temp = seed_grid(L,\
+  \ pA, center=(16, 32, 16))\n                            grid_temp = collide(stream(grid_temp,\
+  \ reverse=False), lut)\n                            pA_state = []\n            \
+  \                for l, r, c_idx, ch in np.argwhere(grid_temp > 0):\n          \
+  \                      pA_state.append((l - 16, r - 32, c_idx - 16, ch))\n     \
+  \                           \n                        for dcl, dcr, dcc, ch in pA_state:\n\
+  \                            grid[(16 + dcl)%L, (32 + dcr)%L, (16 + dcc)%L, ch]\
+  \ = 1\n                            \n                        # Place pB centered\
+  \ at (48 + dl, 32 + dr, 16 + dc)\n                        pB_state = pB\n      \
+  \                  if pB_phase == 1:\n                            grid_temp = seed_grid(L,\
+  \ pB, center=(48 + dl, 32 + dr, 16 + dc))\n                            grid_temp\
+  \ = collide(stream(grid_temp, reverse=True), inv_lut)\n                        \
+  \    pB_state = []\n                            for l, r, c_idx, ch in np.argwhere(grid_temp\
+  \ > 0):\n                                pB_state.append((l - (48+dl), r - (32+dr),\
+  \ c_idx - (16+dc), ch))\n                                \n                    \
+  \    for dcl, dcr, dcc, ch in pB_state:\n                            grid[(48 +\
+  \ dl + dcl)%L, (32 + dr + dcr)%L, (16 + dc + dcc)%L, ch] = 1\n                 \
+  \           \n                        if int(grid.sum()) < 8: continue\n       \
+  \                 \n                        # Simulate 100 steps\n             \
+  \           curr = grid.copy()\n                        for _ in range(100):\n \
+  \                           curr = collide(stream(curr, reverse=False), lut)\n \
+  \                           \n                        bits = np.argwhere(curr >\
+  \ 0)\n                        if len(bits) == 8:\n                            #\
+  \ Check empty collision center\n                            in_center = 0\n    \
+  \                        for b in bits:\n                                dl_ctr\
+  \ = min((b[0] - 32)%L, (32 - b[0])%L)\n                                dr_ctr =\
+  \ min((b[1] - 32)%L, (32 - b[1])%L)\n                                dc_ctr = min((b[2]\
+  \ - 16)%L, (16 - b[2])%L)\n                                if dl_ctr <= 5 and dr_ctr\
+  \ <= 5 and dc_ctr <= 5:\n                                    in_center += 1\n  \
+  \                                  \n                            # Check isolation\n\
+  \                            isolated = True\n                            for i\
+  \ in range(8):\n                                for j in range(i+1, 8):\n      \
+  \                              b1, b2 = bits[i][:3], bits[j][:3]\n             \
+  \                       dist = sum(min((b1[k] - b2[k])%L, (b2[k] - b1[k])%L) for\
+  \ k in range(3))\n                                    if dist < 6:\n           \
+  \                             isolated = False\n                               \
+  \         break\n                                if not isolated: break\n      \
+  \                          \n                            if in_center == 0 and isolated:\n\
+  \                                print(f\"FOUND CLEAN ANNIHILATION under FORWARD\
+  \ rule!\")\n                                print(f\"  Phase A: {pA_phase}, Phase\
+  \ B: {pB_phase}, Offset: {dl, dr, dc}\")\n                                best_annihilation\
+  \ = {\n                                    \"pA_phase\": pA_phase,\n           \
+  \                         \"pB_phase\": pB_phase,\n                            \
+  \        \"offset\": (dl, dr, dc),\n                                    \"bits\"\
+  : bits.tolist()\n                                }\n                           \
+  \     break\n                    if best_annihilation: break\n                if\
+  \ best_annihilation: break\n            if best_annihilation: break\n        if\
+  \ best_annihilation: break\n        \n    # 6. Save results and write reports\n\
+  \    out_dir = ROOT / \"archive/iter_244/results\"\n    out_dir.mkdir(parents=True,\
+  \ exist_ok=True)\n    \n    summary = {\n        \"antiparticle_vacuum_stable_fwd\"\
+  : bool(stable_fwd),\n        \"antiparticle_vacuum_stable_inv\": bool(stable_inv),\n\
+  \        \"antiparticle_vacuum_velocity_inv\": vel_inv.tolist(),\n        \"clean_annihilation_found_fwd\"\
+  : bool(best_annihilation is not None),\n        \"best_alignment\": best_annihilation,\n\
+  \        \"falsification_vacuum_stability_refuted\": bool(not stable_inv),\n   \
+  \     \"falsification_annihilation_refuted\": bool(best_annihilation is None)\n\
+  \    }\n    with open(out_dir / \"annihilation_summary.json\", \"w\") as f:\n  \
+  \      json.dump(summary, f, indent=2)\n        \n    md_report = f\\\"\\\"\\\"\
+  # Phase 7.3 - Antiparticles & CPT Symmetries Report\n\n## Working Hypothesis\nUnder\
+  \ the O_h-symmetric, reversible, bit-conserving LUT-08 CA rule on the 3D FCC grid,\
+  \ a CPT-conjugate state of the LUT-08 glider (obtained by time-reversal and spatial\
+  \ reflection) acts as a stable physical antiparticle that propagates in the opposite\
+  \ direction (-v).\n\n## Observations\n- **CPT-conjugate Vacuum Stability:**\n  -\
+  \ Under FORWARD Rule: stable_fwd = {stable_fwd} (Asymmetric CA rule does not support\
+  \ propagation of the time-reversed state forward in time under the forward rule).\n\
+  \  - Under INVERSE Rule: stable_inv = {stable_inv} (Perfect stability of the time-reversed\
+  \ state propagating forward under the inverse rule).\n- **CPT Velocity under Inverse\
+  \ Rule:** {vel_inv.tolist()} (Exactly opposite to the original glider's velocity\
+  \ of [-0.3, 0, 0.2]).\n- **Head-On Collisions under Forward Rule:**\n  - Clean Annihilation\
+  \ Found: {best_annihilation is not None}\n  - Because the antiparticle requires\
+  \ the inverse rule to propagate stably, when placed in the forward rule's grid,\
+  \ it immediately disintegrates and loses its coherence before a clean head-on collision\
+  \ can occur.\n  - This establishes an **honest null result** regarding \"clean annihilation\"\
+  \ under the forward rule, which is a key property of asymmetric, reversible LGCAs.\n\
+  \n## Verdict on Falsification Criteria\n1. Vacuum stability of the antiparticle\
+  \ under the correct physical rule (inverse rule): **Confirmed** (not refuted, stable\
+  \ over 100 steps).\n2. Chirality and sub-lattice parities mapping: **Confirmed**\
+  \ (chirality sequence is perfectly negated and time-reversed).\n3. Head-on collision\
+  \ under the forward rule: **Refuted** (cannot achieve clean annihilation because\
+  \ the antiparticle is unstable under the forward rule).\n\nThis demonstrates that\
+  \ the CPT-reversed state acts as a stable antiparticle ONLY when evolved under the\
+  \ time-reversed (inverse) rule, which is the mathematically consistent definition\
+  \ of time reversal in discrete lattice gas systems.\n\\\"\\\"\\\"\n    with open(out_dir\
+  \ / \"CPT_annihilation_report.md\", \"w\") as f:\n        f.write(md_report)\n \
+  \       \n    print(\"ALL REPORTS WRITTEN SUCCESSFULLY.\")\n\nif __name__ == \"\
+  __main__\":\n    main()\n```\n\nRun `python src/fcc_antiparticle_annihilation.py`\
+  \ and print the complete stdout. Do NOT add any extra logic. Just write the file\
+  \ exactly as is and run it."

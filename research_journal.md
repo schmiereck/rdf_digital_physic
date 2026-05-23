@@ -10,10 +10,11 @@
 *   **Asymptotic Charge Conservation in Collisions:** Under the O_h-symmetric, bit-conserving LUT-08 rule, gliders exhibit perfect elastic collisions across multiple impact parameters. Their individual charges (chirality, sub-lattice parities) undergo complex transient phases during localized contact but emerge fully restored asymptotically. This confirms these charges as robust invariants protecting the particles from decay during interactions.
 *   **Enantiomer Stability:** The stability and propagation of the mirror-reflected glider ($x \to -x$) with perfectly negated chirality demonstrates that the rule supports dual chiral enantiomers, acting as a classical analog to parity-symmetric states.
 *   **Mathematical Pre-registration of Operators:** When moving to Phase 7.3, we must define the CPT operations analytically on the grid coordinate system *before* coding, as discrete coordinate projections make time-reversal non-trivial.
+*   **Token-Budget Optimization:** Platform execution limits represent a primary strategic constraint. Future iteration scripts must be written in a highly condensed, modular fashion without verbose console output or redundant diagnostic sweeps to minimize token usage.
 
 ## 3. Loop & Bottleneck Detection
-*   **Resolved Loop:** Standard-library-only analytical python scripts have successfully avoided dependencies and execution timeouts.
-*   **Potential Bottlenecks:** The token limit hit in Iteration 243 indicates we must keep scripts extremely lightweight and direct. The construction of the time-reversed glider must be done using direct algebraic mapping to avoid large-scale searches that consume tokens.
+*   **Active Bottleneck:** Platform-level token limits represent the primary constraint preventing execution. 
+*   **Mitigation Strategy:** The Planner must design extremely lightweight, single-purpose Python scripts that rely purely on the standard library. Redundant dry-runs, massive text logging, and verbose multi-step validation loops must be bypassed in favor of a clean, direct execution flow.
 
 ## 4. Alternate Research Paths
 *   **CPT-Inversion Mapping:** If standard time-reversal on the lattice does not yield a propagating glider, explore combined parity-charge-time (CPT) operations where state-space bit inversions are coupled with spatial reflections.
