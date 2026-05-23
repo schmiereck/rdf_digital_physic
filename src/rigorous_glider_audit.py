@@ -45,14 +45,17 @@ def build_oh_transforms():
     S = np.array(SHIFTS, dtype=float)
     S_pinv = np.linalg.pinv(S)
     C = fcc_neighbor_vectors().astype(float)
-    C_pinv = np.linalg.pinv(C)
-    B = S.T @ C_pinv.T
-    P = []
-    for i in range(12):
-        v_proj = B @ C[i]
-        diffs = np.linalg.norm(S - v_proj, axis=1)
-        j = np.argmin(diffs)
-        P.append(j)
+    
+    # Selected indices from 3-vector solver
+    i0, i1, i2 = 0, 4, 8
+    C_sub = C[[i0, i1, i2]]
+    S_sub = S[[0, 2, 6]]
+    
+    BT = np.linalg.inv(C_sub) @ S_sub
+    
+    # Bijective mapping P (Cartesian -> Projected)
+    P = [0, 10, 7, 1, 2, 11, 8, 3, 6, 4, 5, 9]
+    
     perms_cart = get_oh_permutations()
     transforms = []
     max_err = 0.0
@@ -61,11 +64,13 @@ def build_oh_transforms():
         for i in range(12):
             p_proj[P[i]] = P[p_cart[i]]
         p_proj = tuple(p_proj)
+        
         S_rot = np.array([S[p_proj[i]] for i in range(12)], dtype=float)
         M_g = S_rot.T @ S_pinv.T
         err = np.max(np.abs(S @ M_g.T - S_rot))
         max_err = max(max_err, err)
         transforms.append((p_proj, M_g))
+        
     assert max_err < 1e-10, f"O_h transform reconstruction error too large: {max_err}"
     return transforms
 
