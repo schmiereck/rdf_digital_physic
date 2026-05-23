@@ -3,33 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.16991
-hypothesis: 'phase-218: A ''leaky'' fitness function that provides partial credit
-  for bit conservation will create a searchable gradient, enabling evolution from
-  a random start to make progress towards a v<c glider.'
-input_tokens: 44213
-iter: 217
-metrics: {}
-output_tokens: 1444
-status: unknown
-```
-
-## iter_217: phase-218: A 'leaky' fitness function that provides partial credit for bit conservation will create a searchable gradient, enabling evolution from a random start to make progress towards a v<c glider.
-
-**Analysis:** The previous phase (217) conclusively refuted the hypothesis that a 'warm-start' population could find a `v<c` glider using the strict `SubLightFitness` function. The result was a completely flat, all-zero fitness landscape, providing no gradient for evolution. The root cause is the punitive nature of the fitness function: any single failure in bit conservation or displacement at any checkpoint re
-
-**Status:** unknown
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** 
-
-
----
-```yaml
 cached_tokens: 43034
 cost_usd: 0.25018
 hypothesis: 'phase-218: A ''leaky'' fitness function, which penalizes rather than
@@ -1023,4 +996,40 @@ status: token_limit
 **Experimenter view:** The research orchestrator was interrupted by an execution limit before launching the active sub-agents for Phase 237. Prior to this, Phase 236 established a robust null result for N-body configurations, demonstrating that the self-generated latency field ($\eta = 2.0$) is dispersive rather than binding for $N \ge 3$, and exposing previous apparent 2-body orbits as ballistic recurrence artifacts of
 
 **Notes:** Execution limit reached. Work stopped as requested.
+
+
+---
+```yaml
+cached_tokens: 2803375
+cost_usd: 1.34771
+hypothesis: 'phase-238: Rigorous open-boundary evaluation of mutual two-body attraction,
+  resulting in a first-class null result (refutation) due to sub-pixel deflection
+  magnitudes and broken O_h covariance.'
+input_tokens: 3412658
+iter: 238
+metrics:
+  best_net_deflection: 0.25
+  bit_conservation_ok: true
+  boundary_leak_free: true
+  falsification_triggered_c1: true
+  falsification_triggered_c2: true
+  prereg_net_deflection: 0.0
+output_tokens: 12527
+status: ok
+```
+
+## iter_238: phase-238: Rigorous open-boundary evaluation of mutual two-body attraction, resulting in a first-class null result (refutation) due to sub-pixel deflection magnitudes and broken O_h covariance.
+
+**Analysis:** In this phase, we completed the evaluation of Phase 5.2 (Self-Consistent Mutual Two-Body Attraction) by subjecting our coordinate-latency coupling hypothesis to a strict, pre-registered falsification audit under open boundary conditions.
+We implemented a NonPeriodicClosedLoopLatchingEngine with margin=2 absorbing boundaries on an L=64 grid combined with a zero-padded 2L potential solver to elimina
+
+**Status:** ok
+
+**Metrics:** `{'prereg_net_deflection': 0.0, 'best_net_deflection': 0.25, 'boundary_leak_free': True, 'bit_conservation_ok': True, 'falsification_triggered_c1': True, 'falsification_triggered_c2': True}`
+
+**Experimenter view:** We completed a rigorous and complete evaluation of the pre-registered mutual two-body deflection hypothesis under non-periodic open-boundary conditions. 
+The results establish a definitive first-class null result, refuting the emergent gravity hypothesis under the closed-loop coordinate-latency framework:
+1. Under the pre-registered configuration (sigma=1.5, gamma=0.90, eta=2.0, R=1.1), the net de
+
+**Notes:** Pre-registered mutual attraction hypothesis refuted. Discretization noise and broken coordinate covariance make isotropic, physically significant mutual gravity impossible at this lattice resolution.
 

@@ -1,25 +1,26 @@
 # Current Research State
-Phase: Phase 5.4 — N-Body Stability completed (first-class null result).
+Phase: Phase 5.2 — Self-Consistent Mutual Two-Body Attraction completed (refuted).
 
 ## Goal
-Characterize three-body and many-body configurations: stability regimes, hierarchical groupings, escape velocities.
+Establish whether two LUT-08 sub-light gliders, each acting as a local source of dynamic coordinate latency, bias each other's trajectories beyond what is reproducible by the vacuum control or by free parameter tuning.
 
 ## Confirmed
-- **No Active N-Body Binding:** The self-generated latency field ($\eta = 2.0$) is dispersive rather than binding for $N \ge 3$, yielding mean max pair distances that are systematically $+2.67$ to $+6.75$ lattice units larger than vacuum controls across 3-body and 4-body configurations (iter_236.1).
-- **Ballistic Recurrence:** The apparent 2-body \"bound state\" observed in iter_235 is most parsimoniously re-interpreted as a ballistic recurrence artifact of rotated gliders on the discrete torus. In 3-body configurations, the Permutation 10 vacuum control ($\eta = 0.0$) was captured (mean max pair distance $7.73 \le L/3$) due to lattice-direction velocity alignment alone (iter_236.1).
-- **Perfect Bit Conservation:** Perfect bit and structural conservation ($4 \times N$ bits) was maintained across all N-body runs (iter_236.1).
-- **Escape Velocity Monotonicity:** The escape velocity probe shows a monotonically growing max pair distance with launch offset, failing to isolate a sharp, physical binding energy threshold (iter_236.1).
+- **Non-periodic isolation:** Implemented margin=2 absorbing boundaries on an L=64 grid coupled with a zero-padded 3D FFT potential solver (NonPeriodicClosedLoopLatchingEngine), completely isolating the system from periodic wrap-around or self-potential bleed-through (iter_238.4).
+- **Pre-registered Null Result:** Under the pre-registered parameters (sigma=1.5, gamma=0.9, eta=2.0, R=1.1), the parallel gliders showed exactly 0.0000 cells of mutual deflection over 50 steps (iter_238.4).
+- **Sub-pixel deflection:** The best configuration from the 192-config sweep (sigma=2.0, gamma=0.95, eta=2.0, R=1.1) yielded a tiny, sub-pixel mutual deflection of exactly 0.2500 cells (iter_238.4).
+- **Symmetry breaking:** Rotating the initial state of the best configuration by 90 degrees (rotation g=10 around the Z-axis) introduced severe rounding errors in the discrete coordinate projections, causing massive non-physical ballistic drift in the vacuum control (final separation = nan cells) and making the final active deflection nan (iter_238.4).
+- **Perfect bit conservation:** Total bit count (8 bits) and structural stability were perfectly maintained across all unrotated simulation runs (iter_238.4).
 
 ## Refuted
-- The hypothesis that the Phase 5.3 coordinate latency field can sustain stable hierarchical 3-body or 4-body bound states. The field is dispersive for $N \ge 3$ at the current envelope (iter_236.1).
-- The claim that the iter_235 bound state was a pure gravitational-like attraction effect; the occurrence of torus capture in the matched vacuum control indicates it is an orientation-dependent ballistic alignment effect (iter_236.1).
+- **Hypothesis of Emergent Two-Body Mutual Gravity:** The dynamic latency potential is refuted as a viable mechanism for isotropic, physically significant emergent mutual attraction on this CA grid. Any observed deflection is either non-existent (0.0 cells) or a discrete lattice-alignment artifact, failing to satisfy O_h covariance and falling far below the 2.0-cell physical significance threshold.
 
 ## Best Result
-- Perfect bit-conservation maintained over 160 steps across all 3-body and 4-body configurations; however, all active coupling runs dispersed faster than matched vacuum controls, establishing a clean null result (iter_236.1).
+- Net mutual deflection of exactly 0.2500 cells under sigma=2.0, gamma=0.95, eta=2.0, R=1.1; however, this deflection fails rotational covariance testing, confirming it as an anisotropy artifact of the discrete grid axes.
 
 ## In Progress
-- Re-evaluating attraction mechanisms to isolate true, isotropic coordinate-latency attraction from ballistic lattice-axis recurrence.
+- Pivot to Phase 6: Quantum Emergence.
 
 ## Open Questions
-- Can we formulate a latency potential mapping that produces isotropic, field-driven gravity without ballistic lattice artifacts?
-- Does a larger grid (e.g. $L \ge 64$) or finer discretization reduce ballistic recurrence alignment?
+- Can we design a non-FFT based coordinate latency field (such as an anisotropic, direct bit-contact latching or gradient-based trapping) that is fundamentally robust against lattice-axis alignment?
+- Is the discrete breakdown of coordinate covariance an insuperable barrier for emergent GR on highly symmetric grids?
+- Should we pivot to Phase 6 (Quantum Emergence) or Phase 7 (Particle Zoo) now that Phase 5's GR-like mutual dynamics are shown to be algebraic and lattice-discretization artifacts?

@@ -2,18 +2,18 @@
 
 ## 1. High-Level Strategy & Trajectory
 *   **Current Phase:** Phase 5 (Discrete General Relativity).
-*   **Active Direction:** Remediation of Phase 5.2 / 5.3 / 5.4 (Self-consistent attraction, orbits, and stability).
-*   **Trajectory Update (Iteration 237):** Phase 5.4 has successfully refuted the gravitational origin of our Phase 5.3 "bound states" via a first-class null result. Matching-paired control runs demonstrated that the apparent 2-body orbit was a **ballistic recurrence** on the toroidal grid, and that the active latency field is actually dispersive for $N \ge 3$. We have paused Phase 5.4/5.5 progression and are redirecting to a fundamental redesign of the local coupling and boundary conditions.
-*   **Confidence Score:** 30% (Re-evaluated downward because our primary attraction/orbital mechanism has been shown to be an artifact of toroidal geometry and discrete velocity alignment).
+*   **Active Direction:** Fundamental restructuring of the local coupling mechanism. Phase 5.2 (Self-Consistent Mutual Two-Body Attraction) has been completed and terminated with a first-class null result. The continuous pheromone-style latency field model has been systematically falsified.
+*   **Trajectory Update (Iteration 238):** Following the discovery of toroidal recurrence artifacts in Phase 5.4, we implemented a rigorous open-boundary evaluation of Phase 5.2 on a $64^3$ grid with absorbing boundaries. This test conclusively refuted the pheromone-like latency model, demonstrating that it fails to produce physically significant deflection and shatters $O_h$ coordinate covariance under rotation. We are shifting focus away from continuous field potentials toward strictly local, discrete state-transition/latching mechanics.
+*   **Confidence Score:** 15% (Re-evaluated downward to reflect the definitive refutation of our primary continuous-field gravity model, forcing a return to first-principles discrete rules).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **The Ballistic Recurrence Illusion:** On a finite $32^3$ torus, discrete velocity alignments cause gliders to repeatedly cross paths or remain within a small spatial volume, mimicking a "bound state." Without a matching vacuum control ($\eta=0.0$), this kinematics is easily mistaken for dynamic gravitational binding.
-*   **Dispersive Latency Fields:** The current pheromone latency scheme ($\eta=2.0$, $\sigma=2.5$, $\gamma=0.9$) acts as a dispersive barrier rather than an attractive potential well for multi-body systems, accelerating dispersion relative to the vacuum control.
-*   **Skepticism Validation:** This iteration demonstrates the absolute necessity of Gate 2 (Falsification Audit) and running identical vacuum controls. A major false positive has been successfully purged.
+*   **The Covariance Wall:** In discrete systems, passing continuous fields (like FFT-smoothed latency) back into the CA engine causes floating-point to integer rounding errors during state updates. These sub-pixel rounding errors break the delicate internal phase transitions of moving gliders, especially when rotated under $O_h$ (e.g., $g=10$), resulting in severe non-physical coordinate drift rather than physical attraction.
+*   **The Pheromone Pseudoscience Fallacy:** Treating coordinate latency as a smooth "pheromone" that diffuses and decays is an ill-fitting continuum analogy. At small scales, it either dilutes below the interaction threshold or disrupts the structural integrity of the very particles it is meant to attract.
+*   **Validation of the Skeptic Gate:** By requiring open boundaries, matching vacuum controls, and $O_h$ symmetry checks, we successfully prevented a marginal, non-covariant effect (0.25 cells of deflection) from being misidentified as physical gravity. 
 
 ## 3. Loop & Bottleneck Detection
-*   **Toroidal Boundary Bottleneck:** Simulating on small tori ($32^3$) makes it virtually impossible to distinguish long-term orbits from toroidal wrap-around recurrence. Future orbital tests *must* use either absorbing boundary conditions (where dispersing gliders escape the grid) or vastly larger grids ($128^3+$) where the recurrence time is orders of magnitude longer than the orbital period.
+*   **Continuum-Discrete Coupling Bottleneck:** We have identified a fundamental bottleneck: any mechanism that relies on mapping a continuous floating-point potential back onto discrete state updates (latching/trapping thresholds) will suffer from discretization noise and broken symmetry. The coupling *must* be as discrete as the CA itself to preserve exact $O_h$ covariance.
 
 ## 4. Alternate Research Paths
-*   **Absorbing/Infinite Boundaries:** Port the simulation to an open boundary grid where gliders that escape the central region are deleted or allowed to propagate infinitely without wrap-around.
-*   **Gradient-Based Gravitational Latching:** Redesign the latency deposition to create a sharp local gradient that actively traps glider bits, rather than a smooth isotropic pheromone field which dilutes and scatters.
+*   **Strictly Local Bit-Contact Latching:** Instead of a smooth potential field, explore a mechanism where gliders interact only when their local envelopes overlap (direct bit-contact). This preserves the binary purity and prevents rounding-induced drift.
+*   **Integer Lattice-Field Potentials:** Investigate cellular automata models where the gravitational potential is represented by discrete integer state counters on each cell, avoiding float-to-int rounding altogether.

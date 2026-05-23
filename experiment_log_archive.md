@@ -9730,3 +9730,30 @@ The analysis in 216.3 confirmed that the fitness function used for its discovery
 
 **Notes:** Course correction complete. Platform stable, v<c claim refuted, and a new, more robust fitness function is ready for the next search.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.16991
+hypothesis: 'phase-218: A ''leaky'' fitness function that provides partial credit
+  for bit conservation will create a searchable gradient, enabling evolution from
+  a random start to make progress towards a v<c glider.'
+input_tokens: 44213
+iter: 217
+metrics: {}
+output_tokens: 1444
+status: unknown
+```
+
+## iter_217: phase-218: A 'leaky' fitness function that provides partial credit for bit conservation will create a searchable gradient, enabling evolution from a random start to make progress towards a v<c glider.
+
+**Analysis:** The previous phase (217) conclusively refuted the hypothesis that a 'warm-start' population could find a `v<c` glider using the strict `SubLightFitness` function. The result was a completely flat, all-zero fitness landscape, providing no gradient for evolution. The root cause is the punitive nature of the fitness function: any single failure in bit conservation or displacement at any checkpoint re
+
+**Status:** unknown
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** 
+
