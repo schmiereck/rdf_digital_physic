@@ -9826,3 +9826,38 @@ status: code_error
 
 **Notes:** Phase completely blocked by a persistent platform-level code error. No scientific progress was possible.
 
+
+---
+```yaml
+cached_tokens: 269627
+cost_usd: 0.62729
+hypothesis: 'phase-219: The v<c glider from iter_218 is a reproducible, characterizable
+  object.'
+input_tokens: 365339
+iter: 219
+metrics:
+  gif_analysis_active_cells_estimate: 3
+  net_centroid_dx_cells_approx: -0.03
+  reproduction_final_bit_count: 3
+output_tokens: 5369
+status: ok
+```
+
+## iter_219: phase-219: The v<c glider from iter_218 is a reproducible, characterizable object.
+
+**Analysis:** The goal of this phase was to characterize the v<c glider discovered in iter_218. The phase turned into an extended debugging and validation effort after initial reproduction attempts failed.
+
+- Sub-agents 219.1-219.6 failed to reproduce the 10-bit moving glider, instead consistently producing a 3-bit still life. This process uncovered multiple issues, including incorrect agent behavior and a mist
+
+**Status:** ok
+
+**Metrics:** `{'net_centroid_dx_cells_approx': -0.03, 'gif_analysis_active_cells_estimate': 3, 'reproduction_final_bit_count': 3}`
+
+**Experimenter view:** This phase definitively debunked the supposed v<c glider from iter_218.
+
+Initial attempts to extract the glider's structure (219.1-219.6) were chaotic, but consistently produced a trivial 3-bit stationary object, contradicting the original report of a 10-bit moving particle. The discrepancy was initially blamed on incorrect seed particles.
+
+The final sub-agent (219.7) performed a direct analysis o
+
+**Notes:** Phase successfully debunked the v<c glider from iter_218, revealing it as a fitness function exploit.
+
