@@ -3,43 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 43034
-cost_usd: 0.25018
-hypothesis: 'phase-218: A ''leaky'' fitness function, which penalizes rather than
-  rejects imperfect bit conservation, creates a searchable gradient that enables the
-  evolutionary discovery of a stable v<c glider.'
-input_tokens: 97866
-iter: 218
-metrics:
-  avg_velocity: 0.639
-  best_fitness: 84.339
-  generations_to_champion: 4
-  total_conservation_score: 1.0
-output_tokens: 1963
-status: ok
-```
-
-## iter_218: phase-218: A 'leaky' fitness function, which penalizes rather than rejects imperfect bit conservation, creates a searchable gradient that enables the evolutionary discovery of a stable v<c glider.
-
-**Analysis:** This phase successfully tested and confirmed the core hypothesis: that a 'leaky' fitness function could provide the necessary gradient to discover a `v<c` glider.
-
-Sub-agent 218.1 successfully implemented the `LeakySubLightFitness` function, which replaces the hard-rejection of imperfect bit-conservation with a smooth penalty factor.
-
-Sub-agent 218.2 immediately put this function to the test in a 
-
-**Status:** ok
-
-**Metrics:** `{'best_fitness': 84.339, 'avg_velocity': 0.639, 'total_conservation_score': 1.0, 'generations_to_champion': 4}`
-
-**Experimenter view:** The 'leaky' fitness function, implemented in sub-task 218.1, proved highly effective. It transformed the search for a `v<c` glider from an impossible search on a flat, punitive landscape into a tractable optimization problem.
-
-The evolutionary search in 218.2 was a resounding success. The fitness of the champion rule rose from 42.3 to 84.3 in just four generations, demonstrating a strong evolution
-
-**Notes:** Major breakthrough: The 'leaky' fitness function solved the search problem, leading to the first stable v<c glider.
-
-
----
-```yaml
 cached_tokens: 541369
 cost_usd: 1.1934
 hypothesis: 'phase-219: All scientific progress was blocked by a persistent, unrecoverable
@@ -1032,4 +995,37 @@ The results establish a definitive first-class null result, refuting the emergen
 1. Under the pre-registered configuration (sigma=1.5, gamma=0.90, eta=2.0, R=1.1), the net de
 
 **Notes:** Pre-registered mutual attraction hypothesis refuted. Discretization noise and broken coordinate covariance make isotropic, physically significant mutual gravity impossible at this lattice resolution.
+
+
+---
+```yaml
+cached_tokens: 1143529
+cost_usd: 0.5387
+hypothesis: 'phase-239: Characterize the classical phase-dependent scattering and
+  periodic annihilation cross-sections of the v=0.469c sub-light glider'
+input_tokens: 1377401
+iter: 239
+metrics:
+  annihilation_count: 5
+  chaos_count: 38
+  period_6_matches_shifted_t: 9
+  scattering_deflection_count: 8
+  sweep_size: 117
+  transmission_count: 66
+output_tokens: 6314
+status: ok
+```
+
+## iter_239: phase-239: Characterize the classical phase-dependent scattering and periodic annihilation cross-sections of the v=0.469c sub-light glider
+
+**Analysis:** We pivoted from the emergent gravity of Phase 5 (which was refuted due to lattice-anisotropy and discretization artifacts in iter_238) to Phase 6/7, choosing to perform a highly rigorous classical characterization of the collision cross-sections of the v=0.469c sub-light glider. This establishes the necessary "particle interaction" foundation for Phase 7 (Particle Zoo) and potential discrete conta
+
+**Status:** ok
+
+**Metrics:** `{'sweep_size': 117, 'annihilation_count': 5, 'transmission_count': 66, 'scattering_deflection_count': 8, 'chaos_count': 38, 'period_6_matches_shifted_t': 9}`
+
+**Experimenter view:** A systematic characterization of the classical phase-dependent scattering and annihilation cross-sections of the v=0.469c sub-light speed glider on a 2D hex grid was completed (iter_239.1, iter_239.2).
+The sweep covered 117 configurations over transverse spatial offsets \Delta y \in [-4, 4] and relative temporal phase delays \Delta t \in [0, 12] on a 256x256 grid, eliminating all toroidal boundary
+
+**Notes:** Successfully characterized the classical phase-dependent scattering of the v=0.469c glider, confirming a perfect period-6 phase-coherent structure matching the glider's internal cycle.
 

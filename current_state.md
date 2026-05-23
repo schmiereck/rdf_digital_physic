@@ -1,26 +1,27 @@
 # Current Research State
-Phase: Phase 5.2 — Self-Consistent Mutual Two-Body Attraction completed (refuted).
+Phase: Phase 6.1 — Statistical Superposition completed / Path A: Classical Soliton Scattering Characterization completed.
 
 ## Goal
-Establish whether two LUT-08 sub-light gliders, each acting as a local source of dynamic coordinate latency, bias each other's trajectories beyond what is reproducible by the vacuum control or by free parameter tuning.
+Characterize the phase-dependent collision dynamics of the v=0.469c sub-light speed glider on the 2D hexagonal lattice under Rule A (champion_rule_perfect.json), establishing classical soliton scattering and annihilation cross-sections.
 
 ## Confirmed
-- **Non-periodic isolation:** Implemented margin=2 absorbing boundaries on an L=64 grid coupled with a zero-padded 3D FFT potential solver (NonPeriodicClosedLoopLatchingEngine), completely isolating the system from periodic wrap-around or self-potential bleed-through (iter_238.4).
-- **Pre-registered Null Result:** Under the pre-registered parameters (sigma=1.5, gamma=0.9, eta=2.0, R=1.1), the parallel gliders showed exactly 0.0000 cells of mutual deflection over 50 steps (iter_238.4).
-- **Sub-pixel deflection:** The best configuration from the 192-config sweep (sigma=2.0, gamma=0.95, eta=2.0, R=1.1) yielded a tiny, sub-pixel mutual deflection of exactly 0.2500 cells (iter_238.4).
-- **Symmetry breaking:** Rotating the initial state of the best configuration by 90 degrees (rotation g=10 around the Z-axis) introduced severe rounding errors in the discrete coordinate projections, causing massive non-physical ballistic drift in the vacuum control (final separation = nan cells) and making the final active deflection nan (iter_238.4).
-- **Perfect bit conservation:** Total bit count (8 bits) and structural stability were perfectly maintained across all unrotated simulation runs (iter_238.4).
+- **Non-linear Soliton Interactions (iter_239.1):** Swept 117 configurations over transverse spatial offsets $\Delta y \in [-4, 4]$ and relative temporal phase delays $\Delta t \in [0, 12]$ using a non-periodic $256 \times 256$ grid. The active joint state is a highly non-linear interaction, rather than a trivial bitwise OR of independent controls.
+- **Period-6 Phase Periodicity (iter_239.2):** Across all 9 transverse spatial offsets, the collision outcomes exhibit perfect period-6 periodicity for phase delays $\Delta t \ge 1$ (e.g., $\Delta t$ and $\Delta t + 6$ yield identical classifications). This temporal period of 6 steps perfectly matches the 6-step internal state cycle of the sub-light speed glider.
+- **Discrete Annihilation Channels (iter_239.1):** Perfect mutual annihilation (total bit count = 0, representing complete destructive interference/scattering) occurs periodically at $\Delta y = 1$ for $\Delta t \in \{1, 7\}$ and at $\Delta y = 3$ for $\Delta t \in \{4, 10\}$.
+- **Discrete Deflection Channels (iter_239.1):** Stable scattering and deflection (soliton deflection) occurs at periodic intervals, specifically at $\Delta y = 1$ for $\Delta t \in \{3, 5, 9, 11\}$ and at $\Delta y \in \{0, 2\}$ for $\Delta t \in \{4, 10\}$.
+- **Publication-quality Visualization (iter_239.2):** Generated a high-resolution 2D outcome phase diagram (`scattering_phase_diagram.png`) displaying the structural boundaries between Annihilation, Transmission, Scattering/Deflection, and Chaos.
 
 ## Refuted
-- **Hypothesis of Emergent Two-Body Mutual Gravity:** The dynamic latency potential is refuted as a viable mechanism for isotropic, physically significant emergent mutual attraction on this CA grid. Any observed deflection is either non-existent (0.0 cells) or a discrete lattice-alignment artifact, failing to satisfy O_h covariance and falling far below the 2.0-cell physical significance threshold.
+- **Phase Insensitivity:** The hypothesis that glider collisions are phase-insensitive is refuted. Changing the relative temporal delay $\Delta t$ by a single step completely alters the collision dynamics (toggling between annihilation, chaotic explosion, and stable deflection).
+- **Linear Superposition:** The hypothesis that the combined simulation of two gliders is a trivial linear superposition of independent gliders is refuted for all interacting configurations ($\Delta y \in [-2, 2]$ and $\Delta y = 3$ at even delays).
 
 ## Best Result
-- Net mutual deflection of exactly 0.2500 cells under sigma=2.0, gamma=0.95, eta=2.0, R=1.1; however, this deflection fails rotational covariance testing, confirming it as an anisotropy artifact of the discrete grid axes.
+- Complete, rigorous 2D phase diagram (`scattering_phase_diagram.png`) of 117 collision configurations, demonstrating perfect period-6 phase-coherent soliton scattering and periodic mutual annihilation.
 
 ## In Progress
-- Pivot to Phase 6: Quantum Emergence.
+- Pivot to Phase 7: Particle Zoo (cataloging other stable propagating patterns, conserved quantities, and pair production).
 
 ## Open Questions
-- Can we design a non-FFT based coordinate latency field (such as an anisotropic, direct bit-contact latching or gradient-based trapping) that is fundamentally robust against lattice-axis alignment?
-- Is the discrete breakdown of coordinate covariance an insuperable barrier for emergent GR on highly symmetric grids?
-- Should we pivot to Phase 6 (Quantum Emergence) or Phase 7 (Particle Zoo) now that Phase 5's GR-like mutual dynamics are shown to be algebraic and lattice-discretization artifacts?
+- Do other discovered glider species (e.g., LUT-08 on 3D FCC) exhibit similar phase-coherent, period-matched classical soliton scattering?
+- Can we define and measure additive charges or conserved quantities that are invariant across these discrete deflection events?
+- Can we simulate high-energy collisions of gliders that lead to clean pair production of new stable glider species?
