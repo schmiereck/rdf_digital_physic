@@ -205,4 +205,4 @@ For each W in {4, 5, 6, 7, 8}: population 50, 10 generations. Initialization wit
 - max extent: 3
 - periodic shape: True, period: 40
 
-## Runtime: 592.0 s
+## Runtime: 570.6 s

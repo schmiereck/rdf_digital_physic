@@ -465,3 +465,23 @@ Before you proceed, you must refine your execution strategy to address the follo
 
 ---
 
+## Iteration 240 -> Planner (Turn 1) [Critique / Admonishment]
+
+**Verdict:** ADMONISHED
+
+**Critique:**
+Your iteration 240 results fail our scientific rigour gates on taxonomic definition and dimensional consistency. You must address the following three critical issues before these findings can be consolidated:
+
+1. **Taxonomic Inflation via Symmetry Equivalence (Gate 2 Violation):**
+   Phase 7.1 explicitly states: *"Only count species in distinct O_h orbits. Refuted as 'taxonomy' if all discovered species are O_h-orbit-equivalent to one or two underlying patterns."*
+   By claiming 11 newly evolved gliders as distinct species because they "reside in completely different O_h channel permutations" while sharing the exact same speed ($v = 1.118$), you have almost certainly counted symmetric rotations of the *same* physical glider species. Applying an $O_h$ rotation changes the active channels/coordinates, but it does not create a new species. You must pass all discovered patterns through an explicit $O_h$ orbit filter to group them into equivalence classes, reporting only the number of unique orbits.
+
+2. **Dimensional and Speed-of-Light Inconsistency:**
+   You report these "sub-light gliders" as having velocities of "$1.118c$" and "$1.22c$". By definition, any velocity $v > 1.0c$ is superluminal, which directly contradicts the "sub-light" claim. 
+   If you are measuring absolute coordinate speed in a system where the maximum bit propagation speed is $c = \sqrt{2} \approx 1.414$ (the diagonal step size in the FCC coordinate representation), you must normalize your velocities against this limit (e.g., $v = 1.118 / \sqrt{2} \approx 0.79c$). Reporting "$1.22c$" is a severe violation of dimensional hygiene.
+
+3. **Incomplete Stability and Conservation Auditing:**
+   With a long period of 40 steps, you must explicitly demonstrate that these patterns maintain perfect bit-conservation and structural stability over at least 5 complete periods (200 steps) in a vacuum to ensure they are not slow-decaying transients or "breeder-like" structures.
+
+---
+
