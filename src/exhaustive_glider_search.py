@@ -7,11 +7,11 @@ under the LUT-08 rule on the 3D FCC lattice.
 
 Methods:
   A. Systematic Connected Sweep (W=4, W=5) over connected cell shapes of
-     size 1, 2, 3, with all distributions of W bits across the 12 channels
+     size 1 and 2, with all distributions of W bits across the 12 channels
      of those cells, deduplicated by canonical O_h orbit representative.
-  B. Massive Randomized Compact Search (W=4..8) generating 1000 unique
+  B. Randomized Compact Search (W=4..8) generating 300 unique
      compact contiguous random particles per W, deduplicated by orbit.
-  C. Genetic Algorithm (W=4..8) with population 100 over 20 generations,
+  C. Genetic Algorithm (W=4..8) with population 50 over 10 generations,
      using compact random initialization, connectedness-preserving mutation,
      and contiguous BFS-crossover. Fitness = displacement norm (zero if
      extent > 6); periodic orbits get a positive bonus.
@@ -460,14 +460,14 @@ def random_compact_particle(rng, W, max_extent=3, max_tries=80):
 # Method A: Systematic connected sweep
 # ============================================================
 
-def method_a(known_canon, sim_budget_per_W=60_000):
+def method_a(known_canon, sim_budget_per_W=60_000, max_size=2):
     """Systematic sweep. Enumerates ALL unique orbits but caps simulation budget
-    per W by random sampling if needed (the enumeration would otherwise produce
-    millions of orbits for W=5)."""
+    per W by random sampling if needed. With max_size=2, this is restricted to
+    all 1-cell and 2-cell configurations (compact and fast)."""
     print("\n=== Method A: Systematic Connected Sweep ===")
-    cell_shapes = enumerate_connected_cell_shapes(3)
+    cell_shapes = enumerate_connected_cell_shapes(max_size)
     counts = {sz: len(cell_shapes[sz]) for sz in cell_shapes}
-    print(f"  Cell shape counts (by size): {counts}")
+    print(f"  Cell shape counts (by size, max_size={max_size}): {counts}")
 
     gliders = []
     total_orbits_enum = 0
@@ -477,7 +477,7 @@ def method_a(known_canon, sim_budget_per_W=60_000):
     rng = np.random.default_rng(31415)
     for W in (4, 5):
         canon_to_particle = {}
-        for size in range(1, 4):
+        for size in range(1, max_size + 1):
             if size > W:
                 continue
             for shape in cell_shapes[size]:
@@ -533,7 +533,7 @@ def method_a(known_canon, sim_budget_per_W=60_000):
 # Method B: Massive randomized compact search
 # ============================================================
 
-def method_b(known_canon, n_target=1000):
+def method_b(known_canon, n_target=300):
     print("\n=== Method B: Massive Randomized Compact Search ===")
     gliders = []
     total_unique_particles = 0
@@ -660,7 +660,7 @@ def fitness(p):
     return base, res
 
 
-def method_c(known_canon, pop_size=100, n_gens=20):
+def method_c(known_canon, pop_size=50, n_gens=10):
     print("\n=== Method C: Genetic Algorithm ===")
     gliders = []
     for W in WEIGHT_HIGH:
@@ -830,8 +830,8 @@ def main():
         },
         "method_c": {
             "gliders": len(gliders_c),
-            "population": 100,
-            "generations": 20,
+            "population": 50,
+            "generations": 10,
         },
         "total_unique_orbit_gliders": len(unique),
         "new_orbit_gliders_count": len(new_orbits),
@@ -884,7 +884,7 @@ def main():
     report.append("")
     report.append("## Method A — Systematic Connected Sweep")
     report.append("")
-    report.append("Enumerated all connected cell-coordinate shapes of size 1, 2, and 3, "
+    report.append("Enumerated all connected cell-coordinate shapes of size 1 and 2, "
                   "where connectivity is defined by the 12 engine SHIFTS displacements. "
                   "For each cell-shape and each W in {4, 5}, every assignment of W bits "
                   "across the 12 channels of those cells was enumerated (each cell must "
@@ -898,7 +898,7 @@ def main():
     report.append("")
     report.append("## Method B — Massive Randomized Compact Search")
     report.append("")
-    report.append("For each W in {4, 5, 6, 7, 8}, generated 1000 unique compact "
+    report.append("For each W in {4, 5, 6, 7, 8}, generated 300 unique compact "
                   "contiguous random particles (built by alternating bit-addition "
                   "within current cells and growth into adjacent cells, bounded to "
                   "max coordinate extent 3). Particles were deduplicated by orbit and "
@@ -910,7 +910,7 @@ def main():
     report.append("")
     report.append("## Method C — Genetic Algorithm")
     report.append("")
-    report.append("For each W in {4, 5, 6, 7, 8}: population 100, 20 generations. "
+    report.append("For each W in {4, 5, 6, 7, 8}: population 50, 10 generations. "
                   "Initialization with compact random particles. Mutation shifts one "
                   "bit to a neighboring cell/channel and rejects connectivity loss. "
                   "Crossover BFS-picks W contiguous bits from the union of parents. "
