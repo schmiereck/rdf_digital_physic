@@ -1,0 +1,1 @@
+Run `python3 src/find_perfect_permutation.py` and display its complete output to see how it achieves zero error.
