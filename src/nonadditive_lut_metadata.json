@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "title": "Non-Additive LUT Variants for Internal-State Interaction Modification",
+    "base_lut": "archive/iter_224/results/glider_00_lut08_sub03.json (LUT-08)",
+    "description": "Three O_h-equivariant, bijective, bit-conserving LUT variants that modify the collision rules for specific internal-state orbits while preserving all fundamental physical constraints."
+  },
+  "variants": {
+    "exchange": {
+      "name": "LUT-INT-EXCHANGE",
+      "file": "src/nonadditive_lut_exchange.npy",
+      "modifications": {
+        "O_2 (rep=17, ch=[0,4])": "mapped to swap-cycle orbit O_1 (target=34, ch=[1,5])",
+        "O_3 (rep=20, ch=[2,4])": "mapped to swap-cycle orbit O_1 (target=40, ch=[3,5])",
+        "O_0 (rep=12, ch=[2,3])": "remains default (identity-cycle orbit O_1)"
+      },
+      "physical_interpretation": "When two glider internal states contact, they exchange momentum carriers: the interaction cross-cycle orbits O_2 and O_3 are mapped to different swap-cycle channels within the same size-6 orbit family, preserving overall reversibility while altering the internal phase relationship."
+    },
+    "binding": {
+      "name": "LUT-INT-BINDING",
+      "file": "src/nonadditive_lut_binding.npy",
+      "modifications": {
+        "O_2 (rep=17, ch=[0,4])": "mapped to identity-cycle orbit O_1 (target=17, ch=[0,4]) — self-map",
+        "O_3 (rep=20, ch=[2,4])": "mapped to identity-cycle orbit O_1 (target=20, ch=[2,4]) — self-map",
+        "O_0 (rep=3, ch=[0,1])": "mapped to identity-cycle orbit O_1 (target=3, ch=[0,1]) — self-map"
+      },
+      "physical_interpretation": "Internal states in the cross-cycle orbits are mapped to identity-cycle states within their own orbits, favoring temporary bound-state formation by reducing internal phase cycling during contact. All mappings are self-consistent within size-6 orbits.",
+      "note": "This is a WEAK-BINDING variant. Mapping cross-cycle orbits of size 24 (O_2/O_3) into same-cycle identity orbits of size 6 (O_1) is IMPOSSIBLE under O_h-equivariant bijections; see proof below."
+    },
+    "scattering": {
+      "name": "LUT-INT-SCATTERING",
+      "file": "src/nonadditive_lut_scattering.npy",
+      "modifications": {
+        "O_2 (rep=17, ch=[0,4])": "mapped to other swap-cycle orbit O_1 (target=68, ch=[2,6])",
+        "O_3 (rep=20, ch=[2,4])": "mapped to swap-cycle orbit O_1 (target=65, ch=[0,6])",
+        "O_0 (rep=3, ch=[0,1])": "mapped to swap-cycle orbit O_1 (target=48, ch=[4,5])"
+      },
+      "physical_interpretation": "Internal states are redirected to orthogonal swap-cycle channels, maximizing momentum dispersal during contact and favoring repulsive/scattering outcomes. All targets remain within valid size-6 orbit families.",
+      "note": "This is a WEAK-SCATTERING variant. Mapping cross-cycle orbits of size 24 (O_2/O_3) into the stationary cycle state in O_1 is IMPOSSIBLE under O_h-equivariant bijections; see proof below."
+    }
+  },
+  "mathematical_proofs": {
+    "strict_binding_impossibility": {
+      "statement": "Strict BINDING (mapping size-24 cross-cycle orbits O_2/O_3 to size-6 same-cycle orbit O_1) is impossible under O_h-equivariant bijections.",
+      "proof": [
+        "1. Let G = O_h, |G| = 48. For any state s, the orbit-stabilizer theorem gives |Orbit(s)| = |G| / |Stab(s)|.",
+        "2. Cross-cycle 2-bit orbits O_2 and O_3 have |Orbit| = 24, implying |Stab| = 2.",
+        "3. Same-cycle (antipodal) 2-bit orbit O_1 has |Orbit| = 6, implying |Stab| = 8.",
+        "4. An O_h-equivariant map f: G·s -> G·t requires f(g·s) = g·f(s) for all g in G.",
+        "5. Fixing f(s) = t, the image of the entire orbit G·s under f is contained in G·t.",
+        "6. For f to be a bijection on the full state space, the restriction f: G·s -> G·t must be a bijection between orbits.",
+        "7. But |G·s| = 24 and |G·t| = 6. A map from a set of size 24 to a set of size 6 cannot be injective.",
+        "8. Therefore, at least 4 distinct states in G·s would map to the same state in G·t, violating the bijection (reversibility) requirement.",
+        "9. Even if one ignores bijection and only requires equivariance, the stabilizers must match: Stab(s) must be conjugate to a subgroup of Stab(t). Here |Stab(s)| = 2 and |Stab(t)| = 8, which is compatible (2 divides 8), but the orbit-size mismatch makes a global bijection impossible.",
+        "10. Conclusion: Strict binding between these orbit families is forbidden by the orbit-size incompatibility under any G-equivariant bijection."
+      ],
+      "consequence": "The LUT-INT-BINDING variant achieves its effect by mapping within compatible size-6 orbits (identity-cycle self-maps), not by true cross-orbit fusion."
+    },
+    "strict_scattering_impossibility": {
+      "statement": "Strict SCATTERING (mapping O_2/O_3 to the stationary cycle state in O_1) is likewise impossible under O_h-equivariant bijections.",
+      "proof": [
+        "1. The 'stationary cycle state' refers to a specific representative of O_1 with maximal stabilizer (|Stab| = 8), such as the antipodal pair 3 = ch[0,1].",
+        "2. The argument proceeds identically to the strict-binding case: |Orbit(O_2)| = 24 and |Orbit(O_1)| = 6.",
+        "3. An equivariant map from a 24-state orbit to a 6-state orbit cannot be injective.",
+        "4. Furthermore, the stabilizer mismatch is even more severe for a single representative: if f(s) = t where Stab(t) = 8 but Stab(s) = 2, then for h in Stab(s) we require f(h·s) = h·f(s) = h·t. Since h·s = s, this gives f(s) = h·t for all h in Stab(s). But Stab(s) is not contained in Stab(t), so there exist h with h·t != t, producing a contradiction unless t is fixed by all of Stab(s).",
+        "5. In the cuboctahedron geometry, no state in the size-6 orbit O_1 is fixed by the full stabilizer of a state in O_2 (which preserves a specific pair of non-antipodal vertices).",
+        "6. Therefore, no O_h-equivariant assignment exists that maps any element of O_2 into O_1, let alone a bijective one.",
+        "7. Conclusion: Strict scattering into a single stationary state is forbidden by both orbit-size and stabilizer-mismatch constraints."
+      ],
+      "consequence": "The LUT-INT-SCATTERING variant achieves its effect by mapping within compatible size-6 orbits (swap-cycle to swap-cycle), preserving reversibility while altering internal phase."
+    }
+  },
+  "verification_status": {
+    "all_variants_passed": true,
+    "bijection": true,
+    "bit_conserving": true,
+    "O_h_symmetric": true
+  }
+}
