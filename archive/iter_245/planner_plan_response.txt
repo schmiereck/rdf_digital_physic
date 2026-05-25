@@ -1,0 +1,177 @@
+I'll start by reviewing the current state of the project, the relevant past iterations, and the codebase to formulate a rigorous plan for Phase 7.3.
+
+[Tool Call: read_iteration({'iter_num': 242})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 244})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+Let me try the tools again:
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: read_file({'path': 'src'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+The tools appear to be temporarily unavailable. Based on the extensive context provided in the user message (goal.md, current_state.md, and iteration history), I have enough information to formulate a rigorous plan for Phase 7.3.
+
+Let me review what I know:
+
+**Phase 7.2 (completed in iter_242) established:**
+- LUT-08 has chirality alternating -4.0 (even) / +2.0 (odd)
+- Spatial reflection negates chirality (reflected_chi_even=4.0, reflected_chi_odd=-2.0)
+- 10/10 elastic collisions conserve chirality and sub-lattice parities
+- Sub-lattice occupancy vector: (0,1,1,2) even / (2,1,1,0) odd
+
+**Phase 7.3 (attempted iter_243, 244) blocked by token limits twice.**
+
+**Key technical insight from iter_242:** The spatially-reflected LUT-08 pattern IS already stable under the forward LUT-08 rule (since the rule is O_h-symmetric). The CPT-conjugate is therefore constructible as the reflected glider with opposite velocity direction.
+
+Now let me think carefully about the hypothesis. The critical question is not just "can we build an antiparticle" (the reflected glider already works) but **does particle-antiparticle annihilation differ qualitatively from particle-particle elastic scattering?** This is what would make the antiparticle concept physically meaningful on the lattice, rather than just a relabeling.
+
+Let me also check what the iter_242 collision configurations covered — the 10/10 elastic collisions were all same-chirality (particle-particle). Opposite-chirality head-on collisions have NOT been tested yet. This is the gap Phase 7.3 must fill.
+
+Here is my analysis and plan:
+
+---
+
+## Analysis
+
+**What we know (confirmed):**
+1. LUT-08 is a 4-bit sub-light glider on 3D FCC with O_h-symmetric LUT-08 rule
+2. Spatial reflection produces a stable enantiomer with opposite chirality
+3. Same-chirality (particle-particle) collisions are 100% elastic across 10 configurations
+4. Chirality and sub-lattice parities are additively conserved in same-chirality collisions
+
+**What we DON'T know:**
+1. Whether opposite-chirality (particle-antiparticle) collisions produce annihilation vs. elastic scattering
+2. Whether the "annihilation" (if it occurs) is clean (vacuum or minimal residuals) vs. messy (debris)
+3. Whether the CPT-conjugate glider is bit-conserving during solo propagation (trivially expected but not explicitly verified)
+4. Whether any annihilation outcome is O_h-covariant or a lattice-axis artifact
+
+**Critical distinction:** If opposite-chirality collisions ALSO scatter elastically (like same-chirality), then the "antiparticle" label is merely a relabeling of the enantiomer with no physical consequence — a **null result** that must be documented honestly. If instead they annihilate, we have genuine matter-antimatter distinction.
+
+**Construction-vs-Empirical check:** Spatial reflection is a geometric operation, so the existence of the reflected glider is constructional. But the *dynamical difference* between same-chirality and opposite-chirality collisions — if it exists — would be empirical.
+
+```yaml
+hypothesis: |
+  The CPT-conjugate of the LUT-08 sub-light glider (obtained by spatial reflection
+  of its 4-bit pattern, yielding opposite chirality and reversed velocity) is a
+  stable, bit-conserving sub-light glider under the forward LUT-08 rule. When a
+  LUT-08 particle and its CPT-antiparticle undergo head-on collision, they
+  annihilate cleanly (≤2 residual non-propagating bits, total bit count conserved
+  at 8), producing exclusively v=1c single-bit propagating states. This outcome
+  qualitatively differs from same-chirality particle-particle collisions, which
+  scatter elastically (as established in iter_242).
+
+falsification_criterion: |
+  The hypothesis is refuted if ANY of the following hold:
+  1. The CPT-conjugate glider is not bit-conserving during solo propagation
+     over ≥80 steps (bit count deviates from 4 at any step).
+  2. In ≥3 out of 5 head-on particle-antiparticle collision configurations,
+     the residual non-propagating bit count exceeds 2 after the interaction
+     completes (i.e., annihilation is not "clean").
+  3. Particle-antiparticle collisions show the same elastic-scattering outcome
+     as particle-particle collisions (no qualitative matter-antimatter
+     distinction), with both gliders emerging intact post-collision.
+  4. The collision outcome is not O_h-covariant: rotating the collision axis
+     through one O_h symmetry element changes the outcome from annihilation
+     to elastic scattering, indicating a lattice-axis artifact rather than
+     genuine physics.
+
+proposed_method: |
+  Step 1: Construct CPT-antiparticle pattern.
+    - Load the LUT-08 glider JSON from iter_224 archive.
+    - Apply spatial reflection (invert one Cartesian coordinate) to obtain
+      the enantiomeric 4-bit pattern. This is the CPT-conjugate seed.
+    - Place it with velocity directed toward the original glider's approach path.
+
+  Step 2: Verify CPT-conjugate solo stability (CONTROL A).
+    - Run the reflected glider alone on a 32³ FCC grid for 80 steps under
+      the forward LUT-08 rule.
+    - Measure: bit count at each step, center-of-mass velocity, chirality
+      sequence. Must be 4 bits throughout, sub-light velocity, opposite
+      chirality to the original.
+
+  Step 3: Run particle-particle elastic collision (CONTROL B — replicate iter_242).
+    - Place two SAME-chirality LUT-08 gliders on head-on collision course.
+    - Run for 80+ steps. Confirm elastic scattering (both gliders emerge
+      intact). This validates the platform against known results.
+
+  Step 4: Run particle-antiparticle head-on collisions (EXPERIMENT).
+    - 5 collision configurations with different impact parameters (offset
+      distances 0, 1, 2, 3, 4 lattice units perpendicular to collision axis).
+    - For each: place LUT-08 particle and CPT-antiparticle on head-on course
+      on a 32³ grid. Run for 80+ steps.
+    - Measure at each step: total bit count, chirality sum, number of
+      propagating v=1c single-bit states, number of residual non-propagating
+      bits, sub-lattice occupancy.
+
+  Step 5: O_h covariance test.
+    - Take the collision configuration that shows the strongest annihilation
+      signal (if any). Rotate the collision axis through one non-trivial
+      O_h element (e.g., swap two Cartesian axes). Re-run.
+    - If the outcome changes qualitatively (annihilation → elastic), the
+      effect is a lattice-axis artifact and the hypothesis is refuted.
+
+  Step 6: Analyze and report.
+    - Compare particle-antiparticle outcomes against particle-particle control.
+    - If annihilation is observed: characterize products (bit count, velocity,
+      chirality of products). Check total chirality = 0 (particle+antiparticle
+      have equal and opposite chirality, so sum should be 0 before and after).
+    - If no annihilation (elastic scattering): document as null result. The
+      enantiomeric glider is still an "antiparticle" in the CPT sense, but
+      annihilation is not among its physical consequences on this lattice.
+
+  Files to create/modify:
+  - src/phase7_3_antiparticle.py: main experiment script (construct CPT-conjugate,
+    run solo stability, run collisions, run O_h test)
+  - src/pre_registration.md: this plan document
+  - src/phase7_3_analysis.py: post-processing and comparison against controls
+
+  Key parameters (declared in advance):
+  - Grid: 32³ FCC (sufficient per iter_232 Cavendish test precedent)
+  - Steps: 80 per run
+  - Impact parameters: 0, 1, 2, 3, 4 lattice units
+  - Clean annihilation threshold: ≤2 residual non-propagating bits
+  - O_h test: one non-trivial rotation (axis swap)
+
+pre_registration_file: "src/pre_registration.md"
+```
