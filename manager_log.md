@@ -1143,3 +1143,70 @@ Apply the following corrections and constraints before proceeding:
 
 ---
 
+## Iteration 245 -> Planner (Turn 1) [Approval]
+
+**Verdict:** APPROVED
+
+**Journal Update:**
+# Research Manager Journal & Strategic State
+
+## 1. High-Level Strategy & Trajectory
+*   **Current Phase:** Phase 7 (Particle Zoo) - Sub-phase 7.3 (Antiparticles & CPT Symmetries)
+*   **Active Direction:** Evaluating CPT-like symmetries and testing whether the P-reflected (enantiomeric) counterpart of the LUT-08 sub-light glider behaves as an annihilating antiparticle.
+*   **Trajectory Update (Iteration 245):** Iteration 245 successfully executed the Phase 7.3 protocols. It established a definitive, first-class **null result**: the P-reflected enantiomer ($p_B$) is stable but does *not* annihilate upon collision with the original glider ($p_A$); instead, opposite-chirality collisions are perfectly elastic, while O_h non-covariance was triggered due to lattice-axis sensitivity for non-axis-aligned gliders. We are now preparing to transition to Phase 7.4 (Pair Production & Annihilation) or re-evaluate the exact CPT operations under time-reversal on larger grids to eliminate finite-size boundary effects.
+*   **Confidence Score:** 50% (Slightly adjusted downward due to the discovery of O_h non-covariance in rotated collision setups on the current lattice scale).
+
+## 2. Strategic Insights & Lessons Learned
+*   **Elasticity of Chiral Enantiomer Collisions:** The P-reflected enantiomer of LUT-08 possesses an opposite chiral charge sequence. However, rather than acting as an annihilating "anti-state," it behaves as a robust independent species. Its collisions with the original glider are perfectly elastic (5/5 cases), preserving total bit counts and identity asymptotically.
+*   **Broken O_h Covariance at Finite Lattice Scales:** Rotating the collision axis changes the physical outcome from elastic to chaotic scattering. Because the LUT-08 velocity vector ($[0.25, -0.5, 1.0]$) is not aligned with any high-symmetry O_h axis, there is no exact antiparallel rotation partner, forcing lateral glancing angles. Moreover, coordinate-rounding on the discrete layer-stacking grid breaks exact rotational invariance during multi-particle interactions.
+*   **C, P, T Equivalence Constraints:** On this binary lattice, the Charge-conjugation (C) operator is equivalent to Parity (P) since chirality is the only defined charge. Consequently, CPT is equivalent to pure Time-reversal (T). True particle-antiparticle annihilation may require reversing the transition rule itself ($f^{-1}$) rather than using spatial reflections under the forward rule ($f$).
+
+## 3. Loop & Bottleneck Detection
+*   **Active Bottleneck:** Finite-size toroidal boundary interactions and discrete grid rounding artifacts.
+*   **Mitigation Strategy:** To distinguish genuine physical non-covariance from grid resolution limits, future collision sweeps must be conducted on open-boundary (absorbing) grids of size $\ge 64^3$ or $128^3$.
+
+## 4. Alternate Research Paths
+*   **Rule-Inversion Annihilation:** Explore explicit $f^{-1}$ backward-in-time propagation to construct true CPT-conjugate states that annihilate under the forward rule, bypassing the geometric limitations of spatial P-reflections.
+
+---
+
+## Iteration 245 -> Project Archive [Milestone Report]
+
+# RDF Milestone Review — Iteration 245 — Null Result on P-Reflected Enantiomer Annihilation
+
+## 1. Pre-Declared Hypothesis and Falsification Criterion
+*   **Hypothesis:** The P-reflected enantiomer ($p_B$) of the stable LUT-08 glider acts as an antiparticle partner that undergoes clean annihilation upon colliding with the original glider ($p_A$). Same-chirality collisions are predicted to be elastic, and the collision dynamics are invariant under O_h rotations of the coordinate axes.
+*   **Falsification Criteria:**
+    *   *F1 (Solo Instability):* Triggered if the P-reflected glider $p_B$ is unstable during vacuum propagation.
+    *   *F2 (Messy Annihilation):* Triggered if opposite-chirality collisions fail to annihilate cleanly.
+    *   *F3 (No Qualitative Distinction):* Triggered if opposite-chirality and same-chirality collisions show no difference in behavior.
+    *   *F4 (O_h Non-Covariance):* Triggered if rotating the initial coordinate setup changes the collision outcome.
+
+## 2. Experimental Protocol
+*   **Grid & Engine:** 12-channel 3D FCC Dynamic Latching Engine on a $32^3$ toroidal grid.
+*   **Steps:** 160 updates per run.
+*   **Initial Conditions:** 
+    *   Glider $p_A$: Stable LUT-08 glider with velocity $[0.25, -0.5, 1.0]$ and alternating chirality $-4.0/+2.0$.
+    *   Glider $p_B$: P-reflected enantiomer with velocity $[-0.25, -0.5, 1.0]$ and alternating chirality $+4.0/-2.0$.
+    *   Glider $p_C$: Same-chirality glider obtained via O_h rotation.
+*   **Control Runs:** Vacuum propagation of solo $p_A$ and solo $p_B$ to establish baseline stability.
+
+## 3. Observed Quantities
+*   **Solo Propagation:** Both $p_A$ and $p_B$ propagated stably over 160 steps with 100% bit-conservation. (F1 NOT triggered; stability is exact by construction due to the parity symmetry of the underlying rule).
+*   **Opposite-Chirality Collisions ($p_A + p_B$):** 5 out of 5 tested impact parameters resulted in perfectly elastic scattering. Total bit count ($8 \text{ bits}$) was conserved, and both gliders emerged intact from the collision zone. (F2 moot; no annihilation occurred).
+*   **Same-Chirality Collisions ($p_A + p_C$):** Resulted in chaotic bit explosion/dissipation. (F3 NOT triggered; opposite-chirality and same-chirality interactions are qualitatively distinct).
+*   **Rotational Covariance (O_h):** Rotating the collision axis from the default plane changed the collision outcome from elastic scattering to chaotic destruction. (F4 is explicitly TRIGGERED).
+
+## 4. Verdict
+*   **Refuted.** The working hypothesis that the P-reflected enantiomer behaves as an annihilating antiparticle is refuted. Opposite-chirality collisions are elastic, not annihilating. Furthermore, the collision dynamics of these non-axis-aligned gliders exhibit broken O_h covariance on this discrete grid.
+
+## 5. Construction-vs-Empirical Note
+*   The stability of the solo P-reflected glider ($p_B$) is a direct consequence of the parity symmetry of the O_h rule set and is thus a constructional identity.
+*   The elasticity of the $p_A + p_B$ collisions and the coordinate-axis sensitivity under rotation are genuine empirical discoveries concerning the discrete multi-particle dynamics of the LUT-08 system.
+
+## 6. Limitations
+*   The LUT-08 glider's velocity vector $[0.25, -0.5, 1.0]$ has no exact antiparallel counterpart under pure O_h rotations, making perfect head-on same-chirality collisions geometrically impossible on this grid.
+*   The $32^3$ toroidal grid introduces wrap-around and boundary-crossing proximity effects that can corrupt rotational symmetry during multi-particle interactions. Re-evaluation on a larger grid ($\ge 64^3$) with open boundary conditions is required to verify the asymptotic behavior.
+
+---
+

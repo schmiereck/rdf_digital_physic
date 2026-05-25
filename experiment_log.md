@@ -3,39 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 9542740
-cost_usd: 4.97779
-hypothesis: 'phase-220: Breeder exploit is closed by setting max_bit_threshold=12;
-  hard gates cause a flatline from random starts.'
-input_tokens: 12082652
-iter: 220
-metrics:
-  breeder_exploit_active_cells: 129
-  champion_fitness_fixed_run: 0.019163
-  flatline_search_best_fitness: 0.0
-  run_time_fixed_search_sec: 291.42
-output_tokens: 17398
-status: ok
-```
-
-## iter_220: phase-220: Breeder exploit is closed by setting max_bit_threshold=12; hard gates cause a flatline from random starts.
-
-**Analysis:** We have made major conceptual progress in Phase 220.
-First, we resolved the platform instabilities and ran multiple python diagnostics to map out the codebase.
-Second, we diagnosed why the previous evolution runs generated breeder exploits: the `max_bit_threshold` was left as `None` by default, allowing the active cells to explode to 129. By setting `max_bit_threshold=12` (allowing small fluctuati
-
-**Status:** ok
-
-**Metrics:** `{'champion_fitness_fixed_run': 0.019163, 'run_time_fixed_search_sec': 291.42, 'breeder_exploit_active_cells': 129, 'flatline_search_best_fitness': 0.0}`
-
-**Experimenter view:** We systematically investigated the 'breeder-oscillator' exploit and the fitness landscape of v<c glider searches.
-1. Breeder Characterization (220.9): The previous champion was revealed to be a stationary 64-period breeder-oscillator. Every 64 steps, the original 3-cell L-tromino is restored perfectly at the same location, but in between it expands symmetrically and asymmetrically up to 129 active
-
-**Notes:** Breeder exploit resolved by setting max_bit_threshold=12. SubLightFitness flatline verified. Codebase confirmed to be pandas-free.
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
@@ -1040,4 +1007,60 @@ In the preceding Phase 7.2 / iter_242, we successfully analyzed the internal cha
 1. The LUT-08 glider carries a discrete Z2 chiral charge alternating between -
 
 **Notes:** Execution stopped due to limit. Phase 7.2 is fully completed and confirmed.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Particle Zoo
+cost_usd: 0.93898
+hypothesis: 'phase-245: Antiparticle (P-reflected enantiomer) exists but does not
+  annihilate with original; opposite-chirality collisions are elastic, same-chirality
+  are destructive; O_h non-covariant'
+input_tokens: 1522692
+iter: 245
+metrics:
+  central_prediction_verified: false
+  falsification_F1_triggered: false
+  falsification_F2_triggered: false
+  falsification_F3_triggered: false
+  falsification_F4_triggered: true
+  oh_covariance_outcome_changed: true
+  oh_original_outcome: Elastic
+  oh_rotated_outcome: Chaotic
+  opposite_chirality_annihilation: 0/5
+  opposite_chirality_elastic: 5/5
+  pB_solo_stable_80steps: true
+  pC_solo_stable_80steps: true
+  same_chirality_chaotic: 2/5
+  same_chirality_elastic: 0/5
+  same_chirality_partial: 3/5
+  script_lines: 112
+output_tokens: 47073
+status: ok
+```
+
+## iter_245: phase-245: Antiparticle (P-reflected enantiomer) exists but does not annihilate with original; opposite-chirality collisions are elastic, same-chirality are destructive; O_h non-covariant
+
+**Analysis:** Phase 7.3 was designed to test whether the P-reflected (enantiomeric) LUT-08 glider
+acts as an antiparticle that annihilates upon collision with the original. The
+experiment produced a clear null result on this central question: opposite-chirality
+collisions are perfectly elastic (5/5), not annihilating.
+
+The pre-registered falsification criteria were evaluated as follows:
+- F1 (solo instability):
+
+**Status:** ok
+
+**Metrics:** `{'script_lines': 112, 'pB_solo_stable_80steps': True, 'pC_solo_stable_80steps': True, 'opposite_chirality_elastic': '5/5', 'opposite_chirality_annihilation': '0/5', 'same_chirality_elastic': '0/5', 'same_chirality_partial': '3/5', 'same_chirality_chaotic': '2/5', 'oh_covariance_outcome_changed': True, 'oh_original_outcome': 'Elastic', 'oh_rotated_outcome': 'Chaotic', 'falsification_F1_triggered': False, 'falsification_F2_triggered': False, 'falsification_F3_triggered': False, 'falsification_F4_triggered': True, 'central_prediction_verified': False}`
+
+**Experimenter view:** The pre-registered Phase 7.3 experiment was executed successfully with a compact 112-line script.
+
+SOLO STABILITY (constructional): Both the P-reflected antiparticle (pB) and the
+O_h-rotated same-chirality glider (pC) are stable under the forward LUT-08 rule
+for 80 steps. This is guaranteed by O_h symmetry, not an empirical finding.
+
+OPPOSITE-CHIRALITY COLLISIONS (experiment): All 5 impact-paramet
+
+**Notes:** Phase 7.3 null result: antiparticle exists but no annihilation; O_h non-covariance observed
 
