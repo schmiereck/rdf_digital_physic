@@ -1,0 +1,404 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+      apply_fix.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      crash.log
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      edit_fitness.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      find_com_and_bits.py
+      find_mapping.py
+      fix_unwrap.py
+   ...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_champion_trajectory.py
+      analyze_collision_dynamics.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_glider_240.18.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      analyze_two_body_sweep.py
+      ash_pattern.json
+      asymmetric_collision.py
+      bench_actual.py
+      bench_sim.py
+      bench_sparse.py
+      bench_sparse2.py
+      bre...]
+
+
+[Tool Call: grep_search({'pattern': 'LUT.?08|LUT08|lut.?08|lut08', 'include_pattern': '*.py'})]
+
+[Tool Result: test_density.py:6: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_glider_run.py:5: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_orbits.py:7: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_tmp_run.py:36: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_tmp_run2.py:42: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+tmp_check_lut.py:2: with open('archive/iter_224/results/glid...]
+
+Let me examine the key files to understand the data structures
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_224\\results\\glider_00_lut08_sub03.json'})]
+
+[Tool Result: {
+  "rank": 0,
+  "lut_seed": 8,
+  "sub_seed": 3,
+  "particle": [
+    [
+      -1,
+      0,
+      -1,
+      5
+    ],
+    [
+      -1,
+      1,
+      0,
+      5
+    ],
+    [
+      0,
+      -1,
+      -1,
+      5
+    ],
+    [
+      0,
+      -1,
+      1,
+      6
+    ]
+  ],
+  "initial_bits": 4,
+  "bit_stable": true,
+  "displacement_norm": 111.80339887498948,
+  "cumulative_displacement": [
+    50.0,
+    0.0,
+    100.0
+  ],
+  "max_extent": 3,
+  "final_extent": [
+    2,
+    3,
+    3
+  ],
+  "final_bits": 4,...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\test_oh_diagnostic.py'})]
+
+[Tool Result: import os, sys, json
+import numpy as np
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.engine_3d import SHIFTS, stream, collide
+from src.rigorous_glider_audit import build_oh_transforms, seed_grid, bounding_extent
+
+L = 32
+
+def main():
+    with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:
+        d = json.load(f)
+    lut = np.array(d["lut"], dtype=np.uint16)
+    pA = [tuple(c) for c in d["particle"]]
+    ...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\rigorous_glider_audit.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+rigorous_glider_audit.py
+
+Rigorously audit all candidate gliders discovered in iter_240 plus the LUT-08
+reference glider from iter_224.
+
+Pipeline:
+  1. Load reference particle + LUT from
+     archive/iter_224/results/glider_00_lut08_sub03.json
+  2. Load every archive/iter_240/results/new_glider_*.json
+  3. Run the 200-step simulation on the ORIGINAL, unrotated particle of each candidate.
+  4. A candidate is stable if bit count is perfectly conserved AND max extent <= 6...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\experiment_248_fundamental_spectrum.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""Fundamental single-bit particle spectrum and multi-bit coherent structure search."""
+from __future__ import annotations
+import json, sys
+from itertools import combinations
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.engine_3d import stream, collide, SHIFTS
+from src.search_3d_gliders import (
+    generate_symmetric_lut, get_oh_permutations,
+    precompute_perm_action, compute_orbits, c...]
+
+
+[Tool Call: grep_search({'pattern': 'def get_oh_permutations|def precompute_perm_action|def compute_orbits|def compute_all_stabilizers', 'include_pattern': '*.py'})]
+
+[Tool Result: src\engine_d4_spacetime.py:167: def compute_orbits() -> List[List[int]]:
+src\search_3d_gliders.py:55: def get_oh_permutations(verbose: bool = False) -> list[tuple[int, ...]]:
+src\search_3d_gliders.py:94: def precompute_perm_action(perms: list[tuple[int, ...]]) -> np.ndarray:
+src\search_3d_gliders.py:114: def compute_orbits(action: np.ndarray) -> tuple[list[list[int]], np.ndarray]:
+src\search_3d_gliders.py:138: def compute_all_stabilizers(action: np.ndarray) -> list[tuple[int, ...]]:]
+
+
+[Tool Call: grep_search({'pattern': 'SHIFTS|fcc_neighbor_vectors', 'include_pattern': 'engine_3d.py'})]
+
+[Tool Result: src\engine_3d.py:18: SHIFTS = [
+src\engine_3d.py:55: for i, (dl, dr, dc) in enumerate(SHIFTS):]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\search_3d_gliders.py', 'start_line': 1, 'end_line': 200})]
+
+[Tool Result: --- lines 1 to 200 of 540 ---
+#!/usr/bin/env python3
+"""
+search_3d_gliders.py — Symmetric, bit-conserving, reversible 3D CA rule
+generator and search for 3D gliders.
+
+Pipeline:
+1. Construct the 48 permutations of {0..11} corresponding to the O_h symmetry
+   group of the cuboctahedron by applying all signed permutation matrices in
+   R^3 to the 12 FCC nearest-neighbor vectors.
+2. Decompose the 4096 states of {0,1}^12 into orbits under O_h and group by
+   Hamming weight.
+3. generate_symmetric_lut(...]
+
+
+[Tool Call: grep_search({'pattern': 'def fcc_neighbor_vectors', 'include_pattern': '*.py'})]
+
+[Tool Result: find_mapping.py:4: def fcc_neighbor_vectors():
+src\search_3d_gliders.py:41: def fcc_neighbor_vectors() -> np.ndarray:]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine_3d.py', 'start_line': 1, 'end_line': 100})]
+
+[Tool Result: --- lines 1 to 100 of 127 ---
+#!/usr/bin/env python3
+"""
+engine_3d.py — 3D Cuboctahedron (FCC lattice) Lattice Gas Cellular Automaton (LGCA) simulation engine.
+
+This engine implements:
+1. A 3D toroidal grid of shape (L, H, W, 12) representing the 12 velocity channels of the FCC lattice.
+2. The 12 directions defined in the standard projection of FCC onto a stack of hexagonal layers.
+3. A `stream` function that propagates the bits along their respective directions using `np.roll`.
+4. A `collide` f...]
+
+
+[Tool Call: grep_search({'include_pattern': 'glider_charge_analysis.py', 'pattern': 'def make_BT|def fcc_cartesian|FCC|BT'})]
+
+[Tool Result: src\glider_charge_analysis.py:17: def make_BT():
+src\glider_charge_analysis.py:19: BT = np.linalg.inv(C[[0, 4, 8]]) @ S[[0, 2, 6]]
+src\glider_charge_analysis.py:20: return BT, np.linalg.inv(BT)
+src\glider_charge_analysis.py:30: def bits_cartesian(grid, BT_inv):
+src\glider_charge_analysis.py:36: return sorted([np.array(u, dtype=float) @ BT_inv for u in uw], key=lambda v: tuple(np.round(v, 6)))
+src\glider_charge_analysis.py:47: def run(particle, lut, BT_inv, label, steps=100):
+src\glider_charge_an...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\glider_charge_analysis.py', 'start_line': 1, 'end_line': 100})]
+
+[Tool Result: --- lines 1 to 100 of 109 ---
+#!/usr/bin/env python3
+"""Chirality chi(t) and sub-lattice charge q(t) analysis of the LUT-08 glider."""
+from __future__ import annotations
+import json, sys
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from src.engine_3d import SHIFTS, stream, collide  # noqa: E402
+from src.search_3d_gliders import fcc_neighbor_vectors  # noqa: E402
+
+L = 32
+SUB = {(0, 0, 0): 0, (1, 1, 0): 1, (1, 0, 1): 2, (0...]
+
+Now I have a thorough understanding of the codebase. Let me write the comprehensive script
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_weight2_orbits.py', 'content': '#!/usr/bin/env python3\n"""\nAnalyze weight-2 O_h orbits of LUT-08:\n  1. Load LUT-08, build O_h permutations, action, orbits.\n  2. For each weight-2 orbit, compute:\n     - orbit size\n     - representative (ch_i, ch_j)\n     - dot product of FCC Cartesian vectors\n     - classification: same-cycle, cross-cycle, or antipodal\n"""\nimport json, sys\nfrom itertools import combinations\nfrom pathlib import Path\nimport numpy as np\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action,\n    compute_orbits, hamming, fcc_neighbor_vectors\n)\n\ndef main():\n    # ---- Load LUT-08 ----\n    with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n        ref = json.load(f)\n    lut = np.array(ref["lut"], dtype=np.uint16)\n    print("=" * 78)\n    print("LUT-08 WEIGHT-2 ORBIT ANALYSIS")\n    print("=" * 78)\n\n    # ---- O_h permutations ----\n    perms = get_oh_permutations()\n    action = precompute_perm_action(perms)\n    orbits, orbit_of = compute_orbits(action)\n\n    print(f"\\nO_h group: {len(perms)} permutations")\n    print(f"Total orbits of {{0,1}}^12: {len(orbits)}")\n\n    # ---- Weight-1 permutation of LUT-08 ----\n    w1_perm = []\n    for ch in range(12):\n        out = int(lut[1 << ch])\n        assert bin(out).count(\'1\') == 1, f"ch={ch} -> {out} (not weight-1)"\n        dst = (out & -out).bit_length() - 1\n        w1_perm.append(dst)\n    print(f"\\nWeight-1 permutation of LUT-08: {w1_perm}")\n\n    # Decompose into cycles\n    visited = [False] * 12\n    w1_cycles = []\n    for i in range(12):\n        if visited[i]:\n            continue\n        cyc = []\n        j = i\n        while not visited[j]:\n            visited[j] = True\n            cyc.append(j)\n            j = w1_perm[j]\n        w1_cycles.append(cyc)\n    print(f"Weight-1 cycles: {w1_cycles}")\n\n    # Build same-cycle pairs\n    same_cycle_pairs = set()\n    for cyc in w1_cycles:\n        for (a, b) in combinations(cyc, 2):\n            same_cycle_pairs.add((min(a, b), max(a, b)))\n\n    print(f"Same-cycle pairs (intra-cycle transpositions):")\n    for p in sorted(same_cycle_pairs):\n        print(f"  ({p[0]}, {p[1]})")\n    print(f"  Total: {len(same_cycle_pairs)}")\n\n    # ---- FCC Cartesian vectors ----\n    fcc_vecs = fcc_neighbor_vectors().astype(float)\n\n    print(f"\\nFCC Cartestian vectors (ordering from fcc_neighbor_vectors()):")\n    for i, v in enumerate(fcc_vecs):\n        print(f"  ch {i:2d}: ({v[0]:+d}, {v[1]:+d}, {v[2]:+d})  |v|={np.linalg.norm(v):.4f}")\n\n    # ---- Identify antipodal pairs ----\n    # Antipodal means opposite directions: v_i = -v_j\n    antipodal_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            if np.allclose(fcc_vecs[i], -fcc_vecs[j]):\n                antipodal_pairs.add((i, j))\n    print(f"\\nAntipodal channel pairs (v_i = -v_j):")\n    for p in sorted(antipodal_pairs):\n        print(f"  ({p[0]}, {p[1]})  v={fcc_vecs[p[0]].tolist()}  -v={fcc_vecs[p[1]].tolist()}")\n    print(f"  Total: {len(antipodal_pairs)}")\n\n    # ---- Cross-cycle pairs: complementary ----\n    # Cross-cycle: channels from different w1 cycles that are NOT antipodal\n    cross_cycle_pairs = set()\n    all_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            all_pairs.add((i, j))\n    for p in all_pairs:\n        if p not in same_cycle_pairs and p not in antipodal_pairs:\n            cross_cycle_pairs.add(p)\n    print(f"\\nCross-cycle pairs: {len(cross_cycle_pairs)}")\n\n    # ---- Weight-2 orbits under O_h ----\n    w2_orbit_indices = []\n    w2_orbit_reps = []\n    for oid, orbit in enumerate(orbits):\n        # Check if all states in this orbit have weight 2\n        if hamming(orbit[0]) == 2:\n            # Verify all members have weight 2\n            all_w2 = all(hamming(s) == 2 for s in orbit)\n            if all_w2:\n                w2_orbit_indices.append(oid)\n                w2_orbit_reps.append(orbit[0])\n    \n    print(f"\\n{\'=\' * 78}")\n    print(f"Weight-2 orbits: {len(w2_orbit_indices)} found")\n    print(f"{\'=\' * 78}")\n\n    # Helper: unpack a state integer to list of channel indices\n    def unpack_state(s):\n        return [ch for ch in range(12) if (s >> ch) & 1]\n\n    # Classify each weight-2 orbit\n    orbit_data = []\n    for idx, oid in enumerate(w2_orbit_indices):\n        rep_state = w2_orbit_reps[idx]\n        rep_channels = unpack_state(rep_state)\n        ch_i, ch_j = rep_channels[0], rep_channels[1]\n        orbit_size = len(orbits[oid])\n        \n        # Dot product of FCC Cartesian vectors\n        dot = float(np.dot(fcc_vecs[ch_i], fcc_vecs[ch_j]))\n        \n        # Classification\n        pair_key = (min(ch_i, ch_j), max(ch_i, ch_j))\n        if pair_key in same_cycle_pairs:\n            classification = "SAME-CYCLE"\n        elif pair_key in antipodal_pairs:\n            classification = "ANTIPODAL"\n        else:\n            classification = "CROSS-CYCLE"\n        \n        orbit_data.append({\n            "orbit_id": oid,\n            "orbit_index": idx,\n            "orbit_size": orbit_size,\n            "rep_state": rep_state,\n            "rep_channels": rep_channels,\n            "dot_product": dot,\n            "classification": classification,\n        })\n        \n        # Print details\n        print(f"\\nOrbit {idx:3d} (id={oid:4d}) | size={orbit_size:3d} | "\n              f"representative = ({ch_i}, {ch_j}) | dot = {dot:+5.2f} | {classification}")\n        print(f"        FCC vectors: v{ch_i}={fcc_vecs[ch_i].tolist()}, v{ch_j}={fcc_vecs[ch_j].tolist()}")\n        vnorm_i, vnorm_j = np.linalg.norm(fcc_vecs[ch_i]), np.linalg.norm(fcc_vecs[ch_j])\n        print(f"        |v{ch_i}|={vnorm_i:.4f}, |v{ch_j}|={vnorm_j:.4f}, angle={np.degrees(np.arccos(dot/(vnorm_i*vnorm_j))):.2f}°")\n        \n        # List a few members\n        members = orbits[oid][:min(5, len(orbits[oid]))]\n        member_str = ", ".join(f"({unpack_state(s)[0]},{unpack_state(s)[1]})" for s in members)\n        print(f"        Some members: {member_str}{\'...\' if len(orbits[oid]) > 5 else \'\'}")\n\n    # ---- Summary statistics ----\n    print(f"\\n{\'=\' * 78}")\n    print("SUMMARY")\n    print(f"{\'=\' * 78}")\n    \n    by_class = {}\n    for d in orbit_data:\n        cls = d["classification"]\n        by_class.setdefault(cls, []).append(d)\n    \n    for cls in ["SAME-CYCLE", "CROSS-CYCLE", "ANTIPODAL"]:\n        entries = by_class.get(cls, [])\n        sizes = [e["orbit_size"] for e in entries]\n        dots = [e["dot_product"] for e in entries]\n        print(f"\\n{cls} orbits: {len(entries)} total")\n        print(f"  Orbit sizes: min={min(sizes)}, max={max(sizes)}, "\n              f"unique={sorted(set(sizes))}")\n        print(f"  Dot products: min={min(dots):+.2f}, max={max(dots):+.2f}, "\n              f"unique={sorted(set(f\'{d:+.2f}\' for d in dots))}")\n        for e in entries:\n            print(f"    orbit[{e[\'orbit_index\']:3d}]: ({e[\'rep_channels\'][0]},{e[\'rep_channels\'][1]}) "\n                  f"size={e[\'orbit_size\']:3d}  dot={e[\'dot_product\']:+5.2f}")\n\n    # ---- Cross-cycle dot products ----\n    print(f"\\n{\'=\' * 78}")\n    print("DOT PRODUCT DISTRIBUTION BY CLASSIFICATION")\n    print(f"{\'=\' * 78}")\n    for cls in ["SAME-CYCLE", "CROSS-CYCLE", "ANTIPODAL"]:\n        entries = by_class.get(cls, [])\n        dots = sorted([e["dot_product"] for e in entries])\n        print(f"  {cls:15s}: dots = {[f\'{d:+.2f}\' for d in dots]}")\n\n    # ---- Additional: Check which pairs share the same O_h orbit ----\n    print(f"\\n{\'=\' * 78}")\n    print("VERIFICATION: All weight-2 states grouped by equivalences")\n    print(f"{\'=\' * 78}")\n    \n    # For each pair (i,j) with i<j, show which orbit it belongs to\n    pair_to_orbit = {}\n    for d in orbit_data:\n        for s in orbits[d["orbit_id"]]:\n            chs = unpack_state(s)\n            pair_to_orbit[(min(chs), max(chs))] = d["orbit_index"]\n    \n    # Print table of all pairs\n    print(f"\\n{\'Pair\':>8s}  {\'Orbit\':>5s}  {\'Dot\':>6s}  {\'Class\':15s}  {\'FCC v_i\':>12s}  {\'FCC v_j\':>12s}")\n    print("-" * 70)\n    for i in range(12):\n        for j in range(i + 1, 12):\n            oidx = pair_to_orbit.get((i, j), -1)\n            dot = np.dot(fcc_vecs[i], fcc_vecs[j])\n            p = (i, j)\n            if p in same_cycle_pairs:\n                cls = "SAME-CYCLE"\n            elif p in antipodal_pairs:\n                cls = "ANTIPODAL"\n            else:\n                cls = "CROSS-CYCLE"\n            vi_str = f"({int(fcc_vecs[i][0]):+d},{int(fcc_vecs[i][1]):+d},{int(fcc_vecs[i][2]):+d})"\n            vj_str = f"({int(fcc_vecs[j][0]):+d},{int(fcc_vecs[j][1]):+d},{int(fcc_vecs[j][2]):+d})"\n            print(f"({i:2d},{j:2d})  {oidx:5d}  {dot:+5.2f}  {cls:15s}  {vi_str:>12s}  {vj_str:>12s}")\n\n    print("\\nDone.")\n\nif __name__ == "__main__":\n    main()'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_weight2_orbits.py]
+
+
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_weight2_orbits.py'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Traceback (most recent call last):
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\tmp_weight2_orbits.py", line 234, in <module>
+    main()
+  File "C:\Users\thomas\Projekte\rdf_digital_physic\tmp_weight2_orbits.py", line 26, in main
+    with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\t...]
+
+The issue is the path resolution. Let me fix it:
+
+
+
+[Tool Call: edit_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_weight2_orbits.py', 'old_string': 'ROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))', 'new_string': 'ROOT = Path(__file__).resolve().parent\nsys.path.insert(0, str(ROOT))'})]
+
+[Tool Result: Unknown tool: edit_file]
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nAnalyze weight-2 O_h orbits of LUT-08:\n  1. Load LUT-08, build O_h permutations, action, orbits.\n  2. For each weight-2 orbit, compute:\n     - orbit size\n     - representative (ch_i, ch_j)\n     - dot product of FCC Cartesian vectors\n     - classification: same-cycle, cross-cycle, or antipodal\n"""\nimport json, sys\nfrom itertools import combinations\nfrom pathlib import Path\nimport numpy as np\n\nROOT = Path(__file__).resolve().parent\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action,\n    compute_orbits, hamming, fcc_neighbor_vectors\n)\n\ndef main():\n    # ---- Load LUT-08 ----\n    with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n        ref = json.load(f)\n    lut = np.array(ref["lut"], dtype=np.uint16)\n    print("=" * 78)\n    print("LUT-08 WEIGHT-2 ORBIT ANALYSIS")\n    print("=" * 78)\n\n    # ---- O_h permutations ----\n    perms = get_oh_permutations()\n    action = precompute_perm_action(perms)\n    all_orbits, orbit_of = compute_orbits(action)\n\n    print(f"\\nO_h group: {len(perms)} permutations")\n    print(f"Total orbits of {{0,1}}^12: {len(all_orbits)}")\n\n    # ---- Weight-1 permutation of LUT-08 ----\n    w1_perm = []\n    for ch in range(12):\n        out = int(lut[1 << ch])\n        assert bin(out).count(\'1\') == 1, f"ch={ch} -> {out} (not weight-1)"\n        dst = (out & -out).bit_length() - 1\n        w1_perm.append(dst)\n    print(f"\\nWeight-1 permutation of LUT-08: {w1_perm}")\n\n    # Decompose into cycles\n    visited = [False] * 12\n    w1_cycles = []\n    for i in range(12):\n        if visited[i]:\n            continue\n        cyc = []\n        j = i\n        while not visited[j]:\n            visited[j] = True\n            cyc.append(j)\n            j = w1_perm[j]\n        w1_cycles.append(cyc)\n    print(f"Weight-1 cycles: {w1_cycles}")\n\n    # Build same-cycle pairs\n    same_cycle_pairs = set()\n    for cyc in w1_cycles:\n        for (a, b) in combinations(cyc, 2):\n            same_cycle_pairs.add((min(a, b), max(a, b)))\n\n    print(f"\\nSame-cycle pairs (intra-cycle transpositions):")\n    for p in sorted(same_cycle_pairs):\n        print(f"  ({p[0]}, {p[1]})")\n    print(f"  Total: {len(same_cycle_pairs)}")\n\n    # ---- FCC Cartesian vectors ----\n    fcc_vecs = fcc_neighbor_vectors().astype(float)\n\n    print(f"\\nFCC Cartesian vectors (from fcc_neighbor_vectors()):")\n    for i, v in enumerate(fcc_vecs):\n        print(f"  ch {i:2d}: ({v[0]:+d}, {v[1]:+d}, {v[2]:+d})  |v|={np.linalg.norm(v):.4f}")\n\n    # ---- Identify antipodal pairs ----\n    antipodal_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            if np.allclose(fcc_vecs[i], -fcc_vecs[j]):\n                antipodal_pairs.add((i, j))\n    print(f"\\nAntipodal channel pairs (v_i = -v_j):")\n    for p in sorted(antipodal_pairs):\n        print(f"  ({p[0]}, {p[1]})  v={fcc_vecs[p[0]].tolist()}  -v={fcc_vecs[p[1]].tolist()}")\n    print(f"  Total: {len(antipodal_pairs)}")\n\n    # ---- Cross-cycle pairs: all remaining ----\n    all_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            all_pairs.add((i, j))\n    cross_cycle_pairs = all_pairs - same_cycle_pairs - antipodal_pairs\n    print(f"\\nCross-cycle pairs: {len(cross_cycle_pairs)}")\n\n    # ---- Weight-2 orbits under O_h ----\n    w2_orbits = []  # list of (orbit_id, orbit_list)\n    for oid, orbit in enumerate(all_orbits):\n        if hamming(orbit[0]) == 2:\n            if all(hamming(s) == 2 for s in orbit):\n                w2_orbits.append((oid, orbit))\n    \n    print(f"\\n{\'=\' * 78}")\n    print(f"Weight-2 orbits: {len(w2_orbits)} found")\n    print(f"{\'=\' * 78}")\n\n    def unpack_state(s):\n        return [ch for ch in range(12) if (s >> ch) & 1]\n\n    orbit_data = []\n    for idx, (oid, orbit) in enumerate(w2_orbits):\n        rep_state = orbit[0]\n        rep_channels = unpack_state(rep_state)\n        ch_i, ch_j = rep_channels[0], rep_channels[1]\n        orbit_size = len(orbit)\n\n        dot = float(np.dot(fcc_vecs[ch_i], fcc_vecs[ch_j]))\n\n        pair_key = (min(ch_i, ch_j), max(ch_i, ch_j))\n        if pair_key in same_cycle_pairs:\n            classification = "SAME-CYCLE"\n        elif pair_key in antipodal_pairs:\n            classification = "ANTIPODAL"\n        else:\n            classification = "CROSS-CYCLE"\n\n        orbit_data.append({\n            "orbit_index": idx,\n            "orbit_id": oid,\n            "orbit_size": orbit_size,\n            "rep_state": rep_state,\n            "rep_channels": rep_channels,\n            "dot_product": dot,\n            "classification": classification,\n        })\n\n        # Print details\n        angle = np.degrees(np.arccos(dot / (np.linalg.norm(fcc_vecs[ch_i]) * np.linalg.norm(fcc_vecs[ch_j])))) if abs(dot) < 2 else 0.0\n        print(f"\\nOrbit {idx:3d} (id={oid:4d}) | size={orbit_size:3d} | "\n              f"representative = ({ch_i}, {ch_j}) | dot = {dot:+5.2f} | {classification}")\n        print(f"        FCC vectors: v{ch_i}={fcc_vecs[ch_i].tolist()}, v{ch_j}={fcc_vecs[ch_j].tolist()}")\n        vnorm_i, vnorm_j = np.linalg.norm(fcc_vecs[ch_i]), np.linalg.norm(fcc_vecs[ch_j])\n        print(f"        |v{ch_i}|={vnorm_i:.4f}, |v{ch_j}|={vnorm_j:.4f}, angle={angle:.2f}°")\n\n        # List a few members\n        members = orbit[:min(5, len(orbit))]\n        member_str = ", ".join(f"({unpack_state(s)[0]},{unpack_state(s)[1]})" for s in members)\n        print(f"        Sample members: {member_str}{\'...\' if len(orbit) > 5 else \'\'}")\n\n    # ---- Summary statistics ----\n    print(f"\\n{\'=\' * 78}")\n    print("SUMMARY")\n    print(f"{\'=\' * 78}")\n    \n    by_class = {}\n    for d in orbit_data:\n        cls = d["classification"]\n        by_class.setdefault(cls, []).append(d)\n    \n    for cls in ["SAME-CYCLE", "CROSS-CYCLE", "ANTIPODAL"]:\n        entries = by_class.get(cls, [])\n        if not entries:\n            print(f"\\n{cls}: 0 orbits")\n            continue\n        sizes = [e["orbit_size"] for e in entries]\n        dots = [e["dot_product"] for e in entries]\n        print(f"\\n{cls}: {len(entries)} orbit(s)")\n        print(f"  Orbit sizes: {sorted(set(sizes))}")\n        print(f"  Dot products: {sorted(set([f\'{d:+.2f}\' for d in dots]))}")\n        for e in entries:\n            print(f"    orbit[{e[\'orbit_index\']:3d}]: ({e[\'rep_channels\'][0]},{e[\'rep_channels\'][1]}) "\n                  f"size={e[\'orbit_size\']:3d}  dot={e[\'dot_product\']:+5.2f}")\n\n    # ---- Pair -> orbit mapping ----\n    print(f"\\n{\'=\' * 78}")\n    print("FULL PAIR-TO-ORBIT MAPPING")\n    print(f"{\'=\' * 78}")\n    \n    pair_to_orbit = {}\n    for d in orbit_data:\n        for s in w2_orbits[d["orbit_index"]][1]:\n            chs = unpack_state(s)\n            pair_to_orbit[(min(chs), max(chs))] = d["orbit_index"]\n    \n    print(f"\\n{\'Pair\':>8s}  {\'Orbit\':>5s}  {\'Dot\':>6s}  {\'Class\':15s}  {\'FCC v_i\':>12s}  {\'FCC v_j\':>12s}")\n    print("-" * 70)\n    for i in range(12):\n        for j in range(i + 1, 12):\n            oidx = pair_to_orbit.get((i, j), -1)\n            dot = np.dot(fcc_vecs[i], fcc_vecs[j])\n            p = (i, j)\n            if p in same_cycle_pairs:\n                cls = "SAME-CYCLE"\n            elif p in antipodal_pairs:\n                cls = "ANTIPODAL"\n            else:\n                cls = "CROSS-CYCLE"\n            vi_str = f"({int(fcc_vecs[i][0]):+d},{int(fcc_vecs[i][1]):+d},{int(fcc_vecs[i][2]):+d})"\n            vj_str = f"({int(fcc_vecs[j][0]):+d},{int(fcc_vecs[j][1]):+d},{int(fcc_vecs[j][2]):+d})"\n            print(f"({i:2d},{j:2d})  {oidx:5d}  {dot:+5.2f}  {cls:15s}  {vi_str:>12s}  {vj_str:>12s}")\n\n    print("\\nDone.")\n\nif __name__ == "__main__":\n    main()', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_weight2_orbits.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_weight2_orbits.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python tmp_weight2_orbits.py'})]
+
+[Tool Result: exit_code: 1
+stdout: ==============================================================================
+LUT-08 WEIGHT-2 ORBIT ANALYSIS
+==============================================================================
+
+O_h group: 48 permutations
+Total orbits of {0,1}^12: 144
+
+Weight-1 permutation of LUT-08: [3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8]
+Weight-1 cycles: [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10]]
+
+Same-cycle pairs (intra-cycle transpositions):
+  (0, 3)
+  (1, 2)
+  (4, 7)
+  (...]
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nAnalyze weight-2 O_h orbits of LUT-08:\n  1. Load LUT-08, build O_h permutations, action, orbits.\n  2. For each weight-2 orbit, compute:\n     - orbit size\n     - representative (ch_i, ch_j)\n     - dot product of FCC Cartesian vectors\n     - classification: same-cycle, cross-cycle, or antipodal\n"""\nimport json, sys\nfrom itertools import combinations\nfrom pathlib import Path\nimport numpy as np\n\nROOT = Path(__file__).resolve().parent\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action,\n    compute_orbits, hamming, fcc_neighbor_vectors\n)\n\ndef main():\n    # ---- Load LUT-08 ----\n    with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n        ref = json.load(f)\n    lut = np.array(ref["lut"], dtype=np.uint16)\n    print("=" * 78)\n    print("LUT-08 WEIGHT-2 ORBIT ANALYSIS")\n    print("=" * 78)\n\n    # ---- O_h permutations ----\n    perms = get_oh_permutations()\n    action = precompute_perm_action(perms)\n    all_orbits, orbit_of = compute_orbits(action)\n\n    print(f"\\nO_h group: {len(perms)} permutations")\n    print(f"Total orbits of {{0,1}}^12: {len(all_orbits)}")\n\n    # ---- Weight-1 permutation of LUT-08 ----\n    w1_perm = []\n    for ch in range(12):\n        out = int(lut[1 << ch])\n        assert bin(out).count(\'1\') == 1, f"ch={ch} -> {out} (not weight-1)"\n        dst = (out & -out).bit_length() - 1\n        w1_perm.append(dst)\n    print(f"\\nWeight-1 permutation of LUT-08: {w1_perm}")\n\n    # Decompose into cycles\n    visited = [False] * 12\n    w1_cycles = []\n    for i in range(12):\n        if visited[i]:\n            continue\n        cyc = []\n        j = i\n        while not visited[j]:\n            visited[j] = True\n            cyc.append(j)\n            j = w1_perm[j]\n        w1_cycles.append(cyc)\n    print(f"Weight-1 cycles: {w1_cycles}")\n\n    # Build same-cycle pairs\n    same_cycle_pairs = set()\n    for cyc in w1_cycles:\n        for (a, b) in combinations(cyc, 2):\n            same_cycle_pairs.add((min(a, b), max(a, b)))\n\n    print(f"\\nSame-cycle pairs (intra-cycle transpositions):")\n    for p in sorted(same_cycle_pairs):\n        print(f"  ({p[0]}, {p[1]})")\n    print(f"  Total: {len(same_cycle_pairs)}")\n\n    # ---- FCC Cartesian vectors ----\n    fcc_vecs = fcc_neighbor_vectors().astype(float)\n\n    print(f"\\nFCC Cartesian vectors (from fcc_neighbor_vectors()):")\n    for i, v in enumerate(fcc_vecs):\n        vi = [int(x) for x in v]\n        print(f"  ch {i:2d}: ({vi[0]:+d}, {vi[1]:+d}, {vi[2]:+d})  |v|={np.linalg.norm(v):.4f}")\n\n    # ---- Identify antipodal pairs ----\n    antipodal_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            if np.allclose(fcc_vecs[i], -fcc_vecs[j]):\n                antipodal_pairs.add((i, j))\n    print(f"\\nAntipodal channel pairs (v_i = -v_j):")\n    for p in sorted(antipodal_pairs):\n        vi = [int(x) for x in fcc_vecs[p[0]]]\n        vj = [int(x) for x in -fcc_vecs[p[0]]]\n        print(f"  ({p[0]}, {p[1]})  v={vi}  -v={vj}")\n    print(f"  Total: {len(antipodal_pairs)}")\n\n    # ---- Cross-cycle pairs: all remaining ----\n    all_pairs = set()\n    for i in range(12):\n        for j in range(i + 1, 12):\n            all_pairs.add((i, j))\n    cross_cycle_pairs = all_pairs - same_cycle_pairs - antipodal_pairs\n    print(f"\\nCross-cycle pairs: {len(cross_cycle_pairs)}")\n\n    # ---- Weight-2 orbits under O_h ----\n    w2_orbits = []  # list of (orbit_id, orbit_list)\n    for oid, orbit in enumerate(all_orbits):\n        if hamming(orbit[0]) == 2:\n            if all(hamming(s) == 2 for s in orbit):\n                w2_orbits.append((oid, orbit))\n    \n    print(f"\\n{\'=\' * 78}")\n    print(f"Weight-2 orbits: {len(w2_orbits)} found")\n    print(f"{\'=\' * 78}")\n\n    def unpack_state(s):\n        return [ch for ch in range(12) if (s >> ch) & 1]\n\n    orbit_data = []\n    for idx, (oid, orbit) in enumerate(w2_orbits):\n        rep_state = orbit[0]\n        rep_channels = unpack_state(rep_state)\n        ch_i, ch_j = rep_channels[0], rep_channels[1]\n        orbit_size = len(orbit)\n\n        dot = float(np.dot(fcc_vecs[ch_i], fcc_vecs[ch_j]))\n\n        pair_key = (min(ch_i, ch_j), max(ch_i, ch_j))\n        if pair_key in same_cycle_pairs:\n            classification = "SAME-CYCLE"\n        elif pair_key in antipodal_pairs:\n            classification = "ANTIPODAL"\n        else:\n            classification = "CROSS-CYCLE"\n\n        orbit_data.append({\n            "orbit_index": idx,\n            "orbit_id": oid,\n            "orbit_size": orbit_size,\n            "rep_state": rep_state,\n            "rep_channels": rep_channels,\n            "dot_product": dot,\n            "classification": classification,\n        })\n\n        # Print details\n        vnorm_i = np.linalg.norm(fcc_vecs[ch_i])\n        vnorm_j = np.linalg.norm(fcc_vecs[ch_j])\n        cos_angle = dot / (vnorm_i * vnorm_j)\n        cos_angle = max(-1.0, min(1.0, cos_angle))\n        angle = np.degrees(np.arccos(cos_angle))\n        vi = [int(x) for x in fcc_vecs[ch_i]]\n        vj = [int(x) for x in fcc_vecs[ch_j]]\n        print(f"\\nOrbit {idx:3d} (id={oid:4d}) | size={orbit_size:3d} | "\n              f"representative = ({ch_i}, {ch_j}) | dot = {dot:+5.2f} | {classification}")\n        print(f"        FCC vectors: v{ch_i}={vi}, v{ch_j}={vj}")\n        print(f"        |v{ch_i}|={vnorm_i:.4f}, |v{ch_j}|={vnorm_j:.4f}, angle={angle:.2f}°")\n\n        # List a few members\n        members = orbit[:min(5, len(orbit))]\n        member_str = ", ".join(f"({unpack_state(s)[0]},{unpack_state(s)[1]})" for s in members)\n        print(f"        Sample members: {member_str}{\'...\' if len(orbit) > 5 else \'\'}")\n\n    # ---- Summary statistics ----\n    print(f"\\n{\'=\' * 78}")\n    print("SUMMARY")\n    print(f"{\'=\' * 78}")\n    \n    by_class = {}\n    for d in orbit_data:\n        cls = d["classification"]\n        by_class.setdefault(cls, []).append(d)\n    \n    for cls in ["SAME-CYCLE", "CROSS-CYCLE", "ANTIPODAL"]:\n        entries = by_class.get(cls, [])\n        if not entries:\n            print(f"\\n{cls}: 0 orbits")\n            continue\n        sizes = [e["orbit_size"] for e in entries]\n        dots = [e["dot_product"] for e in entries]\n        unique_dots = sorted(set(f"{d:+.2f}" for d in dots))\n        print(f"\\n{cls}: {len(entries)} orbit(s)")\n        print(f"  Orbit sizes: {sorted(set(sizes))}")\n        print(f"  Dot products: {unique_dots}")\n        for e in entries:\n            print(f"    orbit[{e[\'orbit_index\']:3d}]: ({e[\'rep_channels\'][0]},{e[\'rep_channels\'][1]}) "\n                  f"size={e[\'orbit_size\']:3d}  dot={e[\'dot_product\']:+5.2f}")\n\n    # ---- Pair -> orbit mapping ----\n    print(f"\\n{\'=\' * 78}")\n    print("FULL PAIR-TO-ORBIT MAPPING")\n    print(f"{\'=\' * 78}")\n    \n    pair_to_orbit = {}\n    for d in orbit_data:\n        for s in w2_orbits[d["orbit_index"]][1]:\n            chs = unpack_state(s)\n            pair_to_orbit[(min(chs), max(chs))] = d["orbit_index"]\n    \n    print(f"\\n{\'Pair\':>8s}  {\'Orbit\':>5s}  {\'Dot\':>6s}  {\'Class\':15s}  {\'FCC v_i\':>12s}  {\'FCC v_j\':>12s}")\n    print("-" * 70)\n    for i in range(12):\n        for j in range(i + 1, 12):\n            oidx = pair_to_orbit.get((i, j), -1)\n            dot = np.dot(fcc_vecs[i], fcc_vecs[j])\n            p = (i, j)\n            if p in same_cycle_pairs:\n                cls = "SAME-CYCLE"\n            elif p in antipodal_pairs:\n                cls = "ANTIPODAL"\n            else:\n                cls = "CROSS-CYCLE"\n            vi = [int(x) for x in fcc_vecs[i]]\n            vj = [int(x) for x in fcc_vecs[j]]\n            vi_str = f"({vi[0]:+d},{vi[1]:+d},{vi[2]:+d})"\n            vj_str = f"({vj[0]:+d},{vj[1]:+d},{vj[2]:+d})"\n            print(f"({i:2d},{j:2d})  {oidx:5d}  {dot:+5.2f}  {cls:15s}  {vi_str:>12s}  {vj_str:>12s}")\n\n    print("\\nDone.")\n\nif __name__ == "__main__":\n    main()', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_weight2_orbits.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_weight2_orbits.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && .venv\\Scripts\\python tmp_weight2_orbits.py'})]
+
+[Tool Result: exit_code: 0
+stdout: ==============================================================================
+LUT-08 WEIGHT-2 ORBIT ANALYSIS
+==============================================================================
+
+O_h group: 48 permutations
+Total orbits of {0,1}^12: 144
+
+Weight-1 permutation of LUT-08: [3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8]
+Weight-1 cycles: [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10]]
+
+Same-cycle pairs (intra-cycle transpositions):
+  (0, 3)
+  (1, 2)
+  (4, 7)
+  (...]
+
+The script executed perfectly. Let me also clean up the temp file.
+
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && del tmp_weight2_orbits.py'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+## Results — LUT-08 Weight-2 O_h Orbit Analysis
+
+### Weight-1 Structure
+The LUT-08 single-bit permutation decomposes into **6 transposition cycles**:
+
+| Cycle | Pair |
+|---|---|
+| (0, 3) | v₀=(-1,-1,0) ↔ v₃=(+1,+1,0) |
+| (1, 2) | v₁=(-1,+1,0) ↔ v₂=(+1,-1,0) |
+| (4, 7) | v₄=(-1,0,-1) ↔ v₇=(+1,0,+1) |
+| (5, 6) | v₅=(-1,0,+1) ↔ v₆=(+1,0,-1) |
+| (8, 11) | v₈=(0,-1,-1) ↔ v₁₁=(0,+1,+1) |
+| (9, 10) | v₉=(0,-1,+1) ↔ v₁₀=(0,+1,-1) |
+
+These 6 transposition pairs are **both** same-cycle AND antipodal — because LUT-08 maps each channel to its opposite direction.
+
+### Weight-2 Orbits: 4 orbits total
+
+| Orbit | Size | Rep | Dot | Angle | Classification |
+|-------|------|-----|:---:|:-----:|:--------------:|
+| **0** | 12 | (0,1) | 0.00 | 90° | **Cross-cycle** (orthogonal) |
+| **1** | **6** | (1,2) | -2.00 | 180° | **Same-cycle** (antipodal) |
+| **2** | **24** | (0,4) | +1.00 | 60° | **Cross-cycle** (adjacent) |
+| **3** | **24** | (2,4) | -1.00 | 120° | **Cross-cycle** (obtuse) |
+
+### Key insight for non-additive variants:
+
+- **Only 1 same-cycle orbit** (size 6): pairs of antipodal channels within same transposition cycle. Dot = -2.00 (opposite NN vectors).
+- **No pure antipodal orbit**: The 6 antipodal pairs coincide exactly with the 6 same-cycle pairs, so all antipodal channels are already in the same-cycle orbit.
+- **Three cross-cycle orbits** with distinct dot products (0, +1, -1) — these are the candidates for designing **cross-cycle non-additive interactions** that could produce novel glider behavior (e.g., pair production, bound states).
+
+[NUDGE RESPONSE]
+```yaml
+status: ok
+artifacts: []
+metrics:
+  weight2_orbits_total: 4
+  same_cycle_orbit_size: 6
+  same_cycle_dot: -2.0
+  cross_cycle_orbit_sizes: [12, 24, 24]
+  cross_cycle_dots: [0.0, 1.0, -1.0]
+  antipodal_orbits: 0
+  w1_transposition_cycles: 6
+log_excerpt: |
+  ==============================================================================
+  LUT-08 WEIGHT-2 ORBIT ANALYSIS
+  ==============================================================================
+  O_h group: 48 permutations
+  Total orbits of {0,1}^12: 144
+  Weight-1 permutation of LUT-08: [3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8]
+  Weight-1 cycles: [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10]]
+  Antipodal channel pairs (v_i = -v_j): 6 — identical to same-cycle pairs
+  ==============================================================================
+  Weight-2 orbits: 4 found
+  ==============================================================================
+  Orbit   0 (id=   2) | size= 12 | (0,1) | dot = +0.00 | CROSS-CYCLE (90°)
+  Orbit   1 (id=   3) | size=  6 | (1,2) | dot = -2.00 | SAME-CYCLE  (180°)
+  Orbit   2 (id=   6) | size= 24 | (0,4) | dot = +1.00 | CROSS-CYCLE (60°)
+  Orbit   3 (id=   8) | size= 24 | (2,4) | dot = -1.00 | CROSS-CYCLE (120°)
+  Done.
+experimenter_view: |
+  The LUT-08 weight-1 permutation consists of 6 transposition cycles, each mapping a channel to its antipodal partner. Consequently, the set of 6 same-cycle pairs coincides exactly with the 6 antipodal pairs. Under the 48-element O_h group, the 66 weight-2 states partition into 4 orbits: (1) a size-6 orbit of antipodal/same-cycle pairs with dot=-2 (collinear opposite NN vectors); (2) a size-12 orbit of orthogonal cross-cycle pairs (dot=0, 90°); (3) two size-24 orbits of cross-cycle pairs with dot=+1 (60°) and dot=-1 (120°). For designing non-additive LUT variants, the three cross-cycle orbits are the degrees of freedom: they involve channels from different weight-1 cycles and thus cannot be generated by single-bit streaming alone. Modifying their LUT entries would create true multi-bit coherent interactions that are absent in the original LUT-08.
+notes: "Temporary script deleted. Weight-2 orbit taxonomy complete."
+```
