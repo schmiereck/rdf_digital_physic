@@ -337,7 +337,7 @@ for local_k, (gidx, orb) in enumerate(w2_orbits):
     has_stat = any(stat in cycles_of(m) for m in orb)
     if has_stat:
         L(f"  Involves stationary cycle {stat} (ch8<->ch11, zero velocity)")
-    L()
+    L("")
 
 # ============================================================
 # 8. Key findings
