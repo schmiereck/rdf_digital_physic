@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 221
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_221: strategy_error
-
-**Analysis:** No yaml block found in response
-
-**Status:** code_error
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner call failed: No yaml block found in response
-
-
----
-```yaml
 cached_tokens: 3996408
 cost_usd: 1.62791
 hypothesis: 'phase-222: mathematically validate the existence of stable, coherent
@@ -1063,4 +1038,65 @@ for 80 steps. This is guaranteed by O_h symmetry, not an empirical finding.
 OPPOSITE-CHIRALITY COLLISIONS (experiment): All 5 impact-paramet
 
 **Notes:** Phase 7.3 null result: antiparticle exists but no annihilation; O_h non-covariance observed
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Particle Zoo
+cost_usd: 1.44003
+hypothesis: 'phase-246: The O_h non-covariance of LUT-08 collision dynamics is a definitional
+  alignment mismatch (coordinate-rounding artifact), not a boundary artifact or fundamental
+  rule failure; elastic collisions are geometry-dependent narrow windows'
+input_tokens: 2415998
+iter: 246
+metrics:
+  F1_refuted: true
+  F2_refuted: false
+  F3_refuted: false
+  F4_enhanced_triggered: true
+  F5_confirmed: false
+  L: 64
+  all_solo_stable: true
+  multi_rotation_chaotic_count: 21
+  multi_rotation_elastic_count: 2
+  multi_rotation_partial_count: 1
+  multi_rotation_total_proper: 24
+  oh_rotated_1_outcome: Chaotic
+  oh_rotated_2_outcome: Chaotic
+  rotation1_max_rounding_error: 1.0
+  rotation1_phase_mismatch: true
+  rotation2_max_rounding_error: 0.0
+  rotation2_phase_mismatch: true
+  same_chirality_outcome: Partial
+  unrotated_opposite_chirality_outcome: Elastic
+output_tokens: 76761
+status: ok
+```
+
+## iter_246: phase-246: The O_h non-covariance of LUT-08 collision dynamics is a definitional alignment mismatch (coordinate-rounding artifact), not a boundary artifact or fundamental rule failure; elastic collisions are geometry-dependent narrow windows
+
+**Analysis:** Phase 246 was designed to test the primary hypothesis from the iter_245
+investigation: whether the O_h non-covariance of LUT-08 opposite-chirality
+collision outcomes was caused by toroidal boundary interference on the L=32
+grid. Two sub-goals were executed:
+
+Sub-goal 1 (246.1): The main L=64 experiment with coordinate-rounding
+diagnostics, addressing both the boundary-artifact hypothesis and the
+s
+
+**Status:** ok
+
+**Metrics:** `{'L': 64, 'unrotated_opposite_chirality_outcome': 'Elastic', 'oh_rotated_1_outcome': 'Chaotic', 'oh_rotated_2_outcome': 'Chaotic', 'same_chirality_outcome': 'Partial', 'all_solo_stable': True, 'F1_refuted': True, 'F2_refuted': False, 'F3_refuted': False, 'F4_enhanced_triggered': True, 'F5_confirmed': False, 'multi_rotation_elastic_count': 2, 'multi_rotation_chaotic_count': 21, 'multi_rotation_partial_count': 1, 'multi_rotation_total_proper': 24, 'rotation1_max_rounding_error': 1.0, 'rotation1_phase_mismatch': True, 'rotation2_max_rounding_error': 0.0, 'rotation2_phase_mismatch': True}`
+
+**Experimenter view:** Two sub-agents executed the Phase 246 experiment plan:
+
+Sub-agent 246.1 (high complexity) built and ran src/experiment_246_oh_covariance_64.py
+on an L=64 FCC grid with collision center at (32,32,32). Key results:
+- Unrotated opposite-chirality (pA vs pB): Elastic (reproduces iter_245)
+- First O_h rotation: Chaotic (non-covariance persists on L=64)
+- Second O_h rotation: Chaotic
+- Same-chirality (p
+
+**Notes:** Phase 246 complete. Boundary artifact refuted; non-covariance is a coordinate-rounding artifact (definitional alignment mismatch).
 

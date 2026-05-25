@@ -10023,3 +10023,28 @@ Second, we diagnosed why the previous evolution runs generated breeder exploits:
 
 **Notes:** Breeder exploit resolved by setting max_bit_threshold=12. SubLightFitness flatline verified. Codebase confirmed to be pandas-free.
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 221
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_221: strategy_error
+
+**Analysis:** No yaml block found in response
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: No yaml block found in response
+
