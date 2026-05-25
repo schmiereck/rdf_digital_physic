@@ -3,6 +3,18 @@
 *   **Iteration:** 245
 *   **Pre-Registration File:** src/pre_registration.md
 
+## CPT Operator Definitions
+
+**Parity (P):** Spatial reflection in Cartesian space. Specifically, we invert the x-coordinate: (x,y,z) → (−x,y,z). On the lattice, this is implemented by converting (l,r,c) → Cartesian via BT_inv, negating x, then converting back via BT. This produces the enantiomeric glider with opposite chirality (χ → −χ). The P operator does NOT change the channel assignments of the glider bits.
+
+**Charge Conjugation (C):** On this lattice, "charge" is chirality (the signed 4-volume of the glider's bit positions in Cartesian space). C maps a particle to its enantiomer, which is identical to P on this lattice because chirality is the only discrete charge. C is NOT bitwise inversion (0↔1); bitwise inversion would destroy the glider structure and is not a symmetry of the rule.
+
+**Time Reversal (T):** Running the CA backward: streaming in reverse and applying the inverse LUT. The T-reversed glider propagates in the opposite direction under the inverse rule.
+
+**CPT = C·P·T:** On our lattice, since C≡P, CPT ≡ P²·T = T (since P²=identity for a single reflection). The CPT-conjugate of the LUT-08 glider requires the inverse rule to propagate stably, and is NOT the appropriate object for forward-rule collision experiments.
+
+**For forward-rule collision experiments, the "antiparticle" is defined as the P-reflected (enantiomeric) glider, which is stable under the forward rule by O_h symmetry.**
+
 ## 1. Hypothesis
 The CPT-conjugate of the LUT-08 sub-light glider (obtained by spatial reflection
 of its 4-bit pattern, yielding opposite chirality and reversed velocity) is a
