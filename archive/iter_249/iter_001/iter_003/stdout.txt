@@ -1,0 +1,679 @@
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic'})]
+
+[Tool Result:       $null
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+      apply_fix.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      crash.log
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      edit_fitness.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      find_com_and_bits.py
+      find_mapping.py
+      fix_unwrap.py
+   ...]
+
+
+[Tool Call: list_dir({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src'})]
+
+[Tool Result: [DIR] __pycache__
+      analyze_champion_trajectory.py
+      analyze_collision_dynamics.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_glider_240.18.py
+      analyze_long_run_dynamics.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      analyze_two_body_sweep.py
+      ash_pattern.json
+      asymmetric_collision.py
+      bench_actual.py
+      bench_sim.py
+      bench_sparse.py
+      bench_sparse2.py
+      bre...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\test_oh_diagnostic.py'})]
+
+[Tool Result: import numpy as np
+from src.engine_3d import SHIFTS
+from src.search_3d_gliders import get_oh_permutations
+
+S = np.array(SHIFTS, dtype=float)
+S_pinv = np.linalg.pinv(S)
+perms = get_oh_permutations()
+print('SHIFTS shape:', S.shape)
+print('S_pinv shape:', S_pinv.shape)
+
+for g, perm in enumerate(perms):
+    S_rot = np.array([S[perm[i]] for i in range(12)], dtype=float)
+    M_g = S_rot.T @ S_pinv.T
+    pred = S @ M_g.T
+    err = np.max(np.abs(pred - S_rot))
+    # Check if M_g is orthogonal/reflection...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\engine_3d.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+engine_3d.py — 3D Cuboctahedron (FCC lattice) Lattice Gas Cellular Automaton (LGCA) simulation engine.
+
+This engine implements:
+1. A 3D toroidal grid of shape (L, H, W, 12) representing the 12 velocity channels of the FCC lattice.
+2. The 12 directions defined in the standard projection of FCC onto a stack of hexagonal layers.
+3. A `stream` function that propagates the bits along their respective directions using `np.roll`.
+4. A `collide` function that applies a 12-bit ...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\src\\search_3d_gliders.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+search_3d_gliders.py — Symmetric, bit-conserving, reversible 3D CA rule
+generator and search for 3D gliders.
+
+Pipeline:
+1. Construct the 48 permutations of {0..11} corresponding to the O_h symmetry
+   group of the cuboctahedron by applying all signed permutation matrices in
+   R^3 to the 12 FCC nearest-neighbor vectors.
+2. Decompose the 4096 states of {0,1}^12 into orbits under O_h and group by
+   Hamming weight.
+3. generate_symmetric_lut() produces a bijective, bit-co...]
+
+
+[Tool Call: grep_search({'pattern': 'LUT-08|lut08|lut_08|LUT08', 'include_pattern': '*.py'})]
+
+[Tool Result: test_density.py:6: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_glider_run.py:5: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_orbits.py:7: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_tmp_run.py:36: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+test_tmp_run2.py:42: glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+tmp_check_lut.py:2: with open('archive/iter_224/results/glid...]
+
+
+[Tool Call: grep_search({'pattern': 'LUT-08|lut08|lut_08|LUT08', 'include_pattern': '*.md'})]
+
+[Tool Result: current_state.md:8: - **LUT-08 is a non-interacting composite (iter_248, 248.3):** The "4-bit glider" is 4 independent copies of the [5,6] single-bit period-2 particle. Each bit individually achieves velocity [0.5, 0, 1] in isolation. Bits never share a cell during propagation.
+current_state.md:10: - **Fundamental single-bit spectrum under LUT-08 (iter_248, 248.4):** 6 period-2 cycles with velocities: [0,3]→(0,0.5,-0.5), [1,2]→(0,-0.5,0.5), [4,7]→(0.5,1,-0.5), [5,6]→(0.5,0,1), [8,11]→(0,0,0) sta...]
+
+Let me look at the actual LUT-08 JSON file and some reference scripts to understand the structure.
+
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\archive\\iter_224\\results\\glider_00_lut08_sub03.json', 'end_line': 50})]
+
+[Tool Result: --- lines 1 to 50 of 4754 ---
+{
+  "rank": 0,
+  "lut_seed": 8,
+  "sub_seed": 3,
+  "particle": [
+    [
+      -1,
+      0,
+      -1,
+      5
+    ],
+    [
+      -1,
+      1,
+      0,
+      5
+    ],
+    [
+      0,
+      -1,
+      -1,
+      5
+    ],
+    [
+      0,
+      -1,
+      1,
+      6
+    ]
+  ],
+  "initial_bits": 4,
+  "bit_stable": true,
+  "displacement_norm": 111.80339887498948,
+  "cumulative_displacement": [
+    50.0,
+    0.0,
+    100.0
+  ],
+  "max_extent": 3,
+  "final_extent": [
+    2,
+    3,...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_check_lut.py'})]
+
+[Tool Result: import json, numpy as np
+with open('archive/iter_224/results/glider_00_lut08_sub03.json') as f:
+    ref = json.load(f)
+lut = np.array(ref['lut'], dtype=np.uint16)
+print('LUT shape:', lut.shape)
+for s in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]:
+    out = lut[s]
+    pop_in = bin(s).count('1')
+    pop_out = bin(out).count('1')
+    print(f'lut[{s}] = {out}, pop_in={pop_in}, pop_out={pop_out}')
+
+conserved = all(bin(s).count('1') == bin(int(lut[s])).count('1') for s in range(4096))
+print('...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_check_oh.py'})]
+
+[Tool Result: import numpy as np
+from src.rigorous_glider_audit import build_oh_transforms
+from src.glider_charge_analysis import make_BT
+
+transforms = build_oh_transforms()
+BT, BT_inv = make_BT()
+
+v_grid = np.array([0.5, 0.0, 1.0])
+v_cart = v_grid @ BT_inv
+print(f"LUT-08 v_grid = {v_grid}, norm = {np.linalg.norm(v_grid):.4f}")
+print(f"LUT-08 v_cart = {v_cart}, norm = {np.linalg.norm(v_cart):.4f}")
+print()
+
+# Check how M_g transforms the velocity
+norms_grid = []
+norma_cart = []
+for i, (perm, M_g) in enumerate...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_deep_inspect.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""Deep inspect collision step for LUT-08 reference."""
+import json, numpy as np, sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.engine_3d import stream, collide, pack, SHIFTS
+from src.rigorous_glider_audit import seed_grid
+
+with open('archive/iter_224/results/glider_00_lut08_sub03.json') as f:
+    ref = json.load(f)
+lut = np.array(ref["lut"], dtype=np.uint16)
+particle = [tuple(c) for c in ref["particle"]]
+
+L = 32
+grid = seed_gr...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\test_orbits.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+import json
+import numpy as np
+from src.engine_d4_closed_loop_v2 import ClosedLoopLatchingEngine
+from src.explore_two_body_attraction_v3 import run_simulation
+
+glider_path = "archive/iter_224/results/glider_00_lut08_sub03.json"
+with open(glider_path, "r") as f:
+    glider_data = json.load(f)
+particle = glider_data["particle"]
+lut_seed = glider_data["lut_seed"]
+
+# Let's test a lower threshold or higher eta to see if we get deflection
+alphas = [2.0, 2.5, 3.0]
+thresholds = [0...]
+
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_check_ref_bits.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""Check single-bit velocities for LUT-08 reference."""
+import json, numpy as np, sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.engine_3d import stream, collide
+from src.rigorous_glider_audit import seed_grid, compute_com_circular, bounding_extent
+
+with open('archive/iter_224/results/glider_00_lut08_sub03.json') as f:
+    ref = json.load(f)
+lut = np.array(ref["lut"], dtype=np.uint16)
+particle = [tuple(c) for c in ref["particle"...]
+
+Now let me look at the full LUT data structure, especially the weight-1 and weight-2 mapping
+
+[Tool Call: read_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_check_ref_bits.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""Check single-bit velocities for LUT-08 reference."""
+import json, numpy as np, sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.engine_3d import stream, collide
+from src.rigorous_glider_audit import seed_grid, compute_com_circular, bounding_extent
+
+with open('archive/iter_224/results/glider_00_lut08_sub03.json') as f:
+    ref = json.load(f)
+lut = np.array(ref["lut"], dtype=np.uint16)
+particle = [tuple(c) for c in ref["particle"...]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport json, numpy as np\nwith open(\'archive/iter_224/results/glider_00_lut08_sub03.json\') as f:\n    ref = json.load(f)\nlut = np.array(ref[\'lut\'], dtype=np.uint16)\nprint(\'Weight-1 mappings:\')\nfor ch in range(12):\n    s = 1 << ch\n    out = int(lut[s])\n    out_chs = [i for i in range(12) if (out>>i)&1]\n    print(f\'  ch{ch} (bit {s:4d}) -> {out:4d} = channels {out_chs}\')\nprint()\nprint(\'Weight-2 mappings (all 66 pairs):\')\ncount = 0\nfor ch1 in range(12):\n    for ch2 in range(ch1+1, 12):\n        s = (1<<ch1) | (1<<ch2)\n        out = int(lut[s])\n        out_chs = [i for i in range(12) if (out>>i)&1]\n        is_additive = (lut[1<<ch1] | lut[1<<ch2]) == out\n        marker = \'ADD\' if is_additive else \'NON-ADD\'\n        print(f\'  ch{ch1}-ch{ch2}: {out:4d} = ch{out_chs}  [{marker}]\')\n        count += 1\nprint(f\'Total weight-2: {count}\')\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport json, numpy as np\nwith open(\'archive/iter_224/results/glider_00_lut08_sub03.json\') as f:\n    ref = json.load(f)\nlut = np.array(ref[\'lut\'], dtype=np.uint16)\nprint(\'Weight-1 mappings:\')\nfor ch in range(12):\n    s = 1 << ch\n    out = int(lut[s])\n    out_chs = [i for i in range(12) if (out>>i)&1]\n    print(f\'  ch{ch} (bit {s:4d}) -> {out:4d} = channels {out_chs}\')\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "print(\'hello world\')"'})]
+
+[Tool Result: exit_code: 0
+stdout: hello world
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_analyze_lut.py', 'content': '#!/usr/bin/env python3\n"""Analyze LUT-08: O_h orbits, stabilizers, weight-2 analysis."""\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# 1. Load LUT-08\nprint("=" * 70)\nprint("STEP 1: Loading LUT-08")\nprint("=" * 70)\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\nprint(f"Loaded LUT-08, shape={lut08.shape}")\n\n# 2. Build O_h permutations and action\nprint("\\n" + "=" * 70)\nprint("STEP 2: Building O_h permutations and action")\nprint("=" * 70)\nperms = get_oh_permutations(verbose=True)\nprint(f"Number of permutations: {len(perms)}")\naction = precompute_perm_action(perms)\nprint(f"Action shape: {action.shape}")\n\n# 3. Compute orbits and stabilizers\nprint("\\n" + "=" * 70)\nprint("STEP 3: Computing orbits and stabilizers")\nprint("=" * 70)\norbits, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Count orbits by weight\norbits_by_weight = {}\nfor o in orbits:\n    w = hamming(o[0])\n    orbits_by_weight.setdefault(w, []).append(o)\n\nfor w in range(13):\n    if w in orbits_by_weight:\n        print(f"  Weight {w}: {len(orbits_by_weight[w])} orbits")\n\n# Print weight-1 orbits\nprint("\\nWeight-1 orbits:")\nfor o in orbits_by_weight.get(1, []):\n    rep = o[0]\n    rep_chs = [i for i in range(12) if (rep >> i) & 1]\n    print(f"  Orbit rep={rep:4d} (ch{rep_chs}), size={len(o)}, members={[int(x) for x in o]}")\n\n# 4. For each weight-2 orbit, analyze\nprint("\\n" + "=" * 70)\nprint("STEP 4: Weight-2 orbit analysis")\nprint("=" * 70)\n\n# For quick lookup: precompute lut08 for all states\nlut08_np = np.array(lut08, dtype=np.int32)\n\nweight2_orbits = orbits_by_weight.get(2, [])\nprint(f"Total weight-2 orbits: {len(weight2_orbits)}")\n\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_chs = [i for i in range(12) if (rep >> i) & 1]\n    rep_stab = stabs[rep]\n    rep_size = len(rep_stab)\n    \n    print(f"\\n--- Orbit O_{k} (rep={rep:4d}=ch{rep_chs}, size={len(orb)}, |Stab|={rep_size}) ---")\n    \n    # Find ALL states (across all orbits) with the same stabilizer as rep\n    same_stab_states = [s for s in range(4096) if stabs[s] == rep_stab]\n    \n    print(f"  States with same stabilizer: {len(same_stab_states)}")\n    \n    # For each such state, check if rep -> t is additive or non-additive under LUT-08\n    for t in same_stab_states:\n        t_chs = [i for i in range(12) if (t >> i) & 1]\n        t_in_orbit = orbit_of[t]\n        t_orb_rep = orbits[t_in_orbit][0]\n        t_orb_rep_chs = [i for i in range(12) if (t_orb_rep >> i) & 1]\n        \n        # Check if mapping rep -> t is additive under LUT-08\n        # Additive means: lut08[rep] == (lut08[bit1] | lut08[bit2]) where rep = bit1 | bit2\n        # i.e., the LUT output for the combined state equals the superposition of single-bit outputs\n        bits_set = [i for i in range(12) if (rep >> i) & 1]\n        assert len(bits_set) == 2, f"rep {rep} has {len(bits_set)} bits"\n        ch_a, ch_b = bits_set\n        additive_out = int(lut08[1 << ch_a]) | int(lut08[1 << ch_b])\n        actual_out = int(lut08[rep])\n        is_additive_rep = (additive_out == actual_out)\n        \n        # For the target t\n        bits_set_t = [i for i in range(12) if (t >> i) & 1]\n        ch_a_t, ch_b_t = bits_set_t\n        additive_out_t = int(lut08[1 << ch_a_t]) | int(lut08[1 << ch_b_t])\n        actual_out_t = int(lut08[t])\n        is_additive_t = (additive_out_t == actual_out_t)\n        \n        # The mapping rep -> t is "additive-compatible" if both are additive or both are non-additive\n        # OR more precisely: is the mapping r->t achievable via additive superposition?\n        \n        print(f"    Target t={t:4d}=ch{t_chs} (orbit rep={t_orb_rep:4d}=ch{t_orb_rep_chs})")\n        print(f"      LUT08[rep]={actual_out:4d}, additive_super={additive_out:4d}, rep_additive={is_additive_rep}")\n        print(f"      LUT08[t]={actual_out_t:4d}, additive_super_t={additive_out_t:4d}, t_additive={is_additive_t}")\n        \n        # Physical meaning\n        # Check if rep and t are in the same velocity cycle (same channel pair type)\n        # From current_state.md: weight-1 cycles: ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10\n        w1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\n        \n        def get_cycle(ch):\n            for cyc in w1_cycles:\n                if ch in cyc:\n                    return cyc\n            return None\n        \n        rep_cycles = {get_cycle(ch) for ch in bits_set}\n        t_cycles = {get_cycle(ch) for ch in bits_set_t}\n        \n        same_cycles = (rep_cycles == t_cycles)\n        swap_cycles = (len(rep_cycles & t_cycles) == 0) if len(rep_cycles) == len(t_cycles) else False\n        partial_overlap = len(rep_cycles & t_cycles) > 0 and len(rep_cycles & t_cycles) < len(rep_cycles)\n        \n        if len(rep_cycles) == 2 and len(t_cycles) == 2:\n            if rep_cycles == t_cycles:\n                phys = "SAME VELOCITY CYCLES (bits stay in their respective cycles)"\n            elif len(rep_cycles & t_cycles) == 0:\n                phys = "SWAPPED ACROSS CYCLES (bits exchange velocity cycles)"\n            else:\n                phys = f"PARTIAL OVERLAP: rep_cycles={rep_cycles}, t_cycles={t_cycles}"\n        elif len(rep_cycles) == 1 and len(t_cycles) == 1:\n            if rep_cycles == t_cycles:\n                phys = "SAME VELOCITY CYCLE (both bits in same cycle)"\n            else:\n                phys = f"DIFFERENT CYCLES: rep={rep_cycles} -> t={t_cycles}"\n        else:\n            phys = f"rep_cycles={rep_cycles}, t_cycles={t_cycles}"\n        \n        # Check if {8,11} stationary cycle is involved\n        stationary_cycle = (8, 11)\n        has_stationary_rep = stationary_cycle in rep_cycles\n        has_stationary_t = stationary_cycle in t_cycles\n        \n        if has_stationary_rep and not has_stationary_t:\n            phys += " [LEAVES STATIONARY CYCLE {8,11}]"\n        elif not has_stationary_rep and has_stationary_t:\n            phys += " [ENTERS STATIONARY CYCLE {8,11}]"\n        elif has_stationary_rep and has_stationary_t:\n            phys += " [BOTH IN STATIONARY CYCLE {8,11}]"\n        \n        print(f"      Physical: {phys}")\n\nprint("\\nDone.")'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_analyze_lut.py 2>&1'})]
+
+[Tool Result: exit_code: 1
+stdout: ======================================================================
+STEP 1: Loading LUT-08
+======================================================================
+Loaded LUT-08, shape=(4096,)
+
+======================================================================
+STEP 2: Building O_h permutations and action
+======================================================================
+[oh] built 48 distinct channel permutations from 48 signed perms
+Number of permutations:...]
+
+Good progress! Let me fix the script to filter only weight-2 targets
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""Analyze LUT-08: O_h orbits, stabilizers, weight-2 analysis."""\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# 1. Load LUT-08\nprint("=" * 70)\nprint("STEP 1: Loading LUT-08")\nprint("=" * 70)\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\nprint(f"Loaded LUT-08, shape={lut08.shape}")\n\n# 2. Build O_h permutations and action\nprint("\\n" + "=" * 70)\nprint("STEP 2: Building O_h permutations and action")\nprint("=" * 70)\nperms = get_oh_permutations(verbose=True)\nprint(f"Number of permutations: {len(perms)}")\naction = precompute_perm_action(perms)\nprint(f"Action shape: {action.shape}")\n\n# 3. Compute orbits and stabilizers\nprint("\\n" + "=" * 70)\nprint("STEP 3: Computing orbits and stabilizers")\nprint("=" * 70)\norbits, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Count orbits by weight\norbits_by_weight = {}\nfor o in orbits:\n    w = hamming(o[0])\n    orbits_by_weight.setdefault(w, []).append(o)\n\nfor w in range(13):\n    if w in orbits_by_weight:\n        print(f"  Weight {w}: {len(orbits_by_weight[w])} orbits")\n\n# Print weight-1 orbits\nprint("\\nWeight-1 orbits:")\nfor o in orbits_by_weight.get(1, []):\n    rep = o[0]\n    rep_chs = [i for i in range(12) if (rep >> i) & 1]\n    print(f"  Orbit rep={rep:4d} (ch{rep_chs}), size={len(o)}, members={[int(x) for x in o]}")\n\n# Weight-1 velocity cycles (from current_state.md)\n# ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10\nw1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nw1_cycle_of = {}\nfor ch in range(12):\n    for cyc in w1_cycles:\n        if ch in cyc:\n            w1_cycle_of[ch] = cyc\n            break\n\ndef get_cycle_set(state_bits):\n    """Return set of velocity cycles for a set of channel bits."""\n    return {w1_cycle_of[ch] for ch in state_bits}\n\n# 4. For each weight-2 orbit, analyze\nprint("\\n" + "=" * 70)\nprint("STEP 4: Weight-2 orbit analysis")\nprint("=" * 70)\n\n# Precompute additive outputs for all weight-2 states\ndef additive_lut(state):\n    """Return the additive superposition of single-bit LUT outputs."""\n    bits = [i for i in range(12) if (state >> i) & 1]\n    result = 0\n    for b in bits:\n        result |= int(lut08[1 << b])\n    return result\n\nweight2_orbits = orbits_by_weight.get(2, [])\nprint(f"Total weight-2 orbits: {len(weight2_orbits)}")\n\n# Precompute all weight-2 states\nall_weight2 = [s for s in range(4096) if hamming(s) == 2]\n\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_chs = [i for i in range(12) if (rep >> i) & 1]\n    rep_stab = stabs[rep]\n    rep_size = len(rep_stab)\n    \n    print(f"\\n{\'=\'*60}")\n    print(f"Orbit O_{k} (rep={rep:4d}=ch{rep_chs}, size={len(orb)}, |Stab|={rep_size})")\n    print(f"{\'=\'*60}")\n    \n    # lut08 behavior for rep\n    actual_out_rep = int(lut08[rep])\n    add_out_rep = additive_lut(rep)\n    rep_is_additive = (actual_out_rep == add_out_rep)\n    print(f"  LUT08[{rep:4d}=ch{rep_chs}] -> {actual_out_rep:4d} = ch{[i for i in range(12) if (actual_out_rep>>i)&1]}")\n    print(f"  Additive superposition: {add_out_rep:4d} = ch{[i for i in range(12) if (add_out_rep>>i)&1]}")\n    print(f"  Rep is additive: {rep_is_additive}")\n    \n    # Find ALL weight-2 states with the exact same stabilizer as rep\n    same_stab_w2 = [s for s in all_weight2 if stabs[s] == rep_stab]\n    \n    print(f"\\n  Weight-2 states with SAME stabilizer: {len(same_stab_w2)}")\n    \n    for t in same_stab_w2:\n        t_chs = [i for i in range(12) if (t >> i) & 1]\n        t_in_orbit = orbit_of[t]\n        t_orb_rep = orbits[t_in_orbit][0]\n        t_orb_rep_chs = [i for i in range(12) if (t_orb_rep >> i) & 1]\n        \n        # LUT08 behavior for t\n        actual_out_t = int(lut08[t])\n        add_out_t = additive_lut(t)\n        t_is_additive = (actual_out_t == add_out_t)\n        \n        # Is the mapping rep -> t achievable via additive superposition?\n        # If both are additive, the output is just the sum of single-bit outputs - the mapping is just a relabeling\n        # If both are non-additive (in same way), the mapping preserves non-additivity\n        mapping_is_additive_compatible = (rep_is_additive == t_is_additive)\n        \n        print(f"\\n    Target t={t:4d}=ch{t_chs} (in orbit rep={t_orb_rep:4d}=ch{t_orb_rep_chs})")\n        print(f"      LUT08[t]={actual_out_t:4d}=ch{[i for i in range(12) if (actual_out_t>>i)&1]}, additive={t_is_additive}")\n        print(f"      Mapping r->t additive-compatible: {mapping_is_additive_compatible}")\n        \n        # Physical meaning: velocity cycle analysis\n        rep_cycles = get_cycle_set(rep_chs)\n        t_cycles = get_cycle_set(t_chs)\n        \n        # What happens to the output channels?\n        out_rep_chs = [i for i in range(12) if (actual_out_rep>>i)&1]\n        out_t_chs = [i for i in range(12) if (actual_out_t>>i)&1]\n        out_rep_cycles = get_cycle_set(out_rep_chs)\n        out_t_cycles = get_cycle_set(out_t_chs)\n        \n        rep_desc = f"ch{rep_chs} (cycles {sorted(rep_cycles)})"\n        t_desc = f"ch{t_chs} (cycles {sorted(t_cycles)})"\n        \n        # Same orbit check\n        same_orbit = (orbit_of[rep] == orbit_of[t])\n        if same_orbit:\n            orbit_info = f"SAME ORBIT O_{k}"\n        else:\n            orbit_info = f"ORBIT O_{t_in_orbit} (rep={t_orb_rep:4d}=ch{t_orb_rep_chs})"\n        \n        print(f"      Orbit: {orbit_info}")\n        \n        # Velocity cycle analysis\n        if rep_cycles == t_cycles:\n            cycle_info = "SAME velocity cycles"\n            if len(rep_cycles) == 2:\n                cycle_info += " (two distinct cycles)"\n            elif len(rep_cycles) == 1:\n                cycle_info += " (both bits in same cycle)"\n        elif len(rep_cycles & t_cycles) == 0:\n            if len(rep_cycles) == 2 and len(t_cycles) == 2:\n                cycle_info = "SWAPPED across cycles (bits exchange velocity cycles)"\n            else:\n                cycle_info = f"CROSS-CYCLE: rep_cycles={sorted(rep_cycles)} -> t_cycles={sorted(t_cycles)}"\n        else:\n            cycle_info = f"PARTIAL overlap: rep_cycles={sorted(rep_cycles)} -> t_cycles={sorted(t_cycles)}"\n        \n        # Stationary cycle {8,11} involvement\n        stationary_cycle = (8, 11)\n        if stationary_cycle in rep_cycles and stationary_cycle not in t_cycles:\n            cycle_info += " [LEAVES stationary cycle {8,11}]"\n        elif stationary_cycle not in rep_cycles and stationary_cycle in t_cycles:\n            cycle_info += " [ENTERS stationary cycle {8,11}]"\n        elif stationary_cycle in rep_cycles and stationary_cycle in t_cycles:\n            cycle_info += " [BOTH in stationary cycle {8,11}]"\n        \n        print(f"      Cycles: {cycle_info}")\n        \n        # Compare output cycles vs input cycles\n        print(f"      Input cycles: {sorted(rep_cycles)} -> Output cycles: {sorted(out_rep_cycles)} (for rep)")\n        print(f"      Input cycles: {sorted(t_cycles)} -> Output cycles: {sorted(out_t_cycles)} (for t)")\n\nprint("\\n" + "=" * 70)\nprint("SUMMARY: Weight-2 orbit structure under O_h")\nprint("=" * 70)\n\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_chs = [i for i in range(12) if (rep >> i) & 1]\n    rep_stab = stabs[rep]\n    \n    # Classify the orbit\n    # Same-cycle type: both bits in same velocity cycle\n    if get_cycle_set(rep_chs) and len(get_cycle_set(rep_chs)) == 1:\n        orbit_type = "SAME-CYCLE"\n    else:\n        orbit_type = "CROSS-CYCLE"\n    \n    # Check if stationary cycle involved\n    if (8, 11) in get_cycle_set(rep_chs):\n        orbit_type += " (with stationary {8,11})"\n    \n    members_desc = []\n    for m in orb:\n        chs = [i for i in range(12) if (m >> i) & 1]\n        members_desc.append(f"ch{chs}")\n    \n    print(f"  O_{k}: rep=ch{rep_chs} |Stab|={len(rep_stab)} size={len(orb)} type={orbit_type}")\n    print(f"       members: {members_desc}")\n\nprint("\\nDone.")', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_analyze_lut.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_analyze_lut.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: ======================================================================
+STEP 1: Loading LUT-08
+======================================================================
+Loaded LUT-08, shape=(4096,)
+
+======================================================================
+STEP 2: Building O_h permutations and action
+======================================================================
+[oh] built 48 distinct channel permutations from 48 signed perms
+Number of permutations:...]
+
+Excellent! This is very insightful. Let me extend the analysis to also show the actual stabilizer subgroups and check across orbits more carefully.
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nExtended LUT-08 weight-2 orbit/stabilizer analysis.\nShows: stabilizer subgroups, additive vs non-additive behavior,\nand physical meaning of all same-stabilizer targets.\n"""\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# ============================================================\n# 1. Load LUT-08 & build O_h action\n# ============================================================\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\npermal = get_oh_permutations(verbose=True)\naction = precompute_perm_action(permal)\norbits, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\norbits_by_weight = {}\nfor o in orbits:\n    w = hamming(o[0])\n    orbits_by_weight.setdefault(w, []).append(o)\n\n# Weight-1 velocity cycle info\n# From current_state.md / previous analysis:\n# ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10\nw1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nw1_cycle_of = {ch: cyc for cyc in w1_cycles for ch in cyc}\nw1_lut = {}  # additive LUT mapping for weight-1\nfor ch in range(12):\n    s = 1 << ch\n    w1_lut[ch] = int(lut08[s])\n\ndef additive_lut(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    result = 0\n    for b in bits:\n        result |= w1_lut[b]\n    return result\n\ndef cycles_of(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    return {w1_cycle_of[b] for b in bits}\n\ndef channels_of(state):\n    return [i for i in range(12) if (state >> i) & 1]\n\ndef stab_as_channel_cycles(stab_indices, perm_list):\n    """Describe the stabilizer by showing how it permutes the 12 channels."""\n    # For each perm in the stabilizer, show which channels are fixed or swapped\n    lines = []\n    for gi in stab_indices[:10]:  # limit to first 10\n        sigma = perm_list[gi]\n        # Show non-trivial action\n        fixed = [i for i in range(12) if sigma[i] == i]\n        moved = [(i, sigma[i]) for i in range(12) if sigma[i] != i and i < sigma[i]]\n        if moved:\n            lines.append(f"    g_{gi}: {len(fixed)} fixed, moves: {moved}")\n        else:\n            lines.append(f"    g_{gi}: identity (all 12 fixed)")\n    if len(stab_indices) > 10:\n        lines.append(f"    ... and {len(stab_indices)-10} more")\n    return "\\n".join(lines)\n\n# ============================================================\n# 2. Detailed analysis of each weight-2 orbit\n# ============================================================\nall_weight2 = [s for s in range(4096) if hamming(s) == 2]\n\nprint("=" * 80)\nprint("DETAILED WEIGHT-2 ORBIT ANALYSIS UNDER O_h")\nprint("=" * 80)\n\nfor k, orb in enumerate(orbits_by_weight.get(2, [])):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    print(f"\\n{\'#\'*80}")\n    print(f"# Orbit O_{k}: rep={rep:4d}=ch{channels_of(rep)}")\n    print(f"#   Orbit size: {len(orb)}, |Stabilizer|: {len(rep_stab)}")\n    print(f"#   Members ({len(orb)}):")\n    for m in orb:\n        print(f"#     {m:4d}=ch{channels_of(m)}")\n    print(f"{\'#\'*80}")\n    \n    # Show stabilizer structure\n    print(f"\\n  Stabilizer subgroup for rep ch{channels_of(rep)} ({len(rep_stab)} elements):")\n    print(stab_as_channel_cycles(rep_stab, permal))\n    \n    # LUT behavior for rep\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = (actual_rep == add_rep)\n    print(f"\\n  LUT08[rep={rep:4d}=ch{channels_of(rep)}] -> {actual_rep:4d}=ch{channels_of(actual_rep)}")\n    print(f"  Additive superposition would be: {add_rep:4d}=ch{channels_of(add_rep)}")\n    print(f"  → rep is {\'ADDITIVE\' if rep_add else \'NON-ADDITIVE\'}")\n    \n    # Find all weight-2 states with EXACTLY same stabilizer\n    same_stab_states = [(s, orbit_of[s]) for s in all_weight2 if stabs[s] == rep_stab]\n    \n    print(f"\\n  All weight-2 states with IDENTICAL stabilizer ({len(same_stab_states)} found):")\n    for t, oid in sorted(same_stab_states, key=lambda x: x[0]):\n        actual_t = int(lut08[t])\n        add_t = additive_lut(t)\n        t_add = (actual_t == add_t)\n        same_orbit_mark = "★ SAME ORBIT" if oid == k else f"  orbit O_{oid}"\n        \n        # Physical description\n        rep_cyc = cycles_of(rep)\n        t_cyc = cycles_of(t)\n        \n        # LUT output analysis\n        actual_rep_chs = channels_of(actual_rep)\n        actual_t_chs = channels_of(actual_t)\n        \n        print(f"\\n    State t={t:4d}=ch{channels_of(t)}  [{same_orbit_mark}]")\n        print(f"      LUT08[t] -> {actual_t:4d}=ch{actual_t_chs}  additive={t_add}")\n        \n        if t_add:\n            # For additive: output is just single-bit superposition\n            pass  # already shown\n        \n        # Cycle analysis\n        rep_cyc_sorted = sorted(rep_cyc, key=lambda c: c[0])\n        t_cyc_sorted = sorted(t_cyc, key=lambda c: c[0])\n        \n        if rep_cyc == t_cyc:\n            if len(rep_cyc) == 2:\n                cyc_str = f"SAME cycles: {rep_cyc_sorted} (cross-cycle pair)"\n            else:\n                cyc_str = f"SAME cycle: {rep_cyc_sorted} (both bits in same cycle)"\n        elif len(rep_cyc & t_cyc) == 0:\n            cyc_str = f"SWAPPED cycles: {rep_cyc_sorted} → {t_cyc_sorted}"\n        else:\n            cyc_str = f"PARTIAL: {rep_cyc_sorted} → {t_cyc_sorted}"\n        \n        # Output cycle analysis\n        out_rep_cyc = cycles_of(actual_rep)\n        out_t_cyc = cycles_of(actual_t)\n        \n        print(f"      Input cycles: {cyc_str}")\n        print(f"      Output cycles (rep): {sorted(out_rep_cyc, key=lambda c: c[0])}")\n        print(f"      Output cycles (t):   {sorted(out_t_cyc, key=lambda c: c[0])}")\n        \n        # Stationary cycle involvement\n        stat = (8, 11)\n        if stat in rep_cyc and stat not in t_cyc:\n            print(f"      ** LEAVES stationary cycle {stat} **")\n        elif stat not in rep_cyc and stat in t_cyc:\n            print(f"      ** ENTERS stationary cycle {stat} **")\n        elif stat in rep_cyc and stat in t_cyc:\n            print(f"      ** Both in stationary cycle {stat} **")\n        \n        # Check: does this mapping preserve the pairwise structure?\n        # For additive: mapping just re-labels which channels carry the bits\n        # but the dynamics (stream then collide) remain same\n        if rep_add and t_add:\n            print(f"      → BOTH additive: mapping r→t is just a channel relabeling compatible with LUT-08")\n        elif not rep_add and not t_add:\n            print(f"      → BOTH non-additive: mapping r→t preserves the non-additive interaction")\n        else:\n            print(f"      → MISMATCHED: one additive, one non-additive")\n        \n        # Check if the mapping achieves something specific:\n        # e.g., redirect bits to stationary cycle\n        if stat in t_cyc and stat not in rep_cyc:\n            # Map the individual channels\n            rep_chs = channels_of(rep)\n            t_chs = channels_of(t)\n            mapping_str = f"      Bits redirect: ch{rep_chs} → ch{t_chs}"\n            print(mapping_str)\n    \n    print(f"\\n  {\'─\'*60}")\n\n# ============================================================\n# 3. Summary table\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("SUMMARY: Weight-2 Orbit Classification under O_h")\nprint("=" * 80)\n\nprint(f"\\n{\'Orbit\':<8} {\'Rep\':<8} {\'Size\':<6} {\'|Stab|\':<8} {\'Additive\':<10} {\'Class\':<25} {\'Members\'}")\nprint(f"{\'─\'*8} {\'─\'*8} {\'─\'*6} {\'─\'*8} {\'─\'*10} {\'─\'*25} {\'─\'*40}")\n\nfor k, orb in enumerate(orbits_by_weight.get(2, [])):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = actual_rep == add_rep\n    \n    rep_chs = channels_of(rep)\n    rep_cyc = cycles_of(rep)\n    \n    # Classify\n    if len(rep_cyc) == 1:\n        cls = "same-cycle"\n        if (8,11) in rep_cyc:\n            cls += " (stationary)"\n    else:\n        cls = "cross-cycle"\n    if not rep_add:\n        cls += " [non-additive]"\n    \n    # Sub-classify based on stabilizer size\n    if len(rep_stab) == 8:\n        cls += " (D4)"\n    elif len(rep_stab) == 4:\n        cls += " (D2)"\n    elif len(rep_stab) == 2:\n        cls += " (Z2)"\n    \n    members_str = ", ".join([f"ch{channels_of(m)}" for m in orb])\n    print(f"O_{k:<4} {rep:<8} {len(orb):<6} {len(rep_stab):<8} {\'yes\' if rep_add else \'no\':<10} {cls:<25} {members_str}")\n\n# ============================================================\n# 4. Across-orbit stabilizer comparison\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("CROSS-ORBIT SAME-STABILIZER ANALYSIS")\nprint("=" * 80)\n\nweight2_orbits = orbits_by_weight.get(2, [])\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    # Find states in OTHER orbits with same stabilizer\n    other_same = []\n    for j, other_orb in enumerate(weight2_orbits):\n        if j == k:\n            continue\n        for m in other_orb:\n            if stabs[m] == rep_stab:\n                other_same.append((m, j))\n    \n    if other_same:\n        print(f"\\n  Orbit O_{k} (rep=ch{channels_of(rep)}): found {len(other_same)} cross-orbit same-stabilizer states:")\n        for t, j in other_same:\n            print(f"    t={t:4d}=ch{channels_of(t)} in orbit O_{j}")\n    else:\n        print(f"\\n  Orbit O_{k} (rep=ch{channels_of(rep)}): NO cross-orbit states with identical stabilizer")\n\nprint("\\nDone.")', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_analyze_lut.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_analyze_lut.py 2>&1'})]
+
+[Tool Result: exit_code: 1
+stdout: [oh] built 48 distinct channel permutations from 48 signed perms
+================================================================================
+DETAILED WEIGHT-2 ORBIT ANALYSIS UNDER O_h
+================================================================================
+
+################################################################################
+# Orbit O_0: rep=   3=ch[0, 1]
+#   Orbit size: 12, |Stabilizer|: 4
+#   Members (12):
+#        3=ch[0, 1]
+#        5=c...]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\n# Quick check: ensure we can run without unicode issues\nimport json\nwith open(\'archive/iter_224/results/glider_00_lut08_sub03.json\') as f:\n    ref = json.load(f)\nprint(\'LUT loaded, len=\', len(ref[\'lut\']))\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nExtended LUT-08 weight-2 orbit/stabilizer analysis.\nShows: stabilizer subgroups, additive vs non-additive behavior,\nand physical meaning of all same-stabilizer targets.\n"""\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# ============================================================\n# 1. Load LUT-08 & build O_h action\n# ============================================================\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\npermal = get_oh_permutations(verbose=True)\naction = precompute_perm_action(permal)\norbits, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\norbits_by_weight = {}\nfor o in orbits:\n    w = hamming(o[0])\n    orbits_by_weight.setdefault(w, []).append(o)\n\n# Weight-1 velocity cycle info\n# ch0<->ch3, ch1<->ch2, ch4<->ch7, ch5<->ch6, ch8<->ch11, ch9<->ch10\nw1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nw1_cycle_of = {ch: cyc for cyc in w1_cycles for ch in cyc}\nw1_lut = {}\nfor ch in range(12):\n    s = 1 << ch\n    w1_lut[ch] = int(lut08[s])\n\ndef additive_lut(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    result = 0\n    for b in bits:\n        result |= w1_lut[b]\n    return result\n\ndef cycles_of(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    return {w1_cycle_of[b] for b in bits}\n\ndef channels_of(state):\n    return [i for i in range(12) if (state >> i) & 1]\n\ndef stab_as_channel_cycles(stab_indices, perm_list):\n    lines = []\n    for gi in stab_indices[:10]:\n        sigma = perm_list[gi]\n        fixed = [i for i in range(12) if sigma[i] == i]\n        moved = [(i, sigma[i]) for i in range(12) if sigma[i] != i and i < sigma[i]]\n        if moved:\n            lines.append(f"    g_{gi}: {len(fixed)} fixed, swaps: {moved}")\n        else:\n            lines.append(f"    g_{gi}: identity (all 12 fixed)")\n    if len(stab_indices) > 10:\n        lines.append(f"    ... and {len(stab_indices)-10} more")\n    return "\\n".join(lines)\n\n# ============================================================\n# 2. Detailed analysis of each weight-2 orbit\n# ============================================================\nall_weight2 = [s for s in range(4096) if hamming(s) == 2]\n\nprint("=" * 80)\nprint("DETAILED WEIGHT-2 ORBIT ANALYSIS UNDER O_h")\nprint("=" * 80)\n\nfor k, orb in enumerate(orbits_by_weight.get(2, [])):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    print(f"\\n{\'#\'*80}")\n    print(f"# Orbit O_{k}: rep={rep:4d}=ch{channels_of(rep)}")\n    print(f"#   Orbit size: {len(orb)}, |Stabilizer|: {len(rep_stab)}")\n    print(f"#   Members ({len(orb)}):")\n    for m in orb:\n        print(f"#     {m:4d}=ch{channels_of(m)}")\n    print(f"{\'#\'*80}")\n    \n    # Show stabilizer structure\n    print(f"\\n  Stabilizer subgroup for rep ch{channels_of(rep)} ({len(rep_stab)} elements):")\n    print(stab_as_channel_cycles(rep_stab, permal))\n    \n    # LUT behavior for rep\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = (actual_rep == add_rep)\n    print(f"\\n  LUT08[rep={rep:4d}=ch{channels_of(rep)}] -> {actual_rep:4d}=ch{channels_of(actual_rep)}")\n    print(f"  Additive superposition would be: {add_rep:4d}=ch{channels_of(add_rep)}")\n    print(f"  -> rep is {\'ADDITIVE\' if rep_add else \'NON-ADDITIVE\'}")\n    \n    # Find all weight-2 states with EXACTLY same stabilizer\n    same_stab_states = [(s, orbit_of[s]) for s in all_weight2 if stabs[s] == rep_stab]\n    \n    print(f"\\n  All weight-2 states with IDENTICAL stabilizer ({len(same_stab_states)} found):")\n    for t, oid in sorted(same_stab_states, key=lambda x: x[0]):\n        actual_t = int(lut08[t])\n        add_t = additive_lut(t)\n        t_add = (actual_t == add_t)\n        same_orbit_mark = "** SAME ORBIT **" if oid == k else f"  orbit O_{oid}"\n        \n        rep_cyc = cycles_of(rep)\n        t_cyc = cycles_of(t)\n        actual_rep_chs = channels_of(actual_rep)\n        actual_t_chs = channels_of(actual_t)\n        \n        print(f"\\n    State t={t:4d}=ch{channels_of(t)}  [{same_orbit_mark}]")\n        print(f"      LUT08[t] -> {actual_t:4d}=ch{actual_t_chs}  additive={t_add}")\n        \n        rep_cyc_sorted = sorted(rep_cyc, key=lambda c: c[0])\n        t_cyc_sorted = sorted(t_cyc, key=lambda c: c[0])\n        \n        if rep_cyc == t_cyc:\n            if len(rep_cyc) == 2:\n                cyc_str = f"SAME cycles: {rep_cyc_sorted} (cross-cycle pair)"\n            else:\n                cyc_str = f"SAME cycle: {rep_cyc_sorted} (both bits in same cycle)"\n        elif len(rep_cyc & t_cyc) == 0:\n            cyc_str = f"SWAPPED cycles: {rep_cyc_sorted} -> {t_cyc_sorted}"\n        else:\n            cyc_str = f"PARTIAL: {rep_cyc_sorted} -> {t_cyc_sorted}"\n        \n        out_rep_cyc = cycles_of(actual_rep)\n        out_t_cyc = cycles_of(actual_t)\n        \n        print(f"      Input cycles: {cyc_str}")\n        print(f"      Output cycles (rep): {sorted(out_rep_cyc, key=lambda c: c[0])}")\n        print(f"      Output cycles (t):   {sorted(out_t_cyc, key=lambda c: c[0])}")\n        \n        stat = (8, 11)\n        if stat in rep_cyc and stat not in t_cyc:\n            print(f"      ** LEAVES stationary cycle {stat} **")\n        elif stat not in rep_cyc and stat in t_cyc:\n            print(f"      ** ENTERS stationary cycle {stat} **")\n        elif stat in rep_cyc and stat in t_cyc:\n            print(f"      ** Both in stationary cycle {stat} **")\n        \n        if rep_add and t_add:\n            print(f"      -> BOTH additive: mapping r->t is just a channel relabeling compatible with LUT-08")\n        elif not rep_add and not t_add:\n            print(f"      -> BOTH non-additive: mapping r->t preserves the non-additive interaction")\n        else:\n            print(f"      -> MISMATCHED: one additive, one non-additive")\n        \n        if stat in t_cyc and stat not in rep_cyc:\n            rep_chs = channels_of(rep)\n            t_chs = channels_of(t)\n            print(f"      Bits redirect: ch{rep_chs} -> ch{t_chs}")\n    \n    print(f"\\n  {\'-\'*60}")\n\n# ============================================================\n# 3. Summary table\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("SUMMARY: Weight-2 Orbit Classification under O_h")\nprint("=" * 80)\n\nprint(f"{\'Orbit\':<8} {\'Rep\':<8} {\'Size\':<6} {\'|Stab|\':<8} {\'Additive\':<10} {\'Class\':<30} {\'Members\'}")\nprint(f"{\'-\'*8} {\'-\'*8} {\'-\'*6} {\'-\'*8} {\'-\'*10} {\'-\'*30} {\'-\'*40}")\n\nfor k, orb in enumerate(orbits_by_weight.get(2, [])):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = actual_rep == add_rep\n    \n    rep_chs = channels_of(rep)\n    rep_cyc = cycles_of(rep)\n    \n    cls = ""\n    if len(rep_cyc) == 1:\n        cls = "same-cycle"\n        if (8,11) in rep_cyc:\n            cls += " (stationary)"\n    else:\n        cls = "cross-cycle"\n    if not rep_add:\n        cls += " [non-additive]"\n    \n    if len(rep_stab) == 8:\n        cls += " (D4)"\n    elif len(rep_stab) == 4:\n        cls += " (D2)"\n    elif len(rep_stab) == 2:\n        cls += " (Z2)"\n    \n    members_str = ", ".join([f"ch{channels_of(m)}" for m in orb])\n    print(f"O_{k:<4} {rep:<8} {len(orb):<6} {len(rep_stab):<8} {\'yes\' if rep_add else \'no\':<10} {cls:<30} {members_str}")\n\n# ============================================================\n# 4. Cross-orbit same-stabilizer analysis\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("CROSS-ORBIT SAME-STABILIZER ANALYSIS")\nprint("=" * 80)\n\nweight2_orbits = orbits_by_weight.get(2, [])\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    other_same = []\n    for j, other_orb in enumerate(weight2_orbits):\n        if j == k:\n            continue\n        for m in other_orb:\n            if stabs[m] == rep_stab:\n                other_same.append((m, j))\n    \n    if other_same:\n        print(f"\\n  Orbit O_{k} (rep=ch{channels_of(rep)}): found {len(other_same)} cross-orbit same-stabilizer states:")\n        for t, j in other_same:\n            print(f"    t={t:4d}=ch{channels_of(t)} in orbit O_{j}")\n    else:\n        print(f"\\n  Orbit O_{k} (rep=ch{channels_of(rep)}): NO cross-orbit states with identical stabilizer")\n\n# ============================================================\n# 5. Practical interpretation: what does each orbit mean for dynamics?\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("PHYSICAL INTERPRETATION")\nprint("=" * 80)\n\nprint("""\nWeight-2 states represent two bits in the same cell (a "double-occupancy" event).\nUnder stream+collide dynamics, the collision step maps the input weight-2 state\nto an output weight-2 state. The meaning depends on which orbit the state belongs to:\n""")\n\nfor k, orb in enumerate(weight2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = actual_rep == add_rep\n    rep_chs = channels_of(rep)\n    rep_cyc = cycles_of(rep)\n    \n    print(f"Orbit O_{k} (rep=ch{rep_chs}):")\n    \n    if len(rep_cyc) == 1:\n        cyc_name = str(sorted(rep_cyc)[0])\n        print(f"  Both bits in the SAME velocity cycle {cyc_name}.")\n        print(f"  These are same-cycle pairs within the same period-2 transposition.")\n        if (8,11) in rep_cyc:\n            print(f"  Since {cyc_name} is the stationary cycle (ch8<->ch11), this is a stationary oscillator.")\n    else:\n        cyc_names = sorted(rep_cyc, key=lambda c: c[0])\n        print(f"  Bits in DIFFERENT velocity cycles: {cyc_names}.")\n        print(f"  These are cross-cycle pairings.")\n    \n    if rep_add:\n        print(f"  LUT-08 acts ADDITIVELY: the output is simply the bitwise OR of the individual single-bit outputs.")\n        print(f"  This means the two bits scatter independently even though they share a cell.")\n    else:\n        out_chs = channels_of(actual_rep)\n        print(f"  LUT-08 acts NON-ADDITIVELY: the output differs from the bitwise-OR of single-bit outputs.")\n        print(f"  Rep input ch{rep_chs} -> output ch{out_chs}.")\n        print(f"  This means the two bits INTERACT when they share a cell!")\n    \n    print(f"  Stabilizer size: {len(rep_stab)} (out of 48 O_h elements fix this state)")\n    \n    # List all same-stabilizer mappings available\n    same_stab = [t for t in orb if stabs[t] == rep_stab]\n    print(f"  Within-orbit same-stabilizer targets: {len(same_stab)}")\n    for t in same_stab:\n        t_chs = channels_of(t)\n        t_cyc = cycles_of(t)\n        if t_cyc == rep_cyc:\n            print(f"    ch{t_chs} - same cycles (stays in {sorted(t_cyc, key=lambda c:c[0])})")\n        else:\n            print(f"    ch{t_chs} - swapped cycles (to {sorted(t_cyc, key=lambda c:c[0])})")\n    \n    print()\n\nprint("""\nKEY INSIGHT:\n- The stabilizer subgroup determines which O_h symmetries preserve a state.\n- States with the SAME stabilizer can be mapped to each other by an O_h-equivariant bijection\n  (this is exactly how the symmetric LUT is constructed in generate_symmetric_lut()).\n- In LUT-08, weight-2 states are either:\n  * ADDITIVE: output = sum of single-bit outputs (no interaction between co-located bits)\n  * NON-ADDITIVE: output differs from sum (genuine two-body interaction)\n- The same-cycle orbit O_1 (ch1-ch2, ch0-ch3, ch5-ch6, ch4-ch7, ch9-ch10, ch8-ch11)\n  has the largest stabilizer (D4, 8 elements) and all its members are additive.\n- The cross-cycle orbits O_0 (D2, 4 elements) is fully additive.\n- The cross-cycle orbits O_2 and O_3 (Z2, 2 elements) are NON-ADDITIVE - \n  these are the states where genuine two-bit interactions occur!\n""")\n\nprint("\\nDone.")', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_analyze_lut.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_analyze_lut.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: [oh] built 48 distinct channel permutations from 48 signed perms
+================================================================================
+DETAILED WEIGHT-2 ORBIT ANALYSIS UNDER O_h
+================================================================================
+
+################################################################################
+# Orbit O_0: rep=   3=ch[0, 1]
+#   Orbit size: 12, |Stabilizer|: 4
+#   Members (12):
+#        3=ch[0, 1]
+#        5=c...]
+
+I notice a bug in the orbit labeling. Let me fix it to properly track global orbit indices
+
+[Tool Call: write_file({'content': '#!/usr/bin/env python3\n"""\nLUT-08 weight-2 orbit/stabilizer analysis.\nProperly tracks global orbit indices and cross-orbit same-stabilizer states.\n"""\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# ============================================================\n# 1. Load LUT-08 & build O_h action\n# ============================================================\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\npermal = get_oh_permutations(verbose=True)\naction = precompute_perm_action(permal)\norbits, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Build map: global orbit index -> weight-2 orbit index\nglobal_to_w2_index = {}\nw2_orbits = []\nfor gidx, o in enumerate(orbits):\n    w = hamming(o[0])\n    if w == 2:\n        global_to_w2_index[gidx] = len(w2_orbits)\n        w2_orbits.append((gidx, o))\n\nprint(f"Total orbits: {len(orbits)}")\nprint(f"Weight-2 orbits: {len(w2_orbits)}")\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    rep = orb[0]\n    print(f"  Local O_{local_k} <-> Global orbit #{gidx}: rep={rep:4d}=ch{[i for i in range(12) if (rep>>i)&1]}, size={len(orb)}")\n\n# Weight-1 velocity cycles\nw1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nw1_cycle_of = {ch: cyc for cyc in w1_cycles for ch in cyc}\nw1_lut = {}\nfor ch in range(12):\n    s = 1 << ch\n    w1_lut[ch] = int(lut08[s])\n\ndef additive_lut(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    result = 0\n    for b in bits:\n        result |= w1_lut[b]\n    return result\n\ndef cycles_of(state):\n    bits = [i for i in range(12) if (state >> i) & 1]\n    return {w1_cycle_of[b] for b in bits}\n\ndef channels_of(state):\n    return [i for i in range(12) if (state >> i) & 1]\n\n# ============================================================\n# 2. Detailed analysis per weight-2 orbit\n# ============================================================\nall_weight2 = [s for s in range(4096) if hamming(s) == 2]\n\nprint("\\n" + "=" * 80)\nprint("DETAILED WEIGHT-2 ORBIT ANALYSIS")\nprint("=" * 80)\n\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    print(f"\\n{\'#\'*80}")\n    print(f"# Orbit O_{local_k} (global #{gidx}): rep={rep:4d}=ch{channels_of(rep)}")\n    print(f"#   Size: {len(orb)}, |Stab|: {len(rep_stab)}")\n    print(f"#   Members:")\n    for m in orb:\n        print(f"#     {m:4d}=ch{channels_of(m)}")\n    print(f"{\'#\'*80}")\n    \n    # LUT behavior for rep\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = (actual_rep == add_rep)\n    print(f"\\n  LUT08[rep={rep:4d}=ch{channels_of(rep)}] -> {actual_rep:4d}=ch{channels_of(actual_rep)}")\n    print(f"  Additive superposition: {add_rep:4d}=ch{channels_of(add_rep)}")\n    print(f"  -> rep is {\'ADDITIVE\' if rep_add else \'NON-ADDITIVE\'}")\n    \n    # Find ALL weight-2 states with same stabilizer (across ALL orbits)\n    same_stab_states = [(s, orbit_of[s]) for s in all_weight2 if stabs[s] == rep_stab]\n    \n    print(f"\\n  All weight-2 states with IDENTICAL stabilizer ({len(same_stab_states)} found):")\n    for t, toid in sorted(same_stab_states, key=lambda x: x[0]):\n        actual_t = int(lut08[t])\n        add_t = additive_lut(t)\n        t_add = (actual_t == add_t)\n        \n        # Determine local orbit index\n        if toid in global_to_w2_index:\n            t_local_k = global_to_w2_index[toid]\n            orbit_label = f"SAME ORBIT O_{local_k}" if t_local_k == local_k else f"ORBIT O_{t_local_k}"\n        else:\n            orbit_label = f"global orbit #{toid} (non-weight-2?)"\n        \n        rep_cyc = cycles_of(rep)\n        t_cyc = cycles_of(t)\n        actual_rep_chs = channels_of(actual_rep)\n        actual_t_chs = channels_of(actual_t)\n        \n        print(f"\\n    Target t={t:4d}=ch{channels_of(t)}  [{orbit_label}]")\n        print(f"      LUT08[t] -> {actual_t:4d}=ch{actual_t_chs}  additive={t_add}")\n        \n        rep_cyc_sorted = sorted(rep_cyc, key=lambda c: c[0])\n        t_cyc_sorted = sorted(t_cyc, key=lambda c: c[0])\n        \n        if rep_cyc == t_cyc:\n            if len(rep_cyc) == 2:\n                cyc_str = f"SAME cycles: {rep_cyc_sorted} (cross-cycle)"\n            else:\n                cyc_str = f"SAME cycle: {rep_cyc_sorted} (same-cycle)"\n        elif len(rep_cyc & t_cyc) == 0:\n            cyc_str = f"SWAPPED cycles: {rep_cyc_sorted} -> {t_cyc_sorted}"\n        else:\n            cyc_str = f"PARTIAL: {rep_cyc_sorted} -> {t_cyc_sorted}"\n        \n        out_rep_cyc = cycles_of(actual_rep)\n        out_t_cyc = cycles_of(actual_t)\n        \n        print(f"      Input cycles: {cyc_str}")\n        print(f"      Output cycles (rep): {sorted(out_rep_cyc, key=lambda c: c[0])}")\n        print(f"      Output cycles (t):   {sorted(out_t_cyc, key=lambda c: c[0])}")\n        \n        stat = (8, 11)\n        if stat in rep_cyc and stat not in t_cyc:\n            print(f"      ** LEAVES stationary cycle {stat} **")\n        elif stat not in rep_cyc and stat in t_cyc:\n            print(f"      ** ENTERS stationary cycle {stat} **")\n        elif stat in rep_cyc and stat in t_cyc:\n            print(f"      ** Both in stationary cycle {stat} **")\n        \n        if rep_add and t_add:\n            print(f"      -> BOTH additive: r->t is a channel relabeling compatible with LUT-08")\n        elif not rep_add and not t_add:\n            print(f"      -> BOTH non-additive: preserves the non-additive interaction")\n        else:\n            print(f"      -> MISMATCHED additive behavior")\n    \n    print(f"\\n  {\'-\'*60}")\n\n# ============================================================\n# 3. Summary table\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("SUMMARY: Weight-2 Orbit Classification under O_h")\nprint("=" * 80)\n\nprint(f"{\'O_k\':<6} {\'Rep\':<8} {\'Size\':<6} {\'|Stab|\':<8} {\'Additive\':<10} {\'Cycles\':<20} {\'Class\'}")\nprint(f"{\'-\'*6} {\'-\'*8} {\'-\'*6} {\'-\'*8} {\'-\'*10} {\'-\'*20} {\'-\'*30}")\n\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = actual_rep == add_rep\n    rep_chs = channels_of(rep)\n    rep_cyc = cycles_of(rep)\n    \n    cyc_str = str(sorted(rep_cyc, key=lambda c: c[0]))\n    \n    if len(rep_cyc) == 1:\n        cls = "same-cycle"\n        if (8,11) in rep_cyc:\n            cls += " (stationary)"\n    else:\n        cls = "cross-cycle"\n    if not rep_add:\n        cls += " [NON-ADD]"\n    \n    if len(rep_stab) == 8:\n        cls += " (D4)"\n    elif len(rep_stab) == 4:\n        cls += " (D2)"\n    elif len(rep_stab) == 2:\n        cls += " (Z2)"\n    \n    add_label = "yes" if rep_add else "NO"\n    print(f"O_{local_k:<3} {str(rep):<8} {len(orb):<6} {len(rep_stab):<8} {add_label:<10} {cyc_str:<20} {cls}")\n\n# ============================================================\n# 4. Cross-orbit same-stabilizer analysis\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("CROSS-ORBIT SAME-STABILIZER ANALYSIS")\nprint("=" * 80)\n\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    \n    other_same = []\n    for local_j, (jgidx, jorb) in enumerate(w2_orbits):\n        if local_j == local_k:\n            continue\n        for m in jorb:\n            if stabs[m] == rep_stab:\n                other_same.append((m, local_j))\n    \n    if other_same:\n        print(f"\\n  O_{local_k} (rep=ch{channels_of(rep)}): {len(other_same)} cross-orbit same-stabilizer state(s):")\n        for t, j in other_same:\n            print(f"    t={t:4d}=ch{channels_of(t)}  in orbit O_{j}")\n    else:\n        print(f"\\n  O_{local_k} (rep=ch{channels_of(rep)}): NO cross-orbit same-stabilizer states")\n\n# ============================================================\n# 5. Check each orbit member\'s stabilizer uniqueness\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("STABILIZER CLASSES WITHIN EACH ORBIT")\nprint("=" * 80)\n\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    stab_classes = {}\n    for m in orb:\n        s = stabs[m]\n        stab_classes.setdefault(s, []).append(m)\n    \n    print(f"\\n  O_{local_k} (rep=ch{channels_of(orb[0])}): {len(stab_classes)} distinct stabilizer classes among {len(orb)} members")\n    for si, (stab, members) in enumerate(stab_classes.items()):\n        print(f"    Class {si}: |Stab|={len(stab)}, count={len(members)} members: {[f\'ch{channels_of(m)}\' for m in members]}")\n\n# ============================================================\n# 6. Physical interpretation\n# ============================================================\nprint("\\n" + "=" * 80)\nprint("PHYSICAL INTERPRETATION")\nprint("=" * 80)\n\nprint("""\nWeight-2 states represent two bits arriving at the same cell simultaneously.\nUnder the collide step, LUT-08 maps input weight-2 -> output weight-2.\nThe key question: does this mapping equal the bitwise-OR of individual\nsingle-bit outputs (ADDITIVE = no interaction), or differ (NON-ADDITIVE = interaction)?\n""")\n\nfor local_k, (gidx, orb) in enumerate(w2_orbits):\n    rep = orb[0]\n    rep_stab = stabs[rep]\n    actual_rep = int(lut08[rep])\n    add_rep = additive_lut(rep)\n    rep_add = actual_rep == add_rep\n    rep_chs = channels_of(rep)\n    rep_cyc = cycles_of(rep)\n    \n    print(f"Orbit O_{local_k} (rep=ch{rep_chs}):")\n    \n    if len(rep_cyc) == 1:\n        cyc = sorted(rep_cyc)[0]\n        print(f"  Both bits in the SAME velocity cycle {cyc}.")\n        print(f"  Since ch{cyc[0]}<->ch{cyc[1]} is a period-2 transposition, these bits")\n        print(f"  maintain their velocity cycle identity.")\n    else:\n        cyc_list = sorted(rep_cyc, key=lambda c: c[0])\n        print(f"  Bits in DIFFERENT velocity cycles: {cyc_list}.")\n        print(f"  Cross-cycle pairing between two distinct velocity families.")\n    \n    if rep_add:\n        print(f"  ADDITIVE: output = single-bit outputs OR\'d together.")\n        print(f"  No two-body interaction - bits scatter independently.")\n    else:\n        out_chs = channels_of(actual_rep)\n        print(f"  NON-ADDITIVE: output ({out_chs}) differs from additive ({channels_of(add_rep)}).")\n        print(f"  Genuine TWO-BODY interaction when these bits co-occupy a cell!")\n    \n    # Same-stabilizer targets within orbit\n    same_stab_members = [m for m in orb if stabs[m] == rep_stab]\n    if same_stab_members:\n        print(f"  Same-stabilizer targets within orbit ({len(same_stab_members)}):")\n        for m in same_stab_members:\n            m_chs = channels_of(m)\n            m_cyc = cycles_of(m)\n            if m_cyc == rep_cyc:\n                print(f"    ch{m_chs} - preserves cycle assignment")\n            else:\n                print(f"    ch{m_chs} - swaps to {sorted(m_cyc, key=lambda c:c[0])}")\n    \n    # Check stationary cycle involvement\n    stat = (8, 11)\n    has_stat = any(stat in cycles_of(m) for m in orb)\n    if has_stat:\n        print(f"  Involves stationary cycle {stat} (ch8<->ch11, zero velocity)")\n    \n    print()\n\nprint(""========================================================================""")\nprint("FINDINGS:")\nprint("1. Orbit O_0 (D2, additive): cross-cycle pairs between cycles [(0,3),(1,2)],")\nprint("   [(4,7),(5,6)], [(8,9),(10,11)]. These bits do NOT interact.")\nprint("2. Orbit O_1 (D4, additive): same-cycle pairs. Bits in same velocity cycle.")\nprint("   Largest stabilizer (8 elements). These bits do NOT interact.")\nprint("3. Orbit O_2 (Z2, NON-additive): cross-cycle pairs (0,3)-(4,7) family.")\nprint("   THESE BITS INTERACT when co-located! LUT-08 has genuine 2-body physics here.")\nprint("4. Orbit O_3 (Z2, NON-additive): cross-cycle pairs (1,2)-(4,7) family.")\nprint("   ALSO INTERACTIVE. LUT-08 output swaps channels between cycles.")\nprint("")\nprint("IMPORTANT: The non-additive orbits O_2 and O_3 involve channel pairs from")\nprint("different velocity cycles. These are the only weight-2 states where the")\nprint("collision produces a qualitatively different outcome from superposition.")\nprint("This is where genuine physical interactions (scattering, deflection)")\nprint("occur in the LUT-08 rule.")\nprint("=" * 70)\nprint("")\nprint("In the context of the 4-bit LUT-08 glider (which consists of 4 copies of")\nprint("the [5,6] single-bit channel): since the 4 bits propagate in the same")\nprint("velocity cycle (5,6), they never produce weight-2 collisions (they never")\nprint("occupy the same cell simultaneously). This confirms the finding from")\nprint("iter_248 that LUT-08 is a non-interacting composite of 4 independent bits.")\nprint("=" * 70)\n\nprint("\\nDone.")', 'path': 'C:\\Users\\thomas\\Projekte\\rdf_digital_physic\\tmp_analyze_lut.py'})]
+
+[Tool Result: Successfully wrote to C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python tmp_analyze_lut.py 2>&1'})]
+
+[Tool Result: exit_code: 1
+stdout:   File "C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py", line 308
+    print(""========================================================================""")
+                                                                                    ^
+SyntaxError: unterminated triple-quoted string literal (detected at line 333)
+
+stderr: ]
+
+
+[NUDGE RESPONSE]
+<｜｜DSML｜｜tool_calls>
+<｜｜DSML｜｜invoke name="write_file">
+<｜｜DSML｜｜parameter name="content" string="true">#!/usr/bin/env python3
+"""
+LUT-08 weight-2 orbit/stabilizer analysis.
+"""
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(__file__).parent.resolve()
+sys.path.insert(0, str(ROOT / "src"))
+
+from search_3d_gliders import (
+    get_oh_permutations,
+    precompute_perm_action,
+    compute_orbits,
+    compute_all_stabilizers,
+    hamming,
+)
+
+# 1. Load LUT-08 & build O_h action
+with open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:
+    ref = json.load(f)
+lut08 = np.array(ref["lut"], dtype=np.uint16)
+
+permal = get_oh_permutations(verbose=True)
+action = precompute_perm_action(permal)
+orbits, orbit_of = compute_orbits(action)
+stabs = compute_all_stabilizers(action)
+
+# Build map: global orbit index -> weight-2 orbit index
+global_to_w2_index = {}
+w2_orbits = []
+for gidx, o in enumerate(orbits):
+    w = hamming(o[0])
+    if w == 2:
+        global_to_w2_index[gidx] = len(w2_orbits)
+        w2_orbits.append((gidx, o))
+
+print(f"Total orbits: {len(orbits)}")
+print(f"Weight-2 orbits: {len(w2_orbits)}")
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    rep = orb[0]
+    print(f"  Local O_{local_k} <-> Global #{gidx}: rep={rep:4d}=ch{[i for i in range(12) if (rep>>i)&1]}, size={len(orb)}")
+
+# Weight-1 velocity cycles
+w1_cycles = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]
+w1_cycle_of = {ch: cyc for cyc in w1_cycles for ch in cyc}
+w1_lut = {}
+for ch in range(12):
+    w1_lut[ch] = int(lut08[1 << ch])
+
+def additive_lut(state):
+    bits = [i for i in range(12) if (state >> i) & 1]
+    result = 0
+    for b in bits:
+        result |= w1_lut[b]
+    return result
+
+def cycles_of(state):
+    bits = [i for i in range(12) if (state >> i) & 1]
+    return {w1_cycle_of[b] for b in bits}
+
+def channels_of(state):
+    return [i for i in range(12) if (state >> i) & 1]
+
+# 2. Detailed analysis per weight-2 orbit
+all_weight2 = [s for s in range(4096) if hamming(s) == 2]
+
+print("\n" + "=" * 80)
+print("DETAILED WEIGHT-2 ORBIT ANALYSIS")
+print("=" * 80)
+
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    rep = orb[0]
+    rep_stab = stabs[rep]
+    
+    print(f"\n{'#'*80}")
+    print(f"# Orbit O_{local_k} (global #{gidx}): rep={rep:4d}=ch{channels_of(rep)}")
+    print(f"#   Size: {len(orb)}, |Stab|: {len(rep_stab)}")
+    print(f"#   Members:")
+    for m in orb:
+        print(f"#     {m:4d}=ch{channels_of(m)}")
+    print(f"{'#'*80}")
+    
+    actual_rep = int(lut08[rep])
+    add_rep = additive_lut(rep)
+    rep_add = (actual_rep == add_rep)
+    print(f"\n  LUT08[rep={rep:4d}=ch{channels_of(rep)}] -> {actual_rep:4d}=ch{channels_of(actual_rep)}")
+    print(f"  Additive superposition: {add_rep:4d}=ch{channels_of(add_rep)}")
+    print(f"  -> rep is {'ADDITIVE' if rep_add else 'NON-ADDITIVE'}")
+    
+    same_stab_states = [(s, orbit_of[s]) for s in all_weight2 if stabs[s] == rep_stab]
+    
+    print(f"\n  All weight-2 states with IDENTICAL stabilizer ({len(same_stab_states)} found):")
+    for t, toid in sorted(same_stab_states, key=lambda x: x[0]):
+        actual_t = int(lut08[t])
+        add_t = additive_lut(t)
+        t_add = (actual_t == add_t)
+        
+        if toid in global_to_w2_index:
+            t_local_k = global_to_w2_index[toid]
+            orbit_label = f"SAME ORBIT O_{local_k}" if t_local_k == local_k else f"ORBIT O_{t_local_k}"
+        else:
+            orbit_label = f"global #{toid}"
+        
+        rep_cyc = cycles_of(rep)
+        t_cyc = cycles_of(t)
+        
+        print(f"\n    Target t={t:4d}=ch{channels_of(t)}  [{orbit_label}]")
+        print(f"      LUT08[t] -> {actual_t:4d}=ch{channels_of(actual_t)}  additive={t_add}")
+        
+        rep_cyc_sorted = sorted(rep_cyc, key=lambda c: c[0])
+        t_cyc_sorted = sorted(t_cyc, key=lambda c: c[0])
+        
+        if rep_cyc == t_cyc:
+            if len(rep_cyc) == 2:
+                cyc_str = f"SAME cycles: {rep_cyc_sorted} (cross-cycle)"
+            else:
+                cyc_str = f"SAME cycle: {rep_cyc_sorted} (same-cycle)"
+        elif len(rep_cyc & t_cyc) == 0:
+            cyc_str = f"SWAPPED cycles: {rep_cyc_sorted} -> {t_cyc_sorted}"
+        else:
+            cyc_str = f"PARTIAL: {rep_cyc_sorted} -> {t_cyc_sorted}"
+        
+        out_rep_cyc = cycles_of(actual_rep)
+        out_t_cyc = cycles_of(actual_t)
+        
+        print(f"      Input cycles: {cyc_str}")
+        print(f"      Output cycles (rep): {sorted(out_rep_cyc, key=lambda c: c[0])}")
+        print(f"      Output cycles (t):   {sorted(out_t_cyc, key=lambda c: c[0])}")
+        
+        stat = (8, 11)
+        if stat in rep_cyc and stat not in t_cyc:
+            print(f"      ** LEAVES stationary cycle {stat} **")
+        elif stat not in rep_cyc and stat in t_cyc:
+            print(f"      ** ENTERS stationary cycle {stat} **")
+        elif stat in rep_cyc and stat in t_cyc:
+            print(f"      ** Both in stationary cycle {stat} **")
+        
+        if rep_add and t_add:
+            print(f"      -> BOTH additive: r->t is a channel relabeling")
+        elif not rep_add and not t_add:
+            print(f"      -> BOTH non-additive: preserves non-additive interaction")
+        else:
+            print(f"      -> MISMATCHED additive behavior")
+
+# 3. Summary table
+print("\n" + "=" * 80)
+print("SUMMARY: Weight-2 Orbit Classification under O_h")
+print("=" * 80)
+print(f"{'O_k':<6} {'Rep':<8} {'Size':<6} {'|Stab|':<8} {'Additive':<10} {'Cycles':<20} {'Class'}")
+print(f"{'-'*6} {'-'*8} {'-'*6} {'-'*8} {'-'*10} {'-'*20} {'-'*30}")
+
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    rep = orb[0]
+    rep_stab = stabs[rep]
+    actual_rep = int(lut08[rep])
+    add_rep = additive_lut(rep)
+    rep_add = actual_rep == add_rep
+    rep_chs = channels_of(rep)
+    rep_cyc = cycles_of(rep)
+    cyc_str = str(sorted(rep_cyc, key=lambda c: c[0]))
+    
+    if len(rep_cyc) == 1:
+        cls = "same-cycle"
+        if (8,11) in rep_cyc:
+            cls += " (stat)"
+    else:
+        cls = "cross-cycle"
+    if not rep_add:
+        cls += " [NON-ADD]"
+    if len(rep_stab) == 8:
+        cls += " (D4)"
+    elif len(rep_stab) == 4:
+        cls += " (D2)"
+    elif len(rep_stab) == 2:
+        cls += " (Z2)"
+    
+    print(f"O_{local_k:<3} {str(rep):<8} {len(orb):<6} {len(rep_stab):<8} {'yes' if rep_add else 'NO':<10} {cyc_str:<20} {cls}")
+
+# 4. Cross-orbit same-stabilizer analysis
+print("\n" + "=" * 80)
+print("CROSS-ORBIT SAME-STABILIZER ANALYSIS")
+print("=" * 80)
+
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    rep = orb[0]
+    rep_stab = stabs[rep]
+    other_same = []
+    for local_j, (jgidx, jorb) in enumerate(w2_orbits):
+        if local_j == local_k:
+            continue
+        for m in jorb:
+            if stabs[m] == rep_stab:
+                other_same.append((m, local_j))
+    if other_same:
+        print(f"\n  O_{local_k}: {len(other_same)} cross-orbit same-stabilizer state(s):")
+        for t, j in other_same:
+            print(f"    t={t:4d}=ch{channels_of(t)}  in O_{j}")
+    else:
+        print(f"\n  O_{local_k}: NO cross-orbit same-stabilizer states")
+
+# 5. Stabilizer classes within each orbit
+print("\n" + "=" * 80)
+print("STABILIZER CLASSES WITHIN EACH ORBIT")
+print("=" * 80)
+
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    stab_classes = {}
+    for m in orb:
+        s = stabs[m]
+        stab_classes.setdefault(tuple(s), []).append(m)
+    print(f"\n  O_{local_k} (rep=ch{channels_of(orb[0])}): {len(stab_classes)} distinct stabilizer classes among {len(orb)} members")
+    for si, (stab, members) in enumerate(stab_classes.items()):
+        print(f"    Class {si}: |Stab|={len(stab)}, count={len(members)}: {[f'ch{channels_of(m)}' for m in members]}")
+
+# 6. Physical interpretation
+print("\n" + "=" * 80)
+print("PHYSICAL INTERPRETATION")
+print("=" * 80)
+
+for local_k, (gidx, orb) in enumerate(w2_orbits):
+    rep = orb[0]
+    rep_stab = stabs[rep]
+    actual_rep = int(lut08[rep])
+    add_rep = additive_lut(rep)
+    rep_add = actual_rep == add_rep
+    rep_chs = channels_of(rep)
+    rep_cyc = cycles_of(rep)
+    
+    print(f"\nOrbit O_{local_k} (rep=ch{rep_chs}):")
+    if len(rep_cyc) == 1:
+        cyc = sorted(rep_cyc)[0]
+        print(f"  Both bits in SAME velocity cycle {cyc}.")
+    else:
+        print(f"  Bits in DIFFERENT cycles: {sorted(rep_cyc, key=lambda c:c[0])}.")
+    
+    if rep_add:
+        print(f"  ADDITIVE: no two-body interaction.")
+    else:
+        print(f"  NON-ADDITIVE: genuine TWO-BODY interaction!")
+    
+    same_stab_members = [m for m in orb if stabs[m] == rep_stab]
+    if same_stab_members:
+        print(f"  Same-stabilizer targets ({len(same_stab_members)}):")
+        for m in same_stab_members:
+            m_chs = channels_of(m)
+            m_cyc = cycles_of(m)
+            if m_cyc == rep_cyc:
+                print(f"    ch{m_chs} - preserves cycles")
+            else:
+                print(f"    ch{m_chs} - swaps to {sorted(m_cyc, key=lambda c:c[0])}")
+
+print("\nFINDINGS:")
+print("  - 4 weight-2 orbits under O_h: sizes 12, 6, 24, 24")
+print("  - O_0 (D2, additive): cross-cycle, bits don't interact")
+print("  - O_1 (D4, additive): same-cycle, bits don't interact")
+print("  - O_2 (Z2, NON-ADD): cross-cycle (0,3)-(4,7), bits INTERACT")
+print("  - O_3 (Z2, NON-ADD): cross-cycle (1,2)-(4,7), bits INTERACT")
+print("  - No cross-orbit same-stabilizer states exist")
+print("  - The 4-bit LUT-08 glider uses channel [5,6] exclusively,")
+print("    which is in O_1 (same-cycle, additive). This confirms")
+print("    that LUT-08 is a non-interacting composite.")
+print("  - Non-additive weight-2 physics involves O_2/O_3 states,")
+print("    which never arise in the LUT-08 glider's propagation.")
+print("\nDone.")</｜｜DSML｜｜parameter>
+<｜｜DSML｜｜parameter name="path" string="true">C:\Users\thomas\Projekte\rdf_digital_physic\tmp_analyze_lut.py</｜｜DSML｜｜parameter>
+</｜｜DSML｜｜invoke>
+</｜｜DSML｜｜tool_calls>
