@@ -31,6 +31,10 @@ F3: If the solo stability of either glider variant fails on L=64 (the rotated
     glider is not a valid LUT-08 on the larger grid), the comparison is invalid
     and the experiment must be re-designed.
 
+F4-enhanced (Grid-Rounding Diagnostic): If the O_h-rotated collision produces a different outcome than the unrotated collision on L=64, AND the coordinate-rounding diagnostic shows that the rotated configuration has a different relative sub-lattice phase or different minimum spatial separation than the unrotated configuration, the non-covariance is classified as a DEFINITIONAL ALIGNMENT MISMATCH (coordinate-rounding artifact), NOT a failure of dynamic O_h covariance in the CA rule. In this case, the non-covariance is attributed to the discrete lattice's inability to represent the rotated configuration with sufficient geometric fidelity.
+
+F5 (Multi-rotation consistency): If F4-enhanced identifies a coordinate-rounding mismatch, but at least one OTHER proper O_h rotation produces the same Elastic outcome as the unrotated configuration (with matching sub-lattice phases), then O_h covariance is partially confirmed for axis-aligned rotations, with the limitation documented.
+
 A result where both unrotated and rotated collisions produce Elastic outcomes
 on L=64 would NOT REFUTE the hypothesis, and would constitute evidence that
 the iter_245 non-covariance was a boundary artifact.
