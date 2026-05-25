@@ -17,24 +17,17 @@ lattice cell, and the state cannot be decomposed into independent single-bit
 particles (fails the three-test coherence protocol from iter_248).
 
 ## 2. Falsification Criterion
-The hypothesis is refuted if ALL of the following hold simultaneously:
-F1: Across all non-additive LUT variants tested (≥3 distinct interaction types:
-    exchange, binding, scattering) and all O_h-distinct two-bit collision
-    geometries (≥6 initial configurations per variant), no two-bit bound
-    state survives ≥200 steps post-collision. All debris either separates
-    into independent single-bit particles or thermalizes.
-F2: Any two-bit candidate that does survive 200 steps passes the single-bit
-    decomposition test (i.e., running each bit independently reproduces the
-    multi-bit trajectory), proving it is still a non-interacting composite.
-F3: Any bound state that passes F2 exists only along one lattice axis and
-    disappears when initial conditions are rotated through O_h symmetry
-    elements (proving it is a lattice-axis artifact, not genuine physics).
-If ANY genuine multi-bit glider is found that: (a) survives ≥200 steps,
-(b) fails the decomposition test (bits are interdependent), (c) is
-destabilized by single-bit removal, and (d) transforms covariantly under
-O_h rotations, then the hypothesis is confirmed.
+The hypothesis is refuted if ANY of the following hold: F1 OR F2 OR F3 OR F4
 
-## 3. Proposed Method
+- F1: Across all non-additive LUT variants tested (>=3 distinct interaction types) and all O_h-distinct two-bit collision geometries (>=6 initial configurations per variant), no two-bit bound state survives >=200 steps post-collision.
+- F2: Any two-bit candidate that survives 200 steps passes the single-bit decomposition test (i.e., running each bit independently reproduces the multi-bit trajectory), proving it is still a non-interacting composite.
+- F3: Any bound state exists only along one lattice axis and disappears when initial conditions are rotated through O_h symmetry elements.
+- F4: The constructed non-additive LUTs violate reversibility (not a bijection) or bit conservation.
+
+## 3. Confirmation Criterion
+If ANY genuine multi-bit glider is found that: (a) survives >=200 steps, (b) fails the decomposition test, (c) is destabilized by single-bit removal, and (d) transforms covariantly under O_h rotations, then the hypothesis is confirmed.
+
+## 4. Proposed Method
 SUB-GOAL A: Construct non-additive LUT variants
 1. Enumerate all C(12,2)=66 weight-2 channel pairs on the FCC cuboctahedron.
 2. Group into O_h orbits (expected: 3-5 orbits based on geometric relationship:
