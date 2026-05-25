@@ -1,0 +1,222 @@
+
+[Tool Call: read_iteration({'iter_num': 248})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 241})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'src/experiment_248_glider_taxonomy.py'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'generate_symmetric_lut'})]
+
+[Tool Result: Tool not available: grep_search]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: grep_search({'pattern': 'class.*LUT|def.*lut|generate_symmetric', 'include_pattern': '*.py'})]
+
+[Tool Result: Tool not available: grep_search]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'src'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+I'll analyze the current state deeply, then design a rigorous experiment. Let me first explore the relevant codebase and past iterations.
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+The read tools appear to be having connectivity issues, but the prompt contains extensive information about the current state, recent iterations, and the research history. I have sufficient information to formulate a rigorous plan.
+
+## Deep Analysis
+
+### The Core Problem (iter_248)
+
+The fundamental finding is devastating but clear: **LUT-08's weight-1 mapping consists of 6 disjoint period-2 transpositions** (ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10). Because these are disjoint, when multiple bits are present at the same cell, the LUT output is the *additive superposition* of independent transpositions. Every "multi-bit glider" is just k independent single-bit particles that happen to travel in proximity but never truly interact. They fail all three coherence tests.
+
+### Why This Happens
+
+The `generate_symmetric_lut()` construction uses an **orbit-matching strategy** that inherently produces additive (linear) weight-1 transpositions. When two or more channels are active, the LUT simply applies each bit's independent transposition — there is no mechanism for inter-channel coupling. This is a structural consequence of the construction method, not a property of O_h symmetry itself.
+
+### The User's Insight
+
+"View the bits as fields that can also interact with each other. Extend the logic of the interaction."
+
+This points to a fundamental redesign of the LUT: instead of building from independent weight-1 transpositions upward (additive), we must construct the LUT so that weight-≥2 entries create genuine inter-channel coupling — where the output for a multi-bit input is NOT the superposition of independent single-bit transitions.
+
+### Mechanism: Non-Additive Weight-2 Interactions
+
+In the LGCA update cycle (Collision → Streaming), bits only interact during the Collision step when they share a cell. Currently, when two bits occupy the same cell, the additive LUT sends each bit along its independent trajectory (pass-through). The key change: **modify weight-2 LUT entries so that simultaneously-arriving bits scatter into different channels than their independent transposition targets.** This creates genuine interaction: the trajectory of each bit depends on the presence of the other.
+
+### Concrete Construction: Orbit-Pair Output Swap
+
+The LUT is a permutation on 2^12 = 4096 states. To create non-additive weight-2 entries while preserving reversibility:
+1. Take two weight-2 states from the same or different O_h orbits: {ch_i, ch_j} and {ch_k, ch_l}
+2. Swap their LUT outputs: LUT[{i,j}] ↔ LUT[{k,l}]
+3. Close under O_h: for each rotation R, also swap LUT[R{i,j}] ↔ LUT[R{k,l}]
+4. Verify: the modified LUT remains a bijection and bit-conserving
+
+This "LUT surgery" preserves all invariants while introducing controlled inter-channel coupling.
+
+### Types of Interaction to Test
+
+1. **Exchange coupling:** Swap one output channel between two transposition pairs. Example: if additive output of {0,1} is {2,3} and output of {4,5} is {6,7}, map {0,1}→{2,7} and {4,5}→{6,3} — one bit from each pair "leaks" into the other's trajectory.
+
+2. **Binding coupling:** Redirect both output channels into channels that belong to the same velocity cycle. Example: map {0,1}→{5,6} (both bits enter the [5,6] cycle and co-propagate).
+
+3. **Scattering coupling:** Redirect output channels to channels with different velocities than either input, creating deflection. Example: map {0,1}→{8,9} (bits redirected into slow/stationary cycles).
+
+Each type creates different dynamics when two single-bit particles collide. The binding coupling is the most likely to create genuine bound states (multi-bit gliders where bits periodically share a cell).
+
+### Falsification Framework
+
+The hypothesis is specific and falsifiable:
+- **F1 (no bound states):** Across all LUT variants and collision geometries, no two-bit structure survives ≥200 steps without decomposing into independent particles.
+- **F2 (decomposable):** Any candidate found is decomposable into independent single-bit particles (decomposition test passes).
+- **F3 (O_h artifact):** Any bound state exists only along one lattice axis and breaks under O_h rotation.
+
+### The 2D Hex Check
+
+The 2D hex v=0.469c glider (iter_222) may also be a non-interacting composite. This is a critical open question. If it IS genuine, it proves that the monospecific spectrum is a feature of the specific FCC LUT construction, not a fundamental limitation. If it ISN'T, the problem is deeper. I include this as a secondary sub-goal.
+
+```yaml
+hypothesis: |
+  An O_h-symmetric, reversible, bit-conserving FCC LGCA LUT with deliberately
+  constructed non-additive weight-2 entries — where the output for a weight-2
+  input state {ch_i, ch_j} is NOT the independent superposition of the two
+  weight-1 transpositions τ(i) and τ(j), but instead redirects one or both
+  output bits into channels belonging to a different transposition pair — admits
+  genuine multi-bit coherent gliders. Specifically, when two single-bit period-2
+  particles from different velocity cycles collide at the same cell, the
+  non-additive weight-2 interaction scatters them into channels that create a
+  stable two-bit bound state where both bits periodically co-locate at the same
+  lattice cell, and the state cannot be decomposed into independent single-bit
+  particles (fails the three-test coherence protocol from iter_248).
+
+falsification_criterion: |
+  The hypothesis is refuted if ALL of the following hold simultaneously:
+  F1: Across all non-additive LUT variants tested (≥3 distinct interaction types:
+      exchange, binding, scattering) and all O_h-distinct two-bit collision
+      geometries (≥6 initial configurations per variant), no two-bit bound
+      state survives ≥200 steps post-collision. All debris either separates
+      into independent single-bit particles or thermalizes.
+  F2: Any two-bit candidate that does survive 200 steps passes the single-bit
+      decomposition test (i.e., running each bit independently reproduces the
+      multi-bit trajectory), proving it is still a non-interacting composite.
+  F3: Any bound state that passes F2 exists only along one lattice axis and
+      disappears when initial conditions are rotated through O_h symmetry
+      elements (proving it is a lattice-axis artifact, not genuine physics).
+  If ANY genuine multi-bit glider is found that: (a) survives ≥200 steps,
+  (b) fails the decomposition test (bits are interdependent), (c) is
+  destabilized by single-bit removal, and (d) transforms covariantly under
+  O_h rotations, then the hypothesis is confirmed.
+
+proposed_method: |
+  SUB-GOAL A: Construct non-additive LUT variants
+  1. Enumerate all C(12,2)=66 weight-2 channel pairs on the FCC cuboctahedron.
+  2. Group into O_h orbits (expected: 3-5 orbits based on geometric relationship:
+     adjacent, non-adjacent non-antipodal, antipodal).
+  3. For each orbit, identify the additive LUT-08 output (superposition of
+     independent weight-1 transpositions).
+  4. Construct 3+ non-additive variants using orbit-pair output swaps:
+     - LUT-INT-EXCHANGE: swap one output channel between two weight-2 orbits,
+       creating cross-cycle leakage.
+     - LUT-INT-BINDING: redirect weight-2 outputs so both bits enter the
+       SAME velocity cycle (co-propagation tendency).
+     - LUT-INT-SCATTERING: redirect weight-2 outputs to slow/stationary
+       cycles, creating energy-like dissipation at collision sites.
+  5. For each variant, close modifications under full O_h group (48 elements).
+  6. Verify each variant is a valid permutation (reversible) and bit-conserving.
+  7. Document the exact channel-pair modifications and the physical reasoning
+     for each interaction type BEFORE running any dynamics.
+
+  Files: src/lut_construction_nonadditive.py (new), modifying or extending
+         the existing generate_symmetric_lut() logic.
+
+  SUB-GOAL B: Systematic collision search for genuine multi-bit gliders
+  1. For each non-additive LUT variant, set up all O_h-distinct two-bit
+     collision initial conditions (two single-bit particles from different
+     velocity cycles on collision courses on an L=64 grid).
+  2. Propagate each collision for 200+ steps.
+  3. Track all coherent multi-bit structures using the automated detection
+     from iter_248 (CoM tracking, bit-cluster identification).
+  4. Apply the three-test coherence protocol to any candidate surviving
+     ≥50 steps:
+     Test A (decomposition): Run each bit independently; check if combined
+     trajectory matches multi-bit trajectory. FAIL = genuine.
+     Test B (bit-removal): Remove one bit from initial conditions; check
+     if remaining pattern is destabilized. YES = genuine.
+     Test C (collision interaction): Collide candidate with a test particle;
+     check for non-trivial outcome. YES = genuine.
+  5. For any genuine glider, measure: bit count, period, velocity vector,
+     and whether bits share a cell during propagation.
+
+  Files: src/experiment_249_interacting_lut.py (new),
+         src/coherence_testing.py (new or extended from iter_248 code).
+
+  SUB-GOAL C: O_h covariance and control verification
+  1. For any genuine coherent glider found, rotate initial conditions
+     through all 48 O_h elements. Verify the glider exists and moves
+     in the expected rotated direction.
+  2. Run the identical collision search on the original (additive) LUT-08
+     as control. Confirm null result (reproduces iter_248 finding).
+  3. Compare: any gliders found with non-additive LUTs that do NOT exist
+     with additive LUT-08 constitute evidence for the hypothesis.
+
+  Files: Integrated into src/experiment_249_interacting_lut.py.
+
+  SUB-GOAL D (secondary): Check 2D hex glider coherence
+  1. Apply the same single-bit decomposition test to the 2D hex v=0.469c
+     glider (champion_rule_perfect.json from iter_222).
+  2. If it also decomposes, the monospecific spectrum is a general feature
+     of additive LGCA constructions across lattice types.
+  3. If it does NOT decompose, the 2D hex lattice or rule construction
+     has a fundamental advantage that should be understood and ported.
+
+  Files: src/check_hex_glider_coherence.py (new), using existing 2D hex engine.
+
+pre_registration_file: "src/pre_registration.md"
+```

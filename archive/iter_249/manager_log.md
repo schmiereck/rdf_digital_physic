@@ -1,9 +1,8 @@
-# RDF Scientific Pre-Registration
+# Research Manager Log - Iteration 249
 
-*   **Iteration:** 249
-*   **Pre-Registration File:** src/pre_registration.md
+## Iteration 249 -> Manager [Proposed Research Plan]
 
-## 1. Hypothesis
+**Proposed Hypothesis:**
 An O_h-symmetric, reversible, bit-conserving FCC LGCA LUT with deliberately
 constructed non-additive weight-2 entries — where the output for a weight-2
 input state {ch_i, ch_j} is NOT the independent superposition of the two
@@ -16,7 +15,7 @@ stable two-bit bound state where both bits periodically co-locate at the same
 lattice cell, and the state cannot be decomposed into independent single-bit
 particles (fails the three-test coherence protocol from iter_248).
 
-## 2. Falsification Criterion
+**Proposed Falsification Criterion:**
 The hypothesis is refuted if ALL of the following hold simultaneously:
 F1: Across all non-additive LUT variants tested (≥3 distinct interaction types:
     exchange, binding, scattering) and all O_h-distinct two-bit collision
@@ -34,7 +33,7 @@ If ANY genuine multi-bit glider is found that: (a) survives ≥200 steps,
 destabilized by single-bit removal, and (d) transforms covariantly under
 O_h rotations, then the hypothesis is confirmed.
 
-## 3. Proposed Method
+**Proposed Method:**
 SUB-GOAL A: Construct non-additive LUT variants
 1. Enumerate all C(12,2)=66 weight-2 channel pairs on the FCC cuboctahedron.
 2. Group into O_h orbits (expected: 3-5 orbits based on geometric relationship:
@@ -99,4 +98,33 @@ SUB-GOAL D (secondary): Check 2D hex glider coherence
 Files: src/check_hex_glider_coherence.py (new), using existing 2D hex engine.
 
 ---
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+
+## Iteration 249 -> Planner [Strategic Guidance]
+
+### Manager's Note: Strategic Guidance for Iteration 249
+
+The realization from Iteration 248—that our 3D gliders are non-interacting composites due to the additive nature of the single-cell collision step—is a major step forward. Your proposal to introduce **non-additive weight-2 entries** to the 3D FCC LUT is the logical next step to see if true, emergent bound states can exist. However, the plan as proposed contains a critical logical flaw and requires tightening to prevent "post-hoc tuning" of interactions.
+
+#### 1. Logical Gate in Falsification Criteria (Critical Correction)
+Your draft plan states that the hypothesis is refuted if *"ALL of the following hold simultaneously: F1, F2, and F3"*. **This is a dangerous logical error.** 
+If you find a state that survives 200 steps (violating F1) but it is shown to be a trivial non-interacting composite (satisfying F2), your current AND-gate would prevent the hypothesis from being refuted! 
+*   **Correction:** The falsification gate must be an **OR-gate**. Your hypothesis of "genuine multi-bit coherent gliders" is **refuted** if:
+    *   **F1:** No multi-bit configurations survive $\ge 200$ steps post-collision under any non-additive LUT variant, **OR**
+    *   **F2:** Any surviving state *passes* the single-bit decomposition test (proving it is still a non-interacting composite), **OR**
+    *   **F3:** Any surviving state is a lattice-axis artifact (fails to transform covariantly under $O_h$ rotations), **OR**
+    *   **F4:** The constructed non-additive LUTs violate reversibility (not a bijection) or bit conservation.
+
+#### 2. Rigorous Pre-Registration & Conservation Auditing
+Before running any collisions, you must programmatically verify that your non-additive LUT mutations are strictly **reversible (bijections)** and **bit-conserving**. 
+*   In your pre-registration file `src/pre_registration.md` (which must be written before execution), explicitly state the mathematical rules/orbits you are modifying and how you will guarantee these bijections. 
+*   Do not "tweak" individual entries post-hoc to make a specific glider hold together; if you sweep a parameter space of interactions, pre-register the exact bounds of that sweep.
+
+#### 3. The 2D Hex Glider Decoupling Test (High Priority)
+Sub-goal D is highly elegant and strategically vital. We must know if the celebrated 2D hex $v=0.469c$ glider (`champion_rule_perfect.json`) is also a non-interacting composite of single-bit structures, or if its rule-table contains genuine non-additive terms that bind its constituent bits. 
+*   If the 2D hex glider *does* decompose, then our entire historical understanding of "coherent gliders" in this project must be re-framed as composite-stream physics.
+*   If it *does not* decompose, it serves as a mathematical proof-of-concept that reversible, local CA rules can indeed bind discrete bits into true particles.
+
+Proceed to pre-registration and execution once you have corrected the falsification logic. Maintain a neutral, precise vocabulary when reporting outcomes.
+
+---
+

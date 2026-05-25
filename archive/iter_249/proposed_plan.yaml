@@ -1,0 +1,82 @@
+falsification_criterion: "The hypothesis is refuted if ALL of the following hold simultaneously:\n\
+  F1: Across all non-additive LUT variants tested (≥3 distinct interaction types:\n\
+  \    exchange, binding, scattering) and all O_h-distinct two-bit collision\n   \
+  \ geometries (≥6 initial configurations per variant), no two-bit bound\n    state\
+  \ survives ≥200 steps post-collision. All debris either separates\n    into independent\
+  \ single-bit particles or thermalizes.\nF2: Any two-bit candidate that does survive\
+  \ 200 steps passes the single-bit\n    decomposition test (i.e., running each bit\
+  \ independently reproduces the\n    multi-bit trajectory), proving it is still a\
+  \ non-interacting composite.\nF3: Any bound state that passes F2 exists only along\
+  \ one lattice axis and\n    disappears when initial conditions are rotated through\
+  \ O_h symmetry\n    elements (proving it is a lattice-axis artifact, not genuine\
+  \ physics).\nIf ANY genuine multi-bit glider is found that: (a) survives ≥200 steps,\n\
+  (b) fails the decomposition test (bits are interdependent), (c) is\ndestabilized\
+  \ by single-bit removal, and (d) transforms covariantly under\nO_h rotations, then\
+  \ the hypothesis is confirmed.\n"
+hypothesis: 'An O_h-symmetric, reversible, bit-conserving FCC LGCA LUT with deliberately
+
+  constructed non-additive weight-2 entries — where the output for a weight-2
+
+  input state {ch_i, ch_j} is NOT the independent superposition of the two
+
+  weight-1 transpositions τ(i) and τ(j), but instead redirects one or both
+
+  output bits into channels belonging to a different transposition pair — admits
+
+  genuine multi-bit coherent gliders. Specifically, when two single-bit period-2
+
+  particles from different velocity cycles collide at the same cell, the
+
+  non-additive weight-2 interaction scatters them into channels that create a
+
+  stable two-bit bound state where both bits periodically co-locate at the same
+
+  lattice cell, and the state cannot be decomposed into independent single-bit
+
+  particles (fails the three-test coherence protocol from iter_248).
+
+  '
+pre_registration_file: src/pre_registration.md
+proposed_method: "SUB-GOAL A: Construct non-additive LUT variants\n1. Enumerate all\
+  \ C(12,2)=66 weight-2 channel pairs on the FCC cuboctahedron.\n2. Group into O_h\
+  \ orbits (expected: 3-5 orbits based on geometric relationship:\n   adjacent, non-adjacent\
+  \ non-antipodal, antipodal).\n3. For each orbit, identify the additive LUT-08 output\
+  \ (superposition of\n   independent weight-1 transpositions).\n4. Construct 3+ non-additive\
+  \ variants using orbit-pair output swaps:\n   - LUT-INT-EXCHANGE: swap one output\
+  \ channel between two weight-2 orbits,\n     creating cross-cycle leakage.\n   -\
+  \ LUT-INT-BINDING: redirect weight-2 outputs so both bits enter the\n     SAME velocity\
+  \ cycle (co-propagation tendency).\n   - LUT-INT-SCATTERING: redirect weight-2 outputs\
+  \ to slow/stationary\n     cycles, creating energy-like dissipation at collision\
+  \ sites.\n5. For each variant, close modifications under full O_h group (48 elements).\n\
+  6. Verify each variant is a valid permutation (reversible) and bit-conserving.\n\
+  7. Document the exact channel-pair modifications and the physical reasoning\n  \
+  \ for each interaction type BEFORE running any dynamics.\n\nFiles: src/lut_construction_nonadditive.py\
+  \ (new), modifying or extending\n       the existing generate_symmetric_lut() logic.\n\
+  \nSUB-GOAL B: Systematic collision search for genuine multi-bit gliders\n1. For\
+  \ each non-additive LUT variant, set up all O_h-distinct two-bit\n   collision initial\
+  \ conditions (two single-bit particles from different\n   velocity cycles on collision\
+  \ courses on an L=64 grid).\n2. Propagate each collision for 200+ steps.\n3. Track\
+  \ all coherent multi-bit structures using the automated detection\n   from iter_248\
+  \ (CoM tracking, bit-cluster identification).\n4. Apply the three-test coherence\
+  \ protocol to any candidate surviving\n   ≥50 steps:\n   Test A (decomposition):\
+  \ Run each bit independently; check if combined\n   trajectory matches multi-bit\
+  \ trajectory. FAIL = genuine.\n   Test B (bit-removal): Remove one bit from initial\
+  \ conditions; check\n   if remaining pattern is destabilized. YES = genuine.\n \
+  \  Test C (collision interaction): Collide candidate with a test particle;\n   check\
+  \ for non-trivial outcome. YES = genuine.\n5. For any genuine glider, measure: bit\
+  \ count, period, velocity vector,\n   and whether bits share a cell during propagation.\n\
+  \nFiles: src/experiment_249_interacting_lut.py (new),\n       src/coherence_testing.py\
+  \ (new or extended from iter_248 code).\n\nSUB-GOAL C: O_h covariance and control\
+  \ verification\n1. For any genuine coherent glider found, rotate initial conditions\n\
+  \   through all 48 O_h elements. Verify the glider exists and moves\n   in the expected\
+  \ rotated direction.\n2. Run the identical collision search on the original (additive)\
+  \ LUT-08\n   as control. Confirm null result (reproduces iter_248 finding).\n3.\
+  \ Compare: any gliders found with non-additive LUTs that do NOT exist\n   with additive\
+  \ LUT-08 constitute evidence for the hypothesis.\n\nFiles: Integrated into src/experiment_249_interacting_lut.py.\n\
+  \nSUB-GOAL D (secondary): Check 2D hex glider coherence\n1. Apply the same single-bit\
+  \ decomposition test to the 2D hex v=0.469c\n   glider (champion_rule_perfect.json\
+  \ from iter_222).\n2. If it also decomposes, the monospecific spectrum is a general\
+  \ feature\n   of additive LGCA constructions across lattice types.\n3. If it does\
+  \ NOT decompose, the 2D hex lattice or rule construction\n   has a fundamental advantage\
+  \ that should be understood and ported.\n\nFiles: src/check_hex_glider_coherence.py\
+  \ (new), using existing 2D hex engine.\n"
