@@ -1,0 +1,1 @@
+Run the Python script 'src/analyze_weight2_orbits.py'. Ensure that it prints its output or successfully writes the analysis to 'src/weight2_orbit_analysis.txt'. If any path errors occur, fix them in the script. Print the first 50 lines of the generated 'src/weight2_orbit_analysis.txt' to stdout so we can confirm it worked.
