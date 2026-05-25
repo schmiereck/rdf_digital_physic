@@ -1,0 +1,69 @@
+falsification_criterion: 'F1: The iter_241 catalog contains only LUT-08 and its O_h-directional
+  equivalents
+
+  (bit-count = 4, same speed in different directions) — catalog is monospecific.
+
+  F2: For every tested pair of distinct species and every impact parameter dy ∈ [-4,+4],
+
+  no new stable propagating clusters emerge from debris over 300 steps (using the
+
+  same vacuum isolation protocol from iter_247).
+
+  F3: Any "new" clusters are sub-fragments of input species (trivial fragmentation,
+
+  not pair production).
+
+  F4: Collision outcome is not O_h-covariant (beyond coordinate-rounding tolerance),
+
+  indicating lattice-axis artifact.
+
+  F5: Effect only appears after post-hoc widening of parameter sweep beyond
+
+  pre-declared ranges.
+
+  '
+hypothesis: '(1) The iter_241 FCC glider catalog contains at least one O_h-orbit-distinct
+
+  glider species with a different bit-count and/or velocity from LUT-08
+
+  (i.e., the particle zoo has genuine diversity, not just directional variants of
+
+  a single species).
+
+  (2) Conditional on (1): Cross-species collisions between any two distinct species
+
+  from the catalog produce at least one stable propagating debris cluster that
+
+  belongs to neither input species, and whose formation rate scales positively
+
+  with total collision bit-energy (sum of input glider bit-counts weighted by speed).
+
+  '
+pre_registration_file: src/pre_registration.md
+proposed_method: "Stage 1 — Catalog Audit (medium complexity):\n- Read the iter_241\
+  \ glider catalog files from archive/iter_241/\n- Extract all distinct O_h-orbit\
+  \ species with their bit-counts, periods,\n  and velocities\n- If only LUT-08 variants\
+  \ found → F1 triggered, close Phase 7 with null result,\n  skip Stage 2\n- Output:\
+  \ species_table.csv with columns [species_id, bit_count, period,\n  velocity, O_h_orbit_id]\n\
+  \nStage 2 — Cross-Species Collision Scan (high complexity):\n- For each pair of\
+  \ distinct species (A, B) from Stage 1:\n  a. Place A and B on L=64 FCC grid in\
+  \ head-on collision geometry\n  b. Test impact parameters dy ∈ [0, ±1, ±2, ±3, ±4]\
+  \ (9 values)\n  c. Run each collision for 300 steps\n  d. From step 60 onward, track\
+  \ all clusters via automated debris analysis\n     (same method as iter_247)\n \
+  \ e. Apply O_h-equivalence filter to identify genuinely new species\n  f. For any\
+  \ candidate new species, run 300-step vacuum isolation test\n  g. Apply O_h covariance\
+  \ test: rotate initial conditions by one O_h\n     element and verify outcome transforms\
+  \ covariantly\n- Record whether any new species appears that is NOT a sub-fragment\
+  \ of\n  either input species\n- Test scaling: plot new-species appearance rate vs\
+  \ total input bit-energy\n\nStage 3 — Verdict (planner complexity):\n- If F1 triggered:\
+  \ Declare Phase 7 complete with documented null results\n  for 7.3 (no annihilation)\
+  \ and 7.4 (no pair production). Prepare Phase 7\n  milestone report. Recommend advancing\
+  \ to Phase 8.\n- If F2 triggered (no new species from any cross-species collision):\n\
+  \  Same as F1 — Phase 7 closes with comprehensive null result.\n- If a new species\
+  \ IS confirmed (passes vacuum isolation, is not a\n  sub-fragment, is O_h-covariant):\
+  \ Report as evidence for pair production,\n  note the bit-energy threshold, and\
+  \ test whether the threshold scales\n  predictably with rest-energy of produced\
+  \ species (Phase 7.4 scaling criterion).\n\nFiles to create/modify:\n- src/experiment_248_catalog_audit.py:\
+  \ Stage 1 catalog reader\n- src/experiment_248_cross_species.py: Stage 2 collision\
+  \ engine\n- src/pre_registration.md: Pre-registration document\n- archive/iter_248/:\
+  \ Results directory\n"
