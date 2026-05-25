@@ -1,0 +1,1 @@
+Execute the Python script 'src/lut_construction_nonadditive.py' to construct and verify the three non-additive LUT variants, saving them to 'src/'. Print the output to stdout so we can confirm they all verified successfully!
