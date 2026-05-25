@@ -1,0 +1,198 @@
+I'll start by reviewing the current state of the project, the most recent iteration details, and the relevant source code to formulate the next hypothesis.
+
+[Tool Call: read_iteration({'iter_num': 245})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+Let me explore the codebase and recent iterations more carefully to design the next experiment.
+
+[Tool Call: read_iteration({'iter_num': 245})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 241})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_result_file({'iter_num': 245, 'filename': 'src/pre_registration.md'})]
+
+[Tool Result: Tool not available: read_result_file]
+
+
+[Tool Call: read_result_file({'iter_num': 245, 'filename': 'results/experiment_oh_covariance.py'})]
+
+[Tool Result: Tool not available: read_result_file]
+
+Let me try accessing the code through different paths.
+
+[Tool Call: grep_search({'pattern': 'LUT-08|glider_00', 'include_pattern': '*.py'})]
+
+[Tool Result: Tool not available: grep_search]
+
+
+[Tool Call: grep_search({'pattern': 'oh_covariance|O_h.*rotation|rotat', 'include_pattern': '*.py'})]
+
+[Tool Result: Tool not available: grep_search]
+
+Let me try to access the archive for recent iterations and source code.
+
+[Tool Call: read_campaign({'campaign_name': 'Phase 7 - Particle Zoo'})]
+
+[Tool Result: Tool not available: read_campaign]
+
+The tools appear to be unavailable in this environment. However, the user's message provides comprehensive context about the project state, recent iterations, and open questions. Let me carefully analyze the situation and formulate the next hypothesis based on all available information.
+
+## Analysis of Current State
+
+**Where we are:** Phase 7.3 (Antiparticles & CPT Symmetries) completed with a **null result** in iter_245:
+- P-reflected enantiomer exists and is stable (constructional, guaranteed by O_h symmetry)
+- Opposite-chirality collisions are perfectly elastic (5/5) — **no annihilation**
+- Same-chirality collisions are destructive (3/5 Partial, 2/5 Chaotic)
+- **O_h non-covariance detected** (F4 triggered): rotating the collision setup through an O_h proper rotation changed the outcome from Elastic → Chaotic
+
+**Critical blocker:** The O_h non-covariance observation directly threatens the project's foundational invariant (O_h symmetry of all rules). Before ANY further collision experiments (including Phase 7.4), this must be resolved as either (a) a toroidal boundary artifact on the L=32 grid, or (b) genuine physics that invalidates the project's symmetry premise.
+
+**Why L=32 is suspicious:** The LUT-08 glider propagates at sub-light speed. Over 80 steps, debris and glider trajectories can wrap around the L=32 torus and interact with themselves. On L=64 with collision center at (32,32,32), the nearest boundary is 32 cells away — far enough that debris cannot reach it and wrap back within the simulation window. Previous iterations (238) also identified toroidal boundaries as a source of artifacts (ballistic recurrence).
+
+**Secondary opportunity:** Same-chirality destructive collisions produce debris. If that debris contains stable glider patterns on a larger grid, this constitutes evidence for pair production — directly advancing Phase 7.4. This analysis can be done simultaneously with the O_h test since both require the L=64 infrastructure.
+
+## Hypothesis Formulation
+
+The hypothesis must be:
+1. **Falsifiable** — there's a clear observation that would prove it wrong
+2. **Pre-declarable** — parameters and protocol stated before execution
+3. **Non-trivial** — not a constructional identity or guaranteed by definition
+
+**Hypothesis:** The O_h non-covariance of LUT-08 opposite-chirality collision outcomes observed on the L=32 toroidal grid in iter_245 is caused by interaction of glider trajectories and debris with the periodic boundary. On an L=64 FCC grid with collision center at (32,32,32), the O_h-rotated opposite-chirality collision will produce the same qualitative outcome (Elastic) as the unrotated collision, restoring O_h covariance in the bulk.
+
+**Why this is falsifiable:** If the O_h-rotated collision STILL produces Chaotic outcome on L=64, the non-covariance is a genuine bulk physics effect — not a boundary artifact. The hypothesis would be refuted.
+
+**Why this is non-trivial:** The O_h symmetry of the RULES is guaranteed by construction, but O_h covariance of COLLISION OUTCOMES is an emergent property that depends on the interaction between the gliders' internal structure, the lattice geometry, and boundary conditions. It is not derivable from the rule symmetry alone — the L=32 result proves this.
+
+```yaml
+hypothesis: |
+  The O_h non-covariance of LUT-08 opposite-chirality collision outcomes observed
+  on the L=32 toroidal grid in iter_245 (where rotating the collision setup through
+  an O_h proper rotation changed the outcome from Elastic to Chaotic) is caused by
+  interaction of glider trajectories and collision debris with the periodic boundary.
+  On an L=64 FCC grid with collision center at (32,32,32) — ensuring that debris
+  cannot reach any boundary within 80 simulation steps — the same O_h-rotated
+  opposite-chirality collision will produce the same qualitative outcome (Elastic)
+  as the unrotated collision, confirming O_h covariance of collision dynamics in
+  the bulk lattice.
+
+falsification_criterion: |
+  The hypothesis is REFUTED if, on the L=64 grid with collision center at (32,32,32),
+  the O_h-rotated opposite-chirality collision produces a qualitatively different
+  outcome (Chaotic or Partial) from the unrotated collision (Elastic). Specifically:
+  
+  F1: If the rotated collision outcome classification differs from the unrotated
+      classification (using the same Elastic/Partial/Chaotic taxonomy as iter_245),
+      the non-covariance is genuine bulk physics, not a boundary artifact.
+  
+  F2: If the unrotated collision itself changes outcome on L=64 (i.e., the L=32
+      Elastic result was itself a boundary artifact), then the entire iter_245
+      collision catalog is unreliable on L=32 and must be re-characterized.
+  
+  F3: If the solo stability of either glider variant fails on L=64 (the rotated
+      glider is not a valid LUT-08 on the larger grid), the comparison is invalid
+      and the experiment must be re-designed.
+  
+  A result where both unrotated and rotated collisions produce Elastic outcomes
+  on L=64 would NOT REFUTE the hypothesis, and would constitute evidence that
+  the iter_245 non-covariance was a boundary artifact.
+
+proposed_method: |
+  Step-by-step experimental protocol:
+  
+  1. CREATE src/experiment_246_oh_covariance_64.py extending the collision
+     experiment framework from iter_245 (112-line script).
+  
+  2. CONFIGURE L=64 FCC grid with toroidal boundaries. The collision center
+     is at (32,32,32). The LUT-08 glider velocity is sub-light (v < 1 cell/step),
+     so over 80 steps the maximum displacement is < 80 cells. With center at
+     grid center, debris cannot wrap around within the simulation window.
+  
+  3. IDENTIFY the exact O_h rotation used in iter_245 that produced the
+     Chaotic outcome. The script must apply the SAME rotation matrix to
+     both glider positions and internal bit patterns.
+  
+  4. RUN three collision configurations on L=64:
+     (a) Unrotated opposite-chirality collision: LUT-08 (particle) approaching
+         P-reflected LUT-08 (antiparticle) — expected Elastic (reproduces iter_245)
+     (b) O_h-rotated opposite-chirality collision: same setup rotated through
+         the O_h element from iter_245 — was Chaotic on L=32, predicted Elastic on L=64
+     (c) Second O_h rotation (e.g., 90° about a different axis): additional
+         probe for thoroughness — predicted Elastic
+  
+  5. RUN solo stability controls for each glider variant (unrotated particle,
+     unrotated antiparticle, rotated particle, rotated antiparticle) on L=64
+     for 80 steps. Verify each propagates stably.
+  
+  6. CLASSIFY outcomes using the same taxonomy as iter_245:
+     - Elastic: both gliders emerge intact with 0 residual debris bits
+     - Partial: some glider structure survives with residual debris
+     - Chaotic: no recognizable glider survives, bit count grows or disperses
+  
+  7. COMPARE outcomes: if (a) and (b) both produce Elastic, O_h covariance
+     is confirmed in the bulk and the iter_245 non-covariance was a boundary
+     artifact. If they differ, non-covariance is genuine.
+  
+  8. SECONDARY ANALYSIS (no separate hypothesis — data collection only):
+     Run the same-chirality destructive collisions on L=64 and characterize
+     the debris. Specifically:
+     - Count debris bits at each timestep
+     - Check if debris stabilizes into recognizable patterns after 80 steps
+     - If stable patterns are found, compare against the glider catalog from
+       iter_241 to identify whether new particle species are produced
+     This data will inform the Phase 7.4 hypothesis but does not constitute
+     a standalone claim in this iteration.
+  
+  FILES TO CREATE/MODIFY:
+  - src/experiment_246_oh_covariance_64.py (new, main experiment)
+  - src/pre_registration.md (updated with this plan)
+  
+  PARAMETERS (declared in advance):
+  - Grid: L=64 FCC, toroidal boundaries
+  - Collision center: (32, 32, 32)
+  - Initial separation: ~10 cells along approach axis
+  - Simulation steps: 80
+  - Glider: LUT-08 (4-bit sub-light, from iter_224)
+  - Antiparticle: P-reflected LUT-08 (from iter_245)
+  - O_h rotation: same as iter_245 (to be identified from iter_245 archive code)
+  
+  CONTROL: 
+  - Vacuum run (no gliders) on L=64 for 80 steps (verify grid stays empty)
+  - Solo runs for each glider variant (verify stability)
+  - Original L=32 result from iter_245 serves as the "prior observation"
+    being tested — no need to re-run on L=32
+
+pre_registration_file: "src/pre_registration.md"
+```
