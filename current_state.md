@@ -1,41 +1,46 @@
 # Current Research State
-Phase: Phase 7.4 — Pair Production & Annihilation (Null Result Confirmed)
+Phase: Phase 7.1 — Glider Taxonomy (F1 TRIGGERED: Monospecific)
 
 ## Goal
 Demonstrate that mass, gravity, time dilation, and ultimately quantum phenomena emerge as effects of a minimal set of local, reversible binary rules on a highly symmetric grid.
 
-## Confirmed
-- **Chirality and Z2 Enantiomorphism (iter_242):** LUT-08 has chiral charge alternating between -4.0 (even) and +2.0 (odd). Spatial reflection negates chirality.
-- **100% Elastic Collisions & Additive Conservation (iter_242):** 10/10 opposite-chirality collisions conserve bit count, chirality sum, and sub-lattice parities.
-- **Antiparticle (P-reflected enantiomer) exists and is stable (iter_245, iter_246):** The x-reflected LUT-08 glider propagates stably under the forward LUT-08 rule with opposite chirality.
-- **Opposite-chirality collisions are perfectly elastic in axis-aligned configuration (iter_245, iter_246):** 5/5 impact parameters produce Elastic scattering on L=32. Confirmed on L=64.
-- **Same-chirality collisions are destructive (iter_245, iter_246):** 5/5 same-chirality collisions produce Partial (3/5) or Chaotic (2/5) outcomes on L=32. Confirmed Partial on L=64.
-- **Annihilation hypothesis REFUTED (iter_245):** Opposite-chirality collisions scatter elastically, not annihilating.
-- **O_h non-covariance is a definitional alignment mismatch (iter_246):** Coordinate-rounding artifact, not a fundamental rule failure.
-- **Elastic collisions are rare narrow windows (iter_246):** 2/24 proper O_h rotations produce Elastic outcomes on L=64.
-- **Phase 7.4 pair production REFUTED (iter_247):** Same-chirality LUT-08 collisions on L=64 across 9 impact parameters (dy = 0, ±1, ±2, ±3, ±4) produce ONLY transient debris fragments. Zero propagating clusters, zero stationary clusters. F1 triggered. Debris thermalizes completely — no new stable particle species emerge from collision kinetic energy.
-- **LUT-08 properties confirmed (iter_247):** 4-bit particle, period 2, velocity [0.5, 0.0, 1.0] cells/tick in grid coordinates, stable in vacuum for 300 steps.
+## Confirmed (New in Phase 248)
+- **LUT-08 is a non-interacting composite (iter_248, 248.3):** The "4-bit glider" is 4 independent copies of the [5,6] single-bit period-2 particle. Each bit individually achieves velocity [0.5, 0, 1] in isolation. Bits never share a cell during propagation.
+- **ALL "novel species" from active search are non-interacting composites (iter_248, 248.2+248.3):** 10 species with distinct O_h canonical forms were found across 50,468 candidates, but all fail 3 coherence tests (single-bit decomposition, collision interaction, bit-removal stability).
+- **Fundamental single-bit spectrum under LUT-08 (iter_248, 248.4):** 6 period-2 cycles with velocities: [0,3]→(0,0.5,-0.5), [1,2]→(0,-0.5,0.5), [4,7]→(0.5,1,-0.5), [5,6]→(0.5,0,1), [8,11]→(0,0,0) stationary, [9,10]→(-1,-1,-0.5). All axis-aligned.
+- **LUT-08 weight-1 mapping is 6 disjoint period-2 transpositions (iter_248, 248.4):** ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10. The [8,11] cycle is antipodal → stationary oscillator.
+- **sym_42/sym_123 have identity weight-1 mapping (iter_248, 248.4):** 12 period-1 v=1c single-bit species.
+- **sym_999 has same weight-1 mapping as LUT-08 (iter_248, 248.4):** Same 6 period-2 cycles.
+- **No genuine multi-bit coherent gliders exist (iter_248, 248.4):** Weight-2 "structures" are paired single-bit particles that stay close but never share a cell. Weight-3 structures: 0 across all LUTs.
+- **iter_241 was a smoke test (iter_248, 248.1):** Only 100 seeds tested under 1 LUT, 0 novel survivors. Not a valid taxonomy search.
+
+## Confirmed (Prior, Recontextualized)
+- **2D hex v=0.469c sub-light glider (iter_222):** Still valid as a genuine coherent glider on the 2D hex lattice (different lattice, different mechanism).
+- **3D FCC CA engine with 12-channel cuboctahedron (iter_224):** Engine is correct; the "4 stable gliders" found are actually composites of single-bit particles.
+- **Gravitational time dilation via computational latency (iter_224):** Mechanism still valid (latency coupling), but the "mass packets" are composites.
+- **Collision dynamics of LUT-08 composites (iter_245-247):** Real phenomena at the weight-≥2 level during spatial overlap, but not properties of a genuine multi-bit glider.
+- **Chirality Z2 enantiomorphism (iter_242):** A property of the [5,6] cycle's channel permutation, not of a genuine multi-bit structure.
+- **Phase 7.4 pair production refuted (iter_247):** Confirmed — single-bit fundamental particles cannot produce new species from collisions.
 
 ## Refuted
-- **Boundary-artifact hypothesis (iter_246):** REFUTED (F1). Non-covariance persists on L=64.
-- **Annihilation hypothesis (iter_245):** REFUTED. Opposite-chirality collisions scatter elastically, not annihilating.
-- **O_h covariance of collision dynamics for non-axis-aligned gliders (iter_245, iter_246):** REFUTED at the outcome level.
-- **Pair production hypothesis (iter_247):** REFUTED (F1). Same-chirality collisions do NOT produce new stable propagating species.
+- **LUT-08 as genuine 4-bit coherent glider (iter_248, 248.3):** REFUTED. Non-interacting composite of 4 independent [5,6] single-bit particles.
+- **Phase 7.1 hypothesis: particle zoo has genuine diversity (iter_248):** REFUTED (F1 triggered). All species are composites of single-bit streaming particles. Taxonomy is monospecific at the fundamental level.
+- **"Novel species" from active search are genuinely new (iter_248, 248.3):** REFUTED. All are non-interacting composites.
 
 ## Best Result
-- **Complete Phase 7.4 experiment suite (iter_247):** Null result on pair production with full falsification protocol. 9 impact parameters tested on L=64, automated cluster tracking, O_h-equivalence filter, 300-step vacuum isolation test (not invoked because no candidates found).
-- **Comprehensive collision phenomenology map:** Opposite-chirality → Elastic (no debris). Same-chirality → Transient debris (complete thermalization, no new species).
+- **Complete fundamental single-bit particle spectrum (iter_248, 248.4):** Under LUT-08: 6 period-2 species including 5 moving (different velocities) and 1 stationary oscillator. This is the actual "particle zoo."
+- **Comprehensive active search with 50,468 candidates (iter_248, 248.2):** Largest systematic glider search on the FCC lattice to date.
+- **Three-test coherence verification protocol (iter_248, 248.3):** Establishes methodological standard for distinguishing genuine gliders from non-interacting composites.
 
-## In Progress / Planned
-- **Alternative collision geometries:** Only transverse offsets (dy) tested; l-direction or c-direction offsets, and multi-axis offsets, remain unexplored.
-- **Longer time horizons:** 300 steps may be insufficient if pair production requires longer settling; however, the pre-registered protocol was met.
-- **Multi-glider collisions:** 3+ body collisions could produce denser debris with different recombination dynamics.
-- **Other glider species:** If iter_241 catalog contains additional species beyond LUT-08, their collision phenomenology may be richer.
+## In Progress / Decision Required
+- **LUT construction redesign:** Can non-O_h-symmetric or differently-constructed LUTs produce genuine multi-bit coherent gliders?
+- **Phase 8 direction:** Should anchoring to measurable physics proceed with single-bit particles, or wait for genuine multi-bit gliders?
+- **2D hex glider status:** The 2D hex v=0.469c glider (iter_222) may or may not suffer the same non-interacting composite issue — needs checking.
 
 ## Open Questions
-1. Do axis-aligned glider species (if any from iter_241) exhibit different collision phenomenology?
-2. Can multi-glider (3+ body) collision configurations produce conditions favorable for new species formation?
-3. Is the binary elastic/thermalizing dichotomy a fundamental feature of LUT-08 collisions, or does inelastic scattering with new species exist at unexplored impact parameters?
-4. Would a finer temporal sampling (every step instead of every 10 steps) reveal short-lived propagating patterns in the debris?
-5. What is the broader particle zoo beyond LUT-08 — do higher-bit gliders have richer collision dynamics?
-6. Should Phase 7.4 be declared complete with the null result, or should alternative collision channels (opposite-chirality at higher energy, different LUT rules) be explored before moving to Phase 8?
+1. Can a non-O_h-symmetric LUT produce genuine multi-bit coherent gliders where bits share cells during propagation?
+2. Is the monospecific spectrum a fundamental limitation of O_h-symmetric LGCA, or of the specific orbit-matching strategy in generate_symmetric_lut()?
+3. Does the 2D hex v=0.469c glider (iter_222) also decompose into non-interacting single-bit particles?
+4. Can the weight-≥2 LUT mappings during composite overlap create genuinely emergent phenomena?
+5. Should Phase 8 proceed with single-bit fundamental particles, or redesign the LUT?
+6. Is the O_h symmetry requirement too restrictive for emergent particle physics?

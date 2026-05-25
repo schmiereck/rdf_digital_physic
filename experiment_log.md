@@ -15,31 +15,6 @@ status: code_error
 
 ## iter_223: strategy_error
 
-**Analysis:** [Errno 11001] getaddrinfo failed
-
-**Status:** code_error
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner call failed: [Errno 11001] getaddrinfo failed
-
-
----
-```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 223
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_223: strategy_error
-
 **Analysis:** 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
 
 **Status:** code_error
@@ -1122,4 +1097,58 @@ Key observations:
 - LUT-08 confirmed as 4-bit
 
 **Notes:** Phase 7.4 null result: pair production hypothesis refuted (F1). Same-chirality LUT-08 collisions produce only transient debris.
+
+
+---
+```yaml
+cached_tokens: 19952
+campaign: Phase 7 - Particle Zoo
+cost_usd: 1.95993
+hypothesis: 'phase-248: FCC LGCA with O_h-symmetric LUTs admits only single-bit fundamental
+  particles; all ''gliders'' including LUT-08 are non-interacting composites — F1
+  triggered'
+input_tokens: 4642254
+iter: 248
+metrics:
+  axis_aligned_candidates: 28
+  f1_triggered: true
+  lut08_weight1_cycles: 6
+  lut08_weight1_period: 2
+  luts_tested: 4
+  novel_species_canonical_distinct: 10
+  novel_species_verified_coherent: 0
+  stable_moving_candidates: 32
+  sym42_weight1_cycles: 12
+  sym42_weight1_period: 1
+  total_candidates_tested: 50468
+  weight2_genuine_structures: 0
+  weight3_genuine_structures: 0
+output_tokens: 148893
+status: ok
+```
+
+## iter_248: phase-248: FCC LGCA with O_h-symmetric LUTs admits only single-bit fundamental particles; all 'gliders' including LUT-08 are non-interacting composites — F1 triggered
+
+**Analysis:** Phase 248 was designed to answer the Phase 7.1 question: does the FCC lattice
+with O_h-symmetric LUT rules admit a particle zoo with genuine diversity?
+
+The iter_241 catalog audit (248.1) confirmed the catalog was empty — a smoke
+test with 100 seeds under 1 LUT. This justified the active search mandated by
+the Research Manager.
+
+The active search (248.2) was comprehensive: 50,468 candidates across
+
+**Status:** ok
+
+**Metrics:** `{'total_candidates_tested': 50468, 'luts_tested': 4, 'stable_moving_candidates': 32, 'axis_aligned_candidates': 28, 'novel_species_canonical_distinct': 10, 'novel_species_verified_coherent': 0, 'lut08_weight1_cycles': 6, 'lut08_weight1_period': 2, 'sym42_weight1_cycles': 12, 'sym42_weight1_period': 1, 'weight2_genuine_structures': 0, 'weight3_genuine_structures': 0, 'f1_triggered': True}`
+
+**Experimenter view:** Phase 248 executed a rigorous, multi-stage investigation of the FCC lattice
+particle spectrum, following the Research Manager's mandate for ACTIVE search
+rather than passive catalog audit.
+
+SUB-GOAL 248.1 (Pre-registration & Audit): The iter_241 "Glider Taxonomy"
+search was confirmed as a smoke test — only 100 candidates tested under a
+single LUT, with 0 novel survivors. Pre-registration updated w
+
+**Notes:** Phase 248 establishes that the FCC LGCA particle zoo is monospecific at the fundamental level. LUT-08 is a non-interacting composite.
 
