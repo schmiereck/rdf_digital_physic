@@ -1,0 +1,63 @@
+artifacts:
+- src/analyze_lut08.py
+- src/analyze_lut08_full.py
+- src/analyze_valid_targets.py
+- src/check_stabilizers.py
+- src/check_all_stabs.py
+- src/check_signature.py
+- src/check_groups.py
+experimenter_view: 'Critical negative finding: The planned inter-orbit swap (EXCHANGE
+  variant)
+
+  between weight-2 orbits 6 and 8 is IMPOSSIBLE. These two orbits share the
+
+  same size (24) but have completely disjoint stabilizer sets (intersection=0),
+
+  which violates the equivariant bijection construction requirement that source
+
+  and target representatives must have identical stabilizers. The standard
+
+  generate_symmetric_lut() algorithm places each weight-2 orbit in its own
+
+  singleton signature group, so inter-orbit pairing is never attempted.
+
+
+  However, a viable alternative exists: INTRA-orbit remapping. Each weight-2
+
+  orbit has multiple valid targets with matching stabilizers (e.g., orbit 6
+
+  has targets [17,34,68,136]; orbit 8 has [20,40,65,130]). Remapping the
+
+  representative to a different valid target within the same orbit preserves
+
+  O_h symmetry, bijectivity, and bit conservation while altering cross-cycle
+
+  collision outcomes. LUT-08 is already 73% non-additive (48/66 weight-2
+
+  states), but its specific intra-orbit mappings happen to preserve
+
+  independent-particle dynamics. Future work should systematically explore
+
+  the 4×2×4×4 = 128 intra-orbit remapping combinations for the four
+
+  weight-2 orbits to find variants that create bound states.
+
+  '
+log_excerpt: "Additive: 18/66\nNon-additive: 48\nOrbit 6 (size 24): rep=17, stabilizer\
+  \ size=2, valid targets=4\n  Valid targets: [17, 34, 68, 136]\n  LUT-08 maps rep\
+  \ -> 17 (in orbit 6)\nOrbit 8 (size 24): rep=20, stabilizer size=2, valid targets=4\n\
+  \  Valid targets: [20, 40, 65, 130]\n  LUT-08 maps rep -> 65 (in orbit 8)\nUnique\
+  \ stabilizers in orbit 6: 6\nUnique stabilizers in orbit 8: 6\nIntersection: 0\n\
+  Union: 12\n"
+metrics:
+  orbit6_orbit8_stabilizer_intersection: 0
+  orbit6_stabilizers: 6
+  orbit8_stabilizers: 6
+  total_orbits: 144
+  weight2_additive_states: 18
+  weight2_nonadditive_states: 48
+  weight2_orbit_sizes: 12, 6, 24, 24
+  weight2_orbits: 4
+notes: Inter-orbit swap blocked by disjoint stabilizers; intra-orbit remapping is
+  the viable path forward.
+status: experiment_failed

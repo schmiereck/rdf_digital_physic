@@ -1,0 +1,429 @@
+
+[Tool Call: read_file({'path': 'src/pre_registration.md'})]
+
+[Tool Result: # RDF Scientific Pre-Registration
+
+*   **Iteration:** 249
+*   **Pre-Registration File:** src/pre_registration.md
+
+## 1. Hypothesis
+An O_h-symmetric, reversible, bit-conserving FCC LGCA LUT with deliberately
+constructed non-additive weight-2 entries — where the output for a weight-2
+input state {ch_i, ch_j} is NOT the independent superposition of the two
+weight-1 transpositions τ(i) and τ(j), but instead redirects one or both
+output bits into channels belonging to a different transposition pair —...]
+
+
+[Tool Call: read_file({'path': 'src/search_3d_gliders.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+search_3d_gliders.py — Symmetric, bit-conserving, reversible 3D CA rule
+generator and search for 3D gliders.
+
+Pipeline:
+1. Construct the 48 permutations of {0..11} corresponding to the O_h symmetry
+   group of the cuboctahedron by applying all signed permutation matrices in
+   R^3 to the 12 FCC nearest-neighbor vectors.
+2. Decompose the 4096 states of {0,1}^12 into orbits under O_h and group by
+   Hamming weight.
+3. generate_symmetric_lut() produces a bijective, bit-co...]
+
+
+[Tool Call: read_file({'path': 'src/engine_3d.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+engine_3d.py — 3D Cuboctahedron (FCC lattice) Lattice Gas Cellular Automaton (LGCA) simulation engine.
+
+This engine implements:
+1. A 3D toroidal grid of shape (L, H, W, 12) representing the 12 velocity channels of the FCC lattice.
+2. The 12 directions defined in the standard projection of FCC onto a stack of hexagonal layers.
+3. A `stream` function that propagates the bits along their respective directions using `np.roll`.
+4. A `collide` function that applies a 12-bit ...]
+
+
+[Tool Call: read_file({'path': 'src/coherence_testing.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+coherence_testing.py — Three-test coherence verification protocol.
+
+Tests whether a multi-bit pattern is a genuine glider (coherent interacting
+object) or a non-interacting composite of independent bits.
+
+Test A (Decomposition): Run each constituent bit independently; check whether
+the multi-bit trajectory matches the bitwise superposition of solo trajectories.
+If yes, the bits do NOT interact → non-interacting composite.
+
+Test B (Collision Interaction): Count cells co...]
+
+
+[Tool Call: read_file({'path': 'src/lut_construction_nonadditive.py'})]
+
+[Tool Result: import numpy as np
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.search_3d_gliders import (
+    get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, verify_lut
+)
+
+def build_modified_lut(base_lut, action, mods):
+    """
+    mods: dict mapping representative state to target state.
+    For each (rep, target), we find all g in O_h and map g(rep) -> g(target).
+    """
+    lut = ba...]
+
+
+[Tool Call: read_file({'path': 'src/experiment_248_fundamental_spectrum.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""Fundamental single-bit particle spectrum and multi-bit coherent structure search."""
+from __future__ import annotations
+import json, sys
+from itertools import combinations
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from src.engine_3d import stream, collide, SHIFTS
+from src.search_3d_gliders import (
+    generate_symmetric_lut, get_oh_permutations,
+    precompute_perm_action, compute_orbits, c...]
+
+
+[Tool Call: read_file({'path': 'archive/iter_224/results/glider_00_lut08_sub03.json'})]
+
+[Tool Result: {
+  "rank": 0,
+  "lut_seed": 8,
+  "sub_seed": 3,
+  "particle": [
+    [
+      -1,
+      0,
+      -1,
+      5
+    ],
+    [
+      -1,
+      1,
+      0,
+      5
+    ],
+    [
+      0,
+      -1,
+      -1,
+      5
+    ],
+    [
+      0,
+      -1,
+      1,
+      6
+    ]
+  ],
+  "initial_bits": 4,
+  "bit_stable": true,
+  "displacement_norm": 111.80339887498948,
+  "cumulative_displacement": [
+    50.0,
+    0.0,
+    100.0
+  ],
+  "max_extent": 3,
+  "final_extent": [
+    2,
+    3,
+    3
+  ],
+  "final_bits": 4,...]
+
+
+[Tool Call: read_file({'path': 'archive/iter_248/results/fundamental_spectrum.json'})]
+
+[Tool Result: {
+  "lut08_weight1_cycles": [
+    {
+      "cycle": [
+        0,
+        3
+      ],
+      "period": 2,
+      "velocity_grid": [
+        0.0,
+        0.5,
+        -0.5
+      ],
+      "velocity_cart": [
+        0.0,
+        -0.5,
+        0.5
+      ],
+      "axis_aligned": true
+    },
+    {
+      "cycle": [
+        1,
+        2
+      ],
+      "period": 2,
+      "velocity_grid": [
+        0.0,
+        -0.5,
+        0.5
+      ],
+      "velocity_cart": [
+        0.0,
+        0.5,
+        -0.5
+      ],
+...]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport json, numpy as np\nfrom src.search_3d_gliders import get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, hamming\n\n# Load LUT-08\nwith open(\'archive/iter_224/results/glider_00_lut08_sub03.json\') as f:\n    ref = json.load(f)\nlut08 = np.array(ref[\'lut\'], dtype=np.uint16)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Analyze weight-2 orbits\nprint(\'Total orbits:\', len(orbit_list))\n\n# Find all weight-2 orbits\nw2_orbits = [(i, o) for i, o in enumerate(orbit_list) if hamming(o[0]) == 2]\nprint(f\'Weight-2 orbits: {len(w2_orbits)}\')\n\nfor oid, orbit in w2_orbits:\n    rep = orbit[0]\n    # Find which channels are set in rep\n    channels_in = [ch for ch in range(12) if rep & (1 << ch)]\n    # Find output\n    out = lut08[rep]\n    channels_out = [ch for ch in range(12) if out & (1 << ch)]\n    # Determine cycle membership of output channels (from weight-1 cycles)\n    cycles = [[0,3],[1,2],[4,7],[5,6],[8,11],[9,10]]\n    out_cycles = []\n    for cyc in cycles:\n        for ch in channels_out:\n            if ch in cyc:\n                out_cycles.append(cyc)\n                break\n    print(f\'Orbit {oid:2d}, size={len(orbit):2d}, rep={rep:4d} ch_in={channels_in}, out={out:4d} ch_out={channels_out}, out_cycles={out_cycles}\')\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport json, numpy as np\nfrom src.search_3d_gliders import get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, hamming\n\nwith open(\'archive/iter_224/results/glider_00_lut08_sub03.json\') as f:\n    ref = json.load(f)\nlut08 = np.array(ref[\'lut\'], dtype=np.uint16)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nprint(\'Total orbits:\', len(orbit_list))\nw2_orbits = [(i, o) for i, o in enumerate(orbit_list) if hamming(o[0]) == 2]\nprint(\'Weight-2 orbits:\', len(w2_orbits))\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "print(\'hello\')" 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: hello
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/analyze_lut08.py', 'content': '#!/usr/bin/env python3\n"""Analyze LUT-08 weight-2 orbit structure."""\nimport json, numpy as np\nfrom pathlib import Path\nimport sys\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\n# Load LUT-08\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nprint("Total orbits:", len(orbit_list))\n\n# Find all weight-2 orbits\nw2_orbits = [(i, o) for i, o in enumerate(orbit_list) if hamming(o[0]) == 2]\nprint(f"Weight-2 orbits: {len(w2_orbits)}")\n\n# Weight-1 cycles from fundamental spectrum\nw1_cycles = [[0,3],[1,2],[4,7],[5,6],[8,11],[9,10]]\n\ndef get_cycle(ch):\n    for cyc in w1_cycles:\n        if ch in cyc:\n            return tuple(cyc)\n    return None\n\nfor oid, orbit in w2_orbits:\n    rep = orbit[0]\n    channels_in = [ch for ch in range(12) if rep & (1 << ch)]\n    out = lut08[rep]\n    channels_out = [ch for ch in range(12) if out & (1 << ch)]\n    in_cycles = [get_cycle(ch) for ch in channels_in]\n    out_cycles = [get_cycle(ch) for ch in channels_out]\n    print(f"Orbit {oid:2d}, size={len(orbit):2d}, rep={rep:4d} ch_in={channels_in}, out={out:4d} ch_out={channels_out}, in_cycles={in_cycles}, out_cycles={out_cycles}")\n'})]
+
+[Tool Result: Successfully wrote to src/analyze_lut08.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/analyze_lut08.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Total orbits: 144
+Weight-2 orbits: 4
+Orbit  2, size=12, rep=   3 ch_in=[0, 1], out=  12 ch_out=[2, 3], in_cycles=[(0, 3), (1, 2)], out_cycles=[(1, 2), (0, 3)]
+Orbit  3, size= 6, rep=   6 ch_in=[1, 2], out=   6 ch_out=[1, 2], in_cycles=[(1, 2), (1, 2)], out_cycles=[(1, 2), (1, 2)]
+Orbit  6, size=24, rep=  17 ch_in=[0, 4], out=  17 ch_out=[0, 4], in_cycles=[(0, 3), (4, 7)], out_cycles=[(0, 3), (4, 7)]
+Orbit  8, size=24, rep=  20 ch_in=[2, 4], out=  65 ch_out=[0, 6], in_cy...]
+
+
+[Tool Call: write_file({'path': 'src/analyze_lut08_full.py', 'content': '#!/usr/bin/env python3\n"""Full analysis of LUT-08 orbit structure and orbit-to-orbit mapping."""\nimport json, numpy as np\nfrom pathlib import Path\nimport sys\nfrom collections import defaultdict\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\n# Load LUT-08\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nprint("=" * 80)\nprint("ORBIT SIGNATURES")\nprint("=" * 80)\n\n# Group orbits by signature\nsig_groups = defaultdict(list)\nfor oid, orbit in enumerate(orbit_list):\n    rep = orbit[0]\n    w = hamming(rep)\n    sz = len(orbit)\n    stab_set = frozenset(stabs[x] for x in orbit)\n    sig = (w, sz, stab_set)\n    sig_groups[sig].append(oid)\n\nfor sig, oids in sorted(sig_groups.items(), key=lambda x: x[0][0]):\n    w, sz, _ = sig\n    print(f"Weight={w}, size={sz}: orbits {oids}")\n\nprint("\\n" + "=" * 80)\nprint("WEIGHT-2 ORBIT MAPPING")\nprint("=" * 80)\n\nw1_cycles = [[0,3],[1,2],[4,7],[5,6],[8,11],[9,10]]\ncycle_names = {tuple(c): f"C{i}" for i, c in enumerate(w1_cycles)}\n\ndef get_cycle(ch):\n    for cyc in w1_cycles:\n        if ch in cyc:\n            return tuple(cyc)\n    return None\n\ndef describe_state(s):\n    chs = [ch for ch in range(12) if s & (1 << ch)]\n    cycles = [get_cycle(ch) for ch in chs]\n    return chs, cycles\n\n# For each weight-2 orbit, find where it maps\nw2_oids = [i for i, o in enumerate(orbit_list) if hamming(o[0]) == 2]\n\nfor src_oid in w2_oids:\n    src_orbit = orbit_list[src_oid]\n    rep = src_orbit[0]\n    dst = lut08[rep]\n    dst_oid = orbit_of[dst]\n    dst_orbit = orbit_list[dst_oid]\n    \n    src_chs, src_cycs = describe_state(rep)\n    dst_chs, dst_cycs = describe_state(dst)\n    \n    # Check if mapping is uniform across the orbit\n    all_dst_oids = set()\n    for s in src_orbit:\n        d = lut08[s]\n        all_dst_oids.add(int(orbit_of[d]))\n    \n    print(f"Src orbit {src_oid:2d} (size {len(src_orbit):2d}) -> Dst orbit {dst_oid:2d} (size {len(dst_orbit):2d})")\n    print(f"  Rep {rep:4d}: ch_in={src_chs} cycles={src_cycs}")\n    print(f"  Out {dst:4d}: ch_out={dst_chs} cycles={dst_cycs}")\n    print(f"  Uniform mapping: {len(all_dst_oids) == 1} (all dst orbits: {sorted(all_dst_oids)})")\n    print()\n\nprint("=" * 80)\nprint("VERIFY ADDITIVITY")\nprint("=" * 80)\n\n# For each weight-2 state, check if lut[a|b] == lut[a]|lut[b]\nfrom itertools import combinations\nadditive_count = 0\nnon_additive = []\nfor a, b in combinations(range(12), 2):\n    s = (1 << a) | (1 << b)\n    expected = lut08[1 << a] | lut08[1 << b]\n    actual = lut08[s]\n    if actual == expected:\n        additive_count += 1\n    else:\n        non_additive.append((a, b, s, expected, actual))\n\nprint(f"Additive: {additive_count}/66")\nprint(f"Non-additive: {len(non_additive)}")\nfor a, b, s, exp, act in non_additive:\n    print(f"  ch({a},{b}) state={s}: expected={exp} ({describe_state(exp)[0]}), actual={act} ({describe_state(act)[0]})")\n'})]
+
+[Tool Result: Successfully wrote to src/analyze_lut08_full.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/analyze_lut08_full.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: ================================================================================
+ORBIT SIGNATURES
+================================================================================
+Weight=0, size=1: orbits [0]
+Weight=1, size=12: orbits [1]
+Weight=2, size=12: orbits [2]
+Weight=2, size=6: orbits [3]
+Weight=2, size=24: orbits [6]
+Weight=2, size=24: orbits [8]
+Weight=3, size=12: orbits [4]
+Weight=3, size=24: orbits [7, 12]
+Weight=3, size=48: orbits [9, 10]
+Weight=3, si...]
+
+
+[Tool Call: write_file({'path': 'src/analyze_valid_targets.py', 'content': '#!/usr/bin/env python3\n"""Analyze valid targets for orbit mappings in LUT-08."""\nimport json, numpy as np\nfrom pathlib import Path\nimport sys\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\nwith open(ROOT / "archive/iter_224/results/glider_00_lut08_sub03.json") as f:\n    ref = json.load(f)\nlut08 = np.array(ref["lut"], dtype=np.uint16)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nw2_oids = [i for i, o in enumerate(orbit_list) if hamming(o[0]) == 2]\n\nprint("Valid targets analysis for weight-2 orbits:")\nfor oid in w2_oids:\n    orbit = orbit_list[oid]\n    rep = orbit[0]\n    H = stabs[rep]\n    valid = [t for t in orbit if stabs[t] == H]\n    print(f"Orbit {oid} (size {len(orbit)}): rep={rep}, stabilizer size={len(H)}, valid targets={len(valid)}")\n    print(f"  Valid targets: {valid}")\n    # Show what LUT-08 maps rep to\n    actual = lut08[rep]\n    print(f"  LUT-08 maps rep -> {actual} (in orbit {orbit_of[actual]})")\n    print()\n'})]
+
+[Tool Result: Successfully wrote to src/analyze_valid_targets.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/analyze_valid_targets.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Valid targets analysis for weight-2 orbits:
+Orbit 2 (size 12): rep=3, stabilizer size=4, valid targets=4
+  Valid targets: [3, 12, 48, 192]
+  LUT-08 maps rep -> 12 (in orbit 2)
+
+Orbit 3 (size 6): rep=6, stabilizer size=8, valid targets=2
+  Valid targets: [6, 9]
+  LUT-08 maps rep -> 6 (in orbit 3)
+
+Orbit 6 (size 24): rep=17, stabilizer size=2, valid targets=4
+  Valid targets: [17, 34, 68, 136]
+  LUT-08 maps rep -> 17 (in orbit 6)
+
+Orbit 8 (size 24): rep=20, stabil...]
+
+
+[Tool Call: write_file({'path': 'src/check_stabilizers.py', 'content': '#!/usr/bin/env python3\nimport json, numpy as np\nfrom pathlib import Path\nimport sys\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Check stabilizers of orbit 6 and 8\nfor oid in [6, 8]:\n    orbit = orbit_list[oid]\n    print(f"Orbit {oid} stabilizers:")\n    for s in orbit[:10]:\n        print(f"  state {s}: stab={stabs[s]}")\n    print()\n\n# Check if any state in orbit 8 has same stabilizer as rep=17\nrep17_stab = stabs[17]\nprint(f"Stabilizer of 17: {rep17_stab}")\nmatches = [s for s in orbit_list[8] if stabs[s] == rep17_stab]\nprint(f"States in orbit 8 with same stabilizer as 17: {matches}")\n\nrep20_stab = stabs[20]\nprint(f"Stabilizer of 20: {rep20_stab}")\nmatches = [s for s in orbit_list[6] if stabs[s] == rep20_stab]\nprint(f"States in orbit 6 with same stabilizer as 20: {matches}")\n'})]
+
+[Tool Result: Successfully wrote to src/check_stabilizers.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/check_stabilizers.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Orbit 6 stabilizers:
+  state 17: stab=(0, 16)
+  state 18: stab=(0, 21)
+  state 33: stab=(0, 21)
+  state 34: stab=(0, 16)
+  state 68: stab=(0, 16)
+  state 72: stab=(0, 21)
+  state 132: stab=(0, 21)
+  state 136: stab=(0, 16)
+  state 257: stab=(0, 34)
+  state 260: stab=(0, 39)
+
+Orbit 8 stabilizers:
+  state 20: stab=(0, 26)
+  state 24: stab=(0, 31)
+  state 36: stab=(0, 31)
+  state 40: stab=(0, 26)
+  state 65: stab=(0, 26)
+  state 66: stab=(0, 31)
+  state 129: ...]
+
+
+[Tool Call: write_file({'path': 'src/check_all_stabs.py', 'content': '#!/usr/bin/env python3\nimport json, numpy as np\nfrom pathlib import Path\nimport sys\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Get all stabilizers in orbit 6 and 8\nstabs_6 = set(stabs[s] for s in orbit_list[6])\nstabs_8 = set(stabs[s] for s in orbit_list[8])\n\nprint(f"Unique stabilizers in orbit 6: {len(stabs_6)}")\nprint(f"Unique stabilizers in orbit 8: {len(stabs_8)}")\nprint(f"Intersection: {len(stabs_6 & stabs_8)}")\nprint(f"Union: {len(stabs_6 | stabs_8)}")\n\nprint("\\nStabilizers in orbit 6:")\nfor s in sorted(stabs_6):\n    print(f"  {s}")\n\nprint("\\nStabilizers in orbit 8:")\nfor s in sorted(stabs_8):\n    print(f"  {s}")\n'})]
+
+[Tool Result: Successfully wrote to src/check_all_stabs.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/check_all_stabs.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Unique stabilizers in orbit 6: 6
+Unique stabilizers in orbit 8: 6
+Intersection: 0
+Union: 12
+
+Stabilizers in orbit 6:
+  (0, 2)
+  (0, 12)
+  (0, 16)
+  (0, 21)
+  (0, 34)
+  (0, 39)
+
+Stabilizers in orbit 8:
+  (0, 3)
+  (0, 13)
+  (0, 26)
+  (0, 31)
+  (0, 40)
+  (0, 45)
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/check_signature.py', 'content': '#!/usr/bin/env python3\nimport numpy as np\nfrom pathlib import Path\nimport sys\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nfor oid in [6, 8]:\n    orbit = orbit_list[oid]\n    rep = orbit[0]\n    w = hamming(rep)\n    sz = len(orbit)\n    stab_set = frozenset(stabs[x] for x in orbit)\n    print(f"Orbit {oid}: weight={w}, size={sz}, stab_set_size={len(stab_set)}")\n    print(f"  stab_set = {sorted(stab_set)}")\n'})]
+
+[Tool Result: Successfully wrote to src/check_signature.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/check_signature.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Orbit 6: weight=2, size=24, stab_set_size=6
+  stab_set = [(0, 2), (0, 12), (0, 16), (0, 21), (0, 34), (0, 39)]
+Orbit 8: weight=2, size=24, stab_set_size=6
+  stab_set = [(0, 3), (0, 13), (0, 26), (0, 31), (0, 40), (0, 45)]
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/check_groups.py', 'content': '#!/usr/bin/env python3\nimport numpy as np\nfrom pathlib import Path\nimport sys\nfrom collections import defaultdict\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations, precompute_perm_action, compute_orbits,\n    compute_all_stabilizers, hamming\n)\n\nperms = get_oh_permutations()\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\norbit_sigs = []\nfor o in orbit_list:\n    rep = o[0]\n    w = hamming(rep)\n    sz = len(o)\n    stab_set = frozenset(stabs[x] for x in o)\n    orbit_sigs.append((w, sz, stab_set))\n\ngroups = defaultdict(list)\nfor idx, sig in enumerate(orbit_sigs):\n    groups[sig].append(idx)\n\nfor sig, oids in sorted(groups.items(), key=lambda x: x[0][0]):\n    w, sz, stab_set = sig\n    if w == 2:\n        print(f"Weight={w}, size={sz}: orbits {oids}")\n        print(f"  stab_set = {sorted(stab_set)}")\n'})]
+
+[Tool Result: Successfully wrote to src/check_groups.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/check_groups.py 2>&1'})]
+
+[Tool Result: exit_code: 0
+stdout: Weight=2, size=12: orbits [2]
+  stab_set = [(0, 1, 4, 5), (0, 1, 10, 11), (0, 4, 10, 14)]
+Weight=2, size=6: orbits [3]
+  stab_set = [(0, 1, 2, 3, 12, 13, 14, 15), (0, 4, 11, 15, 34, 39, 40, 45), (0, 5, 10, 15, 16, 21, 26, 31)]
+Weight=2, size=24: orbits [6]
+  stab_set = [(0, 2), (0, 12), (0, 16), (0, 21), (0, 34), (0, 39)]
+Weight=2, size=24: orbits [8]
+  stab_set = [(0, 3), (0, 13), (0, 26), (0, 31), (0, 40), (0, 45)]
+
+stderr: ]
+
+
+[NUDGE RESPONSE]
+```yaml
+status: experiment_failed
+artifacts:
+  - src/analyze_lut08.py
+  - src/analyze_lut08_full.py
+  - src/analyze_valid_targets.py
+  - src/check_stabilizers.py
+  - src/check_all_stabs.py
+  - src/check_signature.py
+  - src/check_groups.py
+metrics:
+  total_orbits: 144
+  weight2_orbits: 4
+  weight2_additive_states: 18
+  weight2_nonadditive_states: 48
+  weight2_orbit_sizes: "12, 6, 24, 24"
+  orbit6_stabilizers: 6
+  orbit8_stabilizers: 6
+  orbit6_orbit8_stabilizer_intersection: 0
+log_excerpt: |
+  Additive: 18/66
+  Non-additive: 48
+  Orbit 6 (size 24): rep=17, stabilizer size=2, valid targets=4
+    Valid targets: [17, 34, 68, 136]
+    LUT-08 maps rep -> 17 (in orbit 6)
+  Orbit 8 (size 24): rep=20, stabilizer size=2, valid targets=4
+    Valid targets: [20, 40, 65, 130]
+    LUT-08 maps rep -> 65 (in orbit 8)
+  Unique stabilizers in orbit 6: 6
+  Unique stabilizers in orbit 8: 6
+  Intersection: 0
+  Union: 12
+experimenter_view: |
+  Critical negative finding: The planned inter-orbit swap (EXCHANGE variant)
+  between weight-2 orbits 6 and 8 is IMPOSSIBLE. These two orbits share the
+  same size (24) but have completely disjoint stabilizer sets (intersection=0),
+  which violates the equivariant bijection construction requirement that source
+  and target representatives must have identical stabilizers. The standard
+  generate_symmetric_lut() algorithm places each weight-2 orbit in its own
+  singleton signature group, so inter-orbit pairing is never attempted.
+
+  However, a viable alternative exists: INTRA-orbit remapping. Each weight-2
+  orbit has multiple valid targets with matching stabilizers (e.g., orbit 6
+  has targets [17,34,68,136]; orbit 8 has [20,40,65,130]). Remapping the
+  representative to a different valid target within the same orbit preserves
+  O_h symmetry, bijectivity, and bit conservation while altering cross-cycle
+  collision outcomes. LUT-08 is already 73% non-additive (48/66 weight-2
+  states), but its specific intra-orbit mappings happen to preserve
+  independent-particle dynamics. Future work should systematically explore
+  the 4×2×4×4 = 128 intra-orbit remapping combinations for the four
+  weight-2 orbits to find variants that create bound states.
+notes: "Inter-orbit swap blocked by disjoint stabilizers; intra-orbit remapping is the viable path forward."
+```
