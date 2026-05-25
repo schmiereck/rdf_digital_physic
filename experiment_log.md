@@ -3,42 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 3996408
-cost_usd: 1.62791
-hypothesis: 'phase-222: mathematically validate the existence of stable, coherent
-  sub-light speed (v=0.469c) gliders on the 2D hexagonal grid using trigonometric
-  toroidal CoM'
-input_tokens: 4609688
-iter: 222
-metrics:
-  bit_count_final: 4
-  bit_count_initial: 3
-  conservation_score: 0.7505
-  detected_period: 1
-  fitness: 0.350669
-  mean_speed: 0.469284
-  std_dev_velocity: 0.0044
-  total_displacement: 234.6418
-output_tokens: 5176
-status: ok
-```
-
-## iter_222: phase-222: mathematically validate the existence of stable, coherent sub-light speed (v=0.469c) gliders on the 2D hexagonal grid using trigonometric toroidal CoM
-
-**Analysis:** We successfully resolved the final remaining challenge of Phase 3 (Discovery and characterization of sub-light speed gliders). In previous runs (iter_222.4), our C2-symmetric search discovered a stable diagonal moving pattern from a 3-bit L-tromino seed. However, its fitness score was artificially suppressed to 0.0596 because of center-of-mass coordinate jumps when crossing toroidal boundaries, wh
-
-**Status:** ok
-
-**Metrics:** `{'fitness': 0.350669, 'mean_speed': 0.469284, 'total_displacement': 234.6418, 'std_dev_velocity': 0.0044, 'bit_count_initial': 3, 'bit_count_final': 4, 'conservation_score': 0.7505, 'detected_period': 1}`
-
-**Experimenter view:** We have achieved a major scientific milestone in Phase 3. By implementing trigonometric toroidal CoM tracking and fixing the unwrapping accumulator in `src/new_fitness.py` (iter_222.7), we successfully resolved the boundary wrap-around artifacts that previously corrupted our fitness measurements.
-The stable, sub-light speed (`v<c`) glider discovered via the 72-orbit C2-symmetric evolutionary searc
-
-**Notes:** v<c glider fully characterized and validated: moves at 0.469c with excellent velocity consistency (std_dev = 0.0044).
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
@@ -1099,4 +1063,63 @@ on an L=64 FCC grid with collision center at (32,32,32). Key results:
 - Same-chirality (p
 
 **Notes:** Phase 246 complete. Boundary artifact refuted; non-covariance is a coordinate-rounding artifact (definitional alignment mismatch).
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Particle Zoo
+cost_usd: 1.54145
+hypothesis: 'phase-247: Same-chirality LUT-08 collisions do NOT produce new particle
+  species; debris thermalizes completely — Phase 7.4 pair production hypothesis refuted
+  (F1)'
+input_tokens: 3076216
+iter: 247
+metrics:
+  F1_triggered: true
+  F2_triggered: false
+  F3_triggered: false
+  F4_triggered: false
+  experiment_lines: 218
+  impact_parameters_tested: 9
+  lut08_bit_count: 4
+  lut08_period: 2
+  lut08_velocity_grid:
+  - 0.5
+  - 0.0
+  - 1.0
+  new_candidates: 0
+  propagating_clusters_found: 0
+  vacuum_control_passed: true
+  verdict: REFUTED
+output_tokens: 76090
+status: ok
+```
+
+## iter_247: phase-247: Same-chirality LUT-08 collisions do NOT produce new particle species; debris thermalizes completely — Phase 7.4 pair production hypothesis refuted (F1)
+
+**Analysis:** Phase 247 tested the central hypothesis of Phase 7.4 (Pair Production &
+Annihilation): that same-chirality LUT-08 collisions could produce new
+stable propagating glider species from collision debris. The hypothesis
+was pre-registered with four falsification criteria and three manager-
+mandated controls (O_h-equivalence filter, 300-step vacuum isolation,
+pre-registration compliance).
+
+The experimen
+
+**Status:** ok
+
+**Metrics:** `{'impact_parameters_tested': 9, 'propagating_clusters_found': 0, 'new_candidates': 0, 'vacuum_control_passed': True, 'F1_triggered': True, 'F2_triggered': False, 'F3_triggered': False, 'F4_triggered': False, 'verdict': 'REFUTED', 'lut08_velocity_grid': [0.5, 0.0, 1.0], 'lut08_bit_count': 4, 'lut08_period': 2, 'experiment_lines': 218}`
+
+**Experimenter view:** The pre-registered pair production hypothesis (Phase 7.4) was rigorously
+tested and REFUTED via falsification criterion F1. The experiment was
+conducted on an L=64 FCC toroidal grid with same-chirality LUT-08
+collisions at 9 impact parameters (dy = 0, ±1, ±2, ±3, ±4). Each
+collision ran for 300 steps with automated debris analysis from step 60
+onward.
+
+Key observations:
+- LUT-08 confirmed as 4-bit
+
+**Notes:** Phase 7.4 null result: pair production hypothesis refuted (F1). Same-chirality LUT-08 collisions produce only transient debris.
 

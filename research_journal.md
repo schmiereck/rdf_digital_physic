@@ -1,20 +1,21 @@
 # Research Manager Journal & Strategic State
 
 ## 1. High-Level Strategy & Trajectory
-*   **Current Phase:** Phase 7 (Particle Zoo) - Sub-phase 7.3 (Antiparticles & CPT Symmetries)
-*   **Active Direction:** Analyzing CPT-like symmetries, specifically characterizing the structural constraints of discrete lattices on collision covariance under O_h rotations.
-*   **Trajectory Update (Iteration 246):** Iteration 246 successfully tested the boundary-interference hypothesis by scaling the collision domain to an isolated $64^3$ grid. The results conclusively **refute** the hypothesis that toroidal boundary interference causes the observed O_h non-covariance in collisions. Instead, they **confirm** that the broken covariance is a fundamental coordinate-rounding and sub-lattice phase-shift artifact (definitional alignment mismatch) arising from the discrete lattice representation of non-axis-aligned gliders ($v \approx [0.25, -0.5, 1.0]$).
-*   **Confidence Score:** 65% (High confidence in our understanding of the discrete grid constraints; lower confidence in the viability of non-axis-aligned gliders for covariant multi-particle physics).
+*   **Current Phase:** Phase 7 (Particle Zoo) - Sub-phase 7.4 (Pair Production & Annihilation)
+*   **Active Direction:** Investigating particle creation mechanisms and interaction limits on the 3D FCC lattice.
+*   **Trajectory Update (Iteration 247):** Iteration 247 successfully tested the pair-production hypothesis for same-chirality LUT-08 collisions. The results conclusively **refute** the hypothesis that same-chirality LUT-08 collisions can act as a channel for generating new stable propagating glider species or stationary debris. Instead, the collision debris completely thermalizes and disperses, leaving no stable remnants under vacuum isolation. This represents a rigorous, first-class null result that completes the characterization of LUT-08's interaction channels.
+*   **Confidence Score:** 70% (High confidence in our mapping of the LUT-08 interaction phase space; clear strategic understanding that LUT-08 has been exhausted as a vehicle for emergent multi-particle mechanics).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **Broken O_h Collision Covariance:** While individual gliders propagate invariantly under O_h rotations (a constructional property of the local rule set), their mutual collision outcomes are highly non-covariant. Out of 24 proper O_h rotations on an isolated $64^3$ grid, 21 result in chaotic scattering, 1 in a partial state, and only 2 in elastic scattering (the identity and a single symmetric equivalent).
-*   **The Discretization Rounding Barrier:** Non-axis-aligned gliders like LUT-08 carry fractional coordinates that must be rounded to discrete integers on the layer-stacking grid. When rotated, these rounding operations introduce lateral coordinate shifts of up to 1.0 lattice unit and alter the relative sub-lattice phase alignment of the colliding particles. On a discrete lattice, collision dynamics are extremely sensitive to these sub-pixel phase alignments.
-*   **Anisotropy of Multi-Particle State Space:** This finding establishes a key limitation: discrete lattices do not automatically preserve rotational covariance for multi-body interactions unless the constituent particles are aligned with high-symmetry axes of the grid, or the system is evaluated in a limit where the glider's internal scale is much larger than the lattice spacing (coarse-grained limit).
+*   **Thermalization of Unprotected Collisions:** Unlike opposite-chirality collisions (which exhibit highly stable, discrete elastic scattering), same-chirality LUT-08 collisions possess no topological or structural symmetry protection on the lattice. The interaction dynamics are highly chaotic, leading to the rapid dispersion and evaporation of the constituent bits into transient noise.
+*   **The LUT-08 Limits:** We have now established two fundamental limits of the LUT-08 glider ($v \approx [0.25, -0.5, 1.0]$):
+    1.  Its non-axis-aligned propagation vector causes coordinate-rounding offsets under O_h rotations, breaking collision covariance.
+    2.  Its same-chirality interaction channel is purely dissipative, ruling out local pair production or bound-state remnants for this species.
 
 ## 3. Loop & Bottleneck Detection
-*   **Active Bottleneck:** Representational asymmetry of non-axis-aligned velocities under discrete O_h rotations. Continuing to sweep parameters for LUT-08 collisions under the expectation of covariant scattering is a dead end.
-*   **Mitigation Strategy:** Redirect evolutionary and systematic searches to identify stable glider species that propagate strictly along high-symmetry axes of the FCC lattice (e.g., $v \parallel [0, 0, 1]$ or similar). Such species are immune to coordinate-rounding offsets under the corresponding subgroups of O_h, which should restore exact collision covariance.
+*   **Active Bottleneck:** "LUT-08 Exhaustion." Trying to extract further emergent properties (such as mutual gravity, multi-body bound states, or pair-production) from the LUT-08 glider species is a confirmed dead end due to its non-axis-aligned geometry and dissipative collision channels.
+*   **Mitigation Strategy:** Do not attempt further sweeps of LUT-08. Redirect the research trajectory to find and characterize axis-aligned glider species on the 3D FCC grid, which are geometrically insulated from coordinate-rounding artifacts under O_h subgroups.
 
 ## 4. Alternate Research Paths
-*   **Axis-Aligned Glider Search:** Search for simpler, axis-aligned gliders on the FCC lattice and evaluate their collision mechanics.
+*   **Axis-Aligned Glider Search (High Priority):** Systematically search for glider species propagating strictly along high-symmetry axes of the FCC lattice (e.g., $v \parallel [0, 0, 1]$ or similar). Evaluate if their high-symmetry alignment restores exact collision covariance and provides non-dissipative interaction channels.
 *   **Coarse-Grained Trajectory Ensembles:** Shift toward statistical ensembles of gliders (Phase 6.1) where sub-pixel phase mismatches are averaged out over many trials, testing if macroscopic covariance emerges statistically.
