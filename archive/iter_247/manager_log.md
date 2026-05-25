@@ -1,9 +1,8 @@
-# RDF Scientific Pre-Registration
+# Research Manager Log - Iteration 247
 
-*   **Iteration:** 247
-*   **Pre-Registration File:** src/pre_registration.md
+## Iteration 247 -> Manager [Proposed Research Plan]
 
-## 1. Hypothesis
+**Proposed Hypothesis:**
 Same-chirality LUT-08 collisions produce debris from which at least one
 stable propagating glider species (distinct from LUT-08 in bit-count,
 period, or velocity) emerges within 200 steps post-collision, demonstrating
@@ -14,7 +13,7 @@ a propagating glider with bit-count ≠ 8 or velocity ≠ LUT-08's velocity,
 detectable by automated cluster-tracking and periodicity analysis on an L=64
 grid over 300 steps.
 
-## 2. Falsification Criterion
+**Proposed Falsification Criterion:**
 The hypothesis is REFUTED if ANY of the following hold:
 F1: No stable propagating patterns (periodic-displacement bit clusters)
     detected in collision debris across all 5 same-chirality impact
@@ -28,7 +27,7 @@ F4: The pair production (if any) is not robust to ±1 lattice-unit
     impact-parameter variation — indicating a narrow geometric
     artifact rather than a physical process.
 
-## 3. Proposed Method
+**Proposed Method:**
 Step 1: Create src/experiment_247_pair_production.py that implements:
   a) Same-chirality LUT-08 collision setup on L=64 FCC grid
      (reusing iter_245/246 infrastructure), placing two LUT-08
@@ -76,4 +75,35 @@ Expected outputs:
   found but F4-fails), or REFUTED (F1/F2/F3 triggered)
 
 ---
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+
+## Iteration 247 -> Planner [Strategic Guidance]
+
+### Strategic Guidance – Manager's Note
+
+While the proposed exploration of same-chirality collision debris (Phase 7.4) is a logical step, the current draft plan contains a significant loophole that could lead to misidentifying simple scattering or transient debris as "pair production." 
+
+To maintain strict scientific rigour, you must refine your experimental design and pre-registration criteria to address the following three points:
+
+---
+
+### 1. The $O_h$-Equivalence Filter (Preventing Taxonomic Inflation)
+A deflected, rotated, or phase-shifted counterpart of the incoming gliders is **not** a new particle species; it is simply inelastic or elastic scattering of the existing species. 
+* **The Loophole:** Since the $O_h$ symmetry group has 48 elements, the LUT-08 glider has multiple symmetric variants propagating along different axes with different phase alignments. If your collision debris contains an 8-bit glider propagating along a different direction, your current F2 criterion (`velocity ≠ original`) might falsely classify it as a "new species."
+* **The Mandate:** You must explicitly define the $O_h$ equivalence orbit of LUT-08 (its 48 possible spatial orientations, velocity vectors, and cyclic permutations). Any candidate glider found in the debris whose velocity and period match *any* member of the LUT-08 $O_h$ orbit must be classified as a scattered/deflected LUT-08, **not** as a newly produced species.
+
+### 2. Rigorous Vacuum Isolation & Stability (The 300-Step Test)
+Debris patterns in discrete CA often exhibit meta-stability—behaving periodically for 50 to 100 steps before suddenly collapsing, dispersing, or emitting a bit that changes their identity.
+* **The Mandate:** To be registered as a stable emergent particle, any candidate pattern extracted from the debris must be isolated on a completely clean, vacuum grid and simulated for a minimum of **300 steps**. 
+* **Falsification Criteria:** The candidate is refuted as a stable species if, during this 300-step vacuum run, it exhibits any change in total bit count, any monotonic drift in average velocity, or any breakdown of its periodic cycle.
+
+### 3. Pre-Registration Mandate
+The Orchestrator will automatically write and commit your finalized hypothesis and falsification criteria to `src/pre_registration.md` before execution begins.
+* You must update your plan to include the $O_h$-equivalence check and the 300-step isolation test directly in your pre-registration formulation.
+* Ensure all execution sub-agents explicitly load and read `src/pre_registration.md` to ensure complete alignment with these quantitative bounds.
+
+---
+
+**Proceed with Phase 7.4 after updating your pre-registration plan to reflect these rigorous controls.**
+
+---
+

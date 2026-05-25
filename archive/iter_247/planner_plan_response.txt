@@ -1,0 +1,151 @@
+
+[Tool Call: read_iteration({'iter_num': 246})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 245})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 241})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+I'll explore the codebase and recent iterations to understand the current state before formulating my hypothesis.
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'experiment_246'})]
+
+[Tool Result: Tool not available: grep_search]
+
+Based on the extensive information provided in the prompt, I can see that the tools are currently unavailable but I have sufficient context from the detailed current state, goal, and iteration history. Let me synthesize what I know and formulate the plan.
+
+## Analysis of Current State
+
+**Where we are:** Phase 7.3 (Antiparticles) completed with a first-class null result:
+- P-reflected LUT-08 (antiparticle) exists and is stable, but does NOT annihilate with original — collisions are elastic
+- Same-chirality collisions are destructive (Partial 3/5, Chaotic 2/5)
+- O_h non-covariance is a coordinate-rounding artifact, not a boundary artifact
+- Elastic collisions are rare narrow windows (2/24 rotations on L=64)
+
+**What Phase 7.4 requires (from goal.md):** "Demonstrate high-energy glider collisions that produce new particle pairs from kinetic bit-energy." Falsification: "Refuted if the 'produced pair' is just two halves of the input gliders with no quantitative threshold relation to input energy."
+
+**Key opportunity:** Same-chirality LUT-08 collisions produce debris (Partial/Chaotic outcomes). This debris is the natural substrate for pair production — the question is whether kinetic energy from collision can reorganize debris bits into new stable propagating glider species.
+
+**Critical constraint from iter_246:** Non-axis-aligned glider configurations suffer coordinate-rounding artifacts. Pair production results must be tested for O_h covariance or explicitly shown to be axis-aligned phenomena.
+
+## Hypothesis Formulation
+
+The same-chirality LUT-08 collisions (known to be destructive) deposit ~16 bits of kinetic energy into the collision zone. If pair production is real in this lattice, some of that debris should reorganize into stable propagating patterns that are **not** LUT-08 gliders — i.e., new particle species from the iter_241 catalog, or previously unknown species.
+
+This is falsifiable because:
+1. If debris never produces propagating patterns → no pair production
+2. If debris only produces LUT-08 gliders → just inelastic scattering, not new species
+3. If debris only produces stationary objects → debris, not pair production
+
+```yaml
+hypothesis: |
+  Same-chirality LUT-08 collisions produce debris from which at least one
+  stable propagating glider species (distinct from LUT-08 in bit-count,
+  period, or velocity) emerges within 200 steps post-collision, demonstrating
+  that collision kinetic energy can be converted into the rest mass of new
+  particle species. Specifically: among the 5 same-chirality impact-parameter
+  configurations tested in iter_245, at least one will yield debris containing
+  a propagating glider with bit-count ≠ 8 or velocity ≠ LUT-08's velocity,
+  detectable by automated cluster-tracking and periodicity analysis on an L=64
+  grid over 300 steps.
+
+falsification_criterion: |
+  The hypothesis is REFUTED if ANY of the following hold:
+  F1: No stable propagating patterns (periodic-displacement bit clusters)
+      detected in collision debris across all 5 same-chirality impact
+      parameters after 200 steps post-collision settling time.
+  F2: All detected propagating patterns are LUT-08 gliders (8-bit,
+      same velocity and period as original) — indicating inelastic
+      scattering without new species production.
+  F3: All stable debris objects are stationary (oscillators/still-lifes)
+      with zero net displacement — debris, not pair production.
+  F4: The pair production (if any) is not robust to ±1 lattice-unit
+      impact-parameter variation — indicating a narrow geometric
+      artifact rather than a physical process.
+
+proposed_method: |
+  Step 1: Create src/experiment_247_pair_production.py that implements:
+    a) Same-chirality LUT-08 collision setup on L=64 FCC grid
+       (reusing iter_245/246 infrastructure), placing two LUT-08
+       gliders of identical chirality on a head-on or offset collision
+       course with 5 different impact parameters (0, ±1, ±2 lattice
+       units transverse offset).
+    b) Each collision runs for 300 steps on L=64 with periodic boundaries.
+    c) Automated debris analysis starting at step 60 (post-collision):
+       - Every 10 steps, identify connected bit clusters (6-connectivity)
+       - Track each cluster's center-of-mass over 40-step windows
+       - Classify clusters by: bit-count, average displacement per period,
+         periodicity (autocorrelation of cluster shape), velocity
+       - Flag as "propagating glider" if: periodic displacement ≥ 2 cells
+         over ≥ 2 periods with <20% velocity variance
+    d) Compare detected gliders against LUT-08 signature (8-bit,
+       v≈0.5 cells/tick, period ≈ 8 steps).
+    e) Any detected glider with different bit-count OR different velocity
+       is a "new species" — evidence for pair production.
+
+  Step 2: Run vacuum control — single LUT-08 glider on same grid for
+  300 steps, confirm no spontaneous debris gliders appear.
+
+  Step 3: Run 3 additional impact parameters (±3, ±4, ±5 transverse
+  offset) to test F4 robustness. If pair production only occurs at one
+  narrow impact parameter, it fails F4.
+
+  Step 4: For any new glider species discovered, run a 200-step
+  stability test (solo propagation on clean grid) to confirm it is
+  a genuine stable particle, not a transient debris pattern.
+
+  Step 5: Compile results table: for each collision config, report
+  (impact_param, debris_bit_count, n_stationary_objects,
+  n_propagating_glider, glider_species_if_any, is_LUT_08,
+  robustness_to_±1_variation).
+
+  Files to create/modify:
+  - src/experiment_247_pair_production.py (main experiment, ~200 lines)
+  - src/pre_registration.md (this plan)
+
+  Expected outputs:
+  - Collision debris analysis for 8 impact parameters (5 original + 3 extended)
+  - Vacuum control result
+  - Stability verification for any candidate new species
+  - Verdict: SUPPORTED (new species found, robust), INCONCLUSIVE (new species
+    found but F4-fails), or REFUTED (F1/F2/F3 triggered)
+
+pre_registration_file: "src/pre_registration.md"
+```
