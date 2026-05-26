@@ -1,0 +1,365 @@
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result:       $null
+[DIR] .antigravitycli
+[DIR] .git
+      .gitignore
+[DIR] .venv
+      analyze_champion_vc_220.py
+      analyze_iter220_trajectory.py
+      apply_fix.py
+[DIR] archive
+      breakdown_fitness.py
+      config.toml
+      crash.log
+      current_state.md
+      debug_output.txt
+      debug_output2.txt
+      debug_sim_vc.py
+      edit_fitness.py
+      err.txt
+      experiment_log.md
+      experiment_log_archive.md
+      experiment_report.yaml
+      find_com_and_bits.py
+      find_mapping.py
+ ...]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: [DIR] __pycache__
+      _debug_mechanism.py
+      _debug_pair.py
+      analyze_champion_trajectory.py
+      analyze_collision_dynamics.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_glider_240.18.py
+      analyze_long_run_dynamics.py
+      analyze_lut08.py
+      analyze_lut08_full.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      analyze_two_body_sweep.py
+      analyze_valid_targets.py
+      analyze_weigh...]
+
+
+[Tool Call: read_file({'path': 'src/non_additive_lut_v2.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+non_additive_lut_v2.py — O_h-symmetric non-additive LUT construction for 3D FCC lattice.
+
+Constructs:
+1. ADDITIVE control LUT: with the antipodal transposition weight-1 sub-table,
+   and additive extension for all other weights.
+2. Any of the 128 unique O_h-symmetric weight-2 sub-table configurations.
+
+Background from weight-2 orbit analysis:
+- 4 weight-2 orbits with stabilizers of size 4, 8, 2, 2.
+- Their stabilizer conjugacy classes are distinct, so they cannot map t...]
+
+
+[Tool Call: read_file({'path': 'src/engine_3d.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+engine_3d.py — 3D Cuboctahedron (FCC lattice) Lattice Gas Cellular Automaton (LGCA) simulation engine.
+
+This engine implements:
+1. A 3D toroidal grid of shape (L, H, W, 12) representing the 12 velocity channels of the FCC lattice.
+2. The 12 directions defined in the standard projection of FCC onto a stack of hexagonal layers.
+3. A `stream` function that propagates the bits along their respective directions using `np.roll`.
+4. A `collide` function that applies a 12-bit ...]
+
+
+[Tool Call: read_file({'path': 'src/experiment_250_hex_decomposition.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+experiment_250_hex_decomposition.py
+Rigorous single-bit decomposition test for the 2D hex v=0.469c glider.
+
+Determines whether the iter_222 champion glider is:
+(a) genuinely bound with binding energy > 0, or
+(b) a non-interacting composite of independent single-bit trajectories.
+
+This experiment is Sub-Goal 250.1 of Phase 250 and holds ABSOLUTE PRIORITY.
+No 3D FCC non-additive LUT construction may proceed until this verdict is reached.
+"""
+
+import json
+import sys
+impor...]
+
+
+[Tool Call: read_file({'path': 'src/search_3d_gliders.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+search_3d_gliders.py — Symmetric, bit-conserving, reversible 3D CA rule
+generator and search for 3D gliders.
+
+Pipeline:
+1. Construct the 48 permutations of {0..11} corresponding to the O_h symmetry
+   group of the cuboctahedron by applying all signed permutation matrices in
+   R^3 to the 12 FCC nearest-neighbor vectors.
+2. Decompose the 4096 states of {0,1}^12 into orbits under O_h and group by
+   Hamming weight.
+3. generate_symmetric_lut() produces a bijective, bit-co...]
+
+
+[Tool Call: read_file({'path': 'src/simulate.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+Composite two-cell particle CA: produces a v=c/2 glider.
+
+Particle representation (2-bit cells):
+  0 = '00' (empty)
+  1 = '01' (state A, leading half)
+  2 = '10' (state B, trailing half)
+
+Two-cell particle pattern: [1, 2] at positions (i, i+1).
+
+Phase OSCILLATE (even t): [1,2] at (i,i+1) -> [2,1] in-place (flip internal state)
+Phase MOVE (odd t):       [2,1] at (i,i+1) -> [1,2] at (i+1,i+2) (translate right)
+
+Effective velocity = 1 cell per 2 steps = c/2.
+"""
+import sy...]
+
+ 
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport sys\nsys.path.insert(0, \'src\')\nfrom search_3d_gliders import get_oh_permutations, precompute_perm_action\nimport numpy as np\n\n# The user\'s specified pairs\nPAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\n\n# Build transposition lookup\ntrans = [0] * 12\nfor a, b in PAIRS:\n    trans[a] = b\n    trans[b] = a\n\nperms = get_oh_permutations(verbose=False)\nprint(f\'Number of O_h permutations: {len(perms)}\')\n\n# Verify O_h symmetry: trans[g(i)] == g(trans[i]) for all g, i\nsym_ok = True\nviolations = []\nfor g_idx, perm in enumerate(perms):\n    for i in range(12):\n        left = trans[perm[i]]\n        right = perm[trans[i]]\n        if left != right:\n            sym_ok = False\n            violations.append((g_idx, i, left, right))\n            break\n    if violations:\n        break\n\nprint(f\'Is O_h symmetric: {sym_ok}\')\nif violations:\n    print(f\'Violations: {violations[:5]}\')\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "import sys; sys.path.insert(0, \'src\'); from search_3d_gliders import get_oh_permutations; perms = get_oh_permutations(verbose=False); print(len(perms))"'})]
+
+[Tool Result: exit_code: 0
+stdout: 48
+
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nimport sys\nsys.path.insert(0, \'src\')\nfrom search_3d_gliders import get_oh_permutations\n\nPAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\ntrans = [0] * 12\nfor a, b in PAIRS:\n    trans[a] = b\n    trans[b] = a\n\nperms = get_oh_permutations(verbose=False)\nprint(\'perms:\', len(perms))\n\nsym_ok = True\nfor g_idx, perm in enumerate(perms):\n    for i in range(12):\n        left = trans[perm[i]]\n        right = perm[trans[i]]\n        if left != right:\n            sym_ok = False\n            print(f\'Violation at g={g_idx}, i={i}: trans[perm[i]]={left}, perm[trans[i]]={right}\')\n            break\n    if not sym_ok:\n        break\n\nprint(f\'Symmetric: {sym_ok}\')\n"\n'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/test_sym.py', 'content': "import sys\nsys.path.insert(0, 'src')\nfrom search_3d_gliders import get_oh_permutations\n\nPAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\ntrans = [0] * 12\nfor a, b in PAIRS:\n    trans[a] = b\n    trans[b] = a\n\nperms = get_oh_permutations(verbose=False)\nprint('perms:', len(perms))\n\nsym_ok = True\nfor g_idx, perm in enumerate(perms):\n    for i in range(12):\n        left = trans[perm[i]]\n        right = perm[trans[i]]\n        if left != right:\n            sym_ok = False\n            print(f'Violation at g={g_idx}, i={i}: trans[perm[i]]={left}, perm[trans[i]]={right}')\n            break\n    if not sym_ok:\n        break\n\nprint(f'Symmetric: {sym_ok}')\n"})]
+
+[Tool Result: Successfully wrote to src/test_sym.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_sym.py'})]
+
+[Tool Result: exit_code: 0
+stdout: perms: 48
+Symmetric: True
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/test_w2.py', 'content': 'import sys\nsys.path.insert(0, \'src\')\nfrom search_3d_gliders import get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, hamming\nimport numpy as np\n\nperms = get_oh_permutations(verbose=False)\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nw2_orbits = []\nfor idx, o in enumerate(orbit_list):\n    if hamming(o[0]) == 2:\n        rep = o[0]\n        H = stabs[rep]\n        valid = [t for t in o if stabs[t] == H]\n        w2_orbits.append({\n            "global_idx": idx,\n            "rep": rep,\n            "orbit_members": sorted(o),\n            "stab_size": len(H),\n            "valid_targets": sorted(valid),\n        })\n\nw2_orbits.sort(key=lambda d: d["rep"])\n\nprint(f"Number of weight-2 orbits: {len(w2_orbits)}")\nfor i, d in enumerate(w2_orbits):\n    print(f"\\nO_{i}: rep={d[\'rep\']}, size={len(d[\'orbit_members\'])}, stab_size={d[\'stab_size\']}")\n    print(f"  valid_targets ({len(d[\'valid_targets\'])}): {d[\'valid_targets\']}")\n\n# Total configurations\ntotal = 1\nfor d in w2_orbits:\n    total *= len(d[\'valid_targets\'])\nprint(f"\\nTotal configurations: {total}")\n'})]
+
+[Tool Result: Successfully wrote to src/test_w2.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_w2.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Number of weight-2 orbits: 4
+
+O_0: rep=3, size=12, stab_size=4
+  valid_targets (4): [3, 12, 48, 192]
+
+O_1: rep=6, size=6, stab_size=8
+  valid_targets (2): [6, 9]
+
+O_2: rep=17, size=24, stab_size=2
+  valid_targets (4): [17, 34, 68, 136]
+
+O_3: rep=20, size=24, stab_size=2
+  valid_targets (4): [20, 40, 65, 130]
+
+Total configurations: 128
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/test_w1.py', 'content': 'import sys\nsys.path.insert(0, \'src\')\nfrom search_3d_gliders import get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, hamming\nimport numpy as np\n\nperms = get_oh_permutations(verbose=False)\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\nfor idx, o in enumerate(orbit_list):\n    w = hamming(o[0])\n    if w == 1:\n        print(f"Weight-1 orbit {idx}: rep={o[0]}, size={len(o)}, stab_size={len(stabs[o[0]])}")\n        print(f"  members: {o}")\n\n# Check where Cartesian transposition sends each weight-1 state\nPAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\ntrans = [0] * 12\nfor a, b in PAIRS:\n    trans[a] = b\n    trans[b] = a\n\nprint("\\nCartesian transposition mapping:")\nfor s in range(12):\n    t = 1 << trans[s]\n    print(f"  2^{s} ({s}) -> 2^{trans[s]} ({t})")\n    \n# Check orbit images\nprint("\\nOrbit images under Cartesian transposition:")\nfor idx, o in enumerate(orbit_list):\n    if hamming(o[0]) == 1:\n        images = set()\n        for s in o:\n            ch = (s & -s).bit_length() - 1\n            t = 1 << trans[ch]\n            images.add(t)\n        image_orbits = set()\n        for t in images:\n            image_orbits.add(int(orbit_of[t]))\n        print(f"  Orbit {idx} (rep={o[0]}) -> orbit(s) {image_orbits}")\n'})]
+
+[Tool Result: Successfully wrote to src/test_w1.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_w1.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Weight-1 orbit 1: rep=1, size=12, stab_size=4
+  members: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+
+Cartesian transposition mapping:
+  2^0 (0) -> 2^3 (8)
+  2^1 (1) -> 2^2 (4)
+  2^2 (2) -> 2^1 (2)
+  2^3 (3) -> 2^0 (1)
+  2^4 (4) -> 2^7 (128)
+  2^5 (5) -> 2^6 (64)
+  2^6 (6) -> 2^5 (32)
+  2^7 (7) -> 2^4 (16)
+  2^8 (8) -> 2^11 (2048)
+  2^9 (9) -> 2^10 (1024)
+  2^10 (10) -> 2^9 (512)
+  2^11 (11) -> 2^8 (256)
+
+Orbit images under Cartesian transposition:
+...]
+
+
+[Tool Call: write_file({'path': 'src/test_sigs.py', 'content': 'import sys\nsys.path.insert(0, \'src\')\nfrom search_3d_gliders import get_oh_permutations, precompute_perm_action, compute_orbits, compute_all_stabilizers, hamming\nimport numpy as np\nfrom collections import defaultdict\n\nperms = get_oh_permutations(verbose=False)\naction = precompute_perm_action(perms)\norbit_list, orbit_of = compute_orbits(action)\nstabs = compute_all_stabilizers(action)\n\n# Group orbits by signature\nsigs = defaultdict(list)\nfor idx, o in enumerate(orbit_list):\n    rep = o[0]\n    w = hamming(rep)\n    sz = len(o)\n    stab_set = frozenset(stabs[x] for x in o)\n    sig = (w, sz, stab_set)\n    sigs[sig].append(idx)\n\nprint("Signature groups:")\nfor sig, orbit_indices in sorted(sigs.items(), key=lambda x: (x[0][0], x[0][1])):\n    w, sz, _ = sig\n    print(f"  weight={w}, size={sz}: {len(orbit_indices)} orbits -> {orbit_indices}")\n'})]
+
+[Tool Result: Successfully wrote to src/test_sigs.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_sigs.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Signature groups:
+  weight=0, size=1: 1 orbits -> [0]
+  weight=1, size=12: 1 orbits -> [1]
+  weight=2, size=6: 1 orbits -> [3]
+  weight=2, size=12: 1 orbits -> [2]
+  weight=2, size=24: 1 orbits -> [6]
+  weight=2, size=24: 1 orbits -> [8]
+  weight=3, size=8: 1 orbits -> [33]
+  weight=3, size=8: 1 orbits -> [47]
+  weight=3, size=12: 1 orbits -> [4]
+  weight=3, size=24: 2 orbits -> [7, 12]
+  weight=3, size=24: 1 orbits -> [34]
+  weight=3, size=24: 1 orbits -> [38]
+...]
+
+
+[Tool Call: list_dir({'path': 'archive'})]
+
+[Tool Result: [DIR] archive
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+[DIR] iter_004
+[DIR] iter_005
+[DIR] iter_006
+[DIR] iter_007
+[DIR] iter_008
+[DIR] iter_009
+[DIR] iter_010
+[DIR] iter_011
+[DIR] iter_012
+[DIR] iter_013
+[DIR] iter_014
+[DIR] iter_015
+[DIR] iter_016
+[DIR] iter_017
+[DIR] iter_018
+[DIR] iter_019
+[DIR] iter_020
+[DIR] iter_021
+[DIR] iter_022
+[DIR] iter_023
+[DIR] iter_024
+[DIR] iter_025
+[DIR] iter_026
+[DIR] iter_027
+[DIR] iter_028
+[DIR] iter_029
+[DIR] iter_030
+[DIR] iter_031
+[DIR] iter_032
+[DIR] ...]
+
+
+[Tool Call: list_dir({'path': 'archive/iter_250'})]
+
+[Tool Result: [DIR] iter_001
+[DIR] iter_002
+      manager_log.md
+      planner_plan_prompt.txt
+      planner_plan_response.txt
+      planner_prompt.txt
+      planner_prompt_turn_1.txt
+      proposed_plan.yaml
+[DIR] results]
+
+
+[Tool Call: list_dir({'path': 'archive/iter_250/results'})]
+
+[Tool Result:       hex_decomposition.json
+      hex_decomposition_report.md]
+
+
+[Tool Call: write_file({'path': 'src/non_additive_lut_v2.py', 'content': '#!/usr/bin/env python3\n"""\nnon_additive_lut_v2.py — O_h-symmetric non-additive LUT construction for 3D FCC lattice.\n\nConstructs:\n1. ADDITIVE control LUT: Cartesian transposition weight-1 sub-table,\n   with additive extension for all other weights.\n2. 128 unique O_h-symmetric weight-2 non-additive LUTs.\n3. 40 distinct LUTs with random/equivariant weight-3+ configurations\n   (fixed weight-1/weight-2, randomized weight >= 3).\n\nAll LUTs are verified for bijection, bit conservation, and O_h symmetry.\n"""\nfrom __future__ import annotations\n\nimport json\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nROOT = Path(__file__).resolve().parent.parent\nsys.path.insert(0, str(ROOT))\n\nfrom src.search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n)\n\n# ========================================================================\n# Cartesian transposition weight-1 sub-table\n# ========================================================================\nCARTESIAN_PAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\n\n_CARTESIAN_LUT = [0] * 12\nfor a, b in CARTESIAN_PAIRS:\n    _CARTESIAN_LUT[a] = b\n    _CARTESIAN_LUT[b] = a\n\n# ========================================================================\n# Cached O_h infrastructure\n# ========================================================================\n_oh_cache: dict = {}\n\n\ndef _get_oh():\n    if "perms" not in _oh_cache:\n        perms = get_oh_permutations(verbose=False)\n        action = precompute_perm_action(perms)\n        orbits, orbit_of = compute_orbits(action)\n        stabs = compute_all_stabilizers(action)\n        _oh_cache["perms"] = perms\n        _oh_cache["action"] = action\n        _oh_cache["orbits"] = orbits\n        _oh_cache["orbit_of"] = orbit_of\n        _oh_cache["stabs"] = stabs\n    return (\n        _oh_cache["perms"],\n        _oh_cache["action"],\n        _oh_cache["orbits"],\n        _oh_cache["orbit_of"],\n        _oh_cache["stabs"],\n    )\n\n\n# ========================================================================\n# Weight-2 orbit data\n# ========================================================================\ndef _identify_w2_orbit_data():\n    perms, action, orbits, orbit_of, stabs = _get_oh()\n    w2_orbits = []\n    for idx, o in enumerate(orbits):\n        if hamming(o[0]) == 2:\n            rep = o[0]\n            H = stabs[rep]\n            valid = [t for t in o if stabs[t] == H]\n            w2_orbits.append({\n                "global_idx": idx,\n                "rep": rep,\n                "orbit_members": sorted(o),\n                "stab_size": len(H),\n                "valid_targets": sorted(valid),\n            })\n    w2_orbits.sort(key=lambda d: d["rep"])\n    for i, d in enumerate(w2_orbits):\n        d["local_label"] = f"O_{i}"\n    return w2_orbits\n\n\n_W2_ORBIT_DATA = None\n\n\ndef get_w2_orbit_data():\n    global _W2_ORBIT_DATA\n    if _W2_ORBIT_DATA is None:\n        _W2_ORBIT_DATA = _identify_w2_orbit_data()\n    return _W2_ORBIT_DATA\n\n\n# ========================================================================\n# Build additive LUT (Cartesian transposition, additive extension)\n# ========================================================================\ndef build_additive_lut() -> np.ndarray:\n    lut = np.zeros(4096, dtype=np.uint16)\n    w1_out = np.zeros(12, dtype=np.uint16)\n    for ch in range(12):\n        w1_out[ch] = 1 << _CARTESIAN_LUT[ch]\n    for s in range(4096):\n        out = 0\n        for ch in range(12):\n            if (s >> ch) & 1:\n                out |= w1_out[ch]\n        lut[s] = out\n    return lut\n\n\n# ========================================================================\n# Build non-additive LUT with specific weight-2 configuration\n# ========================================================================\ndef build_nonadditive_lut(config_index: int) -> np.ndarray:\n    """\n    Build an O_h-symmetric non-additive LUT.\n    \n    Weight-1: Cartesian transposition (fixed).\n    Weight-2: determined by config_index (0..127).\n    Weight-w (w>=3): additive extension of weight-1.\n    """\n    if not (0 <= config_index < 128):\n        raise ValueError(f"config_index must be in [0, 127], got {config_index}")\n    \n    perms, action, orbits, orbit_of, stabs = _get_oh()\n    n_perms = len(perms)\n    \n    # Start from additive LUT\n    lut = build_additive_lut().astype(np.int32).copy()\n    \n    w2_data = get_w2_orbit_data()\n    \n    # Decode config_index into choices for each orbit\n    # O_0: 4 choices, O_1: 2 choices, O_2: 4 choices, O_3: 4 choices\n    choices = []\n    remaining = config_index\n    for d in w2_data:\n        n = len(d["valid_targets"])\n        choices.append(remaining % n)\n        remaining //= n\n    assert remaining == 0, "config_index out of range"\n    \n    # Apply equivariant mapping for each weight-2 orbit\n    for d, choice_idx in zip(w2_data, choices):\n        rep = d["rep"]\n        target = d["valid_targets"][choice_idx]\n        \n        for g in range(n_perms):\n            src = int(action[g, rep])\n            dst = int(action[g, target])\n            lut[src] = dst\n    \n    return lut.astype(np.uint16)\n\n\n# ========================================================================\n# Build LUT with randomized weight-3+ (fixed w0/w1/w2)\n# ========================================================================\ndef build_randomized_w3plus_lut(w2_config_index: int, seed: int) -> np.ndarray:\n    """\n    Build LUT with:\n    - Weight-0,1,2 fixed (weight-2 from w2_config_index).\n    - Weight >= 3 randomized via O_h-equivariant orbit pairing.\n    """\n    rng = np.random.default_rng(seed)\n    perms, action, orbits, orbit_of, stabs = _get_oh()\n    n_perms = len(perms)\n    \n    # Start with non-additive LUT for weights 0-2\n    lut = build_nonadditive_lut(w2_config_index).astype(np.int32).copy()\n    \n    # Identify which states are already mapped (weights 0,1,2)\n    mapped = np.zeros(4096, dtype=bool)\n    for s in range(4096):\n        if hamming(s) <= 2:\n            mapped[s] = True\n    \n    # Group remaining orbits by signature\n    from collections import defaultdict\n    groups = defaultdict(list)\n    for idx, o in enumerate(orbits):\n        rep = o[0]\n        w = hamming(rep)\n        if w <= 2:\n            continue\n        sz = len(o)\n        stab_set = frozenset(stabs[x] for x in o)\n        sig = (w, sz, stab_set)\n        groups[sig].append(idx)\n    \n    # Pair orbits randomly within each group\n    for sig, orbit_indices in groups.items():\n        n = len(orbit_indices)\n        if n == 0:\n            continue\n        shuffled = list(orbit_indices)\n        if n > 1:\n            order = rng.permutation(n)\n            shuffled = [orbit_indices[i] for i in order]\n        \n        for src_idx, dst_idx in zip(orbit_indices, shuffled):\n            src_orbit = orbits[src_idx]\n            dst_orbit = orbits[dst_idx]\n            rep_src = src_orbit[0]\n            H_src = stabs[rep_src]\n            \n            valid_targets = [t for t in dst_orbit if stabs[t] == H_src]\n            if len(valid_targets) == 0:\n                raise RuntimeError(\n                    f"No valid target for orbit {src_idx} -> {dst_idx}"\n                )\n            target = int(valid_targets[rng.integers(len(valid_targets))])\n            \n            for g in range(n_perms):\n                src = int(action[g, rep_src])\n                dst = int(action[g, target])\n                if mapped[src]:\n                    # Verify consistency (should match existing if already set)\n                    if lut[src] != dst:\n                        raise RuntimeError(\n                            f"Inconsistent map at {src}: existing={lut[src]}, new={dst}"\n                        )\n                else:\n                    lut[src] = dst\n                    mapped[src] = True\n    \n    assert mapped.all(), "LUT incomplete"\n    return lut.astype(np.uint16)\n\n\n# ========================================================================\n# Verification\n# ========================================================================\ndef verify_lut(lut: np.ndarray) -> dict:\n    """Verify bijection, bit conservation, and O_h symmetry."""\n    perms, action, orbits, orbit_of, stabs = _get_oh()\n    \n    results = {}\n    results[\'bijection\'] = bool(len(np.unique(lut)) == 4096)\n    \n    pop_in = np.array([hamming(s) for s in range(4096)])\n    pop_out = np.array([hamming(int(lut[s])) for s in range(4096)])\n    results[\'bit_conserving\'] = bool(np.array_equal(pop_in, pop_out))\n    \n    sym_ok = True\n    bad = None\n    for g in range(action.shape[0]):\n        lhs = lut[action[g]]\n        rhs = action[g, lut]\n        if not np.array_equal(lhs, rhs):\n            sym_ok = False\n            bad = g\n            break\n    results[\'symmetric\'] = sym_ok\n    if bad is not None:\n        results[\'first_violating_perm\'] = int(bad)\n    return results\n\n\ndef verify_all_luts():\n    """Verify the additive LUT and a sample of non-additive/randomized LUTs."""\n    print("Verifying additive LUT...")\n    add_lut = build_additive_lut()\n    v = verify_lut(add_lut)\n    print(f"  Additive: {v}")\n    assert v[\'bijection\'] and v[\'bit_conserving\'] and v[\'symmetric\']\n    \n    print("Verifying all 128 non-additive LUTs...")\n    for i in range(128):\n        lut = build_nonadditive_lut(i)\n        v = verify_lut(lut)\n        if not (v[\'bijection\'] and v[\'bit_conserving\'] and v[\'symmetric\']):\n            print(f"  FAILED at config {i}: {v}")\n            raise AssertionError(f"LUT {i} verification failed")\n    print("  All 128 non-additive LUTs verified.")\n    \n    print("Verifying 40 randomized w3+ LUTs...")\n    for i in range(40):\n        lut = build_randomized_w3plus_lut(w2_config_index=i % 128, seed=i)\n        v = verify_lut(lut)\n        if not (v[\'bijection\'] and v[\'bit_conserving\'] and v[\'symmetric\']):\n            print(f"  FAILED at seed {i}: {v}")\n            raise AssertionError(f"Randomized LUT {i} verification failed")\n    print("  All 40 randomized LUTs verified.")\n    \n    return True\n\n\n# ========================================================================\n# Seed generation\n# ========================================================================\ndef generate_weight2_seeds() -> list[list[int]]:\n    """Generate all 66 weight-2 single-cell seeds (combinations of 2 channels)."""\n    seeds = []\n    for i in range(12):\n        for j in range(i + 1, 12):\n            seeds.append([i, j])\n    return seeds\n\n\ndef generate_weight3_seeds() -> list[list[int]]:\n    """Generate all 220 weight-3 single-cell seeds (combinations of 3 channels)."""\n    seeds = []\n    for i in range(12):\n        for j in range(i + 1, 12):\n            for k in range(j + 1, 12):\n                seeds.append([i, j, k])\n    return seeds\n\n\n# ========================================================================\n# Main\n# ========================================================================\nif __name__ == "__main__":\n    verify_all_luts()\n    print("\\nAll verifications passed.")\n    \n    # Save metadata\n    w2_data = get_w2_orbit_data()\n    meta = {\n        "cartesian_pairs": CARTESIAN_PAIRS,\n        "num_w2_configs": 128,\n        "w2_orbits": [\n            {\n                "label": d["local_label"],\n                "rep": d["rep"],\n                "size": len(d["orbit_members"]),\n                "stab_size": d["stab_size"],\n                "num_valid_targets": len(d["valid_targets"]),\n            }\n            for d in w2_data\n        ],\n    }\n    out_dir = ROOT / "archive" / "iter_250" / "results"\n    out_dir.mkdir(parents=True, exist_ok=True)\n    with open(out_dir / "nonadditive_lut_metadata.json", "w") as f:\n        json.dump(meta, f, indent=2)\n    print(f"Metadata saved to {out_dir / \'nonadditive_lut_metadata.json\'}")\n'})]
+
+[Tool Result: Successfully wrote to src/non_additive_lut_v2.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/non_additive_lut_v2.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Verifying additive LUT...
+  Additive: {'bijection': True, 'bit_conserving': True, 'symmetric': True}
+Verifying all 128 non-additive LUTs...
+  All 128 non-additive LUTs verified.
+Verifying 40 randomized w3+ LUTs...
+  All 40 randomized LUTs verified.
+
+All verifications passed.
+Metadata saved to C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_250\results\nonadditive_lut_metadata.json
+
+stderr: ]
+
+
+[NUDGE RESPONSE]
+I have reached the execution limit before completing the full exhaustive search. Here is the final report for what was accomplished:
+
+```yaml
+status: token_limit
+artifacts:
+  - src/non_additive_lut_v2.py
+  - archive/iter_250/results/nonadditive_lut_metadata.json
+metrics:
+  lut_configs_verified: 128
+  randomized_luts_verified: 40
+  w2_orbits: 4
+  w2_seeds_total: 66
+  w3_seeds_total: 220
+log_excerpt: |
+  Verifying additive LUT...
+    Additive: {'bijection': True, 'bit_conserving': True, 'symmetric': True}
+  Verifying all 128 non-additive LUTs...
+    All 128 non-additive LUTs verified.
+  Verifying 40 randomized w3+ LUTs...
+    All 40 randomized LUTs verified.
+  All verifications passed.
+  Metadata saved to C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_250\results\nonadditive_lut_metadata.json
+experimenter_view: |
+  The LUT construction infrastructure is fully implemented and mathematically
+  verified. All 128 O_h-symmetric non-additive weight-2 configurations and
+  40 randomized weight-3+ variants are confirmed bijective, bit-conserving,
+  and O_h-symmetric. The exhaustive multi-bit glider search script
+  (experiment_250_nonadditive_search.py) was not written or executed due to
+  the execution limit. The next iteration should write the experiment script,
+  run the 128×66 weight-2 seed search, the additive control baseline, and the
+  40×220 weight-3 seed search, then compile the null-result report.
+notes: "Infrastructure complete; experiment execution pending next iteration."
+```
