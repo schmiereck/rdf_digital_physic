@@ -4,31 +4,41 @@
 *   **Pre-Registration File:** src/pre_registration.md
 
 ## 1. Hypothesis
-A 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a cooperative
-survival collision rule — where weight-1 states map to 0 (isolated bits die, forcing co-location
-for survival) and weight-2+ states have non-additive mappings that can create and destroy
-rest-mass bits — produces at least one genuine, dynamically-bound multi-bit glider with
+A 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a **cooperative
+tapping** collision rule — where weight-1 prop states undergo Cartesian transposition to their
+antiparallel partner (bit-conserving, bijective, O_h-invariant), weight-1 rest states map to
+themselves (stationary fixed point), and weight-2+ states have non-additive mappings with
+parametric freedom — produces at least one genuine, dynamically-bound multi-bit glider with
 binding energy > 0. The rest channel provides the persistent local interaction that was
 structurally absent in the 12-channel system (where every bit must propagate away each step,
 making all interactions transient). By allowing bits to remain at a cell across multiple time
 steps, the rest channel enables the neighborhood-overlap binding mechanism that is confirmed
 to produce the genuine 2D hex v=0.469c glider. The 5 distinct O_h orbit types of weight-2
 states (antiparallel, obtuse, perpendicular, acute, rest+prop) provide sufficient parametric
-freedom for the cooperative survival dynamics to produce stable propagating bound states.
+freedom for the cooperative trapping dynamics to produce stable propagating bound states.
+
+**Critical constraint:** The rule MUST be bijective and bit-conserving. The original
+"cooperative survival" (weight-1→0) violated both. Cooperative trapping replaces it with
+a bit-conserving, bijective mechanism.
 
 ## 2. Falsification Criterion
 F1: No multi-bit configuration survives ≥200 steps under any tested 13-channel cooperative
-    survival rule variant (sweeping ~500 variants × 30 seeds × 300 steps) → cooperative
-    survival infeasible in 3D FCC even with rest channel.
+trapping rule variant (sweeping ~500 variants × 30 seeds × 300 steps) → cooperative
+trapping infeasible in 3D FCC even with rest channel.
 F2: All surviving propagating configurations fail the single-bit decomposition test (removing
-    any single bit does not alter the propagation trajectory or speed) → survivors are
-    non-interacting composites, rest channel insufficient for genuine binding.
+any single bit does not alter the propagation trajectory or speed) → survivors are
+non-interacting composites, rest channel insufficient for genuine binding.
 F3: Any discovered glider fails O_h covariance under all 48 cuboctahedron rotations →
-    glider is an axis-aligned lattice artifact, not a physical particle.
-F4: The 12-channel cooperative survival control (weight-1→0, no rest channel) produces
-    genuine multi-bit gliders at the same rate as the 13-channel system → rest channel
-    is not the enabling factor for binding.
-Any one of F1–F4 being triggered refutes the hypothesis.
+glider is an axis-aligned lattice artifact, not a physical particle.
+F4: The 12-channel cooperative trapping control (Cartesian transposition weight-1, no rest
+channel) produces genuine multi-bit gliders at the same rate as the 13-channel system → rest
+channel is not the enabling factor for binding.
+F5: Active Channel Mixing — the hypothesis is refuted if the rest-mass channel is either
+statically occupied (always 1) or never occupied (always 0) during any discovered
+glider's propagation cycle, or if there is zero transition of bits between the 12
+propagation channels and the 13th rest channel. The rest-mass channel must actively
+act as a dynamical mediator (exchanging momentum/state) during the propagation period.
+Any one of F1–F5 being triggered refutes the hypothesis.
 
 ## 3. Proposed Method
 Step 1 — Positive Control: Run the known 2D hex v=0.469c glider rule and seed for 500 steps.
@@ -45,11 +55,11 @@ into 5 O_h orbit types: (1) antiparallel prop pair, 6 states; (2) obtuse prop pa
 states; (3) perpendicular prop pair, 12 states; (4) acute prop pair, 24 states; (5) rest+prop
 pair, 12 states. Create src/cooperative_lut_13ch.py.
 
-Step 4 — LUT Parametrization: Fix weight-0→0 and weight-1→0 (cooperative survival). For
-each of the 5 weight-2 orbit types, assign one of ~4 output options: Destroy (→weight-0),
-Scatter (→weight-2 same orbit), Create-rest (→weight-2 or 3 including rest channel),
-Swap-to-rest (→weight-2 rest+prop orbit). Filter: require ≥1 Create-rest AND ≥1 Destroy
-mapping. Weight-3+ uses simplified rules. Yields ~500 viable rule variants.
+Step 4 — LUT Parametrization: Fix weight-0→0 and weight-1 cooperative trapping (prop
+weight-1 → antiparallel partner; rest weight-1 → itself). For each of the 5 weight-2 orbit
+types, assign one of ~4 output options via O_h-equivariant bijections. At least one variant
+MUST include C↔E or E→C mapping to satisfy F5. Weight-3+ uses simplified rules. Yields
+~500 viable rule variants.
 
 Step 5 — Parametric Search: For each rule variant, test 30 diverse seeds (2–5 bits,
 adjacent and non-adjacent, multiple O_h directions) on L=24 FCC toroidal grid. Run 300 steps.
@@ -60,9 +70,9 @@ Three-Test Coherence Protocol: (T1) single-bit decomposition test, (T2) interact
 coherence under latency perturbation, (T3) O_h covariance under all 48 rotations. Create
 src/coherence_test_13ch.py.
 
-Step 7 — Control Experiment: Repeat the search on 12-channel FCC with weight-1→0 (no rest
-channel) using identical seeds and scoring. Compare genuine glider counts with FCC-13 to
-isolate the effect of the rest channel.
+Step 7 — Control Experiment: Repeat the search on 12-channel FCC with cooperative trapping
+(no rest channel) using identical seeds and scoring. Compare genuine glider counts with
+FCC-13 to isolate the effect of the rest channel.
 
 ---
 *Created automatically by the RDF Orchestrator prior to iteration execution.*

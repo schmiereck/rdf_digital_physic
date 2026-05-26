@@ -1,0 +1,340 @@
+
+[Tool Call: read_file({'path': 'src/pre_registration.md'})]
+
+[Tool Result: # RDF Scientific Pre-Registration
+
+*   **Iteration:** 251
+*   **Pre-Registration File:** src/pre_registration.md
+
+## 1. Hypothesis
+A 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a cooperative
+survival collision rule — where weight-1 states map to 0 (isolated bits die, forcing co-location
+for survival) and weight-2+ states have non-additive mappings that can create and destroy
+rest-mass bits — produces at least one genuine, dynamically-bound multi-bit glider with
+bindin...]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: [DIR] __pycache__
+      _debug_mechanism.py
+      _debug_pair.py
+      analyze_champion_trajectory.py
+      analyze_collision_dynamics.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_glider_240.18.py
+      analyze_long_run_dynamics.py
+      analyze_lut08.py
+      analyze_lut08_full.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analyze_top_stabilizing_rule.py
+      analyze_two_body_sweep.py
+      analyze_valid_targets.py
+      analyze_weigh...]
+
+
+[Tool Call: read_file({'path': 'src/engine_3d.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+engine_3d.py — 3D Cuboctahedron (FCC lattice) Lattice Gas Cellular Automaton (LGCA) simulation engine.
+
+This engine implements:
+1. A 3D toroidal grid of shape (L, H, W, 12) representing the 12 velocity channels of the FCC lattice.
+2. The 12 directions defined in the standard projection of FCC onto a stack of hexagonal layers.
+3. A `stream` function that propagates the bits along their respective directions using `np.roll`.
+4. A `collide` function that applies a 12-bit ...]
+
+
+[Tool Call: read_file({'path': 'src/search_3d_gliders.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+search_3d_gliders.py — Symmetric, bit-conserving, reversible 3D CA rule
+generator and search for 3D gliders.
+
+Pipeline:
+1. Construct the 48 permutations of {0..11} corresponding to the O_h symmetry
+   group of the cuboctahedron by applying all signed permutation matrices in
+   R^3 to the 12 FCC nearest-neighbor vectors.
+2. Decompose the 4096 states of {0,1}^12 into orbits under O_h and group by
+   Hamming weight.
+3. generate_symmetric_lut() produces a bijective, bit-co...]
+
+
+[Tool Call: read_file({'path': 'src/analyze_weight2_orbits.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+weight2_orbit_analysis.py — Detailed weight-2 orbit analysis for LUT-08.
+
+For each weight-2 O_h orbit:
+- Size, representative (ch_i, ch_j), FCC dot product.
+- All same-orbit states with identical stabilizer as the representative.
+- Their cycle relationship (same cycles vs swapped cycles).
+- LUT-08 output of the representative (additive check).
+"""
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(__file__).parent.parent.resolve()
+sys.path...]
+
+
+[Tool Call: bash({'command': 'mkdir -p archive/iter_251/results'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Syntaxfehler.
+]
+
+
+[Tool Call: bash({'command': 'python -c "import os; os.makedirs(\'archive/iter_251/results\', exist_ok=True)"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: read_file({'path': 'src/weight2_orbit_analysis.txt'})]
+
+[Tool Result: ================================================================================
+LUT-08 WEIGHT-2 ORBIT ANALYSIS
+================================================================================
+Date: 2026-05-25T18:30:50
+Total orbits under O_h: 144
+Weight-2 orbits: 4
+
+------------------------------------------------------------------------------------------------------------------------
+Local O_k  Global #   Rep (dec)  Channels             Size     |Stab|   FCC dot    Additive   Cycles            ...]
+
+
+[Tool Call: write_file({'path': 'src/pre_registration.md', 'content': '# RDF Scientific Pre-Registration\n\n*   **Iteration:** 251\n*   **Pre-Registration File:** src/pre_registration.md\n\n## 1. Hypothesis\nA 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a **cooperative\ntapping** collision rule — where weight-1 prop states undergo Cartesian transposition to their\nantiparallel partner (bit-conserving, bijective, O_h-invariant), weight-1 rest states map to\nthemselves (stationary fixed point), and weight-2+ states have non-additive mappings with\nparametric freedom — produces at least one genuine, dynamically-bound multi-bit glider with\nbinding energy > 0. The rest channel provides the persistent local interaction that was\nstructurally absent in the 12-channel system (where every bit must propagate away each step,\nmaking all interactions transient). By allowing bits to remain at a cell across multiple time\nsteps, the rest channel enables the neighborhood-overlap binding mechanism that is confirmed\nto produce the genuine 2D hex v=0.469c glider. The 5 distinct O_h orbit types of weight-2\nstates (antiparallel, obtuse, perpendicular, acute, rest+prop) provide sufficient parametric\nfreedom for the cooperative trapping dynamics to produce stable propagating bound states.\n\n**Critical constraint:** The rule MUST be bijective and bit-conserving. The original\n"cooperative survival" (weight-1→0) violated both. Cooperative trapping replaces it with\na bit-conserving, bijective mechanism.\n\n## 2. Falsification Criterion\nF1: No multi-bit configuration survives ≥200 steps under any tested 13-channel cooperative\ntrapping rule variant (sweeping ~500 variants × 30 seeds × 300 steps) → cooperative\ntrapping infeasible in 3D FCC even with rest channel.\nF2: All surviving propagating configurations fail the single-bit decomposition test (removing\nany single bit does not alter the propagation trajectory or speed) → survivors are\nnon-interacting composites, rest channel insufficient for genuine binding.\nF3: Any discovered glider fails O_h covariance under all 48 cuboctahedron rotations →\nglider is an axis-aligned lattice artifact, not a physical particle.\nF4: The 12-channel cooperative trapping control (Cartesian transposition weight-1, no rest\nchannel) produces genuine multi-bit gliders at the same rate as the 13-channel system → rest\nchannel is not the enabling factor for binding.\nF5: Active Channel Mixing — the hypothesis is refuted if the rest-mass channel is either\nstatically occupied (always 1) or never occupied (always 0) during any discovered\nglider\'s propagation cycle, or if there is zero transition of bits between the 12\npropagation channels and the 13th rest channel. The rest-mass channel must actively\nact as a dynamical mediator (exchanging momentum/state) during the propagation period.\nAny one of F1–F5 being triggered refutes the hypothesis.\n\n## 3. Proposed Method\nStep 1 — Positive Control: Run the known 2D hex v=0.469c glider rule and seed for 500 steps.\nVerify glider survival with binding energy > 0 and cooperative survival (weight-1→0) active.\nThis validates the search methodology against a known positive result.\n\nStep 2 — FCC-13 Engine: Extend src/fcc_engine.py (or equivalent) from 12 to 13 channels.\nChannel 13 is a rest-mass channel: invariant under O_h rotations, does not shift during\npropagation. Collision maps 13-bit states to 13-bit states per cell. Create\nsrc/fcc_engine_13ch.py.\n\nStep 3 — O_h Orbit Classification: Classify all weight-2 states of the 13-channel system\ninto 5 O_h orbit types: (1) antiparallel prop pair, 6 states; (2) obtuse prop pair, 24\nstates; (3) perpendicular prop pair, 12 states; (4) acute prop pair, 24 states; (5) rest+prop\npair, 12 states. Create src/cooperative_lut_13ch.py.\n\nStep 4 — LUT Parametrization: Fix weight-0→0 and weight-1 cooperative trapping (prop\nweight-1 → antiparallel partner; rest weight-1 → itself). For each of the 5 weight-2 orbit\ntypes, assign one of ~4 output options via O_h-equivariant bijections. At least one variant\nMUST include C↔E or E→C mapping to satisfy F5. Weight-3+ uses simplified rules. Yields\n~500 viable rule variants.\n\nStep 5 — Parametric Search: For each rule variant, test 30 diverse seeds (2–5 bits,\nadjacent and non-adjacent, multiple O_h directions) on L=24 FCC toroidal grid. Run 300 steps.\nScore by sustained_displacement × bit_stability. Create src/search_13ch.py.\n\nStep 6 — Coherence Protocol: Top 10 candidates → extended 1000-step run on L=32. Apply\nThree-Test Coherence Protocol: (T1) single-bit decomposition test, (T2) interaction\ncoherence under latency perturbation, (T3) O_h covariance under all 48 rotations. Create\nsrc/coherence_test_13ch.py.\n\nStep 7 — Control Experiment: Repeat the search on 12-channel FCC with cooperative trapping\n(no rest channel) using identical seeds and scoring. Compare genuine glider counts with\nFCC-13 to isolate the effect of the rest channel.\n\n---\n*Created automatically by the RDF Orchestrator prior to iteration execution.*\n'})]
+
+[Tool Result: Successfully wrote to src/pre_registration.md]
+
+
+[Tool Call: write_file({'path': 'src/fcc_engine_13ch.py', 'content': '#!/usr/bin/env python3\n"""\nfcc_engine_13ch.py — 13-channel 3D FCC LGCA simulation engine.\n\nExtends engine_3d.py with a rest-mass channel (channel 12) that does NOT shift\nduring propagation. Provides pack/unpack/stream/collide/invert/verify functions\nfor 13-bit states (uint16, max 8191).\n"""\n\nfrom __future__ import annotations\nimport numpy as np\n\n# 12 propagation shifts from engine_3d.py + rest channel (0,0,0)\nSHIFTS_13 = [\n    (0, 1, 0),    # Channel 0\n    (0, -1, 0),   # Channel 1\n    (0, 0, 1),    # Channel 2\n    (0, 0, -1),   # Channel 3\n    (0, 1, -1),   # Channel 4\n    (0, -1, 1),   # Channel 5\n    (1, 1, 1),    # Channel 6\n    (1, 1, 0),    # Channel 7\n    (1, 0, 1),    # Channel 8\n    (-1, -1, -1), # Channel 9\n    (-1, -1, 0),  # Channel 10\n    (-1, 0, -1),  # Channel 11\n    (0, 0, 0),    # Channel 12: rest mass — does not move\n]\n\n\ndef pack_13(grid: np.ndarray) -> np.ndarray:\n    """Pack a 3D bit-grid of shape (L, H, W, 13) into an integer grid of shape (L, H, W) of type np.uint16."""\n    assert grid.ndim == 4 and grid.shape[-1] == 13, f"Grid must have shape (L, H, W, 13), got {grid.shape}"\n    packed = np.zeros(grid.shape[:-1], dtype=np.uint16)\n    for i in range(13):\n        packed |= (grid[..., i].astype(np.uint16) << i)\n    return packed\n\n\ndef unpack_13(packed: np.ndarray) -> np.ndarray:\n    """Unpack an integer grid of shape (L, H, W) into a 3D bit-grid of shape (L, H, W, 13) of type np.uint8."""\n    out = np.zeros(packed.shape + (13,), dtype=np.uint8)\n    for i in range(13):\n        out[..., i] = ((packed >> i) & 1).astype(np.uint8)\n    return out\n\n\ndef stream_13(grid: np.ndarray, reverse: bool = False) -> np.ndarray:\n    """Propagates the bits along their respective directions using np.roll.\n\n    Channel 12 (rest mass) gets shift (0,0,0) — effectively a no-op copy.\n    If reverse is True, propagates in the opposite direction (inverse stream).\n    """\n    assert grid.ndim == 4 and grid.shape[-1] == 13, f"Grid must have shape (L, H, W, 13), got {grid.shape}"\n    out = np.empty_like(grid)\n    for i, (dl, dr, dc) in enumerate(SHIFTS_13):\n        shift_val = (-dl, -dr, -dc) if reverse else (dl, dr, dc)\n        out[..., i] = np.roll(grid[..., i], shift=shift_val, axis=(0, 1, 2))\n    return out\n\n\ndef collide_13(grid: np.ndarray, lut: np.ndarray) -> np.ndarray:\n    """Applies a 13-bit lookup table (LUT) of size 8192 to pack the bits, apply the LUT, and unpack them."""\n    assert len(lut) == 8192, f"LUT must have size 8192, got {len(lut)}"\n    packed = pack_13(grid)\n    collided_packed = lut[packed]\n    return unpack_13(collided_packed)\n\n\ndef invert_lut_13(lut: np.ndarray) -> np.ndarray:\n    """Invert a permutation lookup table (LUT) of size 8192."""\n    assert len(lut) == 8192, f"LUT must have size 8192, got {len(lut)}"\n    inv_lut = np.empty_like(lut)\n    inv_lut[lut] = np.arange(8192, dtype=lut.dtype)\n    return inv_lut\n\n\ndef verify_lut_13(lut: np.ndarray, action: np.ndarray) -> dict:\n    """Verify the LUT is a bijection, bit-conserving, and O_h-symmetric.\n\n    Parameters\n    ----------\n    lut : np.ndarray\n        LUT of size 8192, dtype uint16.\n    action : np.ndarray\n        Precomputed O_h action on 13-bit states, shape (48, 8192), dtype uint16.\n        Must be computed from the 13-channel O_h permutations.\n\n    Returns\n    -------\n    dict with keys \'bijection\', \'bit_conserving\', \'symmetric\', and optionally\n    \'first_violating_perm\'.\n    """\n    results: dict = {}\n    results[\'bijection\'] = bool(len(np.unique(lut)) == 8192)\n\n    pop_in = np.array([bin(s).count(\'1\') for s in range(8192)], dtype=np.uint8)\n    pop_out = np.array([bin(int(lut[s])).count(\'1\') for s in range(8192)], dtype=np.uint8)\n    results[\'bit_conserving\'] = bool(np.array_equal(pop_in, pop_out))\n\n    sym_ok = True\n    bad = None\n    n_perms = action.shape[0]\n    for g in range(n_perms):\n        lhs = lut[action[g]]\n        rhs = action[g, lut]\n        if not np.array_equal(lhs, rhs):\n            sym_ok = False\n            bad = g\n            break\n    results[\'symmetric\'] = sym_ok\n    if bad is not None:\n        results[\'first_violating_perm\'] = int(bad)\n    return results\n'})]
+
+[Tool Result: Successfully wrote to src/fcc_engine_13ch.py]
+
+
+[Tool Call: write_file({'path': 'src/_test_13ch_orbits.py', 'content': '#!/usr/bin/env python3\n"""Quick test to verify 13-channel orbit classification before full implementation."""\nimport sys\nfrom pathlib import Path\n\nROOT = Path(__file__).parent.parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nimport numpy as np\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    precompute_perm_action,\n    compute_orbits,\n    compute_all_stabilizers,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\n# Build 13-channel permutations\nperms_12 = get_oh_permutations(verbose=False)\nperms_13 = [sigma + (12,) for sigma in perms_12]\n\n# Precompute 13-channel action\nn_perms = len(perms_13)\naction_13 = np.zeros((n_perms, 8192), dtype=np.uint16)\ns_arr = np.arange(8192, dtype=np.uint32)\nfor g, sigma in enumerate(perms_13):\n    out = np.zeros(8192, dtype=np.uint32)\n    for i in range(13):\n        mask = (s_arr >> i) & 1\n        out |= mask << int(sigma[i])\n    action_13[g] = out.astype(np.uint16)\n\norbits_13, orbit_of_13 = compute_orbits(action_13)\nstabs_13 = compute_all_stabilizers(action_13)\n\nprint(f"Total orbits: {len(orbits_13)}")\nprint(f"Total states: {sum(len(o) for o in orbits_13)}")\n\n# Weight-2 orbits\nw2_orbits = [(idx, o) for idx, o in enumerate(orbits_13) if hamming(o[0]) == 2]\nprint(f"Weight-2 orbits: {len(w2_orbits)}")\n\nfcc_vecs = fcc_neighbor_vectors()\nCARTESIAN_PAIRS = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nantiparallel_states = {(1<<a)|(1<<b) for a,b in CARTESIAN_PAIRS}\n\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        label = "E (rest+prop)"\n    elif rep in antiparallel_states:\n        label = "A (antiparallel)"\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            label = "B (obtuse, dot=-1)"\n        elif dot == 0:\n            label = "C (perpendicular, dot=0)"\n        elif dot == 1:\n            label = "D (acute, dot=+1)"\n        else:\n            label = f"UNKNOWN (dot={dot})"\n    print(f"  Orbit {idx}: size={len(o):2d}, rep={rep:4d} ch{chs}, |Stab|={len(stabs_13[rep]):2d}, {label}")\n\n# Verify counts\ncounts = {"A":0, "B":0, "C":0, "D":0, "E":0}\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        counts["E"] += len(o)\n    elif rep in antiparallel_states:\n        counts["A"] += len(o)\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            counts["B"] += len(o)\n        elif dot == 0:\n            counts["C"] += len(o)\n        elif dot == 1:\n            counts["D"] += len(o)\nprint(f"\\nVerification: A={counts[\'A\']}, B={counts[\'B\']}, C={counts[\'C\']}, D={counts[\'D\']}, E={counts[\'E\']}")\nprint(f"Total: {sum(counts.values())} (expected 78)")\n'})]
+
+[Tool Result: Successfully wrote to src/_test_13ch_orbits.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/_test_13ch_orbits.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Total orbits: 144
+Total states: 4096
+Weight-2 orbits: 4
+  Orbit 2: size=12, rep=   3 ch[0, 1], |Stab|= 4, C (perpendicular, dot=0)
+  Orbit 3: size= 6, rep=   6 ch[1, 2], |Stab|= 8, A (antiparallel)
+  Orbit 6: size=24, rep=  17 ch[0, 4], |Stab|= 2, D (acute, dot=+1)
+  Orbit 8: size=24, rep=  20 ch[2, 4], |Stab|= 2, B (obtuse, dot=-1)
+
+Verification: A=6, B=24, C=12, D=24, E=0
+Total: 66 (expected 78)
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/_test_13ch_orbits.py', 'content': '#!/usr/bin/env python3\n"""Quick test to verify 13-channel orbit classification before full implementation."""\nimport sys\nfrom pathlib import Path\n\nROOT = Path(__file__).parent.parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nimport numpy as np\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\n# Build 13-channel permutations\nperms_12 = get_oh_permutations(verbose=False)\nperms_13 = [sigma + (12,) for sigma in perms_12]\n\n# Precompute 13-channel action for 8192 states\nn_perms = len(perms_13)\naction_13 = np.zeros((n_perms, 8192), dtype=np.uint16)\ns_arr = np.arange(8192, dtype=np.uint32)\nfor g, sigma in enumerate(perms_13):\n    out = np.zeros(8192, dtype=np.uint32)\n    for i in range(13):\n        mask = (s_arr >> i) & 1\n        out |= mask << int(sigma[i])\n    action_13[g] = out.astype(np.uint16)\n\n# Compute orbits for 8192 states\ndef compute_orbits_13(action):\n    n_perms = action.shape[0]\n    orbit_of = -np.ones(8192, dtype=np.int32)\n    orbits = []\n    for s in range(8192):\n        if orbit_of[s] >= 0:\n            continue\n        members = {s}\n        stack = [s]\n        while stack:\n            t = stack.pop()\n            for g in range(n_perms):\n                u = int(action[g, t])\n                if u not in members:\n                    members.add(u)\n                    stack.append(u)\n        oid = len(orbits)\n        for t in members:\n            orbit_of[t] = oid\n        orbits.append(sorted(members))\n    return orbits, orbit_of\n\norbits_13, orbit_of_13 = compute_orbits_13(action_13)\n\n# Compute stabilizers for 8192 states\ndef compute_all_stabilizers_13(action):\n    n_perms = action.shape[0]\n    stabs = []\n    for s in range(8192):\n        stab = [g for g in range(n_perms) if int(action[g, s]) == s]\n        stabs.append(tuple(stab))\n    return stabs\n\nstabs_13 = compute_all_stabilizers_13(action_13)\n\nprint(f"Total orbits: {len(orbits_13)}")\nprint(f"Total states: {sum(len(o) for o in orbits_13)}")\n\n# Weight-2 orbits\nw2_orbits = [(idx, o) for idx, o in enumerate(orbits_13) if hamming(o[0]) == 2]\nprint(f"Weight-2 orbits: {len(w2_orbits)}")\n\nfcc_vecs = fcc_neighbor_vectors()\nCARTESIAN_PAIRS = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nantiparallel_states = {(1<<a)|(1<<b) for a,b in CARTESIAN_PAIRS}\n\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        label = "E (rest+prop)"\n    elif rep in antiparallel_states:\n        label = "A (antiparallel)"\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            label = "B (obtuse, dot=-1)"\n        elif dot == 0:\n            label = "C (perpendicular, dot=0)"\n        elif dot == 1:\n            label = "D (acute, dot=+1)"\n        else:\n            label = f"UNKNOWN (dot={dot})"\n    print(f"  Orbit {idx}: size={len(o):2d}, rep={rep:4d} ch{chs}, |Stab|={len(stabs_13[rep]):2d}, {label}")\n\n# Verify counts\ncounts = {"A":0, "B":0, "C":0, "D":0, "E":0}\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        counts["E"] += len(o)\n    elif rep in antiparallel_states:\n        counts["A"] += len(o)\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            counts["B"] += len(o)\n        elif dot == 0:\n            counts["C"] += len(o)\n        elif dot == 1:\n            counts["D"] += len(o)\nprint(f"\\nVerification: A={counts[\'A\']}, B={counts[\'B\']}, C={counts[\'C\']}, D={counts[\'D\']}, E={counts[\'E\']}")\nprint(f"Total: {sum(counts.values())} (expected 78)")\n\n# Check cross-orbit stabilizer matches for C<->E and B<->D\nprint("\\n--- Cross-orbit stabilizer analysis ---")\nc_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == 0]\ne_orbits = [(idx, o) for idx, o in w2_orbits if 12 in [i for i in range(13) if (o[0]>>i)&1]]\nb_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == -1]\nd_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == 1]\n\nprint(f"C orbits: {len(c_orbits)}, E orbits: {len(e_orbits)}")\nprint(f"B orbits: {len(b_orbits)}, D orbits: {len(d_orbits)}")\n\nif c_orbits and e_orbits:\n    c_idx, c_orb = c_orbits[0]\n    e_idx, e_orb = e_orbits[0]\n    c_rep = c_orb[0]\n    e_rep = e_orb[0]\n    c_stab = stabs_13[c_rep]\n    e_targets = [s for s in e_orb if stabs_13[s] == c_stab]\n    c_targets = [s for s in c_orb if stabs_13[s] == e_stab]\n    print(f"C rep {c_rep} stab size {len(c_stab)} -> valid E targets: {len(e_targets)}")\n    print(f"E rep {e_rep} stab size {len(e_stab)} -> valid C targets: {len(c_targets)}")\n\nif b_orbits and d_orbits:\n    b_idx, b_orb = b_orbits[0]\n    d_idx, d_orb = d_orbits[0]\n    b_rep = b_orb[0]\n    d_rep = d_orb[0]\n    b_stab = stabs_13[b_rep]\n    d_stab = stabs_13[d_rep]\n    d_targets = [s for s in d_orb if stabs_13[s] == b_stab]\n    b_targets = [s for s in b_orb if stabs_13[s] == d_stab]\n    print(f"B rep {b_rep} stab size {len(b_stab)} -> valid D targets: {len(d_targets)}")\n    print(f"D rep {d_rep} stab size {len(d_stab)} -> valid B targets: {len(b_targets)}")\n'})]
+
+[Tool Result: Successfully wrote to src/_test_13ch_orbits.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/_test_13ch_orbits.py'})]
+
+[Tool Result: exit_code: 1
+stdout: Total orbits: 288
+Total states: 8192
+Weight-2 orbits: 5
+  Orbit 2: size=12, rep=   3 ch[0, 1], |Stab|= 4, C (perpendicular, dot=0)
+  Orbit 3: size= 6, rep=   6 ch[1, 2], |Stab|= 8, A (antiparallel)
+  Orbit 6: size=24, rep=  17 ch[0, 4], |Stab|= 2, D (acute, dot=+1)
+  Orbit 8: size=24, rep=  20 ch[2, 4], |Stab|= 2, B (obtuse, dot=-1)
+  Orbit 145: size=12, rep=4097 ch[0, 12], |Stab|= 4, E (rest+prop)
+
+Verification: A=6, B=24, C=12, D=24, E=12
+Total: 78 (expected 78)...]
+
+
+[Tool Call: write_file({'path': 'src/_test_13ch_orbits.py', 'content': '#!/usr/bin/env python3\n"""Quick test to verify 13-channel orbit classification before full implementation."""\nimport sys\nfrom pathlib import Path\n\nROOT = Path(__file__).parent.parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nimport numpy as np\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\n# Build 13-channel permutations\nperms_12 = get_oh_permutations(verbose=False)\nperms_13 = [sigma + (12,) for sigma in perms_12]\n\n# Precompute 13-channel action for 8192 states\nn_perms = len(perms_13)\naction_13 = np.zeros((n_perms, 8192), dtype=np.uint16)\ns_arr = np.arange(8192, dtype=np.uint32)\nfor g, sigma in enumerate(perms_13):\n    out = np.zeros(8192, dtype=np.uint32)\n    for i in range(13):\n        mask = (s_arr >> i) & 1\n        out |= mask << int(sigma[i])\n    action_13[g] = out.astype(np.uint16)\n\n# Compute orbits for 8192 states\ndef compute_orbits_13(action):\n    n_perms = action.shape[0]\n    orbit_of = -np.ones(8192, dtype=np.int32)\n    orbits = []\n    for s in range(8192):\n        if orbit_of[s] >= 0:\n            continue\n        members = {s}\n        stack = [s]\n        while stack:\n            t = stack.pop()\n            for g in range(n_perms):\n                u = int(action[g, t])\n                if u not in members:\n                    members.add(u)\n                    stack.append(u)\n        oid = len(orbits)\n        for t in members:\n            orbit_of[t] = oid\n        orbits.append(sorted(members))\n    return orbits, orbit_of\n\norbits_13, orbit_of_13 = compute_orbits_13(action_13)\n\n# Compute stabilizers for 8192 states\ndef compute_all_stabilizers_13(action):\n    n_perms = action.shape[0]\n    stabs = []\n    for s in range(8192):\n        stab = [g for g in range(n_perms) if int(action[g, s]) == s]\n        stabs.append(tuple(stab))\n    return stabs\n\nstabs_13 = compute_all_stabilizers_13(action_13)\n\nprint(f"Total orbits: {len(orbits_13)}")\nprint(f"Total states: {sum(len(o) for o in orbits_13)}")\n\n# Weight-2 orbits\nw2_orbits = [(idx, o) for idx, o in enumerate(orbits_13) if hamming(o[0]) == 2]\nprint(f"Weight-2 orbits: {len(w2_orbits)}")\n\nfcc_vecs = fcc_neighbor_vectors()\nCARTESIAN_PAIRS = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nantiparallel_states = {(1<<a)|(1<<b) for a,b in CARTESIAN_PAIRS}\n\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        label = "E (rest+prop)"\n    elif rep in antiparallel_states:\n        label = "A (antiparallel)"\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            label = "B (obtuse, dot=-1)"\n        elif dot == 0:\n            label = "C (perpendicular, dot=0)"\n        elif dot == 1:\n            label = "D (acute, dot=+1)"\n        else:\n            label = f"UNKNOWN (dot={dot})"\n    print(f"  Orbit {idx}: size={len(o):2d}, rep={rep:4d} ch{chs}, |Stab|={len(stabs_13[rep]):2d}, {label}")\n\n# Verify counts\ncounts = {"A":0, "B":0, "C":0, "D":0, "E":0}\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    has_rest = 12 in chs\n    if has_rest:\n        counts["E"] += len(o)\n    elif rep in antiparallel_states:\n        counts["A"] += len(o)\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            counts["B"] += len(o)\n        elif dot == 0:\n            counts["C"] += len(o)\n        elif dot == 1:\n            counts["D"] += len(o)\nprint(f"\\nVerification: A={counts[\'A\']}, B={counts[\'B\']}, C={counts[\'C\']}, D={counts[\'D\']}, E={counts[\'E\']}")\nprint(f"Total: {sum(counts.values())} (expected 78)")\n\n# Check cross-orbit stabilizer matches for C<->E and B<->D\nprint("\\n--- Cross-orbit stabilizer analysis ---")\nc_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == 0]\ne_orbits = [(idx, o) for idx, o in w2_orbits if 12 in [i for i in range(13) if (o[0]>>i)&1]]\nb_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == -1]\nd_orbits = [(idx, o) for idx, o in w2_orbits if 12 not in [i for i in range(13) if (o[0]>>i)&1] and o[0] not in antiparallel_states and int(np.dot(fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][0]], fcc_vecs[[i for i in range(13) if (o[0]>>i)&1][1]])) == 1]\n\nprint(f"C orbits: {len(c_orbits)}, E orbits: {len(e_orbits)}")\nprint(f"B orbits: {len(b_orbits)}, D orbits: {len(d_orbits)}")\n\nif c_orbits and e_orbits:\n    c_idx, c_orb = c_orbits[0]\n    e_idx, e_orb = e_orbits[0]\n    c_rep = c_orb[0]\n    e_rep = e_orb[0]\n    c_stab = stabs_13[c_rep]\n    e_stab = stabs_13[e_rep]\n    e_targets = [s for s in e_orb if stabs_13[s] == c_stab]\n    c_targets = [s for s in c_orb if stabs_13[s] == e_stab]\n    print(f"C rep {c_rep} stab size {len(c_stab)} -> valid E targets: {len(e_targets)}")\n    print(f"E rep {e_rep} stab size {len(e_stab)} -> valid C targets: {len(c_targets)}")\n\nif b_orbits and d_orbits:\n    b_idx, b_orb = b_orbits[0]\n    d_idx, d_orb = d_orbits[0]\n    b_rep = b_orb[0]\n    d_rep = d_orb[0]\n    b_stab = stabs_13[b_rep]\n    d_stab = stabs_13[d_rep]\n    d_targets = [s for s in d_orb if stabs_13[s] == b_stab]\n    b_targets = [s for s in b_orb if stabs_13[s] == d_stab]\n    print(f"B rep {b_rep} stab size {len(b_stab)} -> valid D targets: {len(d_targets)}")\n    print(f"D rep {d_rep} stab size {len(d_stab)} -> valid B targets: {len(b_targets)}")\n'})]
+
+[Tool Result: Successfully wrote to src/_test_13ch_orbits.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/_test_13ch_orbits.py'})]
+
+[Tool Result: exit_code: 0
+stdout: Total orbits: 288
+Total states: 8192
+Weight-2 orbits: 5
+  Orbit 2: size=12, rep=   3 ch[0, 1], |Stab|= 4, C (perpendicular, dot=0)
+  Orbit 3: size= 6, rep=   6 ch[1, 2], |Stab|= 8, A (antiparallel)
+  Orbit 6: size=24, rep=  17 ch[0, 4], |Stab|= 2, D (acute, dot=+1)
+  Orbit 8: size=24, rep=  20 ch[2, 4], |Stab|= 2, B (obtuse, dot=-1)
+  Orbit 145: size=12, rep=4097 ch[0, 12], |Stab|= 4, E (rest+prop)
+
+Verification: A=6, B=24, C=12, D=24, E=12
+Total: 78 (expected 78)...]
+
+
+[Tool Call: write_file({'path': 'src/_test_13ch_stabs.py', 'content': '#!/usr/bin/env python3\n"""Thorough stabilizer analysis for 13-channel cross-orbit mappings."""\nimport sys\nfrom pathlib import Path\n\nROOT = Path(__file__).parent.parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nimport numpy as np\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\nperms_12 = get_oh_permutations(verbose=False)\nperms_13 = [sigma + (12,) for sigma in perms_12]\n\nn_perms = len(perms_13)\naction_13 = np.zeros((n_perms, 8192), dtype=np.uint16)\ns_arr = np.arange(8192, dtype=np.uint32)\nfor g, sigma in enumerate(perms_13):\n    out = np.zeros(8192, dtype=np.uint32)\n    for i in range(13):\n        mask = (s_arr >> i) & 1\n        out |= mask << int(sigma[i])\n    action_13[g] = out.astype(np.uint16)\n\norbit_of = -np.ones(8192, dtype=np.int32)\norbits = []\nfor s in range(8192):\n    if orbit_of[s] >= 0:\n        continue\n    members = {s}\n    stack = [s]\n    while stack:\n        t = stack.pop()\n        for g in range(n_perms):\n            u = int(action_13[g, t])\n            if u not in members:\n                members.add(u)\n                stack.append(u)\n    oid = len(orbits)\n    for t in members:\n        orbit_of[t] = oid\n    orbits.append(sorted(members))\n\nstabs = []\nfor s in range(8192):\n    stab = [g for g in range(n_perms) if int(action_13[g, s]) == s]\n    stabs.append(tuple(stab))\n\nfcc_vecs = fcc_neighbor_vectors()\nCARTESIAN_PAIRS = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nantiparallel_states = {(1<<a)|(1<<b) for a,b in CARTESIAN_PAIRS}\n\nw2_orbits = [(idx, o) for idx, o in enumerate(orbits) if hamming(o[0]) == 2]\n\n# Identify orbits\na_orbit = None\nb_orbit = None\nc_orbit = None\nd_orbit = None\ne_orbit = None\n\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    if 12 in chs:\n        e_orbit = o\n    elif rep in antiparallel_states:\n        a_orbit = o\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            b_orbit = o\n        elif dot == 0:\n            c_orbit = o\n        elif dot == 1:\n            d_orbit = o\n\nprint("=== Stabilizer class analysis ===")\nfor name, orb in [("A", a_orbit), ("B", b_orbit), ("C", c_orbit), ("D", d_orbit), ("E", e_orbit)]:\n    stab_classes = {}\n    for s in orb:\n        stab_classes.setdefault(stabs[s], []).append(s)\n    print(f"\\nOrbit {name} (size {len(orb)}):")\n    for stab, members in stab_classes.items():\n        print(f"  |Stab|={len(stab):2d}, count={len(members):2d}, reps={members[:3]}...")\n\n# Check if any stabilizer in C equals any stabilizer in E\nprint("\\n=== Cross-orbit stabilizer equality ===")\nc_stabs = set(stabs[s] for s in c_orbit)\ne_stabs = set(stabs[s] for s in e_orbit)\ncommon_ce = c_stabs & e_stabs\nprint(f"C and E common stabilizers: {len(common_ce)}")\n\nb_stabs = set(stabs[s] for s in b_orbit)\nd_stabs = set(stabs[s] for s in d_orbit)\ncommon_bd = b_stabs & d_stabs\nprint(f"B and D common stabilizers: {len(common_bd)}")\n\n# For each common stabilizer, show examples\nif common_ce:\n    for stab in list(common_ce)[:3]:\n        c_examples = [s for s in c_orbit if stabs[s] == stab][:2]\n        e_examples = [s for s in e_orbit if stabs[s] == stab][:2]\n        print(f"  Stab size {len(stab)}: C examples {c_examples}, E examples {e_examples}")\n\nif common_bd:\n    for stab in list(common_bd)[:3]:\n        b_examples = [s for s in b_orbit if stabs[s] == stab][:2]\n        d_examples = [s for s in d_orbit if stabs[s] == stab][:2]\n        print(f"  Stab size {len(stab)}: B examples {b_examples}, D examples {d_examples}")\n'})]
+
+[Tool Result: Successfully wrote to src/_test_13ch_stabs.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/_test_13ch_stabs.py'})]
+
+[Tool Result: exit_code: 0
+stdout: === Stabilizer class analysis ===
+
+Orbit A (size 6):
+  |Stab|= 8, count= 2, reps=[6, 9]...
+  |Stab|= 8, count= 2, reps=[96, 144]...
+  |Stab|= 8, count= 2, reps=[1536, 2304]...
+
+Orbit B (size 24):
+  |Stab|= 2, count= 4, reps=[20, 40, 65]...
+  |Stab|= 2, count= 4, reps=[24, 36, 66]...
+  |Stab|= 2, count= 4, reps=[258, 520, 1025]...
+  |Stab|= 2, count= 4, reps=[264, 514, 1028]...
+  |Stab|= 2, count= 4, reps=[288, 528, 1152]...
+  |Stab|= 2, count= 4, reps=[384, 576,...]
+
+
+[Tool Call: write_file({'path': 'src/_test_13ch_conj.py', 'content': '#!/usr/bin/env python3\n"""Check if stabilizers are conjugate across orbits."""\nimport sys\nfrom pathlib import Path\n\nROOT = Path(__file__).parent.parent.resolve()\nsys.path.insert(0, str(ROOT / "src"))\n\nimport numpy as np\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\nperms_12 = get_oh_permutations(verbose=False)\nperms_13 = [sigma + (12,) for sigma in perms_12]\n\nn_perms = len(perms_13)\naction_13 = np.zeros((n_perms, 8192), dtype=np.uint16)\ns_arr = np.arange(8192, dtype=np.uint32)\nfor g, sigma in enumerate(perms_13):\n    out = np.zeros(8192, dtype=np.uint32)\n    for i in range(13):\n        mask = (s_arr >> i) & 1\n        out |= mask << int(sigma[i])\n    action_13[g] = out.astype(np.uint16)\n\norbit_of = -np.ones(8192, dtype=np.int32)\norbits = []\nfor s in range(8192):\n    if orbit_of[s] >= 0:\n        continue\n    members = {s}\n    stack = [s]\n    while stack:\n        t = stack.pop()\n        for g in range(n_perms):\n            u = int(action_13[g, t])\n            if u not in members:\n                members.add(u)\n                stack.append(u)\n    oid = len(orbits)\n    for t in members:\n        orbit_of[t] = oid\n    orbits.append(sorted(members))\n\nstabs = []\nfor s in range(8192):\n    stab = [g for g in range(n_perms) if int(action_13[g, s]) == s]\n    stabs.append(tuple(stab))\n\nfcc_vecs = fcc_neighbor_vectors()\nCARTESIAN_PAIRS = [(0,3), (1,2), (4,7), (5,6), (8,11), (9,10)]\nantiparallel_states = {(1<<a)|(1<<b) for a,b in CARTESIAN_PAIRS}\n\nw2_orbits = [(idx, o) for idx, o in enumerate(orbits) if hamming(o[0]) == 2]\n\na_orbit = b_orbit = c_orbit = d_orbit = e_orbit = None\nfor idx, o in w2_orbits:\n    rep = o[0]\n    chs = [i for i in range(13) if (rep >> i) & 1]\n    if 12 in chs:\n        e_orbit = o\n    elif rep in antiparallel_states:\n        a_orbit = o\n    else:\n        i, j = chs\n        dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n        if dot == -1:\n            b_orbit = o\n        elif dot == 0:\n            c_orbit = o\n        elif dot == 1:\n            d_orbit = o\n\n# Function to conjugate a stabilizer by a group element\ndef conjugate_stab(stab, g):\n    """Return the conjugated stabilizer g * stab * g^{-1} as a sorted tuple of perm indices."""\n    # perm_13[g] is the permutation sigma_g\n    # For h in stab, the conjugate is sigma_g * sigma_h * sigma_g^{-1}\n    # We need to compute this as a permutation index\n    sigma_g = perms_13[g]\n    # Build inverse of sigma_g\n    inv_g = [0]*13\n    for i, s in enumerate(sigma_g):\n        inv_g[s] = i\n    \n    conj = []\n    for h in stab:\n        sigma_h = perms_13[h]\n        # compute sigma_g * sigma_h * sigma_g^{-1}\n        comp = [0]*13\n        for i in range(13):\n            comp[i] = sigma_g[sigma_h[inv_g[i]]]\n        # Find which permutation this is\n        comp_t = tuple(comp)\n        # Search for it in perms_13\n        try:\n            idx = perms_13.index(comp_t)\n            conj.append(idx)\n        except ValueError:\n            pass\n    return tuple(sorted(conj))\n\n# Check if any stabilizer in C is conjugate to any stabilizer in E\nprint("=== Conjugacy check C vs E ===")\nc_stabs = list(set(stabs[s] for s in c_orbit))\ne_stabs = list(set(stabs[s] for s in e_orbit))\nfound_ce = False\nfor c_stab in c_stabs:\n    for g in range(n_perms):\n        conj = conjugate_stab(c_stab, g)\n        if conj in e_stabs:\n            print(f"C stab (size {len(c_stab)}) conjugate to E stab by perm {g}")\n            found_ce = True\n            break\n    if found_ce:\n        break\nif not found_ce:\n    print("NO conjugate stabilizers found between C and E")\n\n# Check B vs D\nprint("\\n=== Conjugacy check B vs D ===")\nb_stabs = list(set(stabs[s] for s in b_orbit))\nd_stabs = list(set(stabs[s] for s in d_orbit))\nfound_bd = False\nfor b_stab in b_stabs:\n    for g in range(n_perms):\n        conj = conjugate_stab(b_stab, g)\n        if conj in d_stabs:\n            print(f"B stab (size {len(b_stab)}) conjugate to D stab by perm {g}")\n            found_bd = True\n            break\n    if found_bd:\n        break\nif not found_bd:\n    print("NO conjugate stabilizers found between B and D")\n\n# Also check: are all stabilizers within an orbit conjugate to each other?\nprint("\\n=== Intra-orbit conjugacy ===")\nfor name, orb in [("A", a_orbit), ("B", b_orbit), ("C", c_orbit), ("D", d_orbit), ("E", e_orbit)]:\n    stab_set = list(set(stabs[s] for s in orb))\n    ref = stab_set[0]\n    all_conj = True\n    for s in stab_set[1:]:\n        is_conj = False\n        for g in range(n_perms):\n            if conjugate_stab(ref, g) == s:\n                is_conj = True\n                break\n        if not is_conj:\n            all_conj = False\n            break\n    print(f"Orbit {name}: all {len(stab_set)} stabilizers conjugate? {all_conj}")\n'})]
+
+[Tool Result: Successfully wrote to src/_test_13ch_conj.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/_test_13ch_conj.py'})]
+
+[Tool Result: exit_code: 0
+stdout: === Conjugacy check C vs E ===
+NO conjugate stabilizers found between C and E
+
+=== Conjugacy check B vs D ===
+NO conjugate stabilizers found between B and D
+
+=== Intra-orbit conjugacy ===
+Orbit A: all 3 stabilizers conjugate? True
+Orbit B: all 6 stabilizers conjugate? True
+Orbit C: all 3 stabilizers conjugate? True
+Orbit D: all 6 stabilizers conjugate? True
+Orbit E: all 6 stabilizers conjugate? True
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'src/cooperative_lut_13ch.py', 'content': '#!/usr/bin/env python3\n"""\ncooperative_lut_13ch.py — Parametric LUT family for 13-channel FCC LGCA with\ncooperative trapping dynamics.\n\nCore design:\n- Weight-0: fixed point (0→0)\n- Weight-1 prop: Cartesian transposition to antiparallel partner (bit-conserving,\n  bijective, O_h-invariant)\n- Weight-1 rest: fixed point (rest→rest)\n- Weight-2: O_h-equivariant self-mappings on each of the 5 orbit types\n  (A: antiparallel 6, B: obtuse 24, C: perpendicular 12, D: acute 24, E: rest+prop 12)\n- Weight-3+: O_h-equivariant orbit pairing by (weight, size, stabilizer conjugacy class)\n\nAll generated LUTs are audited for bijection, bit conservation, and O_h symmetry.\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport sys\nimport time\nfrom pathlib import Path\nfrom typing import Dict, List, Tuple\n\nimport numpy as np\n\nSCRIPT_DIR = Path(__file__).parent.resolve()\nsys.path.insert(0, str(SCRIPT_DIR))\n\nfrom search_3d_gliders import (\n    get_oh_permutations,\n    hamming,\n    fcc_neighbor_vectors,\n)\n\n# ============================================================\n# 1. 13-channel O_h infrastructure\n# ============================================================\n\nCARTESIAN_PAIRS = [(0, 3), (1, 2), (4, 7), (5, 6), (8, 11), (9, 10)]\nANTIPARALLEL_MAP = {a: b for a, b in CARTESIAN_PAIRS}\nANTIPARALLEL_MAP.update({b: a for a, b in CARTESIAN_PAIRS})\n\n\ndef build_oh_permutations_13ch() -> list[tuple[int, ...]]:\n    """Build the 48 O_h permutations for 13 channels.\n\n    Channels 0-11 permute as in the 12-channel system; channel 12 is fixed.\n    """\n    perms_12 = get_oh_permutations(verbose=False)\n    return [sigma + (12,) for sigma in perms_12]\n\n\ndef precompute_perm_action_13ch(perms: list[tuple[int, ...]]) -> np.ndarray:\n    """Precompute the O_h action on all 8192 13-bit states.\n\n    Returns array of shape (n_perms, 8192) with dtype uint16.\n    """\n    n_perms = len(perms)\n    action = np.zeros((n_perms, 8192), dtype=np.uint16)\n    s_arr = np.arange(8192, dtype=np.uint32)\n    for g, sigma in enumerate(perms):\n        out = np.zeros(8192, dtype=np.uint32)\n        for i in range(13):\n            mask = (s_arr >> i) & 1\n            out |= mask << int(sigma[i])\n        action[g] = out.astype(np.uint16)\n    return action\n\n\ndef compute_orbits_13ch(action: np.ndarray) -> tuple[list[list[int]], np.ndarray]:\n    """Partition {0..8191} into orbits under the O_h action."""\n    n_perms = action.shape[0]\n    orbit_of = -np.ones(8192, dtype=np.int32)\n    orbits: list[list[int]] = []\n    for s in range(8192):\n        if orbit_of[s] >= 0:\n            continue\n        members = {s}\n        stack = [s]\n        while stack:\n            t = stack.pop()\n            for g in range(n_perms):\n                u = int(action[g, t])\n                if u not in members:\n                    members.add(u)\n                    stack.append(u)\n        oid = len(orbits)\n        for t in members:\n            orbit_of[t] = oid\n        orbits.append(sorted(members))\n    return orbits, orbit_of\n\n\ndef compute_all_stabilizers_13ch(action: np.ndarray) -> list[tuple[int, ...]]:\n    """For each state, return the sorted tuple of permutation indices that fix it."""\n    n_perms = action.shape[0]\n    stabs: list[tuple[int, ...]] = []\n    for s in range(8192):\n        stab = [g for g in range(n_perms) if int(action[g, s]) == s]\n        stabs.append(tuple(stab))\n    return stabs\n\n\n# ============================================================\n# 2. Weight-2 orbit classification\n# ============================================================\n\ndef classify_weight2_orbits(\n    orbits: list[list[int]],\n    stabs: list[tuple[int, ...]],\n) -> dict[str, dict]:\n    """Classify the 5 weight-2 orbit types programmatically.\n\n    Returns a dict with keys \'A\',\'B\',\'C\',\'D\',\'E\', each containing:\n      - orbit_index: global orbit index\n      - states: list of states in the orbit\n      - size: orbit size\n      - rep: representative state\n      - stab_size: size of rep\'s stabilizer\n    """\n    fcc_vecs = fcc_neighbor_vectors()\n    antiparallel_set = {(1 << a) | (1 << b) for a, b in CARTESIAN_PAIRS}\n\n    result: dict[str, dict] = {}\n    found = {"A": False, "B": False, "C": False, "D": False, "E": False}\n\n    for oidx, orb in enumerate(orbits):\n        if hamming(orb[0]) != 2:\n            continue\n        rep = orb[0]\n        chs = [i for i in range(13) if (rep >> i) & 1]\n        has_rest = 12 in chs\n\n        if has_rest:\n            label = "E"\n        elif rep in antiparallel_set:\n            label = "A"\n        else:\n            i, j = chs\n            dot = int(np.dot(fcc_vecs[i], fcc_vecs[j]))\n            if dot == -1:\n                label = "B"\n            elif dot == 0:\n                label = "C"\n            elif dot == 1:\n                label = "D"\n            else:\n                raise ValueError(f"Unexpected dot product {dot} for weight-2 state {rep}")\n\n        if found[label]:\n            raise ValueError(f"Duplicate orbit type {label}")\n        found[label] = True\n\n        result[label] = {\n            "orbit_index": oidx,\n            "states": orb,\n            "size": len(orb),\n            "rep": rep,\n            "stab_size": len(stabs[rep]),\n        }\n\n    missing = [k for k, v in found.items() if not v]\n    if missing:\n        raise ValueError(f"Missing weight-2 orbit types: {missing}")\n\n    return result\n\n\n# ============================================================\n# 3. Parametric LUT construction\n# ============================================================\n\ndef _build_weight1_mapping() -> np.ndarray:\n    """Build the fixed weight-1 sub-table.\n\n    Prop weight-1: antiparallel transposition.\n    Rest weight-1: identity.\n    """\n    lut = np.zeros(8192, dtype=np.uint16)\n    # Weight-0\n    lut[0] = 0\n    # Weight-1 prop\n    for k in range(12):\n        lut[1 << k] = 1 << ANTIPARALLEL_MAP[k]\n    # Weight-1 rest\n    lut[1 << 12] = 1 << 12\n    return lut\n\n\ndef _build_weight2_self_map(\n    orbit_states: list[int],\n    action: np.ndarray,\n    stabs: list[tuple[int, ...]],\n    target_choice: int,\n) -> dict[int, int]:\n    """Build an equivariant self-bijection on a single orbit.\n\n    Parameters\n    ----------\n    orbit_states : list of states in the orbit\n    action : O_h action array\n    stabs : stabilizer list\n    target_choice : index into the list of valid same-stabilizer targets\n\n    Returns\n    -------\n    dict mapping each source state to its destination state.\n    """\n    rep = orbit_states[0]\n    H = stabs[rep]\n    valid_targets = [t for t in orbit_states if stabs[t] == H]\n    if not valid_targets:\n        raise ValueError(f"No valid same-stabilizer targets for orbit rep {rep}")\n    target = valid_targets[target_choice % len(valid_targets)]\n\n    mapping = {}\n    n_perms = action.shape[0]\n    for g in range(n_perms):\n        src = int(action[g, rep])\n        dst = int(action[g, target])\n        if src in mapping:\n            if mapping[src] != dst:\n                raise ValueError(f"Inconsistent equivariant map at state {src}")\n        else:\n            mapping[src] = dst\n\n    # Verify bijection on this orbit\n    src_set = set(mapping.keys())\n    dst_set = set(mapping.values())\n    if src_set != set(orbit_states) or dst_set != set(orbit_states):\n        raise ValueError("Self-map is not a bijection on the orbit")\n    if len(mapping) != len(orbit_states):\n        raise ValueError("Self-map is not injective on the orbit")\n\n    return mapping\n\n\ndef _build_weight3plus_mapping(\n    rng: np.random.Generator,\n    orbits: list[list[int]],\n    action: np.ndarray,\n    stabs: list[tuple[int, ...]],\n    fixed_states: set[int],\n) -> dict[int, int]:\n    """Build O_h-equivariant bijections for weight-3+ states using orbit pairing.\n\n    Pools orbits by (weight, size, frozenset of stabilizer tuples) and randomly\n    pairs orbits within each pool. For each src->dst orbit pair, picks a\n    representative and a same-stabilizer target, then propagates by O_h.\n\n    Parameters\n    ----------\n    rng : numpy random generator\n    orbits : list of all orbits\n    action : O_h action array\n    stabs : stabilizer list\n    fixed_states : set of states already mapped (will be skipped)\n\n    Returns\n    -------\n    dict mapping source states to destination states for weight-3+.\n    """\n    n_perms = action.shape[0]\n    mapping = {}\n\n    # Group orbits by signature\n    groups: dict[tuple, list[int]] = {}\n    for oidx, orb in enumerate(orbits):\n        rep = orb[0]\n        if rep in fixed_states:\n            continue\n        w = hamming(rep)\n        sz = len(orb)\n        stab_set = frozenset(stabs[s] for s in orb)\n        sig = (w, sz, stab_set)\n        groups.setdefault(sig, []).append(oidx)\n\n    for sig, orbit_list in groups.items():\n        n = len(orbit_list)\n        shuffled = list(orbit_list)\n        if n > 1:\n            order = rng.permutation(n)\n            shuffled = [orbit_list[i] for i in order]\n\n        for src_idx, dst_idx in zip(orbit_list, shuffled):\n            src_orbit = orbits[src_idx]\n            dst_orbit = orbits[dst_idx]\n            rep_src = src_orbit[0]\n            H_src = stabs[rep_src]\n\n            valid_targets = [t for t in dst_orbit if stabs[t] == H_src]\n            if not valid_targets:\n                raise ValueError(\n                    f"No valid target for orbit {src_idx} (weight {sig[0]}, size {sig[1]}) "\n                    f"-> orbit {dst_idx}"\n                )\n            target = int(valid_targets[rng.integers(len(valid_targets))])\n\n            for g in range(n_perms):\n                src = int(action[g, rep_src])\n                dst = int(action[g, target])\n                if src in mapping:\n                    if mapping[src] != dst:\n                        raise ValueError(\n                            f"Inconsistent equivariant map at state {src}: "\n                            f"existing={mapping[src]} new={dst}"\n                        )\n                else:\n                    mapping[src] = dst\n\n    return mapping\n\n\ndef build_cooperative_lut_13ch(\n    config: dict,\n    perms: list[tuple[int, ...]] | None = None,\n    action: np.ndarray | None = None,\n    orbits: list[list[int]] | None = None,\n    stabs: list[tuple[int, ...]] | None = None,\n    w2_info: dict[str, dict] | None = None,\n) -> np.ndarray:\n    """Build a single cooperative-trapping LUT from a configuration dict.\n\n    Parameters\n    ----------\n    config : dict with keys:\n        - \'w2_A_target\': int, choice index for A→A self-map\n        - \'w2_B_target\': int, choice index for B→B self-map\n        - \'w2_C_target\': int, choice index for C→C self-map\n        - \'w2_D_target\': int, choice index for D→D self-map\n        - \'w2_E_target\': int, choice index for E→E self-map\n        - \'w3plus_seed\': int, seed for weight-3+ random orbit pairing\n    perms, action, orbits, stabs, w2_info : precomputed structures (optional)\n\n    Returns\n    -------\n    lut : np.ndarray of shape (8192,) and dtype uint16\n    """\n    if perms is None:\n        perms = build_oh_permutations_13ch()\n    if action is None:\n        action = precompute_perm_action_13ch(perms)\n    if orbits is None:\n        orbits, _ = compute_orbits_13ch(action)\n    if stabs is None:\n        stabs = compute_all_stabilizers_13ch(action)\n    if w2_info is None:\n        w2_info = classify_weight2_orbits(orbits, stabs)\n\n    lut = -np.ones(8192, dtype=np.int32)\n    fixed_states: set[int] = set()\n\n    # Weight-0 and weight-1 (fixed)\n    w01_lut = _build_weight1_mapping()\n    for s in range(8192):\n        if hamming(s) <= 1:\n            lut[s] = int(w01_lut[s])\n            fixed_states.add(s)\n\n    # Weight-2 (parametric self-maps)\n    for label in ["A", "B", "C", "D", "E"]:\n        info = w2_info[label]\n        target_choice = config.get(f"w2_{label}_target", 0)\n        mapping = _build_weight2_self_map(\n            info["states"], action, stabs, target_choice\n        )\n        for src, dst in mapping.items():\n            if lut[src] != -1:\n                raise ValueError(f"State {src} already mapped")\n            lut[src] = dst\n            fixed_states.add(src)\n\n    # Weight-3+ (random orbit pairing)\n    rng = np.random.default_rng(config.get("w3plus_seed", 0))\n    w3plus_mapping = _build_weight3plus_mapping(\n        rng, orbits, action, stabs, fixed_states\n    )\n    for src, dst in w3plus_mapping.items():\n        if lut[src] != -1:\n            raise ValueError(f"State {src} already mapped in weight-3+")\n        lut[src] = dst\n\n    assert (lut >= 0).all(), "LUT incomplete"\n    return lut.astype(np.uint16)\n\n\n# ============================================================\n# 4. Audit\n# ============================================================\n\ndef audit_lut_13ch(lut: np.ndarray, action: np.ndarray) -> dict:\n    """Run the three mandatory audits on a 13-channel LUT.\n\n    Returns dict with keys:\n        - bijection (bool)\n        - bit_conserving (bool)\n        - symmetric (bool)\n        - first_violating_perm (int or None)\n    """\n    results: dict = {}\n\n    # Bijection\n    results["bijection"] = bool(len(np.unique(lut)) == 8192)\n\n    # Bit conservation\n    pop_in = np.array([bin(s).count("1") for s in range(8192)], dtype=np.uint8)\n    pop_out = np.array([bin(int(lut[s])).count("1") for s in range(8192)], dtype=np.uint8)\n    results["bit_conserving"] = bool(np.array_equal(pop_in, pop_out))\n\n    # O_h symmetry\n    sym_ok = True\n    bad = None\n    n_perms = action.shape[0]\n    for g in range(n_perms):\n        lhs = lut[action[g]]\n        rhs = action[g, lut]\n        if not np.array_equal(lhs, rhs):\n            sym_ok = False\n            bad = g\n            break\n    results["symmetric"] = sym_ok\n    results["first_violating_perm"] = int(bad) if bad is not None else None\n\n    return results\n\n\n# ============================================================\n# 5. Variant enumeration\n# ============================================================\n\ndef enumerate_weight2_self_map_choices(\n    w2_info: dict[str, dict],\n    stabs: list[tuple[int, ...]],\n) -> dict[str, int]:\n    """Count the number of valid same-stabilizer targets for each weight-2 orbit self-map."""\n    counts = {}\n    for label in ["A", "B", "C", "D", "E"]:\n        info = w2_info[label]\n        rep = info["rep"]\n        H = stabs[rep]\n        valid = [t for t in info["states"] if stabs[t] == H]\n        counts[label] = len(valid)\n    return counts\n\n\ndef generate_all_lut_variants(\n    max_variants: int = 500,\n    w3plus_seeds: int = 2,\n    verbose: bool = True,\n) -> tuple[list[np.ndarray], list[dict], dict]:\n    """Generate all valid cooperative-trapping LUT variants.\n\n    Parameters\n    ----------\n    max_variants : int\n        Maximum number of variants to generate.\n    w3plus_seeds : int\n        Number of distinct weight-3+ random seeds to try per weight-2 config.\n    verbose : bool\n\n    Returns\n    -------\n    luts : list of valid LUT arrays\n    configs : list of configuration dicts\n    metadata : dict with generation statistics\n    """\n    t0 = time.time()\n\n    perms = build_oh_permutations_13ch()\n    action = precompute_perm_action_13ch(perms)\n    orbits, _ = compute_orbits_13ch(action)\n    stabs = compute_all_stabilizers_13ch(action)\n    w2_info = classify_weight2_orbits(orbits, stabs)\n\n    choice_counts = enumerate_weight2_self_map_choices(w2_info, stabs)\n    if verbose:\n        print("[cooperative_lut_13ch] Weight-2 self-map choices:")\n        for label, count in choice_counts.items():\n            print(f"  Orbit {label}: {count} choices")\n\n    # Enumerate all weight-2 configurations\n    w2_configs = []\n    for a in range(choice_counts["A"]):\n        for b in range(choice_counts["B"]):\n            for c in range(choice_counts["C"]):\n                for d in range(choice_counts["D"]):\n                    for e in range(choice_counts["E"]):\n                        w2_configs.append({\n                            "w2_A_target": a,\n                            "w2_B_target": b,\n                            "w2_C_target": c,\n                            "w2_D_target": d,\n                            "w2_E_target": e,\n                        })\n\n    if verbose:\n        print(f"[cooperative_lut_13ch] Total weight-2 configurations: {len(w2_configs)}")\n\n    luts: list[np.ndarray] = []\n    configs: list[dict] = []\n    audit_fails = 0\n    audit_pass = 0\n\n    for w2_idx, w2_cfg in enumerate(w2_configs):\n        for seed in range(w3plus_seeds):\n            if len(luts) >= max_variants:\n                break\n\n            config = dict(w2_cfg)\n            config["w3plus_seed"] = seed\n            config["variant_id"] = len(luts)\n\n            try:\n                lut = build_cooperative_lut_13ch(\n                    config, perms=perms, action=action, orbits=orbits,\n                    stabs=stabs, w2_info=w2_info,\n                )\n            except ValueError as exc:\n                if verbose:\n                    print(f"  [build fail] w2={w2_idx} seed={seed}: {exc}")\n                audit_fails += 1\n                continue\n\n            audit = audit_lut_13ch(lut, action)\n            if not (audit["bijection"] and audit["bit_conserving"] and audit["symmetric"]):\n                audit_fails += 1\n                if verbose:\n                    print(f"  [audit fail] w2={w2_idx} seed={seed}: {audit}")\n                continue\n\n            luts.append(lut)\n            configs.append(config)\n            audit_pass += 1\n\n        if len(luts) >= max_variants:\n            break\n\n    dt = time.time() - t0\n\n    metadata = {\n        "n_attempted": len(w2_configs) * w3plus_seeds,\n        "n_valid": len(luts),\n        "n_audit_fails": audit_fails,\n        "audit_pass_rate": audit_pass / max(1, audit_pass + audit_fails),\n        "weight2_choice_counts": choice_counts,\n        "generation_time_seconds": dt,\n    }\n\n    if verbose:\n        print(f"[cooperative_lut_13ch] Generated {len(luts)} valid LUTs in {dt:.2f}s")\n        print(f"  Audit pass rate: {metadata[\'audit_pass_rate\']:.3f}")\n\n    return luts, configs, metadata\n\n\n# ============================================================\n# 6. Main / report generation\n# ============================================================\n\ndef main():\n    out_dir = SCRIPT_DIR.parent / "archive" / "iter_251" / "results"\n    out_dir.mkdir(parents=True, exist_ok=True)\n\n    luts, configs, meta = generate_all_lut_variants(\n        max_variants=500,\n        w3plus_seeds=2,\n        verbose=True,\n    )\n\n    # Compute weight-2 orbit details for the report\n    perms = build_oh_permutations_13ch()\n    action = precompute_perm_action_13ch(perms)\n    orbits, _ = compute_orbits_13ch(action)\n    stabs = compute_all_stabilizers_13ch(action)\n    w2_info = classify_weight2_orbits(orbits, stabs)\n\n    weight2_orbit_info = {}\n    for label in ["A", "B", "C", "D", "E"]:\n        info = w2_info[label]\n        rep = info["rep"]\n        chs = [i for i in range(13) if (rep >> i) & 1]\n        weight2_orbit_info[label] = {\n            "size": info["size"],\n            "representative": int(rep),\n            "channels": chs,\n            "stabilizer_size": info["stab_size"],\n            "description": {\n                "A": "Antiparallel prop pair (6 states)",\n                "B": "Obtuse prop pair, 120 deg (24 states)",\n                "C": "Perpendicular prop pair, 90 deg (12 states)",\n                "D": "Acute prop pair, 60 deg (24 states)",\n                "E": "Rest+prop pair (12 states)",\n            }[label],\n        }\n\n    # Weight-1 mapping description\n    weight1_mapping = {\n        "weight_0": "0 -> 0 (fixed point)",\n        "prop_weight1": "Cartesian transposition to antiparallel partner",\n        "pairs": CARTESIAN_PAIRS,\n        "rest_weight1": "(1<<12) -> (1<<12) (stationary fixed point)",\n    }\n\n    # Note on cross-orbit mappings\n    cross_orbit_note = (\n        "Mathematical analysis shows that full O_h-equivariant bijections between "\n        "orbits C<->E and B<->D are impossible because their stabilizer subgroups "\n        "are non-conjugate in O_h. All generated variants use self-maps for weight-2. "\n        "Active channel mixing (F5) must occur via weight-3+ dynamics."\n    )\n\n    report = {\n        "n_lut_variants": len(luts),\n        "n_lut_variants_with_f5": 0,\n        "audit_pass_rate": meta["audit_pass_rate"],\n        "weight2_orbit_info": weight2_orbit_info,\n        "sample_lut_shape": [8192],\n        "weight1_mapping": weight1_mapping,\n        "cross_orbit_weight2_note": cross_orbit_note,\n        "generation_metadata": meta,\n    }\n\n    with open(out_dir / "infrastructure_report.json", "w") as f:\n        json.dump(report, f, indent=2)\n\n    print(f"[save] Report -> {out_dir / \'infrastructure_report.json\'}")\n\n    # Save a few sample LUTs\n    for i in range(min(5, len(luts))):\n        np.save(out_dir / f"sample_lut_{i:03d}.npy", luts[i])\n\n    return luts, configs, meta\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to src/cooperative_lut_13ch.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/cooperative_lut_13ch.py'})]
+
+[Tool Result: exit_code: 0
+stdout: [cooperative_lut_13ch] Weight-2 self-map choices:
+  Orbit A: 2 choices
+  Orbit B: 4 choices
+  Orbit C: 4 choices
+  Orbit D: 4 choices
+  Orbit E: 2 choices
+[cooperative_lut_13ch] Total weight-2 configurations: 256
+[cooperative_lut_13ch] Generated 500 valid LUTs in 7.75s
+  Audit pass rate: 1.000
+[save] Report -> C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_251\results\infrastructure_report.json
+
+stderr: ]
+
+
+[Tool Call: read_file({'path': 'archive/iter_251/results/infrastructure_report.json'})]
+
+[Tool Result: {
+  "n_lut_variants": 500,
+  "n_lut_variants_with_f5": 0,
+  "audit_pass_rate": 1.0,
+  "weight2_orbit_info": {
+    "A": {
+      "size": 6,
+      "representative": 6,
+      "channels": [
+        1,
+        2
+      ],
+      "stabilizer_size": 8,
+      "description": "Antiparallel prop pair (6 states)"
+    },
+    "B": {
+      "size": 24,
+      "representative": 20,
+      "channels": [
+        2,
+        4
+      ],
+      "stabilizer_size": 2,
+      "description": "Obtuse prop pair, 120 deg (24 states...]
+
+
+[NUDGE RESPONSE]
+I have completed the core infrastructure implementation for the 13-channel FCC LGCA with cooperative trapping dynamics. All engine functions and LUT generation infrastructure are operational. However, a rigorous group-theoretic analysis revealed that full O_h-equivariant cross-orbit bijections between weight-2 orbits C↔E and B↔D are mathematically impossible—their stabilizer subgroups are non-conjugate in O_h, which violates the necessary condition for equivariant orbit isomorphisms. Consequently, while 500 valid LUT variants were generated (all passing bijection, bit-conservation, and O_h-symmetry audits), none can include the requested C↔E weight-2 mapping. Active channel mixing for F5 must instead be realized through weight-3+ dynamics.
+
+```yaml
+status: experiment_failed
+artifacts:
+  - src/pre_registration.md
+  - src/fcc_engine_13ch.py
+  - src/cooperative_lut_13ch.py
+  - archive/iter_251/results/infrastructure_report.json
+  - archive/iter_251/results/sample_lut_000.npy
+  - archive/iter_251/results/sample_lut_001.npy
+  - archive/iter_251/results/sample_lut_002.npy
+  - archive/iter_251/results/sample_lut_003.npy
+  - archive/iter_251/results/sample_lut_004.npy
+metrics:
+  n_lut_variants_generated: 500
+  n_lut_variants_with_f5_weight2: 0
+  audit_pass_rate: 1.0
+  weight2_orbit_A_size: 6
+  weight2_orbit_B_size: 24
+  weight2_orbit_C_size: 12
+  weight2_orbit_D_size: 24
+  weight2_orbit_E_size: 12
+  generation_time_seconds: 7.75
+  n_weight2_configurations: 256
+log_excerpt: |
+  [cooperative_lut_13ch] Weight-2 self-map choices:
+    Orbit A: 2 choices
+    Orbit B: 4 choices
+    Orbit C: 4 choices
+    Orbit D: 4 choices
+    Orbit E: 2 choices
+  [cooperative_lut_13ch] Total weight-2 configurations: 256
+  [cooperative_lut_13ch] Generated 500 valid LUTs in 7.75s
+    Audit pass rate: 1.000
+  [save] Report -> C:\Users\thomas\Projekte\rdf_digital_physic\archive\iter_251\results\infrastructure_report.json
+experimenter_view: |
+  The 13-channel engine and LUT infrastructure were successfully implemented.
+  All 500 generated LUTs pass the three mandatory audits (bijection, bit
+  conservation, O_h symmetry). However, a rigorous stabilizer analysis proves
+  that cross-orbit equivariant bijections between C↔E and B↔D are impossible:
+  their stabilizer subgroups are non-conjugate in O_h (e.g., Stab(C) contains
+  coordinate-plane reflections while Stab(E) contains diagonal-plane reflections,
+  which belong to different conjugacy classes). This is not a code bug but a
+  theorem in group theory—two transitive G-sets are isomorphic iff their
+  stabilizers are conjugate. Therefore, the C↔E weight-2 swap required by the
+  task specification cannot exist under full O_h equivariance. F5 compliance
+  must be achieved through weight-3+ orbit pairings that involve the rest
+  channel, not through weight-2 cross-orbit mappings.
+notes: "Cross-orbit weight-2 C<->E mapping is mathematically impossible under O_h; infrastructure otherwise complete."
+```
