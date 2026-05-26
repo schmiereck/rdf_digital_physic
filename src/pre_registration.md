@@ -56,10 +56,11 @@ states; (3) perpendicular prop pair, 12 states; (4) acute prop pair, 24 states; 
 pair, 12 states. Create src/cooperative_lut_13ch.py.
 
 Step 4 — LUT Parametrization: Fix weight-0→0 and weight-1 cooperative trapping (prop
-weight-1 → antiparallel partner; rest weight-1 → itself). For each of the 5 weight-2 orbit
-types, assign one of ~4 output options via O_h-equivariant bijections. At least one variant
-MUST include C↔E or E→C mapping to satisfy F5. Weight-3+ uses simplified rules. Yields
-~500 viable rule variants.
+weight-1 → antiparallel partner; rest weight-1 → itself). Weight-2 orbit mappings are
+self-maps only (cross-orbit C↔E and B↔D mappings are mathematically impossible under O_h
+due to non-conjugate stabilizer subgroups). F5 compliance must be achieved through
+weight-3+ orbit pairings where rest-channel states map to non-rest-channel states and
+vice versa. Weight-3+ uses simplified rules. Yields ~500 viable rule variants.
 
 Step 5 — Parametric Search: For each rule variant, test 30 diverse seeds (2–5 bits,
 adjacent and non-adjacent, multiple O_h directions) on L=24 FCC toroidal grid. Run 300 steps.
