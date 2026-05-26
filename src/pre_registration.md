@@ -25,7 +25,7 @@ F3: The 13-channel factorized LUT cannot be constructed to be simultaneously
 F4: For all tested coupling strengths (0.0 to 1.0 in 0.1 increments), either the
     glider is destroyed (disperses within 200 steps) or no 3D binding emerges
     (no configuration with bits on 2+ planes passes the Three-Test Coherence Protocol
-    over 500 LUT variants × 50 seed configurations).
+    over 500 LUT variants × 50 seed configurations × 500 steps).
 
 ## 3. Proposed Method
 Sub-goal 252.1 (Mechanism Extraction — Medium):
@@ -55,6 +55,21 @@ Sub-goal 252.4 (Symmetry Characterization — Medium, conditional on 252.3):
   - Test O_h covariance (expected to fail due to C3v symmetry) and C3v covariance
   - Document symmetry properties of any discovered 3D gliders
   - Files: results in sub 252.3 output
+
+## 4. Construction-vs-Empirical Classification (SRM Mandate)
+
+Sub-goal 252.2 (Factorized Embedding at α=0) is a CODE-VERIFICATION AND ALIGNMENT TEST, not an empirical search. If the 2D hex glider rule is embedded into a [111] hex plane of the 13-channel FCC lattice with identity mappings on the 6 inter-plane channels, the glider's survival is 100% GUARANTEED BY CONSTRUCTION. It is an algebraic identity, not a physical discovery. No emergent or promotional language ("discovery of 3D gliders") may be used when reporting its propagation; it is merely a 2D glider running on a 3D coordinate projection.
+
+## 5. Symmetry Degradation Warning (SRM Mandate)
+
+By embedding the C3v-symmetric 2D hex rule into a single [111] plane family of the 13-channel FCC lattice, we are BREAKING the O_h hardware symmetry of the 3D universe. This is an anisotropic, layered 2.5D system — NOT an isotropic 3D spacetime. Any resulting "3D gliders" found via coupling (α > 0) must be explicitly evaluated for their dependence on this privileged plane. If they cannot propagate covariantly along the other three equivalent {111} plane families under O_h transformations, they are lattice-axis artifacts of the rule construction. This limitation must be stated clearly in all reports.
+
+## 6. Expanded Falsification of Coupling Hypothesis (SRM Mandate)
+
+The coupling hypothesis (α > 0 producing stable 3D bound states) is refuted if ANY of the following hold:
+F4a: The "coupled" state fails the Single-Bit Decomposition Test (individual constituent bits can propagate on their own, proving the "bound state" is actually just parallel non-interacting composites).
+F4b: The coupled state disperses or deheres under localized latency perturbations (proving it lacks binding energy to withstand coordinate distortion).
+F4c: No stable configuration survives ≥ 300 steps for any α > 0.
 
 ---
 *Created automatically by the RDF Orchestrator prior to iteration execution.*
