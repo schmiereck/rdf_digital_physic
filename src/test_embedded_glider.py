@@ -6,7 +6,7 @@ embedded into the [111] plane of a 3D FCC lattice via a hybrid engine.
 Per pre_registration.md Section 4:
   This is a CODE-VERIFICATION AND ALIGNMENT TEST. If the 2D hex glider rule is
   correctly embedded into a [111] hex plane of the 13-channel FCC lattice with
-  identity mappings on the 6 inter-plane channels (alpha=0), the glider's survival
+  identity mappings on the 6 inter-plane channels (alpha=0), the glider survival
   is GUARANTEED BY CONSTRUCTION. It is an algebraic identity, not a physical
   discovery. No emergent or promotional language may be used.
 
@@ -26,15 +26,21 @@ from __future__ import annotations
 
 import json
 import math
+import sys
+from pathlib import Path
+
 import numpy as np
 
-from src.evolution import (
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from evolution import (
     rule_dict_to_lut,
     center_of_mass,
     LTROMINO_CELLS,
     step_grid,
 )
-from src.fcc_engine_embed import (
+from fcc_engine_embed import (
     embed_step,
     step_hex_2d,
     make_3d_seed,
@@ -45,12 +51,11 @@ from src.fcc_engine_embed import (
 
 GRID_3D = 32
 STEPS = 300
-OUTPUT_DIR = "archive/iter_252/results"
-CHAMPION_PATH = "archive/iter_222/results/champion_rule_perfect.json"
+OUTPUT_DIR = PROJECT_ROOT / "archive" / "iter_252" / "results"
+CHAMPION_PATH = PROJECT_ROOT / "archive" / "iter_222" / "results" / "champion_rule_perfect.json"
 
-# -- Utility: unwrapped CoM in 3D --------------------------------------------
 
-def unwrap_com_series(coms: list[tuple], grid_size: int) -> list[list[float]]:
+def unwrap_com_series(coms, grid_size):
     """Unwrap a sequence of raw (wrapped) COMs on a toroidal grid."""
     if not coms:
         return []
@@ -58,7 +63,6 @@ def unwrap_com_series(coms: list[tuple], grid_size: int) -> list[list[float]]:
     for i in range(1, len(coms)):
         dr_raw = float(coms[i][0]) - float(coms[i - 1][0])
         dc_raw = float(coms[i][1]) - float(coms[i - 1][1])
-        # Toroidal unwrapping: pick shortest path
         if dr_raw > grid_size / 2:
             dr_raw -= grid_size
         elif dr_raw < -grid_size / 2:
@@ -71,31 +75,26 @@ def unwrap_com_series(coms: list[tuple], grid_size: int) -> list[list[float]]:
     return unwrapped
 
 
-def center_of_mass_2d_on_layer(grid: np.ndarray, layer: int) -> tuple[float, float]:
-    """COM of set bits in 2D slice at given layer."""
-    bits = grid[layer, :, :]
+def center_of_mass_2d_on_layer(grid, layer):
+    """COM of set bits in 2D slice at given layer (channel 12 = center)."""
+    bits = grid[layer, :, :, 12]
     ys, xs = np.where(bits > 0)
     if len(ys) == 0:
         return (0.0, 0.0)
     return (float(np.mean(ys)), float(np.mean(xs)))
 
 
-# -- Load champion rule ------------------------------------------------------
-
-def load_champion() -> tuple[np.ndarray, list]:
+def load_champion():
     with open(CHAMPION_PATH, "r") as f:
         data = json.load(f)
     rule_dict = {int(k): int(v) for k, v in data["rule_dict"].items()}
-    hex_lut = rule_dict_to_lut(rule_dict)  # 128-entry, 0 or 1
+    hex_lut = rule_dict_to_lut(rule_dict)
     seed_cells = data.get("seed_cells", LTROMINO_CELLS)
     return hex_lut, seed_cells
 
 
-# -- Test 1: Hybrid embedded engine (3D) -------------------------------------
-
-def run_embedded_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
+def run_embedded_test(hex_lut, seed_cells):
     """Run the hybrid 3D engine for STEPS with the L-tromino seed on layer 16."""
-    # Map 128x128 seed to 32x32 grid center
     center_2d = GRID_3D // 2
     offset_r = center_2d - 64
     offset_c = center_2d - 64
@@ -103,12 +102,10 @@ def run_embedded_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
 
     grid = make_3d_seed(GRID_3D, seed_3d, layer=center_2d)
     layer = center_2d
-
     bit_counts = []
     coms = []
 
     for step in range(STEPS + 1):
-        # Track bits on the active layer
         bits_on_layer = int(grid[layer, :, :, 12].sum())
         bit_counts.append(bits_on_layer)
         com = center_of_mass_2d_on_layer(grid, layer)
@@ -117,10 +114,8 @@ def run_embedded_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
             grid = embed_step(grid, hex_lut)
 
     unwrapped = unwrap_com_series(coms, GRID_3D)
-    final_uw = unwrapped[-1]
-    initial_uw = unwrapped[0]
-    dr = final_uw[0] - initial_uw[0]
-    dc = final_uw[1] - initial_uw[1]
+    dr = unwrapped[-1][0] - unwrapped[0][0]
+    dc = unwrapped[-1][1] - unwrapped[0][1]
     displacement = math.hypot(dr, dc)
     speed = displacement / STEPS
 
@@ -134,9 +129,7 @@ def run_embedded_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
     }
 
 
-# -- Test 2: Single-bit decomposition ----------------------------------------
-
-def run_decomposition_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
+def run_decomposition_test(hex_lut, seed_cells):
     """Run each single bit of the seed alone; all must die (annihilate)."""
     center_2d = GRID_3D // 2
     offset_r = center_2d - 64
@@ -151,7 +144,8 @@ def run_decomposition_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
         for _ in range(STEPS):
             grid = embed_step(grid, hex_lut)
         final_bits = int(grid[layer, :, :, 12].sum())
-        results.append({"seed_bit": idx, "final_bits": final_bits, "survived": final_bits > 0})
+        results.append({"seed_bit": idx, "final_bits": final_bits,
+                        "survived": final_bits > 0})
 
     all_died = all(not r["survived"] for r in results)
     return {
@@ -161,9 +155,7 @@ def run_decomposition_test(hex_lut: np.ndarray, seed_cells: list) -> dict:
     }
 
 
-# -- Test 3: Positive control (2D standalone) --------------------------------
-
-def run_positive_control(hex_lut: np.ndarray, seed_cells: list) -> dict:
+def run_positive_control(hex_lut, seed_cells):
     """Run pure 2D hex CA on 32x32 grid; compare layer COM with hybrid."""
     center_2d = GRID_3D // 2
     offset_r = center_2d - 64
@@ -176,7 +168,6 @@ def run_positive_control(hex_lut: np.ndarray, seed_cells: list) -> dict:
 
     bit_counts = []
     coms = []
-
     for step in range(STEPS + 1):
         bit_counts.append(int(grid.sum()))
         coms.append(center_of_mass(grid))
@@ -184,10 +175,8 @@ def run_positive_control(hex_lut: np.ndarray, seed_cells: list) -> dict:
             grid = step_hex_2d(grid, hex_lut)
 
     unwrapped = unwrap_com_series(coms, GRID_3D)
-    final_uw = unwrapped[-1]
-    initial_uw = unwrapped[0]
-    dr = final_uw[0] - initial_uw[0]
-    dc = final_uw[1] - initial_uw[1]
+    dr = unwrapped[-1][0] - unwrapped[0][0]
+    dc = unwrapped[-1][1] - unwrapped[0][1]
     displacement = math.hypot(dr, dc)
     speed = displacement / STEPS
 
@@ -200,12 +189,9 @@ def run_positive_control(hex_lut: np.ndarray, seed_cells: list) -> dict:
     }
 
 
-# -- Test 4: Negative control (trivial annihilator) --------------------------
-
-def run_negative_control(seed_cells: list) -> dict:
+def run_negative_control(seed_cells):
     """Run hybrid engine with all-zero hex rule (everything dies)."""
     annihilator = np.zeros(128, dtype=np.uint8)
-
     center_2d = GRID_3D // 2
     offset_r = center_2d - 64
     offset_c = center_2d - 64
@@ -213,26 +199,18 @@ def run_negative_control(seed_cells: list) -> dict:
 
     grid = make_3d_seed(GRID_3D, seed_3d, layer=center_2d)
     layer = center_2d
-
     bit_counts = []
     for step in range(STEPS + 1):
         bit_counts.append(int(grid[layer, :, :, 12].sum()))
         if step < STEPS:
             grid = embed_step(grid, annihilator)
 
-    return {
-        "bit_counts": bit_counts,
-        "final_bits": bit_counts[-1],
-    }
+    return {"bit_counts": bit_counts, "final_bits": bit_counts[-1]}
 
 
-# -- Test 5: F3 Analysis -----------------------------------------------------
-
-def run_f3_analysis(hex_lut: np.ndarray) -> dict:
+def run_f3_analysis(hex_lut):
     return attempt_pure_lgca_lut(hex_lut)
 
-
-# -- Main --------------------------------------------------------------------
 
 def main():
     print("=" * 70)
@@ -289,6 +267,8 @@ def main():
         print(f"\n[MISMATCH] Bit counts differ at {len(diffs)} steps: {diffs[:20]}...")
 
     # Save test output
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     embed_test = {
         "iteration": 252,
         "test_type": "code_verification_and_alignment",
@@ -307,10 +287,10 @@ def main():
             "final_bits": negative["final_bits"],
         },
         "f3_analysis": f3,
-        "positive_control_matches": positive_matches,
+        "positive_control_matches": bool(positive_matches),
     }
 
-    embed_path = f"{OUTPUT_DIR}/embed_test.json"
+    embed_path = OUTPUT_DIR / "embed_test.json"
     with open(embed_path, "w") as f:
         json.dump(embed_test, f, indent=2)
     print(f"\nSaved embed_test.json -> {embed_path}")
@@ -325,7 +305,7 @@ def main():
         "using synchronous neighbor reads for in-plane channels (ch0-5) instead of LGCA "
         "streaming. The inter-plane channels (ch6-11) use standard LGCA stream+identity. "
         "This construction GUARANTEES exact reproduction of the 2D hex dynamics on the "
-        "[111] plane when alpha=0, because the in-plane state is computed identically to the "
+        "[111] plane when the in-plane state is computed identically to the "
         "2D case. It is an algebraic identity, not emergence. "
         "F3 is triggered because no pure LGCA LUT can simultaneously be bijective, "
         "bit-conserving, and match the hex rule - the hex rule inherently changes "
@@ -339,11 +319,11 @@ def main():
         "embedded_glider_speed": embedded["speed"],
         "embedded_glider_bit_counts": embedded["bit_counts"],
         "decomposition_test_passed": decomp["decomposition_test_passed"],
-        "positive_control_matches": positive_matches,
+        "positive_control_matches": bool(positive_matches),
         "architecture_notes": architecture_notes,
     }
 
-    report_path = f"{OUTPUT_DIR}/embed_report.json"
+    report_path = OUTPUT_DIR / "embed_report.json"
     with open(report_path, "w") as f:
         json.dump(embed_report, f, indent=2)
     print(f"Saved embed_report.json -> {report_path}")
@@ -358,9 +338,8 @@ def main():
     print(f"  Decomposition test passed:            {embed_report['decomposition_test_passed']}")
     print(f"  Positive control matches:             {embed_report['positive_control_matches']}")
     print("\n  CONCLUSION: The hybrid engine correctly projects the 2D hex glider")
-    print("  onto the [111] plane of the 3D FCC lattice. The glider's survival")
-    print("  is guaranteed by construction - it is a 2D glider on a 3D")
-    print("  coordinate projection, not a 3D glider discovery.")
+    print("  onto the [111] plane of the 3D FCC lattice.")
+    print("  The glider's survival is guaranteed by construction.")
 
 
 if __name__ == "__main__":
