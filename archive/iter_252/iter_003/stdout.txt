@@ -1,0 +1,408 @@
+
+[Tool Call: read_file({'path': 'src/pre_registration.md'})]
+
+[Tool Result: # RDF Scientific Pre-Registration
+
+*   **Iteration:** 252
+*   **Pre-Registration File:** src/pre_registration.md
+
+## 1. Hypothesis
+When the proven 2D hex glider rule (champion_rule_perfect from iter_222) is embedded
+into a [111] hex plane of the 3D FCC lattice as a factorized 13-channel LGCA
+(6 in-plane channels + 1 center channel following the 2D hex rule; 6 inter-plane
+channels following an identity mapping), the resulting system supports a genuine
+multi-bit bound glider with binding energy > ...]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: [DIR] __pycache__
+      _debug_mechanism.py
+      _debug_pair.py
+      _test_13ch_conj.py
+      _test_13ch_orbits.py
+      _test_13ch_stabs.py
+      analyze_champion_trajectory.py
+      analyze_collision_dynamics.py
+      analyze_glider_200.1.py
+      analyze_glider_220.py
+      analyze_glider_240.18.py
+      analyze_hex_mechanism.py
+      analyze_long_run_dynamics.py
+      analyze_lut08.py
+      analyze_lut08_full.py
+      analyze_median_elite_rule.py
+      analyze_top_elite_rule.py
+      analy...]
+
+
+[Tool Call: read_file({'path': 'src/fcc_engine_embed.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fcc_engine_embed.py -- Hybrid FCC engine embedding 2D hex CA into [111] plane.
+
+Architecture:
+- Inter-plane channels (ch6-11): standard LGCA stream + identity collide
+- In-plane channels (ch0-5): reconstructed synchronously from neighbors' center bits
+- Center channel (ch12): computed by hex rule LUT
+
+This is a HYBRID engine, NOT a pure LGCA. The in-plane channels are VIRTUAL --
+they are not streamed but read directly from neighbors' ch12 values each step.
+
+Channel map...]
+
+
+[Tool Call: read_file({'path': 'src/test_embedded_glider.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+test_embedded_glider.py - Code-verification and alignment test for 2D hex glider
+embedded into the [111] plane of a 3D FCC lattice via a hybrid engine.
+
+Per pre_registration.md Section 4:
+  This is a CODE-VERIFICATION AND ALIGNMENT TEST. If the 2D hex glider rule is
+  correctly embedded into a [111] hex plane of the 13-channel FCC lattice with
+  identity mappings on the 6 inter-plane channels (alpha=0), the glider survival
+  is GUARANTEED BY CONSTRUCTION. It is an alge...]
+
+
+[Tool Call: read_file({'path': 'src/evolution.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+evolution.py  —  C2-symmetric rule evolution for the L-tromino nursery
+
+Fitness = displacement * (final_bit_count / (initial_bit_count + EPS))
+
+This penalises annihilation: a rule that destroys the seed gets a ratio near
+zero even if the centre-of-mass technically moves before the grid goes dark.
+Rules that move the particle while preserving its bit count score highest.
+"""
+
+import math
+import random
+
+import numpy as np
+
+# Small constant to guard against the (very unli...]
+
+
+[Tool Call: read_file({'path': 'src/fcc_engine_13ch.py'})]
+
+[Tool Result: #!/usr/bin/env python3
+"""
+fcc_engine_13ch.py — 13-channel 3D FCC LGCA simulation engine.
+
+Extends engine_3d.py with a rest-mass channel (channel 12) that does NOT shift
+during propagation. Provides pack/unpack/stream/collide/invert/verify functions
+for 13-bit states (uint16, max 8191).
+"""
+
+from __future__ import annotations
+import numpy as np
+
+# 12 propagation shifts from engine_3d.py + rest channel (0,0,0)
+SHIFTS_13 = [
+    (0, 1, 0),    # Channel 0
+    (0, -1, 0),   # Channel 1
+    (0, 0, 1)...]
+
+
+[Tool Call: list_dir({'path': 'archive'})]
+
+[Tool Result: [DIR] archive
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+[DIR] iter_004
+[DIR] iter_005
+[DIR] iter_006
+[DIR] iter_007
+[DIR] iter_008
+[DIR] iter_009
+[DIR] iter_010
+[DIR] iter_011
+[DIR] iter_012
+[DIR] iter_013
+[DIR] iter_014
+[DIR] iter_015
+[DIR] iter_016
+[DIR] iter_017
+[DIR] iter_018
+[DIR] iter_019
+[DIR] iter_020
+[DIR] iter_021
+[DIR] iter_022
+[DIR] iter_023
+[DIR] iter_024
+[DIR] iter_025
+[DIR] iter_026
+[DIR] iter_027
+[DIR] iter_028
+[DIR] iter_029
+[DIR] iter_030
+[DIR] iter_031
+[DIR] iter_032
+[DIR] ...]
+
+ 
+
+[Tool Call: list_dir({'path': 'archive/iter_252'})]
+
+[Tool Result: [DIR] iter_000
+[DIR] iter_001
+[DIR] iter_002
+[DIR] iter_003
+      manager_log.md
+      planner_plan_prompt.txt
+      planner_plan_response.txt
+      planner_prompt.txt
+      planner_prompt_turn_1.txt
+      proposed_plan.yaml
+[DIR] results]
+
+
+[Tool Call: list_dir({'path': 'archive/iter_252/results'})]
+
+[Tool Result:       embed_report.json
+      embed_test.json
+      hex_mechanism.json]
+
+
+[Tool Call: write_file({'path': 'src/fcc_engine_embed.py', 'content': '#!/usr/bin/env python3\n"""\nfcc_engine_embed.py -- Hybrid FCC engine embedding 2D hex CA into [111] plane.\n\nArchitecture:\n- Inter-plane channels (ch6-11): standard LGCA stream + identity collide\n- In-plane channels (ch0-5): reconstructed synchronously from neighbors\' center bits\n- Center channel (ch12): computed by hex rule LUT\n\nCoupling (alpha = 0..3):\n  After hex rule computes new center, deterministic swaps with inter-plane\n  channel pairs enable bits to hop between [111] planes.\n  alpha=0: no coupling (factorized)\n  alpha=1: pair (ch6,ch9) active\n  alpha=2: pairs (ch6,ch9) and (ch7,ch10) active\n  alpha=3: all three pairs active\n"""\n\nfrom __future__ import annotations\n\nimport sys\nfrom pathlib import Path\n\nPROJECT_ROOT = Path(__file__).parent.parent\nsys.path.insert(0, str(PROJECT_ROOT / "src"))\n\nimport numpy as np\nfrom fcc_engine_13ch import SHIFTS_13\n\n\ndef embed_step(grid_3d, hex_lut, alpha=0):\n    """One hybrid step: stream inter-plane + synchronous in-plane + hex collide + coupling."""\n    assert grid_3d.ndim == 4 and grid_3d.shape[-1] == 13\n    assert len(hex_lut) == 128\n    assert 0 <= alpha <= 3\n\n    streamed = np.zeros_like(grid_3d)\n\n    # 1. Stream inter-plane channels (ch6-11) with standard LGCA shift\n    for i in range(6, 12):\n        dl, dr, dc = SHIFTS_13[i]\n        streamed[..., i] = np.roll(grid_3d[..., i], shift=(dl, dr, dc), axis=(0, 1, 2))\n\n    # 2. In-plane channels (ch0-5): read synchronously from neighbors\' center bits\n    center = grid_3d[..., 12]\n    streamed[..., 0] = np.roll(center, shift=(0, 1, 0), axis=(0, 1, 2))   # W\n    streamed[..., 1] = np.roll(center, shift=(0, -1, 0), axis=(0, 1, 2))  # E\n    streamed[..., 2] = np.roll(center, shift=(0, 0, 1), axis=(0, 1, 2))   # SW\n    streamed[..., 3] = np.roll(center, shift=(0, 0, -1), axis=(0, 1, 2))  # NE\n    streamed[..., 4] = np.roll(center, shift=(0, 1, -1), axis=(0, 1, 2))  # NW\n    streamed[..., 5] = np.roll(center, shift=(0, -1, 1), axis=(0, 1, 2))  # SE\n    streamed[..., 12] = center  # center channel for hex_state computation\n\n    # 3. Compute 7-bit hex_state from in-plane + center\n    hex_state = (\n        streamed[..., 12].astype(np.uint16) * 64 |\n        streamed[..., 1].astype(np.uint16) * 32 |\n        streamed[..., 5].astype(np.uint16) * 16 |\n        streamed[..., 2].astype(np.uint16) * 8 |\n        streamed[..., 0].astype(np.uint16) * 4 |\n        streamed[..., 4].astype(np.uint16) * 2 |\n        streamed[..., 3].astype(np.uint16)\n    ).astype(np.uint8)\n\n    # 4. Apply hex rule to get new center bit\n    new_center = hex_lut[hex_state]\n\n    # 5. Build output grid\n    out = np.zeros_like(grid_3d)\n    out[..., 6:12] = streamed[..., 6:12]       # inter-plane: identity\n    out[..., 0:6] = new_center[..., np.newaxis]  # in-plane: broadcast new center\n    out[..., 12] = new_center                     # center: new computed value\n\n    # 6. Deterministic inter-plane coupling (integer-based, no floats)\n    for p in range(alpha):\n        out_ch = 6 + p   # outgoing toward higher layer\n        in_ch = 9 + p    # incoming from lower layer\n\n        # Bit hops up: center=1, outgoing=0 -> swap\n        mask_up = (out[..., 12] == 1) & (out[..., out_ch] == 0)\n        out[..., 12] = np.where(mask_up, 0, out[..., 12])\n        out[..., out_ch] = np.where(mask_up, 1, out[..., out_ch])\n\n        # Bit hops from below: center=0, incoming=1 -> swap\n        mask_down = (out[..., 12] == 0) & (out[..., in_ch] == 1)\n        out[..., 12] = np.where(mask_down, 1, out[..., 12])\n        out[..., in_ch] = np.where(mask_down, 0, out[..., in_ch])\n\n    return out\n\n\ndef step_hex_2d(grid, hex_lut):\n    """Pure 2D hex CA step -- positive control implementation."""\n    e  = np.roll(grid, -1, axis=0)\n    w  = np.roll(grid,  1, axis=0)\n    ne = np.roll(grid, -1, axis=1)\n    sw = np.roll(grid,  1, axis=1)\n    se = np.roll(e,    1, axis=1)\n    nw = np.roll(w,   -1, axis=1)\n\n    state = (\n        (grid.astype(np.uint16) << 6) |\n        (e.astype(np.uint16)  << 5) |\n        (se.astype(np.uint16) << 4) |\n        (sw.astype(np.uint16) << 3) |\n        (w.astype(np.uint16)  << 2) |\n        (nw.astype(np.uint16) << 1) |\n        ne.astype(np.uint16)\n    ).astype(np.uint8)\n\n    return hex_lut[state]\n\n\ndef make_3d_seed(grid_size_3d=32, seed_2d_cells=None, layer=None):\n    """Create a 3D grid with seed cells on the specified layer."""\n    if seed_2d_cells is None:\n        seed_2d_cells = [(15, 15), (16, 15), (16, 16)]\n    if layer is None:\n        layer = grid_size_3d // 2\n\n    grid = np.zeros((grid_size_3d, grid_size_3d, grid_size_3d, 13), dtype=np.uint8)\n    for r, c in seed_2d_cells:\n        grid[layer, r, c, 12] = 1\n    return grid\n\n\ndef attempt_pure_lgca_lut(hex_lut):\n    """\n    Attempt to build a 13-bit LUT that is bijective, bit-conserving,\n    and matches hex_lut on in-plane+center when inter-plane=0.\n    Returns dict with f3_triggered, attempts, reason.\n    """\n    out_lut = np.zeros(8192, dtype=np.uint16)\n    pop_in = np.zeros(8192, dtype=np.uint8)\n    pop_out = np.zeros(8192, dtype=np.uint8)\n\n    for s in range(8192):\n        bits = [(s >> i) & 1 for i in range(13)]\n        pop_in[s] = sum(bits)\n\n        ch12 = bits[12]\n        ch1, ch5, ch2, ch0, ch4, ch3 = bits[1], bits[5], bits[2], bits[0], bits[4], bits[3]\n\n        ch6_11 = 0\n        for i in range(6):\n            ch6_11 |= bits[6 + i] << (6 + i)\n\n        hex_state = (ch12 * 64 + ch1 * 32 + ch5 * 16 + ch2 * 8 +\n                     ch0 * 4 + ch4 * 2 + ch3)\n        new_center = int(hex_lut[hex_state])\n\n        out_ch0_5 = new_center * 0x3F\n        out_ch12 = new_center << 12\n        out_lut[s] = out_ch0_5 | ch6_11 | out_ch12\n        pop_out[s] = bin(int(out_lut[s])).count(\'1\')\n\n    unique_out = len(np.unique(out_lut))\n    bijective = (unique_out == 8192)\n    bit_conserving = bool(np.array_equal(pop_in, pop_out))\n\n    counterexample = {\n        "state": 1,\n        "binary": format(1, \'013b\'),\n        "pop_in": 1,\n        "hex_state": 4,\n        "new_center": int(hex_lut[4]),\n        "pop_out": 0,\n        "reason": "Input has 1 bit, output has 0 bits."\n    }\n\n    f3_triggered = not (bijective and bit_conserving)\n\n    return {\n        "f3_triggered": f3_triggered,\n        "attempts": [{\n            "name": "broadcast_center_to_inplane_identity_interplane",\n            "bijective": bijective,\n            "bit_conserving": bit_conserving,\n            "unique_outputs": int(unique_out),\n        }],\n        "counterexample": counterexample,\n        "reason": (\n            "The hex CA rule is not bit-conserving on the 7-bit in-plane+center subspace. "\n            "A pure LGCA LUT must preserve total Hamming weight for all 8192 states. "\n            "When inter-plane channels are zero (128 such states), the output population "\n            "is 7*new_center (0 or 7), while input population ranges 0..7. "\n            "No bijective, bit-conserving mapping can reconcile this."\n        )\n    }\n'})]
+
+[Tool Result: Successfully wrote to src/fcc_engine_embed.py]
+
+
+[Tool Call: write_file({'path': 'src/test_interplane_coupling.py', 'content': '#!/usr/bin/env python3\n"""\ntest_interplane_coupling.py - Inter-plane coupling falsification test.\n\nImplements deterministic integer coupling between [111] hex plane and\ninter-plane channels. Tests whether 3D binding emerges while preserving\nglider stability, per pre_registration.md Sections 5-6.\n\nFalsification:\n- F4a: multi-layer state is non-interacting composite\n- F4b: coupled state disperses under localized latency perturbation\n- F4c: no stable configuration survives >=300 steps for any alpha > 0\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport math\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nPROJECT_ROOT = Path(__file__).parent.parent\nsys.path.insert(0, str(PROJECT_ROOT / "src"))\n\nfrom evolution import rule_dict_to_lut, LTROMINO_CELLS, center_of_mass\nfrom fcc_engine_embed import embed_step, make_3d_seed\n\nGRID = 32\nSTEPS = 300\nCENTER = GRID // 2\nCHAMPION = PROJECT_ROOT / "archive" / "iter_222" / "results" / "champion_rule_perfect.json"\nOUTDIR = PROJECT_ROOT / "archive" / "iter_252" / "results"\n\n\ndef load_champion():\n    with open(CHAMPION, "r") as f:\n        data = json.load(f)\n    rule_dict = {int(k): int(v) for k, v in data["rule_dict"].items()}\n    return rule_dict_to_lut(rule_dict), data.get("seed_cells", LTROMINO_CELLS)\n\n\ndef com_on_layer(grid, layer):\n    bits = grid[layer, :, :, 12]\n    ys, xs = np.where(bits > 0)\n    if len(ys) == 0:\n        return None\n    return (float(np.mean(ys)), float(np.mean(xs)))\n\n\ndef unwrap_series(pts, size):\n    if not pts or pts[0] is None:\n        return []\n    u = [[float(pts[0][0]), float(pts[0][1])]]\n    for i in range(1, len(pts)):\n        if pts[i] is None:\n            u.append([u[-1][0], u[-1][1]])\n            continue\n        dr = float(pts[i][0]) - float(pts[i - 1][0])\n        dc = float(pts[i][1]) - float(pts[i - 1][1])\n        if dr > size / 2:\n            dr -= size\n        elif dr < -size / 2:\n            dr += size\n        if dc > size / 2:\n            dc -= size\n        elif dc < -size / 2:\n            dc += size\n        u.append([u[-1][0] + dr, u[-1][1] + dc])\n    return u\n\n\ndef run_coupled(hex_lut, seed_cells, alpha, config_id, with_latency=False):\n    configs = [\n        {"layers": [CENTER], "inter": []},\n        {"layers": [CENTER - 1], "inter": []},\n        {"layers": [CENTER + 1], "inter": []},\n        {"layers": [CENTER - 2], "inter": []},\n        {"layers": [CENTER - 1, CENTER + 1], "inter": []},\n        {"layers": [CENTER - 2, CENTER + 2], "inter": []},\n        {"layers": [CENTER, CENTER - 2], "inter": []},\n        {"layers": [CENTER], "inter": [(CENTER, 6)]},\n        {"layers": [CENTER], "inter": [(CENTER, 6), (CENTER, 7)]},\n        {"layers": [CENTER], "inter": [(CENTER, 6), (CENTER, 7), (CENTER, 8)]},\n    ]\n    cfg = configs[config_id]\n    grid = np.zeros((GRID, GRID, GRID, 13), dtype=np.uint8)\n    off_r = CENTER - 64\n    off_c = CENTER - 64\n    seed_3d = [(r + off_r, c + off_c) for r, c in seed_cells]\n\n    for ly in cfg["layers"]:\n        for r, c in seed_3d:\n            grid[ly, r, c, 12] = 1\n    for ly, ch in cfg["inter"]:\n        for r, c in seed_3d[:1]:\n            grid[ly, r, c, ch] = 1\n\n    orig_layers = set(cfg["layers"])\n    bits_per_layer = []\n    coms = []\n    max_bits_other = 0\n    survived = False\n\n    for step in range(STEPS + 1):\n        layer_counts = [int(grid[l, :, :, 12].sum()) for l in range(GRID)]\n        bits_per_layer.append(layer_counts)\n        other = sum(1 for l in range(GRID) if l not in orig_layers and layer_counts[l] > 0)\n        max_bits_other = max(max_bits_other, other)\n\n        # dominant layer for COM tracking\n        dom = max(range(GRID), key=lambda l: layer_counts[l])\n        coms.append(com_on_layer(grid, dom))\n\n        if step == STEPS:\n            survived = layer_counts[dom] >= 3\n            break\n\n        if with_latency:\n            # freeze center in 3x3x3 around current COM\n            new_grid = embed_step(grid, hex_lut, alpha)\n            if coms[-1] is not None:\n                cy, cx = int(round(coms[-1][0])), int(round(coms[-1][1]))\n                ly = dom\n                for dy in (-1, 0, 1):\n                    for dx in (-1, 0, 1):\n                        for dl in (-1, 0, 1):\n                            ry = (cy + dy) % GRID\n                            rx = (cx + dx) % GRID\n                            rl = (ly + dl) % GRID\n                            new_grid[rl, ry, rx, 12] = grid[rl, ry, rx, 12]\n            grid = new_grid\n        else:\n            grid = embed_step(grid, hex_lut, alpha)\n\n    uw = unwrap_series(coms, GRID)\n    disp = 0.0\n    if len(uw) > 1:\n        disp = math.hypot(uw[-1][0] - uw[0][0], uw[-1][1] - uw[0][1])\n\n    return {\n        "survived": survived,\n        "displacement": disp,\n        "max_bits_other_layers": max_bits_other,\n        "final_bits_dominant_layer": bits_per_layer[-1][dom] if coms[-1] else 0,\n        "bits_per_layer": bits_per_layer,\n    }\n\n\ndef run_decomposition(hex_lut, seed_cells, config_id):\n    # Test each layer\'s seed independently for multi-layer configs 4-6\n    if config_id < 4:\n        return None\n    layers = [\n        [CENTER - 1, CENTER + 1],\n        [CENTER - 2, CENTER + 2],\n        [CENTER, CENTER - 2],\n    ][config_id - 4]\n    off_r = CENTER - 64\n    off_c = CENTER - 64\n    seed_3d = [(r + off_r, c + off_c) for r, c in seed_cells]\n    results = []\n    for ly in layers:\n        grid = np.zeros((GRID, GRID, GRID, 13), dtype=np.uint8)\n        for r, c in seed_3d:\n            grid[ly, r, c, 12] = 1\n        for _ in range(STEPS):\n            grid = embed_step(grid, hex_lut, alpha=0)\n        final = int(grid[ly, :, :, 12].sum())\n        results.append({"layer": ly, "final_bits": final, "survived": final >= 3})\n    all_survive = all(r["survived"] for r in results)\n    return {"results": results, "all_survive": all_survive, "f4a_triggered": all_survive}\n\n\ndef main():\n    print("=" * 70)\n    print("ITER 252.3 - INTER-PLANE COUPLING FALSIFICATION TEST")\n    print("=" * 70)\n\n    hex_lut, seed_cells = load_champion()\n    OUTDIR.mkdir(parents=True, exist_ok=True)\n\n    summary = {"alpha_runs": [], "f4a": False, "f4b": False, "f4c": True}\n\n    for alpha in range(4):\n        print(f"\\n[alpha={alpha}] Running 10 configurations x {STEPS} steps...")\n        alpha_results = []\n        any_survived = False\n\n        for cfg in range(10):\n            # normal run\n            normal = run_coupled(hex_lut, seed_cells, alpha, cfg, with_latency=False)\n            # latency run (only for config 0 to save time)\n            latency = None\n            if cfg == 0:\n                latency = run_coupled(hex_lut, seed_cells, alpha, cfg, with_latency=True)\n                if normal["survived"] and not latency["survived"]:\n                    summary["f4b"] = True\n\n            decomp = run_decomposition(hex_lut, seed_cells, cfg)\n            if decomp and decomp.get("f4a_triggered"):\n                summary["f4a"] = True\n\n            if normal["survived"]:\n                any_survived = True\n\n            alpha_results.append({\n                "config": cfg,\n                "normal": normal,\n                "latency": latency,\n                "decomposition": decomp,\n            })\n            print(f"  cfg {cfg}: disp={normal[\'displacement\']:.2f} "\n                  f"survived={normal[\'survived\']} other_layers={normal[\'max_bits_other_layers\']}")\n\n        summary["alpha_runs"].append({\n            "alpha": alpha,\n            "any_survived": any_survived,\n            "runs": alpha_results,\n        })\n\n        if alpha > 0 and any_survived:\n            summary["f4c"] = False\n\n    out_path = OUTDIR / "coupling_test.json"\n    with open(out_path, "w") as f:\n        json.dump(summary, f, indent=2)\n    print(f"\\nSaved -> {out_path}")\n\n    print("\\n" + "=" * 70)\n    print("FALSIFICATION SUMMARY")\n    print("=" * 70)\n    print(f"  F4a (non-interacting composite): {summary[\'f4a\']}")\n    print(f"  F4b (disperses under latency):   {summary[\'f4b\']}")\n    print(f"  F4c (no survival for alpha>0):   {summary[\'f4c\']}")\n    if summary["f4a"] or summary["f4b"] or summary["f4c"]:\n        print("\\n  CONCLUSION: Coupling hypothesis REFUTED (at least one F4 criterion holds).")\n    else:\n        print("\\n  CONCLUSION: Coupling hypothesis NOT REFuted by tested criteria.")\n    print("  NOTE: This is an anisotropic 2.5D system; any 3D binding is")\n    print("  specific to the privileged [111] plane family.")\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to src/test_interplane_coupling.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_interplane_coupling.py'})]
+
+[Tool Result: exit_code: 1
+stdout: ======================================================================
+ITER 252.3 - INTER-PLANE COUPLING FALSIFICATION TEST
+======================================================================
+
+[alpha=0] Running 10 configurations x 300 steps...
+  cfg 0: disp=5.01 survived=True other_layers=0
+  cfg 1: disp=5.01 survived=True other_layers=0
+  cfg 2: disp=5.01 survived=True other_layers=0
+  cfg 3: disp=5.01 survived=True other_layers=0
+  cfg 4: disp=5.01 survived=Tru...]
+
+
+[Tool Call: read_file({'path': 'src/test_interplane_coupling.py', 'start_line': 140, 'end_line': 175})]
+
+[Tool Result: --- lines 140 to 175 of 246 ---
+        disp = math.hypot(uw[-1][0] - uw[0][0], uw[-1][1] - uw[0][1])
+
+    return {
+        "survived": survived,
+        "displacement": disp,
+        "max_bits_other_layers": max_bits_other,
+        "final_bits_dominant_layer": bits_per_layer[-1][dom] if coms[-1] else 0,
+        "bits_per_layer": bits_per_layer,
+    }
+
+
+def run_decomposition(hex_lut, seed_cells, config_id):
+    # Test each layer's seed independently for multi-layer configs 4-6
+    if config_id <...]
+
+
+[Tool Call: write_file({'path': 'src/test_interplane_coupling.py', 'content': '#!/usr/bin/env python3\n"""\ntest_interplane_coupling.py - Inter-plane coupling falsification test.\n\nImplements deterministic integer coupling between [111] hex plane and\ninter-plane channels. Tests whether 3D binding emerges while preserving\nglider stability, per pre_registration.md Sections 5-6.\n\nFalsification:\n- F4a: multi-layer state is non-interacting composite\n- F4b: coupled state disperses under localized latency perturbation\n- F4c: no stable configuration survives >=300 steps for any alpha > 0\n"""\n\nfrom __future__ import annotations\n\nimport json\nimport math\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\n\nPROJECT_ROOT = Path(__file__).parent.parent\nsys.path.insert(0, str(PROJECT_ROOT / "src"))\n\nfrom evolution import rule_dict_to_lut, LTROMINO_CELLS, center_of_mass\nfrom fcc_engine_embed import embed_step, make_3d_seed\n\nGRID = 32\nSTEPS = 300\nCENTER = GRID // 2\nCHAMPION = PROJECT_ROOT / "archive" / "iter_222" / "results" / "champion_rule_perfect.json"\nOUTDIR = PROJECT_ROOT / "archive" / "iter_252" / "results"\n\n\ndef load_champion():\n    with open(CHAMPION, "r") as f:\n        data = json.load(f)\n    rule_dict = {int(k): int(v) for k, v in data["rule_dict"].items()}\n    return rule_dict_to_lut(rule_dict), data.get("seed_cells", LTROMINO_CELLS)\n\n\ndef com_on_layer(grid, layer):\n    bits = grid[layer, :, :, 12]\n    ys, xs = np.where(bits > 0)\n    if len(ys) == 0:\n        return None\n    return (float(np.mean(ys)), float(np.mean(xs)))\n\n\ndef unwrap_series(pts, size):\n    if not pts or pts[0] is None:\n        return []\n    u = [[float(pts[0][0]), float(pts[0][1])]]\n    for i in range(1, len(pts)):\n        if pts[i] is None:\n            u.append([u[-1][0], u[-1][1]])\n            continue\n        dr = float(pts[i][0]) - float(pts[i - 1][0])\n        dc = float(pts[i][1]) - float(pts[i - 1][1])\n        if dr > size / 2:\n            dr -= size\n        elif dr < -size / 2:\n            dr += size\n        if dc > size / 2:\n            dc -= size\n        elif dc < -size / 2:\n            dc += size\n        u.append([u[-1][0] + dr, u[-1][1] + dc])\n    return u\n\n\ndef run_coupled(hex_lut, seed_cells, alpha, config_id, with_latency=False):\n    configs = [\n        {"layers": [CENTER], "inter": []},\n        {"layers": [CENTER - 1], "inter": []},\n        {"layers": [CENTER + 1], "inter": []},\n        {"layers": [CENTER - 2], "inter": []},\n        {"layers": [CENTER - 1, CENTER + 1], "inter": []},\n        {"layers": [CENTER - 2, CENTER + 2], "inter": []},\n        {"layers": [CENTER, CENTER - 2], "inter": []},\n        {"layers": [CENTER], "inter": [(CENTER, 6)]},\n        {"layers": [CENTER], "inter": [(CENTER, 6), (CENTER, 7)]},\n        {"layers": [CENTER], "inter": [(CENTER, 6), (CENTER, 7), (CENTER, 8)]},\n    ]\n    cfg = configs[config_id]\n    grid = np.zeros((GRID, GRID, GRID, 13), dtype=np.uint8)\n    off_r = CENTER - 64\n    off_c = CENTER - 64\n    seed_3d = [(r + off_r, c + off_c) for r, c in seed_cells]\n\n    for ly in cfg["layers"]:\n        for r, c in seed_3d:\n            grid[ly, r, c, 12] = 1\n    for ly, ch in cfg["inter"]:\n        for r, c in seed_3d[:1]:\n            grid[ly, r, c, ch] = 1\n\n    orig_layers = set(cfg["layers"])\n    bits_per_layer = []\n    coms = []\n    max_bits_other = 0\n    survived = False\n\n    for step in range(STEPS + 1):\n        layer_counts = [int(grid[l, :, :, 12].sum()) for l in range(GRID)]\n        bits_per_layer.append(layer_counts)\n        other = sum(1 for l in range(GRID) if l not in orig_layers and layer_counts[l] > 0)\n        max_bits_other = max(max_bits_other, other)\n\n        dom = max(range(GRID), key=lambda l: layer_counts[l])\n        coms.append(com_on_layer(grid, dom))\n\n        if step == STEPS:\n            survived = layer_counts[dom] >= 3\n            break\n\n        if with_latency:\n            new_grid = embed_step(grid, hex_lut, alpha)\n            if coms[-1] is not None:\n                cy, cx = int(round(coms[-1][0])), int(round(coms[-1][1]))\n                ly = dom\n                for dy in (-1, 0, 1):\n                    for dx in (-1, 0, 1):\n                        for dl in (-1, 0, 1):\n                            ry = (cy + dy) % GRID\n                            rx = (cx + dx) % GRID\n                            rl = (ly + dl) % GRID\n                            new_grid[rl, ry, rx, 12] = grid[rl, ry, rx, 12]\n            grid = new_grid\n        else:\n            grid = embed_step(grid, hex_lut, alpha)\n\n    uw = unwrap_series(coms, GRID)\n    disp = 0.0\n    if len(uw) > 1:\n        disp = math.hypot(uw[-1][0] - uw[0][0], uw[-1][1] - uw[0][1])\n\n    return {\n        "survived": survived,\n        "displacement": disp,\n        "max_bits_other_layers": max_bits_other,\n        "final_bits_dominant_layer": bits_per_layer[-1][dom] if coms[-1] else 0,\n        "bits_per_layer": bits_per_layer,\n    }\n\n\ndef run_decomposition(hex_lut, seed_cells, config_id):\n    if config_id not in (4, 5, 6):\n        return None\n    layers = [\n        [CENTER - 1, CENTER + 1],\n        [CENTER - 2, CENTER + 2],\n        [CENTER, CENTER - 2],\n    ][config_id - 4]\n    off_r = CENTER - 64\n    off_c = CENTER - 64\n    seed_3d = [(r + off_r, c + off_c) for r, c in seed_cells]\n    results = []\n    for ly in layers:\n        grid = np.zeros((GRID, GRID, GRID, 13), dtype=np.uint8)\n        for r, c in seed_3d:\n            grid[ly, r, c, 12] = 1\n        for _ in range(STEPS):\n            grid = embed_step(grid, hex_lut, alpha=0)\n        final = int(grid[ly, :, :, 12].sum())\n        results.append({"layer": ly, "final_bits": final, "survived": final >= 3})\n    all_survive = all(r["survived"] for r in results)\n    return {"results": results, "all_survive": all_survive, "f4a_triggered": all_survive}\n\n\ndef main():\n    print("=" * 70)\n    print("ITER 252.3 - INTER-PLANE COUPLING FALSIFICATION TEST")\n    print("=" * 70)\n\n    hex_lut, seed_cells = load_champion()\n    OUTDIR.mkdir(parents=True, exist_ok=True)\n\n    summary = {"alpha_runs": [], "f4a": False, "f4b": False, "f4c": True}\n\n    for alpha in range(4):\n        print(f"\\n[alpha={alpha}] Running 10 configurations x {STEPS} steps...")\n        alpha_results = []\n        any_survived = False\n\n        for cfg in range(10):\n            normal = run_coupled(hex_lut, seed_cells, alpha, cfg, with_latency=False)\n            latency = None\n            if cfg == 0:\n                latency = run_coupled(hex_lut, seed_cells, alpha, cfg, with_latency=True)\n                if normal["survived"] and not latency["survived"]:\n                    summary["f4b"] = True\n\n            decomp = run_decomposition(hex_lut, seed_cells, cfg)\n            if decomp and decomp.get("f4a_triggered"):\n                summary["f4a"] = True\n\n            if normal["survived"]:\n                any_survived = True\n\n            alpha_results.append({\n                "config": cfg,\n                "normal": normal,\n                "latency": latency,\n                "decomposition": decomp,\n            })\n            print(f"  cfg {cfg}: disp={normal[\'displacement\']:.2f} "\n                  f"survived={normal[\'survived\']} other_layers={normal[\'max_bits_other_layers\']}")\n\n        summary["alpha_runs"].append({\n            "alpha": alpha,\n            "any_survived": any_survived,\n            "runs": alpha_results,\n        })\n\n        if alpha > 0 and any_survived:\n            summary["f4c"] = False\n\n    out_path = OUTDIR / "coupling_test.json"\n    with open(out_path, "w") as f:\n        json.dump(summary, f, indent=2)\n    print(f"\\nSaved -> {out_path}")\n\n    print("\\n" + "=" * 70)\n    print("FALSIFICATION SUMMARY")\n    print("=" * 70)\n    print(f"  F4a (non-interacting composite): {summary[\'f4a\']}")\n    print(f"  F4b (disperses under latency):   {summary[\'f4b\']}")\n    print(f"  F4c (no survival for alpha>0):   {summary[\'f4c\']}")\n    if summary["f4a"] or summary["f4b"] or summary["f4c"]:\n        print("\\n  CONCLUSION: Coupling hypothesis REFUTED (at least one F4 criterion holds).")\n    else:\n        print("\\n  CONCLUSION: Coupling hypothesis NOT REFuted by tested criteria.")\n    print("  NOTE: This is an anisotropic 2.5D system; any 3D binding is")\n    print("  specific to the privileged [111] plane family.")\n\n\nif __name__ == "__main__":\n    main()\n'})]
+
+[Tool Result: Successfully wrote to src/test_interplane_coupling.py]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_interplane_coupling.py'})]
+
+[Tool Result: exit_code: 0
+stdout: ======================================================================
+ITER 252.3 - INTER-PLANE COUPLING FALSIFICATION TEST
+======================================================================
+
+[alpha=0] Running 10 configurations x 300 steps...
+  cfg 0: disp=5.01 survived=True other_layers=0
+  cfg 1: disp=5.01 survived=True other_layers=0
+  cfg 2: disp=5.01 survived=True other_layers=0
+  cfg 3: disp=5.01 survived=True other_layers=0
+  cfg 4: disp=5.01 survived=Tru...]
+
+
+[Tool Call: read_file({'path': 'archive/iter_252/results/coupling_test.json', 'start_line': 1, 'end_line': 60})]
+
+[Tool Result: --- lines 1 to 60 of 451055 ---
+{
+  "alpha_runs": [
+    {
+      "alpha": 0,
+      "any_survived": true,
+      "runs": [
+        {
+          "config": 0,
+          "normal": {
+            "survived": true,
+            "displacement": 5.011791651251631,
+            "max_bits_other_layers": 0,
+            "final_bits_dominant_layer": 4,
+            "bits_per_layer": [
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+  ...]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && wc -l src/fcc_engine_embed.py src/test_interplane_coupling.py'})]
+
+[Tool Result: exit_code: 1
+stdout: 
+stderr: Der Befehl "wc" ist entweder falsch geschrieben oder
+konnte nicht gefunden werden.
+]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "\nfor f in [\'src/fcc_engine_embed.py\', \'src/test_interplane_coupling.py\']:\n    with open(f) as fh:\n        print(f, len(fh.readlines()))\n"'})]
+
+[Tool Result: exit_code: 0
+stdout: 
+stderr: ]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python -c "print(open(\'src/fcc_engine_embed.py\').read().count(chr(10)))" && python -c "print(open(\'src/test_interplane_coupling.py\').read().count(chr(10)))"'})]
+
+[Tool Result: exit_code: 0
+stdout: 189
+241
+
+stderr: ]
+
+
+[Tool Call: write_file({'path': 'archive/iter_252/results/coupling_report.json', 'content': '{\n  "iteration": 252.3,\n  "test": "inter_plane_coupling_falsification",\n  "grid_size": 32,\n  "steps": 300,\n  "design": "deterministic_integer_coupling",\n  "coupling_rule": "After hex rule, for each active pair p in 0..alpha-1: if center=1 and outgoing_ch=0 swap; elif center=0 and incoming_ch=1 swap",\n  "key_findings": {\n    "alpha_0": {\n      "survival": "10/10 configurations survive 300 steps",\n      "displacement": "~5.01 for all configs",\n      "other_layers": 0,\n      "note": "Factorized embedding confirmed; glider propagation guaranteed by construction"\n    },\n    "alpha_1": {\n      "survival": "0/10 configurations survive",\n      "displacement": "0.00 for all configs",\n      "other_layers": 0,\n      "mechanism": "Center bits are immediately swapped into outgoing inter-plane channels (ch6+), leaving the [111] plane empty"\n    },\n    "alpha_2": {\n      "survival": "0/10 configurations survive",\n      "displacement": "0.00 for all configs",\n      "other_layers": 0\n    },\n    "alpha_3": {\n      "survival": "0/10 configurations survive",\n      "displacement": "0.00 for all configs",\n      "other_layers": 0\n    }\n  },\n  "falsification_criteria": {\n    "F4a_noninteracting_composite": true,\n    "F4b_latency_dispersion": false,\n    "F4c_no_survival_for_alpha_gt_0": true\n  },\n  "conclusion": "REFUTED",\n  "reason": "F4c holds: no stable configuration survives >=300 steps for any alpha > 0. Additionally, F4a holds at alpha=0 baseline (multi-layer seeds are independent composites). The deterministic coupling mechanism destroys the glider by siphoning center bits into outgoing inter-plane channels, where they stream away to higher layers and never return. No 3D binding (bits on 2+ planes) was observed for any alpha > 0.",\n  "symmetry_note": "This remains an anisotropic 2.5D system. The refutation is specific to the privileged [111] plane family and does not generalize to isotropic 3D spacetime.",\n  "files": {\n    "engine": "src/fcc_engine_embed.py",\n    "test": "src/test_interplane_coupling.py",\n    "raw_results": "archive/iter_252/results/coupling_test.json"\n  }\n}\n'})]
+
+[Tool Result: Successfully wrote to archive/iter_252/results/coupling_report.json]
+
+
+[Tool Call: bash({'command': 'cd C:\\Users\\thomas\\Projekte\\rdf_digital_physic && python src/test_embedded_glider.py'})]
+
+[Tool Result: exit_code: 0
+stdout: ======================================================================
+ITER 252.2 - 3D FCC EMBEDDING OF 2D HEX GLIDER (CODE-VERIFICATION TEST)
+======================================================================
+Loaded champion rule: 128-entry LUT
+Seed cells (128-grid): [[63, 63], [64, 63], [64, 64]]
+
+[1/5] Running hybrid embedded engine (3D, alpha=0)...
+  Final bits: 4
+  Displacement: 5.0118
+  Speed: 0.0167
+
+[2/5] Running single-bit decomposition test...
+  All...]
+
+## Inter-Plane Coupling Test — Complete
+
+### Files Modified / Created
+- **`src/fcc_engine_embed.py`** (189 lines) — Added deterministic integer coupling parameter `alpha` (0–3) to `embed_step()`. Backwards-compatible (`alpha=0` default).
+- **`src/test_interplane_coupling.py`** (241 lines) — Sweep test across alpha=0..3, 10 seed configs × 300 steps.
+- **`archive/iter_252/results/coupling_test.json`** — Full raw results.
+- **`archive/iter_252/results/coupling_report.json`** — Human-readable summary.
+
+### Coupling Design Implemented
+After the hex rule computes the new center bit, deterministic swaps are applied for each active inter-plane pair `(ch6↔ch9, ch7↔ch10, ch8↔ch11)` up to `alpha` pairs:
+- **Outgoing** (`ch6,7,8`): if center=1 and outgoing=0 → swap (bit hops to higher layer)
+- **Incoming** (`ch9,10,11`): if center=0 and incoming=1 → swap (bit arrives from lower layer)
+
+This is fully integer-based, no floats, no probabilities.
+
+### Key Findings
+
+| alpha | Survival (10 configs) | Displacement | Bits on other layers | Observation |
+|-------|----------------------|--------------|---------------------|-------------|
+| 0 | 10/10 | ~5.01 | 0 | Baseline confirmed; glider propagates exactly as in 2D |
+| 1 | 0/10 | 0.00 | 0 | Glider destroyed immediately |
+| 2 | 0/10 | 0.00 | 0 | Glider destroyed immediately |
+| 3 | 0/10 | 0.00 | 0 | Glider destroyed immediately |
+
+**Mechanism of destruction:** At `alpha > 0`, any cell where `new_center = 1` immediately has its center bit swapped into an outgoing inter-plane channel (e.g. `ch6`). Because the in-plane neighborhood is reconstructed **synchronously from neighbors' center bits**, losing even one center bit breaks the hex pattern. The bits stream into higher layers and never meet the conditions to return (`center=0, incoming=1` is never satisfied on empty upper layers).
+
+### Falsification Criteria
+
+| Criterion | Status | Explanation |
+|-----------|--------|-------------|
+| **F4a** (non-interacting composite) | **TRIGGERED** | Multi-layer seeds at `alpha=0` decompose into independent per-layer gliders; each layer's seed survives alone |
+| **F4b** (latency dispersion) | Not triggered | At `alpha>0` the state dies before latency can be tested; at `alpha=0` latency does not destroy it |
+| **F4c** (no survival for `alpha>0`) | **TRIGGERED** | Zero configurations survive ≥300 steps for any `alpha > 0` |
+
+### Conclusion
+**The coupling hypothesis is REFUTED** (F4c holds; F4a also holds at the `alpha=0` baseline). No stable 3D binding emerged. The deterministic inter-plane coupling mechanism destroys the embedded glider rather than creating a bound state spanning multiple [111] planes.
+
+### SRM Compliance Note
+Per Section 5 of `pre_registration.md`, this remains an **anisotropic 2.5D system**, not isotropic 3D. The refutation is specific to the privileged `[111]` plane family. No emergent 3D gliders were found.
+
+[NUDGE RESPONSE]
+```yaml
+status: experiment_failed
+artifacts:
+  - src/fcc_engine_embed.py
+  - src/test_interplane_coupling.py
+  - archive/iter_252/results/coupling_test.json
+  - archive/iter_252/results/coupling_report.json
+metrics:
+  alpha_0_survival_rate: 1.0
+  alpha_1_survival_rate: 0.0
+  alpha_2_survival_rate: 0.0
+  alpha_3_survival_rate: 0.0
+  baseline_displacement: 5.0118
+  steps_tested: 300
+  configurations_per_alpha: 10
+  f4a_triggered: 1
+  f4b_triggered: 0
+  f4c_triggered: 1
+log_excerpt: |
+  [alpha=0] Running 10 configurations x 300 steps...
+    cfg 0: disp=5.01 survived=True other_layers=0
+    ...
+  [alpha=1] Running 10 configurations x 300 steps...
+    cfg 0: disp=0.00 survived=False other_layers=0
+    ...
+  [alpha=2] Running 10 configurations x 300 steps...
+    cfg 0: disp=0.00 survived=False other_layers=0
+    ...
+  [alpha=3] Running 10 configurations x 300 steps...
+    cfg 0: disp=0.00 survived=False other_layers=0
+    ...
+  ======================================================================
+  FALSIFICATION SUMMARY
+  ======================================================================
+    F4a (non-interacting composite): True
+    F4b (disperses under latency):   False
+    F4c (no survival for alpha>0):   True
+
+    CONCLUSION: Coupling hypothesis REFUTED (at least one F4 criterion holds).
+    NOTE: This is an anisotropic 2.5D system; any 3D binding is
+    specific to the privileged [111] plane family.
+experimenter_view: |
+  The deterministic integer-based inter-plane coupling mechanism was
+  implemented and tested across alpha=0..3 with 10 seed configurations
+  each. At alpha=0, the embedded L-tromino glider survives perfectly
+  (displacement ~5.01 over 300 steps), confirming the factorized
+  embedding as an algebraic identity. For any alpha > 0, all
+  configurations die immediately: the coupling siphons center bits into
+  outgoing inter-plane channels the moment the hex rule produces a 1,
+  breaking the synchronous in-plane neighborhood pattern and causing
+  total dispersion. No 3D binding (bits spanning 2+ planes) was
+  observed for alpha > 0. F4c is triggered decisively. F4a is also
+  triggered at the alpha=0 baseline: multi-layer seeds decompose into
+  independent per-layer gliders. The coupling hypothesis per
+  pre_registration.md Section 6 is therefore REFUTED.
+notes: "Coupling hypothesis refuted: no stable 3D bound states emerge for any alpha > 0."
+```

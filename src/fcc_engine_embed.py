@@ -7,26 +7,13 @@ Architecture:
 - In-plane channels (ch0-5): reconstructed synchronously from neighbors' center bits
 - Center channel (ch12): computed by hex rule LUT
 
-This is a HYBRID engine, NOT a pure LGCA. The in-plane channels are VIRTUAL --
-they are not streamed but read directly from neighbors' ch12 values each step.
-
-Channel mapping for [111] hex plane (layer l):
-  ch12 = center bit (cell state)
-  ch0  = center bit of W  neighbor -> hex W  bit (bit 2 of hex_state)
-  ch1  = center bit of E  neighbor -> hex E  bit (bit 5)
-  ch2  = center bit of SW neighbor -> hex SW bit (bit 3)
-  ch3  = center bit of NE neighbor -> hex NE bit (bit 0)
-  ch4  = center bit of NW neighbor -> hex NW bit (bit 1)
-  ch5  = center bit of SE neighbor -> hex SE bit (bit 4)
-
-hex_state encoding (matches step_grid in evolution.py):
-  bit 6 (64) = ch12 = center
-  bit 5 (32) = ch1  = E
-  bit 4 (16) = ch5  = SE
-  bit 3 (8)  = ch2  = SW
-  bit 2 (4)  = ch0  = W
-  bit 1 (2)  = ch4  = NW
-  bit 0 (1)  = ch3  = NE
+Coupling (alpha = 0..3):
+  After hex rule computes new center, deterministic swaps with inter-plane
+  channel pairs enable bits to hop between [111] planes.
+  alpha=0: no coupling (factorized)
+  alpha=1: pair (ch6,ch9) active
+  alpha=2: pairs (ch6,ch9) and (ch7,ch10) active
+  alpha=3: all three pairs active
 """
 
 from __future__ import annotations
@@ -41,10 +28,11 @@ import numpy as np
 from fcc_engine_13ch import SHIFTS_13
 
 
-def embed_step(grid_3d, hex_lut, alpha=0.0):
-    """One hybrid step: stream inter-plane + synchronous in-plane + hex collide."""
+def embed_step(grid_3d, hex_lut, alpha=0):
+    """One hybrid step: stream inter-plane + synchronous in-plane + hex collide + coupling."""
     assert grid_3d.ndim == 4 and grid_3d.shape[-1] == 13
     assert len(hex_lut) == 128
+    assert 0 <= alpha <= 3
 
     streamed = np.zeros_like(grid_3d)
 
@@ -64,7 +52,6 @@ def embed_step(grid_3d, hex_lut, alpha=0.0):
     streamed[..., 12] = center  # center channel for hex_state computation
 
     # 3. Compute 7-bit hex_state from in-plane + center
-    #    bit order: center(6), E(5), SE(4), SW(3), W(2), NW(1), NE(0)
     hex_state = (
         streamed[..., 12].astype(np.uint16) * 64 |
         streamed[..., 1].astype(np.uint16) * 32 |
@@ -83,6 +70,21 @@ def embed_step(grid_3d, hex_lut, alpha=0.0):
     out[..., 6:12] = streamed[..., 6:12]       # inter-plane: identity
     out[..., 0:6] = new_center[..., np.newaxis]  # in-plane: broadcast new center
     out[..., 12] = new_center                     # center: new computed value
+
+    # 6. Deterministic inter-plane coupling (integer-based, no floats)
+    for p in range(alpha):
+        out_ch = 6 + p   # outgoing toward higher layer
+        in_ch = 9 + p    # incoming from lower layer
+
+        # Bit hops up: center=1, outgoing=0 -> swap
+        mask_up = (out[..., 12] == 1) & (out[..., out_ch] == 0)
+        out[..., 12] = np.where(mask_up, 0, out[..., 12])
+        out[..., out_ch] = np.where(mask_up, 1, out[..., out_ch])
+
+        # Bit hops from below: center=0, incoming=1 -> swap
+        mask_down = (out[..., 12] == 0) & (out[..., in_ch] == 1)
+        out[..., 12] = np.where(mask_down, 1, out[..., 12])
+        out[..., in_ch] = np.where(mask_down, 0, out[..., in_ch])
 
     return out
 
@@ -139,7 +141,6 @@ def attempt_pure_lgca_lut(hex_lut):
         ch12 = bits[12]
         ch1, ch5, ch2, ch0, ch4, ch3 = bits[1], bits[5], bits[2], bits[0], bits[4], bits[3]
 
-        # Inter-plane bits (6-11) passed through as identity
         ch6_11 = 0
         for i in range(6):
             ch6_11 |= bits[6 + i] << (6 + i)
@@ -148,7 +149,7 @@ def attempt_pure_lgca_lut(hex_lut):
                      ch0 * 4 + ch4 * 2 + ch3)
         new_center = int(hex_lut[hex_state])
 
-        out_ch0_5 = new_center * 0x3F  # broadcast to bits 0-5
+        out_ch0_5 = new_center * 0x3F
         out_ch12 = new_center << 12
         out_lut[s] = out_ch0_5 | ch6_11 | out_ch12
         pop_out[s] = bin(int(out_lut[s])).count('1')

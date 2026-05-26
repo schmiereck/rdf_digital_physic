@@ -1,0 +1,45 @@
+{
+  "iteration": 252.3,
+  "test": "inter_plane_coupling_falsification",
+  "grid_size": 32,
+  "steps": 300,
+  "design": "deterministic_integer_coupling",
+  "coupling_rule": "After hex rule, for each active pair p in 0..alpha-1: if center=1 and outgoing_ch=0 swap; elif center=0 and incoming_ch=1 swap",
+  "key_findings": {
+    "alpha_0": {
+      "survival": "10/10 configurations survive 300 steps",
+      "displacement": "~5.01 for all configs",
+      "other_layers": 0,
+      "note": "Factorized embedding confirmed; glider propagation guaranteed by construction"
+    },
+    "alpha_1": {
+      "survival": "0/10 configurations survive",
+      "displacement": "0.00 for all configs",
+      "other_layers": 0,
+      "mechanism": "Center bits are immediately swapped into outgoing inter-plane channels (ch6+), leaving the [111] plane empty"
+    },
+    "alpha_2": {
+      "survival": "0/10 configurations survive",
+      "displacement": "0.00 for all configs",
+      "other_layers": 0
+    },
+    "alpha_3": {
+      "survival": "0/10 configurations survive",
+      "displacement": "0.00 for all configs",
+      "other_layers": 0
+    }
+  },
+  "falsification_criteria": {
+    "F4a_noninteracting_composite": true,
+    "F4b_latency_dispersion": false,
+    "F4c_no_survival_for_alpha_gt_0": true
+  },
+  "conclusion": "REFUTED",
+  "reason": "F4c holds: no stable configuration survives >=300 steps for any alpha > 0. Additionally, F4a holds at alpha=0 baseline (multi-layer seeds are independent composites). The deterministic coupling mechanism destroys the glider by siphoning center bits into outgoing inter-plane channels, where they stream away to higher layers and never return. No 3D binding (bits on 2+ planes) was observed for any alpha > 0.",
+  "symmetry_note": "This remains an anisotropic 2.5D system. The refutation is specific to the privileged [111] plane family and does not generalize to isotropic 3D spacetime.",
+  "files": {
+    "engine": "src/fcc_engine_embed.py",
+    "test": "src/test_interplane_coupling.py",
+    "raw_results": "archive/iter_252/results/coupling_test.json"
+  }
+}
