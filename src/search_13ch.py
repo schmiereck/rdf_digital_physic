@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 """
 search_13ch.py — 13-channel FCC LGCA search with cooperative-trapping LUTs.
-
-Steps:
-1. Load/generate 500 LUT variants, sample every 5th (100 total).
-2. Define 30 seeds on L=24 FCC toroidal grid in 5 categories.
-3. Run 300 steps per (LUT, seed) pair.
-4. Track displacement, bit stability, bounding extent, rest-channel activity.
-5. Score by displacement_norm * bit_stability.
-6. Save results to archive/iter_251/results/search_results.json.
+OPTIMIZED: Sparse COM, sparse torus bounding box, uint8/uint16 throughout.
 """
 
 from __future__ import annotations
@@ -16,8 +9,9 @@ import json
 import sys
 import time
 import numpy as np
+from pathlib import Path
 
-SCRIPT_DIR = __import__("pathlib").Path(__file__).parent.resolve()
+SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from fcc_engine_13ch import stream_13, collide_13
@@ -27,11 +21,46 @@ L = 24
 STEPS = 300
 REST_CHANNEL = 12
 
+
+def center_of_mass_circular_sparse(grid):
+    """Sparse circular-mean COM for toroidal grid. Grid shape (L,L,L,C)."""
+    coords = np.argwhere(grid)  # shape (N, 4)
+    if len(coords) == 0:
+        return 0.0, 0.0, 0.0
+    
+    theta = 2 * np.pi / L
+    coms = np.zeros(3)
+    for axis in range(3):
+        vals = coords[:, axis]
+        x = np.cos(vals * theta).sum()
+        y = np.sin(vals * theta).sum()
+        coms[axis] = (L * np.arctan2(y, x) / (2 * np.pi)) % L
+    return float(coms[0]), float(coms[1]), float(coms[2])
+
+
+def bounding_extent_sparse(grid):
+    """Mathematically exact sparse torus bounding box."""
+    coords = np.argwhere(grid)
+    if len(coords) == 0:
+        return 0, 0, 0
+    extents = []
+    for axis in range(3):
+        unique_vals = np.unique(coords[:, axis])
+        if len(unique_vals) <= 1:
+            extents.append(0)
+            continue
+        unique_vals = np.sort(unique_vals)
+        gaps = np.diff(unique_vals)
+        wrap_gap = L - (unique_vals[-1] - unique_vals[0])
+        max_gap = max(gaps.max(), wrap_gap)
+        extents.append(L - max_gap)
+    return tuple(extents)
+
+
 # ─── Seed definitions ───────────────────────────────────────────────────────
 
 def build_seeds():
     seeds = []
-    # Category 1: 2 adjacent bits including 1 rest bit
     cat1 = [
         [(12, 12, 12, 0), (12, 12, 12, REST_CHANNEL)],
         [(12, 12, 12, 1), (12, 12, 12, REST_CHANNEL)],
@@ -39,7 +68,6 @@ def build_seeds():
         [(12, 12, 12, 4), (12, 12, 12, REST_CHANNEL)],
         [(12, 12, 12, 6), (12, 12, 12, REST_CHANNEL)],
     ]
-    # Category 2: 2 adjacent bits both prop
     cat2 = [
         [(12, 12, 12, 0), (12, 12, 12, 4)],
         [(12, 12, 12, 0), (12, 12, 12, 1)],
@@ -47,7 +75,6 @@ def build_seeds():
         [(12, 12, 12, 6), (12, 12, 12, 7)],
         [(12, 12, 12, 8), (12, 12, 12, 2)],
     ]
-    # Category 3: 3 adjacent bits including rest
     cat3 = [
         [(12, 12, 12, 0), (12, 12, 12, 4), (12, 12, 12, REST_CHANNEL)],
         [(12, 12, 12, 1), (12, 12, 12, 5), (12, 12, 12, REST_CHANNEL)],
@@ -55,7 +82,6 @@ def build_seeds():
         [(12, 12, 12, 0), (12, 12, 12, 2), (12, 12, 12, REST_CHANNEL)],
         [(12, 12, 12, 6), (12, 12, 12, 7), (12, 12, 12, REST_CHANNEL)],
     ]
-    # Category 4: 3 adjacent bits all prop
     cat4 = [
         [(12, 12, 12, 0), (12, 12, 12, 4), (12, 12, 12, 7)],
         [(12, 12, 12, 1), (12, 12, 12, 5), (12, 12, 12, 10)],
@@ -63,7 +89,6 @@ def build_seeds():
         [(12, 12, 12, 0), (12, 12, 12, 6), (12, 12, 12, 8)],
         [(12, 12, 12, 4), (12, 12, 12, 7), (12, 12, 12, 11)],
     ]
-    # Category 5: 2-3 bits at non-adjacent cells
     cat5 = [
         [(12, 12, 12, 0), (12, 13, 13, 1)],
         [(10, 10, 10, 6), (14, 14, 14, 9)],
@@ -81,26 +106,6 @@ def build_seeds():
     return all_categories
 
 
-def place_seed(grid, seed):
-    for r, c, l, ch in seed:
-        grid[r % L, c % L, l % L, ch] = 1
-
-
-def center_of_mass_vectorized(grid):
-    """Vectorized COM: grid shape (L,L,L,13) -> (com_l, com_r, com_c)."""
-    counts = grid.sum(axis=3)  # (L,L,L)
-    total = counts.sum()
-    if total == 0:
-        return 0.0, 0.0, 0.0
-    l_arr = np.arange(L, dtype=np.float64).reshape(L, 1, 1)
-    r_arr = np.arange(L, dtype=np.float64).reshape(1, L, 1)
-    c_arr = np.arange(L, dtype=np.float64).reshape(1, 1, L)
-    com_l = np.sum(counts * l_arr) / total
-    com_r = np.sum(counts * r_arr) / total
-    com_c = np.sum(counts * c_arr) / total
-    return float(com_l), float(com_r), float(com_c)
-
-
 def unwrap_delta(old_com, new_com):
     delta = np.array(new_com) - np.array(old_com)
     for i in range(3):
@@ -111,31 +116,28 @@ def unwrap_delta(old_com, new_com):
     return delta
 
 
-def bounding_extent_fast(grid):
-    """Fast bounding extent using np.any and argwhere."""
-    occupied = grid.sum(axis=3) > 0
-    if not np.any(occupied):
-        return 0, 0, 0
-    coords = np.argwhere(occupied)
-    return (int(coords[:, 0].max() - coords[:, 0].min()),
-            int(coords[:, 1].max() - coords[:, 1].min()),
-            int(coords[:, 2].max() - coords[:, 2].min()))
+# Pre-build seed grids to avoid repeated initialization
+def prebuild_seed_grids(all_seeds):
+    """Build seed grids ahead of time. Returns list of (name, grid, initial_bits, cat)."""
+    prebuilt = []
+    for seed_name, seed_bits, cat_name in all_seeds:
+        grid = np.zeros((L, L, L, 13), dtype=np.uint8)
+        initial_bits = 0
+        for r, c, l, ch in seed_bits:
+            grid[r % L, c % L, l % L, ch] = 1
+            initial_bits += 1
+        prebuilt.append((seed_name, grid, initial_bits, cat_name))
+    return prebuilt
 
 
-def run_simulation(lut, seed_bits, steps=STEPS):
-    grid = np.zeros((L, L, L, 13), dtype=np.uint8)
-    initial_bits = 0
-    for r, c, l, ch in seed_bits:
-        grid[r % L, c % L, l % L, ch] = 1
-        initial_bits += 1
-
-    old_com = center_of_mass_vectorized(grid)
+def run_simulation(lut, seed_grid, initial_bits, steps=STEPS):
+    grid = seed_grid.copy()
+    
+    old_com = center_of_mass_circular_sparse(grid)
     total_displacement = np.zeros(3, dtype=np.float64)
 
     rest_occupied_count = 0
-    rest_empty_count = 0
     max_extent = (0, 0, 0)
-
     min_bits = initial_bits
     max_bits = initial_bits
 
@@ -149,26 +151,29 @@ def run_simulation(lut, seed_bits, steps=STEPS):
         if bc > max_bits:
             max_bits = bc
 
-        # Rest channel occupancy (fast: sum the whole channel slice)
+        # Rest channel occupancy using sparse check
         rest_occ = int(grid[:, :, :, REST_CHANNEL].sum())
         if rest_occ > 0:
             rest_occupied_count += 1
-        else:
-            rest_empty_count += 1
 
-        new_com = center_of_mass_vectorized(grid)
+        new_com = center_of_mass_circular_sparse(grid)
         delta = unwrap_delta(old_com, new_com)
         total_displacement += delta
         old_com = new_com
 
-        ext = bounding_extent_fast(grid)
+        ext = bounding_extent_sparse(grid)
         if ext[0] > max_extent[0]:
             max_extent = ext
+        if ext[1] > max_extent[1]:
+            max_extent = (max_extent[0], ext[1], max_extent[2])
+        if ext[2] > max_extent[2]:
+            max_extent = (max_extent[0], max_extent[1], ext[2])
 
     final_bits = int(grid.sum())
     disp_norm = float(np.linalg.norm(total_displacement))
     bit_stability = 1.0 if final_bits == initial_bits else 0.0
     score = disp_norm * bit_stability
+    rest_empty_count = steps - rest_occupied_count
 
     return {
         "initial_bits": initial_bits,
@@ -188,7 +193,7 @@ def run_simulation(lut, seed_bits, steps=STEPS):
 
 def main():
     t_start = time.time()
-    print("[search_13ch] Starting 13-channel search...")
+    print("[search_13ch] Starting 13-channel optimized search...")
 
     print("[search_13ch] Generating LUT variants...")
     sys.stdout.flush()
@@ -210,10 +215,13 @@ def main():
         for seed_idx, seed in enumerate(cat_seeds):
             seed_name = f"{cat_name}_s{seed_idx}"
             all_seeds.append((seed_name, seed, cat_name))
-    print(f"[search_13ch] Defined {len(all_seeds)} seeds in {len(categories)} categories.")
+    
+    # Prebuild seed grids
+    prebuilt = prebuild_seed_grids(all_seeds)
+    print(f"[search_13ch] Prebuilt {len(prebuilt)} seed grids.")
     sys.stdout.flush()
 
-    total_runs = len(sampled_luts) * len(all_seeds)
+    total_runs = len(sampled_luts) * len(prebuilt)
     print(f"[search_13ch] Total runs: {total_runs}")
     sys.stdout.flush()
 
@@ -226,8 +234,8 @@ def main():
 
     for li, lut in enumerate(sampled_luts):
         lut_cfg = sampled_configs[li]
-        for si, (seed_name, seed_bits, cat_name) in enumerate(all_seeds):
-            run_idx = li * len(all_seeds) + si
+        for si, (seed_name, seed_grid, initial_bits, cat_name) in enumerate(prebuilt):
+            run_idx = li * len(prebuilt) + si
             if run_idx % 500 == 0:
                 elapsed = time.time() - run_start
                 rate = elapsed / max(run_idx, 1)
@@ -236,7 +244,7 @@ def main():
                 print(f"[search_13ch] Run {run_idx}/{total_runs} | {elapsed:.1f}s | ETA={eta:.1f}s")
                 sys.stdout.flush()
 
-            result = run_simulation(lut, seed_bits, steps=STEPS)
+            result = run_simulation(lut, seed_grid, initial_bits, steps=STEPS)
             result["lut_index"] = lut_indices[li]
             result["lut_config_variant"] = lut_cfg.get("variant_id", lut_indices[li])
             result["seed_name"] = seed_name
@@ -263,7 +271,7 @@ def main():
 
     print(f"\n[search_13ch] === SUMMARY ===")
     print(f"  Total LUTs tested:    {len(sampled_luts)}")
-    print(f"  Total seeds:          {len(all_seeds)}")
+    print(f"  Total seeds:          {len(prebuilt)}")
     print(f"  Total runs:           {total_runs}")
     print(f"  Successful (stable):  {successful_runs}")
     print(f"  Non-zero score:       {nonzero_score_runs}")
@@ -280,13 +288,12 @@ def main():
         print("\n  No propagating structures discovered.")
     sys.stdout.flush()
 
-    # Save results
     output = {
         "search_type": "13_channel_cooperative_trapping",
         "grid_size": L,
         "steps": STEPS,
         "n_luts_tested": len(sampled_luts),
-        "n_seeds": len(all_seeds),
+        "n_seeds": len(prebuilt),
         "total_runs": total_runs,
         "successful_runs": successful_runs,
         "nonzero_score_runs": nonzero_score_runs,
@@ -302,7 +309,7 @@ def main():
         "results": results,
     }
 
-    for cat_name, _ in categories:
+    for cat_name in ["2adj_with_rest", "2adj_both_prop", "3adj_with_rest", "3adj_all_prop", "nonadjacent"]:
         cat_results = [r for r in results if r["category"] == cat_name]
         if cat_results:
             scores = [r["score"] for r in cat_results]
@@ -321,6 +328,8 @@ def main():
 
     print(f"\n[search_13ch] Results saved to {out_dir / 'search_results.json'}")
     sys.stdout.flush()
+
+    return propagating_runs, results
 
 
 if __name__ == "__main__":
