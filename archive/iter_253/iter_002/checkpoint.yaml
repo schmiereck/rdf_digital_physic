@@ -1,0 +1,78 @@
+complexity: planner
+estimated_runtime_sec: 3600
+iter_id: '253.2'
+started_at: '2026-05-26T18:17:32.682603'
+status: running
+task: "You are executing Step 2-5 of the pre-registered experiment for iteration 253.\
+  \ READ src/pre_registration.md FIRST and strictly adhere to all falsification criteria\
+  \ F1-F6.\n\n## Context\nThe 3D synchronous CA engine on FCC lattice has been built\
+  \ and validated at src/synchronous_ca_fcc.py. It provides:\n- `step_ca(grid, B,\
+  \ S)` — one synchronous totalistic B/S update step\n- `simulate(grid, B, S, steps)`\
+  \ — full simulation with COM, bit_count, bounding_box tracking\n- `trig_com(grid,\
+  \ L)` — toroidal center-of-mass\n- `unwrap_com(prev, raw, L)` — unwrapped COM for\
+  \ displacement tracking\n- `bounding_extent(grid, L)` — bounding box size\n- `format_rule(B,\
+  \ S)` — rule string\n- `lambda_param(B, S)` — Langton's lambda for 13-neighbor system\n\
+  - `validate_engine()` — validation (already passed all tests)\n\nThe 12 FCC neighbor\
+  \ offsets are: (0,1,0), (0,-1,0), (0,0,1), (0,0,-1), (0,1,-1), (0,-1,1), (1,1,1),\
+  \ (1,1,0), (1,0,1), (-1,-1,-1), (-1,-1,0), (-1,0,-1)\n\n## Task: Execute Full Search\
+  \ Pipeline\n\n### Step 2 — Designed Rule Sweep\nCreate src/totalistic_rule_search.py.\
+  \ Generate and test B/S rules on the FCC lattice:\n\n**Rule Generation Strategy:**\n\
+  - Target the phase boundary between order and chaos (Langton's lambda ≈ 0.25-0.45\
+  \ for 13-neighbor system)\n- Key constraint from SRM: 0 ∉ B (no vacuum fluctuations)\
+  \ and 0 ∉ S (cooperative survival — isolated bits die)\n- B ⊆ {1,...,11}, S ⊆ {1,...,12}\
+  \ (NOT containing 0)\n- Generate ~200 rules:\n  - 100 sparse rules (|B| ≤ 2, |S|\
+  \ ≤ 3) at various lambda values\n  - 50 medium rules (|B| = 2-3, |S| = 3-5)  \n\
+  \  - 50 rules guided by lambda targeting (pick B,S giving lambda in [0.25, 0.45])\n\
+  \n**Seed Design:**\n- Single bits at center: (20,20,20) — test for cooperative survival\n\
+  - Bit pairs: 2 adjacent bits (6 axis-aligned pairs + 6 diagonal pairs = 12)\n- L-tromino\
+  \ analogs: 3 adjacent bits forming an L-shape (8 variants along different axes)\n\
+  - Small random clusters: 3-6 bits in a compact arrangement (20 variants)\n- Total:\
+  \ ~46 seeds per rule\n\n**Simulation Parameters:**\n- Grid: 40×40×40 (large enough\
+  \ for glider travel without boundary effects)\n- Steps: 500 per rule×seed\n- Track:\
+  \ bit_count, unwrapped_com, bounding_extent at each step\n\n**Filtering (apply ALL\
+  \ falsification criteria):**\n- Survival: bit_count > 0 at step 300\n- Displacement:\
+  \ net_displacement ≥ 5 lattice units over 300+ steps\n- Bounding box: bounding_extent\
+  \ ≤ 10 cells after step 100 (F6: debris cloud)\n- Bloom check: bit_count ≤ 4× initial_seed_weight\
+  \ after step 100 (F5: bloomer)\n- Cooperative survival: single-bit seeds must die\
+  \ within ≤50 steps (F2)\n\n### Step 3 — Evolutionary GA (if Step 2 yields < 5 candidates)\n\
+  Create src/totalistic_ga.py. If the designed sweep doesn't find candidates:\n\n\
+  **GA Parameters:**\n- Genome: 26-bit (bits 0-10 = B set for counts 1-11, bits 11-23\
+  \ = S set for counts 1-12, bits 24-25 unused)\n  - ENFORCE: 0 ∉ B and 0 ∉ S by construction\n\
+  - Population: 200 rules\n- Generations: 30\n- Fitness function (multi-objective,\
+  \ exploit-resistant):\n  - survival_score = min(survival_steps / 300, 1.0)  (survive\
+  \ at least 300 steps)\n  - displacement_score = min(net_displacement / 10, 1.0)\
+  \  (need real motion)\n  - compact_score = 1.0 if max_bounding_box ≤ 10 else 0.0\
+  \  (F6)\n  - no_bloom_score = 1.0 if max_bit_ratio ≤ 4.0 else 0.0  (F5)\n  - fitness\
+  \ = survival_score * displacement_score * compact_score * no_bloom_score\n- Evaluation:\
+  \ 5 seeds per rule (L-tromino analogs, bit pairs, small clusters)\n- Take mean fitness\
+  \ across seeds\n- Selection: tournament (size 3)\n- Crossover: uniform crossover\
+  \ on 26-bit genome, then enforce constraints\n- Mutation: bit-flip with p=0.1 per\
+  \ bit\n- Elitism: top 5 survive unchanged\n- Track total rules evaluated to hit\
+  \ ≥10,000 total (sweep + GA)\n\n### Step 4 — Coherence Testing (for any candidates\
+  \ passing the sweep/GA filters)\nCreate src/glider_coherence_test.py. For each candidate\
+  \ rule+seed passing filters:\n\n1. **Single-Bit Decomposition Test (F2):** Run each\
+  \ constituent bit of the seed in isolation. If ANY single bit survives ≥50 steps,\
+  \ the candidate is a non-interacting composite → FAIL.\n2. **O_h Covariance Test\
+  \ (F3):** Apply all 48 O_h rotations to the seed. The O_h group on the FCC lattice\
+  \ permutes the 12 neighbor channels. Use the transforms from src/rigorous_glider_audit.py\
+  \ (build_oh_transforms()). Rotate each bit's coordinates by the O_h rotation matrix\
+  \ M_g, and verify the rotated seed also produces a surviving, propagating pattern.\
+  \ If ANY rotation kills the pattern → FAIL.\n   - For totalistic rules, the RULE\
+  \ is O_h-equivariant by construction. The test is whether the SEED survives under\
+  \ rotation (i.e., the glider isn't exploiting a specific axis).\n3. **Bloom Re-check\
+  \ (F5):** Verify bit_count never exceeds 4× initial at step 100+.\n4. **Debris Re-check\
+  \ (F6):** Verify bounding_extent ≤ 10 at step 100+.\n5. **Full 300-step run:** Verify\
+  \ survival ≥ 300 steps with displacement ≥ 5.\n\n### Step 5 — Documentation\nWrite\
+  \ results to archive/iter_253/results/:\n- `sweep_results.csv`: columns = rule_str,\
+  \ seed_id, survival, displacement, max_bit_ratio, max_bounding_box, verdict\n- `ga_results.csv`\
+  \ (if GA ran): columns = gen, rule_str, mean_fitness, best_fitness\n- `coherence_results.csv`:\
+  \ columns = rule_str, seed_id, decomposition_pass, oh_covariance_pass, bloom_pass,\
+  \ debris_pass, full_pass\n- `phase_diagram.csv`: aggregate statistics per rule lambda\
+  \ value — fraction of seeds surviving, mean displacement, etc.\n- `summary.json`:\
+  \ overall verdict, total rules tested, candidates found, candidates passing coherence\n\
+  \nIf NO candidates pass all coherence tests, this is a FIRST-CLASS NULL RESULT.\
+  \ Document the totalistic phase diagram on the FCC lattice — what lambda ranges\
+  \ produce survival, what produce explosion, what produce immediate death. This characterization\
+  \ is scientifically valuable regardless of outcome.\n\nCRITICAL: Read src/pre_registration.md\
+  \ and strictly follow F1-F6. Every candidate must pass ALL criteria. Report negative\
+  \ results honestly."
