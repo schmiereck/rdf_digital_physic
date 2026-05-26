@@ -1,0 +1,1 @@
+Write and execute a performance test `src/test_perf_13ch.py` that measures how long 13-channel simulation actually takes for 5 LUTs and 30 seeds for 300 steps (total 150 runs), and also profile where the time is spent (e.g., streaming, collision, COM, extent). Print the results and elapsed time.
