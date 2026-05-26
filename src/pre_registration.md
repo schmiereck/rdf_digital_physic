@@ -3,6 +3,9 @@
 *   **Iteration:** 250
 *   **Pre-Registration File:** src/pre_registration.md
 
+## 0. Top Priority Directive
+The 2D Hex Decomposition Check (Experiment 250) is the ABSOLUTE PRIORITY for this iteration. No 3D FCC non-additive LUT construction may proceed until a definitive verdict is reached on whether the 2D hex v=0.469c sub-light glider from iter_222 is a genuinely bound multi-bit particle or a non-interacting composite. This check is prerequisite to all Phase 250+ 3D FCC work.
+
 ## 1. Hypothesis
 A bijective, bit-conserving LUT for the 12-channel FCC lattice, constructed by
 introducing non-additive weight-2 mappings (where at least one weight-2 input
@@ -21,8 +24,7 @@ Single-Bit Decomposition Test).
 ## 2. Falsification Criterion
 F1 (Construction Impossibility): Refuted if no bijective, bit-conserving
 non-additive weight-2 permutation can be constructed from LUT-08's weight-1
-sub-table while maintaining O_h symmetry (or, if O_h is relaxed, while
-maintaining any valid permutation at all).
+sub-table while maintaining O_h symmetry.
 
 F2 (No Stable Structures): Refuted if ALL non-additive LUT variants produce
 only chaotic (bit explosion >3x initial) or frozen (zero displacement after
@@ -38,74 +40,52 @@ F4 (O_h Non-Covariance): For O_h-symmetric LUT variants, refuted if any
 found glider fails to transform covariantly under all 48 elements of O_h
 (the glider's velocity and internal structure must rotate consistently).
 
-## 3. Proposed Method
-EXPERIMENT 249: Non-Additive LUT Construction and Multi-Bit Glider Search
+F5 (2D Hex Null Result): If the 2D hex v=0.469c glider from iter_222 is
+found to be a non-interacting composite (binding energy = 0), this is
+consistent with the hypothesis that monospecificity is a general property
+of synchronous LGCA with single-cell collisions, and does not refute the
+3D FCC construction program. However, if the 2D hex glider IS genuine
+(binding energy > 0), this provides evidence for the existence of
+non-additive coherence mechanisms that the 3D FCC program must replicate.
 
-Step 1: Non-Additive LUT Construction Module (src/non_additive_lut.py)
-- Load LUT-08's complete truth table as the base.
-- Extract the weight-2 sub-table (66 entries) and identify:
-  (a) 6 fixed-point pairs: {0,3}, {1,2}, {4,7}, {5,6}, {8,11}, {9,10}
-  (b) 30 period-2 cycles from the remaining 60 states
-- Construct O_h-symmetric non-additive variants by permuting fixed-point
-  pairs within their O_h orbits:
-  Variant A: Swap two fixed-point pairs {5,6}↔{4,7}
-  Variant B: Create 3-cycle among fixed points {5,6}→{4,7}→{8,11}→{5,6}
-  Variant C: Swap all 6 fixed points in paired exchanges
-  Variant D: Redirect period-2 weight-2 cycles across transposition boundaries
-- For each variant, verify: bijectivity (unique pre-images), bit conservation,
-  non-additivity measure (count of weight-2 entries differing from additive).
-- If O_h-symmetric variants cannot be constructed, relax O_h symmetry and
-  construct arbitrary non-additive weight-2 permutations.
-- Target: 20-50 distinct non-additive LUT variants.
+## 3. O_h Symmetry Constraint
+O_h symmetry is a non-negotiable physical constraint for all 3D FCC LUT
+variants. The lattice symmetry must be respected by the transition rules.
+No relaxation of O_h symmetry is permitted. All non-additive constructions
+must preserve the full O_h point group covariance.
 
-Step 2: Systematic Seed Search (src/experiment_249_search.py)
-- For each non-additive LUT variant:
-  (a) Test all C(12,2)=66 weight-2 seeds (2 bits in same cell, all channel pairs)
-  (b) Test 50 systematically chosen weight-3 seeds (3 bits in same cell)
-  (c) Run each seed for 200 steps on L=32 FCC toroidal grid
-  (d) Measure: bit_count_preservation, net_CoM_displacement, pattern_spread
-- Control group: Run identical seed set under original additive LUT-08
-  (expected: 0 genuine multi-bit gliders, confirming baseline)
-- Identify candidates: bit_count preserved within 10%, displacement > 0,
-  pattern spread < 4 lattice units (localization criterion).
+## 4. Proposed Method
+EXPERIMENT 250: 2D Hex Decomposition Check (MANDATORY FIRST STEP)
 
-Step 3: Three-Test Coherence Verification (on any candidates from Step 2)
-- Single-Bit Decomposition Test: Remove one bit from the multi-bit seed;
-  run remaining bits alone; compare trajectory and speed to the full glider.
-  Binding energy > 0 iff trajectory or speed changes.
-- Collision Coherence Test: Introduce a localized latency perturbation near
-  the glider boundary; check if the glider coheres or fragments.
-- Bit-Removal Stability Test: Remove each bit individually and test if
-  the remaining pattern is structurally dependent on the removed bit.
-- O_h Covariance Test: Apply all 48 O_h rotations to the glider seed;
-  verify the resulting patterns propagate with rotated velocities.
+Step 1: Load the iter_222 v=0.469c sub-light glider from the 2D hex grid.
+Step 2: Extract individual bits and test if they propagate independently.
+Step 3: Test all 2-bit subsets for interaction effects.
+Step 4: Compare full glider against logical OR superposition of single-bit runs.
+Step 5: Determine binding energy verdict:
+  - If any individual bit ANNIHILATES when run alone but survives in the
+    full glider → binding energy > 0, GENUINE GLIDER
+  - If all individual bits survive alone with the same velocity as the full
+    glider AND the full glider matches the OR superposition → non-interacting
+    composite, binding energy = 0
+  - If bits survive alone but with DIFFERENT velocity/trajectory than in the
+    full glider → binding energy > 0, genuine coherence
+  - If the full glider differs from OR superposition at some steps →
+    interaction exists (need to determine if constructive binding or
+    transient perturbation)
 
-Step 4: Evolutionary Search (if systematic search yields no candidates)
-- Genome: the weight-2 sub-table permutation (66 entries)
-- Mutation: swap two entries in the weight-2 permutation
-- Crossover: recombine weight-2 sub-tables from two parent LUTs
-- Fitness: max over all weight-2 seeds of (stability × displacement ×
-  localization), where stability = 1 if bit_count preserved at step 200,
-  displacement = |CoM(t=200) - CoM(t=0)|, localization = 1/(1 + spread).
-- Constraint gate: reject any offspring that violates bijectivity or
-  bit conservation.
-- Population: 100 variants, 5 generations, 10 elites per generation.
-- Starting population: seeded from best systematic variants + random
-  non-additive permutations.
+Step 6: If the 2D hex glider is genuine, analyze the precise mathematical
+mechanism that allows 2D hexagonal single-cell collisions to support binding
+where the 3D FCC single-cell collisions failed.
 
-Step 5: 2D Hex Decomposition Check (src/experiment_249_hex_check.py)
-- Load the iter_222 v=0.469c sub-light glider from the 2D hex grid.
-- Extract individual bits and test if they propagate independently.
-- If the glider is genuine (binding energy > 0): identify the mechanism
-  that 2D hex has but 3D FCC lacks.
-- If the glider is also a non-interacting composite: confirms the
-  monospecificity is a general LGCA property, not FCC-specific.
+Step 7: If the 2D hex glider is also a non-interacting composite, document
+this as a foundational null result. This would be consistent with the
+hypothesis that monospecificity is a general LGCA/synchronous-CA property,
+not just an FCC artifact.
 
 Files to create/modify:
-- src/non_additive_lut.py: Non-additive LUT construction module
-- src/experiment_249_search.py: Systematic seed search experiment
-- src/experiment_249_hex_check.py: 2D hex decomposition check
-- src/pre_registration.md: Pre-registration document
+- src/experiment_250_hex_decomposition.py: 2D hex decomposition check
+- src/pre_registration.md: Pre-registration document (this file)
+- archive/iter_250/results/hex_decomposition.json: Experimental results
 
 ---
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+*Updated by Research Manager for Phase 250 execution.*
