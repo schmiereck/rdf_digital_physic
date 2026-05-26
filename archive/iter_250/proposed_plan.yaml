@@ -1,0 +1,111 @@
+falsification_criterion: 'F1 (Construction Impossibility): Refuted if no bijective,
+  bit-conserving
+
+  non-additive weight-2 permutation can be constructed from LUT-08''s weight-1
+
+  sub-table while maintaining O_h symmetry (or, if O_h is relaxed, while
+
+  maintaining any valid permutation at all).
+
+
+  F2 (No Stable Structures): Refuted if ALL non-additive LUT variants produce
+
+  only chaotic (bit explosion >3x initial) or frozen (zero displacement after
+
+  step 50) dynamics from every multi-bit seed with ≥2 bits in the same cell,
+
+  with no structure surviving 200 steps.
+
+
+  F3 (Composite Only): Refuted if any stable propagating multi-bit structure
+
+  found under a non-additive LUT fails the Single-Bit Decomposition Test —
+
+  i.e., removing any single bit from the glider leaves the remaining bits''
+
+  propagation trajectory and speed unchanged, proving binding energy = 0.
+
+
+  F4 (O_h Non-Covariance): For O_h-symmetric LUT variants, refuted if any
+
+  found glider fails to transform covariantly under all 48 elements of O_h
+
+  (the glider''s velocity and internal structure must rotate consistently).
+
+  '
+hypothesis: 'A bijective, bit-conserving LUT for the 12-channel FCC lattice, constructed
+  by
+
+  introducing non-additive weight-2 mappings (where at least one weight-2 input
+
+  state maps to an output different from the independent sum of its weight-1
+
+  component transitions), can support at least one genuine dynamically-bound
+
+  multi-bit glider with binding energy > 0 that survives ≥200 propagation steps.
+
+
+  Specifically: starting from LUT-08''s weight-1 sub-table (6 period-2
+
+  transpositions: ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10),
+
+  we replace the additive weight-2 sub-table with a non-additive permutation
+
+  of the 66 weight-2 states. When seeded with ≥2 bits in the same cell, at
+
+  least one such LUT variant will produce a stable propagating pattern where
+
+  the bits maintain correlated trajectories (binding energy > 0, verified by
+
+  Single-Bit Decomposition Test).
+
+  '
+pre_registration_file: src/pre_registration.md
+proposed_method: "EXPERIMENT 249: Non-Additive LUT Construction and Multi-Bit Glider\
+  \ Search\n\nStep 1: Non-Additive LUT Construction Module (src/non_additive_lut.py)\n\
+  - Load LUT-08's complete truth table as the base.\n- Extract the weight-2 sub-table\
+  \ (66 entries) and identify:\n  (a) 6 fixed-point pairs: {0,3}, {1,2}, {4,7}, {5,6},\
+  \ {8,11}, {9,10}\n  (b) 30 period-2 cycles from the remaining 60 states\n- Construct\
+  \ O_h-symmetric non-additive variants by permuting fixed-point\n  pairs within their\
+  \ O_h orbits:\n  Variant A: Swap two fixed-point pairs {5,6}↔{4,7}\n  Variant B:\
+  \ Create 3-cycle among fixed points {5,6}→{4,7}→{8,11}→{5,6}\n  Variant C: Swap\
+  \ all 6 fixed points in paired exchanges\n  Variant D: Redirect period-2 weight-2\
+  \ cycles across transposition boundaries\n- For each variant, verify: bijectivity\
+  \ (unique pre-images), bit conservation,\n  non-additivity measure (count of weight-2\
+  \ entries differing from additive).\n- If O_h-symmetric variants cannot be constructed,\
+  \ relax O_h symmetry and\n  construct arbitrary non-additive weight-2 permutations.\n\
+  - Target: 20-50 distinct non-additive LUT variants.\n\nStep 2: Systematic Seed Search\
+  \ (src/experiment_249_search.py)\n- For each non-additive LUT variant:\n  (a) Test\
+  \ all C(12,2)=66 weight-2 seeds (2 bits in same cell, all channel pairs)\n  (b)\
+  \ Test 50 systematically chosen weight-3 seeds (3 bits in same cell)\n  (c) Run\
+  \ each seed for 200 steps on L=32 FCC toroidal grid\n  (d) Measure: bit_count_preservation,\
+  \ net_CoM_displacement, pattern_spread\n- Control group: Run identical seed set\
+  \ under original additive LUT-08\n  (expected: 0 genuine multi-bit gliders, confirming\
+  \ baseline)\n- Identify candidates: bit_count preserved within 10%, displacement\
+  \ > 0,\n  pattern spread < 4 lattice units (localization criterion).\n\nStep 3:\
+  \ Three-Test Coherence Verification (on any candidates from Step 2)\n- Single-Bit\
+  \ Decomposition Test: Remove one bit from the multi-bit seed;\n  run remaining bits\
+  \ alone; compare trajectory and speed to the full glider.\n  Binding energy > 0\
+  \ iff trajectory or speed changes.\n- Collision Coherence Test: Introduce a localized\
+  \ latency perturbation near\n  the glider boundary; check if the glider coheres\
+  \ or fragments.\n- Bit-Removal Stability Test: Remove each bit individually and\
+  \ test if\n  the remaining pattern is structurally dependent on the removed bit.\n\
+  - O_h Covariance Test: Apply all 48 O_h rotations to the glider seed;\n  verify\
+  \ the resulting patterns propagate with rotated velocities.\n\nStep 4: Evolutionary\
+  \ Search (if systematic search yields no candidates)\n- Genome: the weight-2 sub-table\
+  \ permutation (66 entries)\n- Mutation: swap two entries in the weight-2 permutation\n\
+  - Crossover: recombine weight-2 sub-tables from two parent LUTs\n- Fitness: max\
+  \ over all weight-2 seeds of (stability × displacement ×\n  localization), where\
+  \ stability = 1 if bit_count preserved at step 200,\n  displacement = |CoM(t=200)\
+  \ - CoM(t=0)|, localization = 1/(1 + spread).\n- Constraint gate: reject any offspring\
+  \ that violates bijectivity or\n  bit conservation.\n- Population: 100 variants,\
+  \ 5 generations, 10 elites per generation.\n- Starting population: seeded from best\
+  \ systematic variants + random\n  non-additive permutations.\n\nStep 5: 2D Hex Decomposition\
+  \ Check (src/experiment_249_hex_check.py)\n- Load the iter_222 v=0.469c sub-light\
+  \ glider from the 2D hex grid.\n- Extract individual bits and test if they propagate\
+  \ independently.\n- If the glider is genuine (binding energy > 0): identify the\
+  \ mechanism\n  that 2D hex has but 3D FCC lacks.\n- If the glider is also a non-interacting\
+  \ composite: confirms the\n  monospecificity is a general LGCA property, not FCC-specific.\n\
+  \nFiles to create/modify:\n- src/non_additive_lut.py: Non-additive LUT construction\
+  \ module\n- src/experiment_249_search.py: Systematic seed search experiment\n- src/experiment_249_hex_check.py:\
+  \ 2D hex decomposition check\n- src/pre_registration.md: Pre-registration document\n"

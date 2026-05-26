@@ -17,6 +17,7 @@ Method:
 """
 
 import json
+import sys
 import numpy as np
 from pathlib import Path
 
@@ -136,7 +137,7 @@ def get_pattern_centered(cells):
     cells = list(cells)
     avg_r = np.mean([c[0] for c in cells])
     avg_c = np.mean([c[1] for c in cells])
-    return frozenset(int(round(c[0] - avg_r)), int(round(c[1] - avg_c)) for c in cells)
+    return frozenset((int(round(c[0] - avg_r)), int(round(c[1] - avg_c))) for c in cells)
 
 
 def main():

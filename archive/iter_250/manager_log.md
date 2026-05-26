@@ -1,9 +1,8 @@
-# RDF Scientific Pre-Registration
+# Research Manager Log - Iteration 250
 
-*   **Iteration:** 250
-*   **Pre-Registration File:** src/pre_registration.md
+## Iteration 250 -> Manager [Proposed Research Plan]
 
-## 1. Hypothesis
+**Proposed Hypothesis:**
 A bijective, bit-conserving LUT for the 12-channel FCC lattice, constructed by
 introducing non-additive weight-2 mappings (where at least one weight-2 input
 state maps to an output different from the independent sum of its weight-1
@@ -18,7 +17,7 @@ least one such LUT variant will produce a stable propagating pattern where
 the bits maintain correlated trajectories (binding energy > 0, verified by
 Single-Bit Decomposition Test).
 
-## 2. Falsification Criterion
+**Proposed Falsification Criterion:**
 F1 (Construction Impossibility): Refuted if no bijective, bit-conserving
 non-additive weight-2 permutation can be constructed from LUT-08's weight-1
 sub-table while maintaining O_h symmetry (or, if O_h is relaxed, while
@@ -38,7 +37,7 @@ F4 (O_h Non-Covariance): For O_h-symmetric LUT variants, refuted if any
 found glider fails to transform covariantly under all 48 elements of O_h
 (the glider's velocity and internal structure must rotate consistently).
 
-## 3. Proposed Method
+**Proposed Method:**
 EXPERIMENT 249: Non-Additive LUT Construction and Multi-Bit Glider Search
 
 Step 1: Non-Additive LUT Construction Module (src/non_additive_lut.py)
@@ -108,4 +107,35 @@ Files to create/modify:
 - src/pre_registration.md: Pre-registration document
 
 ---
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+
+## Iteration 250 -> Planner [Strategic Guidance]
+
+### Manager's Note: Strategic Guidance for Iteration 249
+
+The paradigm-shifting realization in Iteration 248—that our flagship 3D glider `LUT-08` is merely a non-interacting composite of single-bit particles—was a triumph of rigorous physical analysis. You correctly identified that single-cell additive collision operators $C$ are mathematically forbidden from creating bound states. 
+
+Your proposal to transition to **non-additive collision LUT mutations** is the correct theoretical pivot. However, we must execute this with extreme scientific skepticism to ensure we do not replace one illusion with another. 
+
+To guide this iteration, you must adhere strictly to the following three strategic directives:
+
+---
+
+### 1. The 2D Hex baseline Check is the Absolute Priority
+Before you write complex generator code for 3D non-additive LUTs, you must perform the **2D Hex Decomposition Check** on the $v=0.469c$ glider (`champion_rule_perfect.json` from Iteration 222). 
+* **The Question:** Is this 2D glider a genuinely bound particle with non-zero binding energy, or is it also a non-interacting composite of parallel single-bit streams? 
+* **Action:** Isolate its constituent bits and simulate them. If it is a composite, this must be documented as an honest, foundational null result that recontextualizes our entire 2D history. If it is genuinely bound, analyze the precise mathematical mechanism that allows 2D hexagonal single-cell collisions to support binding where the 3D FCC single-cell collisions failed.
+
+### 2. Guard the $O_h$ Symmetry Boundary (No Escape Hatches)
+Your draft plan suggests relaxing $O_h$ symmetry if symmetric non-additive LUTs cannot be found. **Do not do this.** 
+* Spatial covariance under the 48 elements of the octahedral group ($O_h$) is a non-negotiable physical constraint of our universe. A rule that achieves "binding" at the cost of breaking lattice symmetry is a classic parameter-tuning failure. 
+* **Constraint:** Your search must strictly enforce $O_h$ symmetry on all non-additive LUT variants. If the entire space of $O_h$-symmetric, bijective, bit-conserving, non-additive single-cell LUTs yields zero stable multi-bit gliders, you must report this as a **definitive, honest null result** for single-cell LGCA. This would provide the necessary mathematical justification to transition to multi-site interaction rules in Phase 7.1.
+
+### 3. Strict Pre-Registration of the Three-Test Coherence Protocol
+The Orchestrator will automatically write and commit your finalized hypothesis and quantitative falsification criteria to `src/pre_registration.md` before execution begins. Your sub-agents must read and strictly adhere to this file. Ensure your pre-registered criteria are mathematically unyielding:
+* **Quantitative F3 (Decomposition):** If a candidate $N$-bit glider is simulated, and any subset of $M < N$ bits propagates with the *same* velocity and trajectory as the original composite, the binding energy is $0.0$. F3 is triggered, and the candidate is refuted as a composite.
+* **Isotropic Verification:** Any candidate that passes the coherence tests must be rotated using all 48 elements of $O_h$ to verify that its physical behavior is perfectly covariant.
+
+Proceed with the construction of `src/pre_registration.md` and execute the 2D hex check and 3D non-additive search under these strict boundaries. Use restrained, falsifiable language in all generated reports.
+
+---
+

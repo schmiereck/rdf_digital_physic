@@ -1,0 +1,239 @@
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_iteration({'iter_num': 248})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_iteration({'iter_num': 248})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: read_file({'path': 'src'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+Let me try the tools with proper syntax:
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: grep_search({'pattern': 'generate_symmetric_lut', 'include_pattern': '*.py'})]
+
+[Tool Result: Tool not available: grep_search]
+
+
+[Tool Call: read_file({'path': 'src/fcc_engine.py'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+I need to explore the codebase and past iterations to understand the current state and design the next experiment. Let me start by examining the key files and the most recent iteration.
+
+[Tool Call: read_iteration({'iter_num': 248})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: read_iteration({'iter_num': 249})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src'})]
+
+[Tool Result: Tool not available: list_dir]
+
+I see the tools are experiencing availability issues. I have extensive information from the prompt about the current state and all past iterations. Let me work with what I have — the problem statement contains very detailed information about the current state, confirmed knowledge, and the Phase 7.1 pivot.
+
+Let me try to access key source files to understand the LUT construction:
+
+[Tool Call: grep_search({'pattern': 'generate_symmetric_lut|def.*lut|weight.2.*perm|non.?additive', 'include_pattern': '*.py'})]
+
+[Tool Result: Tool not available: grep_search]
+
+I have sufficient information from the detailed problem statement to formulate my hypothesis and plan. Let me synthesize my analysis.
+
+## Analysis
+
+### Current State Summary
+
+The critical finding from iter_248 is that **all O_h-symmetric, single-cell additive LUTs produce only monospecific single-bit particles**. LUT-08's "4-bit glider" is actually 4 independent copies of the [5,6] single-bit period-2 particle. The fundamental spectrum under LUT-08 consists of exactly 6 period-2 cycles (5 moving, 1 stationary), and no genuine weight-2 or weight-3 bound structures exist across any tested LUT.
+
+### Root Cause Analysis
+
+The monospecificity arises from **additivity**: in the current LUT construction (`generate_symmetric_lut()`), each weight-k state is mapped by independently applying the weight-1 transpositions to each bit. This means:
+- Bits within the same cell never influence each other's transitions
+- Two bits starting in the same cell will each follow their own independent trajectory and separate after propagation
+- There is no mechanism for bits to "share" a channel or create correlated motion
+
+Under LUT-08's weight-1 mapping (ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10), the 66 weight-2 states decompose as:
+- **6 fixed points**: {0,3}, {1,2}, {4,7}, {5,6}, {8,11}, {9,10} — both channels belong to the same transposition pair, so swapping both gives the same state
+- **30 period-2 cycles**: the remaining 60 states pair up under independent transposition application
+
+### The Non-Additive Break
+
+A non-additive weight-2 mapping would mean that when two bits occupy the same cell, their combined transition differs from applying each bit's transition independently. This creates an **interaction**: bits "feel" each other's presence and redirect. This is the minimal mechanism for binding energy > 0.
+
+The simplest non-additive mutation is a **fixed-point swap**: redirect {5,6}→{4,7} and {4,7}→{5,6}, breaking two additive fixed points into a non-additive period-2 cycle. More aggressive mutations can redirect entire period-2 cycles or create longer cycles.
+
+### Critical Design Considerations
+
+1. **Seeding strategy**: Multi-bit seeds must have ≥2 bits in the same cell to activate the non-additive interaction. Seeds with bits in separate cells would just produce independent single-bit particles (as in LUT-08).
+
+2. **O_h symmetry**: Non-additive mutations must respect O_h orbits of weight-2 channel pairs. The 6 transposition-pair fixed points likely form O_h orbits that must be permuted consistently. If O_h-symmetric non-additive LUTs prove impossible, we must relax O_h symmetry.
+
+3. **Bijectivity verification**: Every non-additive variant must pass strict bijectivity (exactly one pre-image per output state) and bit conservation (Hamming weight in = Hamming weight out).
+
+4. **2D hex parallel check**: The 2D hex v=0.469c glider (iter_222) may or may not be a non-interacting composite. If it's genuine, this tells us the problem is specific to FCC/12-channel structure, not LGCA in general.
+
+---
+
+```yaml
+hypothesis: |
+  A bijective, bit-conserving LUT for the 12-channel FCC lattice, constructed by
+  introducing non-additive weight-2 mappings (where at least one weight-2 input
+  state maps to an output different from the independent sum of its weight-1
+  component transitions), can support at least one genuine dynamically-bound
+  multi-bit glider with binding energy > 0 that survives ≥200 propagation steps.
+  
+  Specifically: starting from LUT-08's weight-1 sub-table (6 period-2
+  transpositions: ch0↔ch3, ch1↔ch2, ch4↔ch7, ch5↔ch6, ch8↔ch11, ch9↔ch10),
+  we replace the additive weight-2 sub-table with a non-additive permutation
+  of the 66 weight-2 states. When seeded with ≥2 bits in the same cell, at
+  least one such LUT variant will produce a stable propagating pattern where
+  the bits maintain correlated trajectories (binding energy > 0, verified by
+  Single-Bit Decomposition Test).
+
+falsification_criterion: |
+  F1 (Construction Impossibility): Refuted if no bijective, bit-conserving
+  non-additive weight-2 permutation can be constructed from LUT-08's weight-1
+  sub-table while maintaining O_h symmetry (or, if O_h is relaxed, while
+  maintaining any valid permutation at all).
+  
+  F2 (No Stable Structures): Refuted if ALL non-additive LUT variants produce
+  only chaotic (bit explosion >3x initial) or frozen (zero displacement after
+  step 50) dynamics from every multi-bit seed with ≥2 bits in the same cell,
+  with no structure surviving 200 steps.
+  
+  F3 (Composite Only): Refuted if any stable propagating multi-bit structure
+  found under a non-additive LUT fails the Single-Bit Decomposition Test —
+  i.e., removing any single bit from the glider leaves the remaining bits'
+  propagation trajectory and speed unchanged, proving binding energy = 0.
+  
+  F4 (O_h Non-Covariance): For O_h-symmetric LUT variants, refuted if any
+  found glider fails to transform covariantly under all 48 elements of O_h
+  (the glider's velocity and internal structure must rotate consistently).
+
+proposed_method: |
+  EXPERIMENT 249: Non-Additive LUT Construction and Multi-Bit Glider Search
+  
+  Step 1: Non-Additive LUT Construction Module (src/non_additive_lut.py)
+  - Load LUT-08's complete truth table as the base.
+  - Extract the weight-2 sub-table (66 entries) and identify:
+    (a) 6 fixed-point pairs: {0,3}, {1,2}, {4,7}, {5,6}, {8,11}, {9,10}
+    (b) 30 period-2 cycles from the remaining 60 states
+  - Construct O_h-symmetric non-additive variants by permuting fixed-point
+    pairs within their O_h orbits:
+    Variant A: Swap two fixed-point pairs {5,6}↔{4,7}
+    Variant B: Create 3-cycle among fixed points {5,6}→{4,7}→{8,11}→{5,6}
+    Variant C: Swap all 6 fixed points in paired exchanges
+    Variant D: Redirect period-2 weight-2 cycles across transposition boundaries
+  - For each variant, verify: bijectivity (unique pre-images), bit conservation,
+    non-additivity measure (count of weight-2 entries differing from additive).
+  - If O_h-symmetric variants cannot be constructed, relax O_h symmetry and
+    construct arbitrary non-additive weight-2 permutations.
+  - Target: 20-50 distinct non-additive LUT variants.
+  
+  Step 2: Systematic Seed Search (src/experiment_249_search.py)
+  - For each non-additive LUT variant:
+    (a) Test all C(12,2)=66 weight-2 seeds (2 bits in same cell, all channel pairs)
+    (b) Test 50 systematically chosen weight-3 seeds (3 bits in same cell)
+    (c) Run each seed for 200 steps on L=32 FCC toroidal grid
+    (d) Measure: bit_count_preservation, net_CoM_displacement, pattern_spread
+  - Control group: Run identical seed set under original additive LUT-08
+    (expected: 0 genuine multi-bit gliders, confirming baseline)
+  - Identify candidates: bit_count preserved within 10%, displacement > 0,
+    pattern spread < 4 lattice units (localization criterion).
+  
+  Step 3: Three-Test Coherence Verification (on any candidates from Step 2)
+  - Single-Bit Decomposition Test: Remove one bit from the multi-bit seed;
+    run remaining bits alone; compare trajectory and speed to the full glider.
+    Binding energy > 0 iff trajectory or speed changes.
+  - Collision Coherence Test: Introduce a localized latency perturbation near
+    the glider boundary; check if the glider coheres or fragments.
+  - Bit-Removal Stability Test: Remove each bit individually and test if
+    the remaining pattern is structurally dependent on the removed bit.
+  - O_h Covariance Test: Apply all 48 O_h rotations to the glider seed;
+    verify the resulting patterns propagate with rotated velocities.
+  
+  Step 4: Evolutionary Search (if systematic search yields no candidates)
+  - Genome: the weight-2 sub-table permutation (66 entries)
+  - Mutation: swap two entries in the weight-2 permutation
+  - Crossover: recombine weight-2 sub-tables from two parent LUTs
+  - Fitness: max over all weight-2 seeds of (stability × displacement ×
+    localization), where stability = 1 if bit_count preserved at step 200,
+    displacement = |CoM(t=200) - CoM(t=0)|, localization = 1/(1 + spread).
+  - Constraint gate: reject any offspring that violates bijectivity or
+    bit conservation.
+  - Population: 100 variants, 5 generations, 10 elites per generation.
+  - Starting population: seeded from best systematic variants + random
+    non-additive permutations.
+  
+  Step 5: 2D Hex Decomposition Check (src/experiment_249_hex_check.py)
+  - Load the iter_222 v=0.469c sub-light glider from the 2D hex grid.
+  - Extract individual bits and test if they propagate independently.
+  - If the glider is genuine (binding energy > 0): identify the mechanism
+    that 2D hex has but 3D FCC lacks.
+  - If the glider is also a non-interacting composite: confirms the
+    monospecificity is a general LGCA property, not FCC-specific.
+  
+  Files to create/modify:
+  - src/non_additive_lut.py: Non-additive LUT construction module
+  - src/experiment_249_search.py: Systematic seed search experiment
+  - src/experiment_249_hex_check.py: 2D hex decomposition check
+  - src/pre_registration.md: Pre-registration document
+
+pre_registration_file: "src/pre_registration.md"
+```
