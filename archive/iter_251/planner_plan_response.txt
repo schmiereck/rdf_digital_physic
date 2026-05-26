@@ -1,0 +1,255 @@
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: read_iteration({'iter_num': 250})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'src'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_dir({'path': 'src/'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+
+[Tool Call: read_file({'path': 'src/fcc_engine.py'})]
+
+[Tool Result: Tool not available: read_file]
+
+I need to explore the codebase and understand the current state before formulating the next hypothesis. Let me examine the existing source files and recent iteration results.
+
+[Tool Call: list_dir({'path': '.'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: read_file({'path': 'current_state.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: read_iteration({'iter_num': 250})]
+
+[Tool Result: Tool not available: read_iteration]
+
+
+[Tool Call: list_dir({'path': 'src/'})]
+
+[Tool Result: Tool not available: list_dir]
+
+
+[Tool Call: grep_search({'include_pattern': '*.py', 'pattern': 'class.*Engine'})]
+
+[Tool Result: Tool not available: grep_search]
+
+
+[Tool Call: read_file({'path': 'goal.md'})]
+
+[Tool Result: Tool not available: read_file]
+
+
+[Tool Call: list_iterations({})]
+
+[Tool Result: Tool not available: list_iterations]
+
+The tools appear to be unavailable at the moment. However, I have extensive context from the user's message including the complete goal.md, current_state.md, iteration history, and recent experiment logs. Let me proceed with the analysis and plan based on this rich context.
+
+## Analysis of Current State
+
+### Critical Findings from iter_250
+
+1. **2D hex v=0.469c glider is GENUINE** — binding energy > 0, all 3 constituent bits die in isolation
+2. **Binding mechanism identified**: Cooperative survival through neighborhood-overlap bit creation:
+   - Weight-1 sub-table: isolated bits die (state 64 → 0)
+   - Non-additive weight-2+ mappings: empty cells with 2 active neighbors turn ON
+   - Bit count fluctuates 3↔4 during propagation
+3. **Definitive null result for 3D FCC single-cell collision** — 128 non-additive LUT variants + 40 randomized variants = 17,248 simulations, zero genuine gliders
+4. **Structural diagnosis**: Single-cell collision permits only co-located (transient) bit interactions. The 2D hex mechanism requires neighborhood-overlap (persistent) interactions.
+
+### Key Architectural Difference (Not Yet Exploited)
+
+The 2D hex model uses **7 channels = 6 propagation + 1 rest-mass channel**. The rest channel is critical: it allows bits to **stay** at a cell across multiple time steps, creating persistent local interactions. When propagation bits arrive at a cell that already has a rest bit, the collision at that cell can create new bits via the non-additive weight-2+ mappings. This is the "neighborhood overlap" mechanism — the rest bit at cell P overlaps with the neighborhoods of P's adjacent cells.
+
+The 3D FCC model uses **12 channels = all propagation, no rest channel**. Every bit at cell P must move to an adjacent cell in the next propagation step. There is no persistent local state for arriving bits to interact with. This makes all interactions transient — exactly the structural limitation identified in iter_250.
+
+**The rest channel is the missing ingredient.** It converts transient co-located interactions into persistent neighborhood-overlap interactions.
+
+### Weight-2 O_h Orbit Classification for 13-Channel System
+
+With 12 propagation channels + 1 rest channel = 13 channels total, the weight-2 states under O_h fall into 5 distinct orbits:
+
+| Orbit Type | Description | Dot Product | Count |
+|---|---|---|---|
+| 1 | Antiparallel pair | −2 | 6 |
+| 2 | Obtuse pair (~120°) | −1 | 24 |
+| 3 | Perpendicular pair | 0 | 12 |
+| 4 | Acute pair (~60°) | +1 | 24 |
+| 5 | Rest + propagation | N/A | 12 |
+
+**Total: 78 = C(13,2) ✓**
+
+### Hypothesis Derivation
+
+The 2D hex success demonstrates that cooperative survival (weight-1 → 0) + rest channel + non-additive weight-2+ mappings = genuine multi-bit binding. The 3D FCC failure demonstrates that cooperative survival + no rest channel + any weight-2+ mappings = no genuine binding. The logical conclusion is that the **rest channel is the enabling factor** for cooperative survival in lattice gas cellular automata.
+
+---
+
+## Formal Hypothesis
+
+**Hypothesis:** A 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a cooperative survival collision rule — where weight-1 states map to 0 (isolated bits die) and weight-2+ states have non-additive mappings that can create rest-mass bits — produces at least one genuine, dynamically-bound multi-bit glider with binding energy > 0. The rest channel provides the persistent local interaction that was structurally absent in the 12-channel system, enabling the neighborhood-overlap binding mechanism confirmed in the 2D hex v=0.469c glider to operate in 3D FCC.
+
+## Falsification Criteria
+
+- **F1 (No survivors):** No multi-bit configuration survives ≥200 steps under any tested 13-channel cooperative survival rule variant → cooperative survival infeasible in 3D FCC even with rest channel. Hypothesis REFUTED.
+- **F2 (No genuine binding):** All surviving propagating configurations fail the single-bit decomposition test (removing any single bit does not alter trajectory) → rest channel insufficient for genuine binding, survivors are still non-interacting composites. Hypothesis REFUTED.
+- **F3 (Lattice artifact):** Any discovered glider fails O_h covariance (does not propagate correctly under all 48 rotations of the cuboctahedron) → glider is an axis-aligned artifact, not a physical particle. Hypothesis REFUTED.
+- **F4 (Rest channel unnecessary):** The 12-channel system with cooperative survival (weight-1 → 0, no rest channel) produces genuine multi-bit gliders at the same rate as the 13-channel system → rest channel is not the enabling factor. Hypothesis REFUTED.
+
+## Experimental Protocol
+
+### Step 1: Positive Control (2D Hex Verification)
+- Load the known 2D hex v=0.469c glider rule and seed
+- Run 500 steps, verify glider survives with binding energy > 0
+- Confirm the cooperative survival mechanism (weight-1 → 0) is active
+- **Purpose:** Validate the search methodology and confirm the mechanism works in the known system
+
+### Step 2: FCC-13 Engine Implementation
+- Extend the 3D FCC LGCA engine from 12 channels to 13 channels
+- Channel 13 = rest-mass channel (invariant under O_h, does not propagate)
+- Propagation: channels 1–12 shift along their lattice directions; channel 13 stays
+- Collision: 13-bit state → 13-bit state (per-cell)
+
+### Step 3: Cooperative Survival LUT Design
+- Weight-0 → 0 (fixed, trivial)
+- Weight-1 → 0 (fixed, cooperative survival — isolated bits die)
+- Weight-2: parametric sweep over 5 orbit types × output options:
+  - "Destroy" → weight-0
+  - "Scatter" → weight-2, same orbit type
+  - "Create-rest" → weight-2 or weight-3, output includes rest channel
+  - "Swap-to-rest" → weight-2, rest+prop orbit type
+  - ≈4–5 choices per orbit type → ~500–1000 variants after filtering
+- Weight-3+: simplified rules (preserve weight, or trim to weight-2)
+- **Filter:** Only test rules with ≥1 "Create-rest" mapping AND ≥1 "Destroy" mapping (necessary for bit balance)
+
+### Step 4: Parametric Search
+- Lattice: L=24 FCC toroidal grid
+- Seeds: 30 configurations per rule variant (2–5 bits, adjacent and non-adjacent placements, multiple O_h directions)
+- Duration: 300 steps per simulation
+- Scoring: `sustained_displacement × bit_stability` where:
+  - `sustained_displacement` = center-of-mass displacement in steps 200–300
+  - `bit_stability` = min(1, final_bit_count / initial_bit_count) if ≤ 2×, else 0
+
+### Step 5: Three-Test Coherence Protocol (Top Candidates)
+- Extended run: 1000 steps on L=32
+- **Test 1 (Single-bit decomposition):** Remove any single bit from the glider seed; verify trajectory/speed changes → binding energy > 0
+- **Test 2 (Interaction coherence):** Apply localized latency perturbation; verify glider boundaries cohere
+- **Test 3 (O_h covariance):** Rotate the glider by all 48 O_h elements; verify each rotated version propagates correctly
+
+### Step 6: Control Experiment (12-channel Cooperative Survival)
+- Same search protocol on 12-channel FCC with weight-1 → 0 (no rest channel)
+- Compare genuine glider counts with FCC-13 results
+- This isolates the effect of the rest channel
+
+### Files to Create/Modify
+- `src/fcc_engine_13ch.py` — Extended FCC LGCA with rest channel
+- `src/cooperative_lut_13ch.py` — LUT generator with O_h orbit classification for 13-channel system
+- `src/search_13ch.py` — Parametric search and scoring framework
+- `src/coherence_test_13ch.py` — Three-Test Coherence Protocol for 13-channel system
+- `src/positive_control_hex.py` — 2D hex positive control verification
+
+```yaml
+hypothesis: |
+  A 3D FCC LGCA with 13 channels (12 propagation + 1 rest-mass channel) and a cooperative
+  survival collision rule — where weight-1 states map to 0 (isolated bits die, forcing co-location
+  for survival) and weight-2+ states have non-additive mappings that can create and destroy
+  rest-mass bits — produces at least one genuine, dynamically-bound multi-bit glider with
+  binding energy > 0. The rest channel provides the persistent local interaction that was
+  structurally absent in the 12-channel system (where every bit must propagate away each step,
+  making all interactions transient). By allowing bits to remain at a cell across multiple time
+  steps, the rest channel enables the neighborhood-overlap binding mechanism that is confirmed
+  to produce the genuine 2D hex v=0.469c glider. The 5 distinct O_h orbit types of weight-2
+  states (antiparallel, obtuse, perpendicular, acute, rest+prop) provide sufficient parametric
+  freedom for the cooperative survival dynamics to produce stable propagating bound states.
+
+falsification_criterion: |
+  F1: No multi-bit configuration survives ≥200 steps under any tested 13-channel cooperative
+      survival rule variant (sweeping ~500 variants × 30 seeds × 300 steps) → cooperative
+      survival infeasible in 3D FCC even with rest channel.
+  F2: All surviving propagating configurations fail the single-bit decomposition test (removing
+      any single bit does not alter the propagation trajectory or speed) → survivors are
+      non-interacting composites, rest channel insufficient for genuine binding.
+  F3: Any discovered glider fails O_h covariance under all 48 cuboctahedron rotations →
+      glider is an axis-aligned lattice artifact, not a physical particle.
+  F4: The 12-channel cooperative survival control (weight-1→0, no rest channel) produces
+      genuine multi-bit gliders at the same rate as the 13-channel system → rest channel
+      is not the enabling factor for binding.
+  Any one of F1–F4 being triggered refutes the hypothesis.
+
+proposed_method: |
+  Step 1 — Positive Control: Run the known 2D hex v=0.469c glider rule and seed for 500 steps.
+  Verify glider survival with binding energy > 0 and cooperative survival (weight-1→0) active.
+  This validates the search methodology against a known positive result.
+
+  Step 2 — FCC-13 Engine: Extend src/fcc_engine.py (or equivalent) from 12 to 13 channels.
+  Channel 13 is a rest-mass channel: invariant under O_h rotations, does not shift during
+  propagation. Collision maps 13-bit states to 13-bit states per cell. Create
+  src/fcc_engine_13ch.py.
+
+  Step 3 — O_h Orbit Classification: Classify all weight-2 states of the 13-channel system
+  into 5 O_h orbit types: (1) antiparallel prop pair, 6 states; (2) obtuse prop pair, 24
+  states; (3) perpendicular prop pair, 12 states; (4) acute prop pair, 24 states; (5) rest+prop
+  pair, 12 states. Create src/cooperative_lut_13ch.py.
+
+  Step 4 — LUT Parametrization: Fix weight-0→0 and weight-1→0 (cooperative survival). For
+  each of the 5 weight-2 orbit types, assign one of ~4 output options: Destroy (→weight-0),
+  Scatter (→weight-2 same orbit), Create-rest (→weight-2 or 3 including rest channel),
+  Swap-to-rest (→weight-2 rest+prop orbit). Filter: require ≥1 Create-rest AND ≥1 Destroy
+  mapping. Weight-3+ uses simplified rules. Yields ~500 viable rule variants.
+
+  Step 5 — Parametric Search: For each rule variant, test 30 diverse seeds (2–5 bits,
+  adjacent and non-adjacent, multiple O_h directions) on L=24 FCC toroidal grid. Run 300 steps.
+  Score by sustained_displacement × bit_stability. Create src/search_13ch.py.
+
+  Step 6 — Coherence Protocol: Top 10 candidates → extended 1000-step run on L=32. Apply
+  Three-Test Coherence Protocol: (T1) single-bit decomposition test, (T2) interaction
+  coherence under latency perturbation, (T3) O_h covariance under all 48 rotations. Create
+  src/coherence_test_13ch.py.
+
+  Step 7 — Control Experiment: Repeat the search on 12-channel FCC with weight-1→0 (no rest
+  channel) using identical seeds and scoring. Compare genuine glider counts with FCC-13 to
+  isolate the effect of the rest channel.
+
+pre_registration_file: "src/pre_registration.md"
+```
