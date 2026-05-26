@@ -1,0 +1,107 @@
+You are executing Sub-Goal 250.2 of Phase 250: **O_h-Symmetric Non-Additive LUT Construction + Multi-Bit Glider Search**
+
+## CRITICAL CONTEXT (from Sub-Goal 250.1 result)
+
+The 2D hex v=0.469c glider is GENUINE (binding energy > 0). The mechanism is:
+- Weight-1 sub-table is TRIVIAL: isolated bits die (state 64 → 0 in the 2D hex synchronous CA)
+- Non-additive weight-2+ mappings enable cooperative survival: adjacent active cells in each other's neighborhoods create new bits
+
+For the 3D FCC LGCA, we CANNOT directly replicate this because bit conservation is enforced per-cell (weight-1 → weight-1 is mandatory). However, there is an equivalent design principle:
+
+**Cooperative Propulsion Design Principle:**
+1. Weight-1 sub-table: ALL single-bit states map to STATIONARY period-2 oscillators (zero net velocity)
+2. Weight-2+ sub-table: Non-additive mappings where pairs of bits in the same cell get routed into channel configurations that produce NET DISPLACEMENT after streaming
+3. The binding energy comes from: bits that are stationary alone but MOVING together = genuine multi-bit coherence
+
+The 12 FCC channels have 6 antipodal pairs that yield zero average velocity:
+- ch0(0,1,0)↔ch1(0,-1,0): average (0,0,0) ✓ STATIONARY
+- ch2(0,0,1)↔ch3(0,0,-1): average (0,0,0) ✓ STATIONARY
+- ch4(0,1,-1)↔ch5(0,-1,1): average (0,0,0) ✓ STATIONARY
+- ch6(1,1,1)↔ch9(-1,-1,-1): average (0,0,0) ✓ STATIONARY
+- ch7(1,1,0)↔ch10(-1,-1,0): average (0,0,0) ✓ STATIONARY
+- ch8(1,0,1)↔ch11(-1,0,-1): average (0,0,0) ✓ STATIONARY
+
+A LUT where ALL weight-1 states are these 6 antipodal pairs makes every single bit a stationary oscillator. Any displacement must come from weight-2+ non-additive mappings.
+
+## PRE-REGISTRATION COMPLIANCE
+
+Read `src/pre_registration.md` and STRICTLY adhere to the falsification criteria. Key constraints:
+- **O_h symmetry is NON-NEGOTIABLE** — no relaxation under any circumstances
+- F1: Refuted if no bijective, bit-conserving, O_h-symmetric non-additive weight-2 permutation can be constructed
+- F2: Refuted if ALL non-additive LUT variants produce only chaotic or frozen dynamics from every multi-bit seed
+- F3: Refuted if any stable multi-bit structure fails the Single-Bit Decomposition Test (binding energy = 0)
+- F4: Refuted if any found glider fails O_h covariance
+
+## TASK: Three-Stage Execution
+
+### Stage 1: O_h-Symmetric Non-Additive LUT Construction
+
+Build `src/non_additive_lut_v2.py` that constructs multiple O_h-symmetric non-additive LUT variants with the "cooperative propulsion" weight-1 sub-table (all 6 antipodal stationary pairs).
+
+**Construction method:**
+1. Fix weight-1 sub-table to the 6 antipodal pairs (ch0↔ch1, ch2↔ch3, ch4↔ch5, ch6↔ch9, ch7↔ch10, ch8↔ch11)
+2. For weight-2 sub-table (66 states): Use `src/search_3d_gliders.py`'s orbit infrastructure (`get_oh_permutations`, `precompute_perm_action`, `compute_orbits`, `compute_all_stabilizers`, `verify_lut`) to:
+   - Compute the O_h orbits of all 66 weight-2 states
+   - Pool orbits with matching (weight, orbit_size, stabilizer_class) signatures
+   - Generate random equivariant bijections by pairing source and destination orbits
+   - For the destination orbits, PREFER orbits containing moving velocity configurations (pairs of channels whose velocity vectors don't cancel)
+3. For weight-3+ sub-tables: same orbit-matching approach
+4. Verify each LUT: bijectivity, bit conservation, O_h symmetry, non-additivity measure
+5. Target: 20-50 distinct non-additive LUT variants with the cooperative propulsion weight-1 sub-table
+6. Also generate a CONTROL set with the SAME weight-1 but ADDITIVE weight-2 (independent transposition of each bit). This should produce only non-interacting composites of stationary bits.
+
+**CRITICAL: If no O_h-symmetric non-additive weight-2 LUT can be constructed with the cooperative propulsion weight-1 sub-table, report this as F1 triggered — a definitive null result for single-cell LGCA under O_h symmetry.**
+
+### Stage 2: Systematic Seed Search
+
+Build `src/experiment_250_nonadditive_search.py` that for each non-additive LUT variant:
+1. Tests ALL C(12,2)=66 weight-2 seeds (2 bits in same cell, all channel pairs)
+2. Tests 50-100 systematically chosen weight-3 seeds
+3. Runs each seed for 200 steps on L=32 FCC toroidal grid
+4. Measures: bit_count_preservation, net_CoM_displacement, pattern_spread
+5. Control group: Run identical seed set under ADDITIVE control LUT (expected: 0 genuine moving multi-bit gliders, only stationary oscillators)
+6. Identify candidates: bit_count preserved (within 5%), displacement > 2 lattice units over 200 steps, pattern_spread < 4 units (localization)
+
+Also test the seeds from `src/experiment_248_fundamental_spectrum.py`'s infrastructure (sparse simulation with `collide_bits`).
+
+### Stage 3: Three-Test Coherence Verification (on any candidates from Stage 2)
+
+Apply to each candidate that passes the screening:
+
+1. **Single-Bit Decomposition Test**: Remove each bit from the multi-bit seed individually. Run the remaining bits alone. If ANY subset of M < N bits propagates with the same velocity and trajectory as the full N-bit glider, binding energy = 0 and F3 is triggered.
+
+2. **Bit-Removal Stability Test**: Remove each bit and verify the remaining pattern's trajectory changes (structurally dependent on the removed bit).
+
+3. **O_h Covariance Test**: Apply all 48 O_h rotations to the glider seed. Verify the rotated patterns propagate with rotated velocities (velocity vector must rotate consistently under the group action).
+
+4. If any candidate PASSES all three tests, this is evidence for a genuine multi-bit bound glider.
+
+### If Systematic Search Fails: Evolutionary Search
+
+- Genome: the weight-2 sub-table permutation (66 entries)
+- Mutation: swap two entries within same O_h orbit
+- Crossover: recombine weight-2 sub-tables from two parents
+- Fitness: max over all weight-2 seeds of (stability × displacement × localization)
+  where stability = 1 if bit_count preserved at step 200,
+  displacement = |CoM(t=200) - CoM(t=0)|,
+  localization = 1/(1 + spread)
+- Constraint gate: reject any offspring violating bijectivity, bit conservation, or O_h symmetry
+- Population: 100 variants, 5 generations, 10 elites
+- Seeded from best systematic variants + random non-additive permutations
+
+## KEY INFRASTRUCTURE FILES (in src/)
+- `search_3d_gliders.py`: `get_oh_permutations()`, `precompute_perm_action()`, `compute_orbits()`, `compute_all_stabilizers()`, `verify_lut()`, `generate_symmetric_lut()`
+- `engine_3d.py`: `stream()`, `collide()`, `pack()`, `unpack()`, `SHIFTS`, `generate_bit_conserving_lut()`
+- `experiment_248_fundamental_spectrum.py`: Sparse simulation helpers (`stream_bits`, `collide_bits`, `simulate_sparse`), weight-1 cycle analysis
+- `lut_construction_nonadditive.py`: Previous non-additive LUT construction (may have bugs, use as reference only)
+- `glider_charge_analysis.py`: `make_BT()` for cartesian velocity conversion
+
+## HONEST REPORTING
+If ALL non-additive LUT variants produce only chaotic (bit explosion) or frozen (zero displacement) dynamics, this is F2 triggered — report as definitive null result.
+If any stable multi-bit structure fails the Single-Bit Decomposition Test, this is F3 triggered — report the composite finding.
+Use restrained, falsifiable language. No promotional vocabulary.
+
+## Success Criterion
+The sub-goal succeeds when either:
+(a) At least one O_h-symmetric non-additive LUT variant supports a genuine multi-bit bound glider (binding energy > 0, passes all three tests), OR
+(b) The entire space of O_h-symmetric, bijective, bit-conserving, non-additive single-cell LUTs is demonstrated to yield zero genuine multi-bit gliders — a definitive null result that justifies transition to multi-site interaction rules.
