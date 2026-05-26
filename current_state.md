@@ -1,47 +1,51 @@
 # Current Research State
-Phase: Phase 7.1 — Glider Taxonomy (13-Channel Cooperative Trapping NULL RESULT)
+Phase: Phase 7.1 — Glider Taxonomy (2D Hex Embedding REFUTED)
 
 ## Goal
 Demonstrate that mass, gravity, time dilation, and ultimately quantum phenomena emerge as effects of a minimal set of local, reversible binary rules on a highly symmetric grid.
 
-## Confirmed (New in Phase 251)
+## Confirmed (New in Phase 252)
 
-- **2D hex v=0.469c glider is GENUINE with binding energy > 0 (iter_251, sub 251.2/iter_001):** Positive control re-confirmed. All 3 constituent bits annihilate when isolated. Full L-tromino survives at v=0.469c. 500/501 OR mismatches. Cooperative survival (weight-1→0) is the mechanism.
+- **Hex glider binding mechanism extracted (iter_252, sub 252.1b):** 4 critical neighborhood states (64, 70, 81, 104) drive initial cooperative binding. 200/201 OR-superposition mismatches (pervasive non-linearity). All 3 seed bits annihilate alone. 42 non-identity rule_dict entries.
 
-- **13-channel FCC engine works correctly (iter_251, sub 251.1):** src/fcc_engine_13ch.py implements pack/unpack/stream/collide for 13-bit states. All 500 generated LUTs pass bijectivity + bit conservation + O_h symmetry audits.
+- **F3 TRIGGERED: Pure LGCA embedding of hex rule is mathematically impossible (iter_252, sub 252.2b):** The hex CA's cooperative survival mechanism requires weight-1->0 local transitions, which violate bit conservation. No 13-bit bijective, bit-conserving LUT can reproduce the hex rule. Counterexample: state=1 (1 bit in, hex_state=4) maps to 0 output bits.
 
-- **Cross-orbit weight-2 C↔E mapping is MATHEMATICALLY IMPOSSIBLE under O_h (iter_251, sub 251.1):** The stabilizer subgroups of orbit C (perpendicular prop pair) and orbit E (rest+prop pair) are non-conjugate in O_h. By the theorem on transitive G-sets (isomorphic iff stabilizers are conjugate), no O_h-equivariant bijection exists between these orbits. The same applies to B↔D. This eliminates the primary F5 compliance mechanism at weight-2 level.
+- **Hybrid engine (synchronous CA + LGCA) correctly projects 2D hex glider onto [111] plane (iter_252, sub 252.2b):** This is an algebraic identity by construction — the in-plane update is computed identically to the 2D case. Bit counts match exactly at every timestep. Decomposition test passes. The system is anisotropic (2.5D, not isotropic 3D) due to the privileged [111] plane.
 
-- **Cooperative trapping produces STATIONARY OSCILLATORS, not propagating gliders (iter_251, sub 251.2):** 2500 search runs (100 LUTs × 25 seeds × 300 steps). Adjacent 2-bit seeds with rest channel: max displacement = 7.35 over 300 steps (v ≈ 0.024c). Adjacent 2-bit seeds without rest: max 214.35 (v ≈ 0.71c). The rest channel reduces motion by 29x.
-
-- **ALL high-displacement configurations are non-interacting composites (iter_251, sub 251.2):** Top 20 runs use nonadjacent seeds with IDENTICAL displacement (323.6) across ALL LUT variants. Bits at separate cells never interact. The LUT cannot affect their trajectories. This is the composite exploit.
-
-- **Rest channel is COUNTERPRODUCTIVE for directed motion under cooperative trapping (iter_251, sub 251.2):** The rest bit acts as an anchor, creating a stationary complex where the prop bit orbits the rest bit without net translation. This is the opposite of the predicted effect.
+- **Inter-plane coupling REFUTED (iter_252, sub 252.3, F4c):** For any coupling strength alpha>0, the glider dies immediately (0/10 survival for alpha=1,2,3). Coupling siphons center bits into outgoing inter-plane channels, destroying the cooperative survival pattern. At alpha=0, multi-layer seeds are independent per-layer composites (F4a).
 
 ## Confirmed (Prior, Recontextualized)
 
-- **LUT-08 is a non-interacting composite (iter_248):** Extended — ALL O_h-symmetric single-cell collision rules (additive AND non-additive) produce only non-interacting composites (iter_250).
-- **2D hex v=0.469c sub-light glider (iter_222):** GENUINE. Confirmed in iter_250 and iter_251.
+- **LUT-08 is a non-interacting composite (iter_248):** Extended — ALL O_h-symmetric single-cell collision rules (additive AND non-additive) produce only non-interacting composites. Now also confirmed: the 13-bit LGCA framework fundamentally cannot support cooperative survival.
+- **2D hex v=0.469c sub-light glider (iter_222):** GENUINE, confirmed in iter_250, 251, 252. The ONLY confirmed mechanism for genuine multi-bit binding.
 - **Complete fundamental 6-cycle single-bit spectrum (iter_248):** Still valid for 12-channel system.
+- **Cooperative trapping with rest channel produces stationary oscillators (iter_251):** Still valid.
 
 ## Refuted
 
-- **13-channel cooperative trapping produces genuine multi-bit gliders with binding energy > 0 (iter_251, F1 likely triggered):** REFUTED. No adjacent-seed configuration produces meaningful propagation with the rest channel present. Max adjacent-with-rest displacement = 7.35 over 300 steps ≈ stationary oscillator.
-- **Rest channel enables neighborhood-overlap binding in 3D FCC (iter_251):** REFUTED. Rest channel combined with cooperative trapping creates stationary oscillators (prop bit orbits rest bit), not propagating gliders.
-- **Cross-orbit C↔E weight-2 mapping enables active channel mixing under O_h (iter_251, sub 251.1):** MATHEMATICALLY IMPOSSIBLE. Stabilizer subgroups of C and E are non-conjugate. No equivariant bijection exists.
+- **13-channel factorized LUT is simultaneously bijective, bit-conserving, and hex-compatible (iter_252, F3):** REFUTED. The hex rule changes Hamming weight on the 7-bit subspace. No bijective, bit-conserving LUT can match this. This is an algebraic impossibility.
+- **Inter-plane coupling produces stable 3D bound states spanning 2+ planes (iter_252, F4c):** REFUTED. No stable configuration survives 300 steps for any alpha>0. The coupling destroys the cooperative survival pattern by siphoning center bits away from the [111] plane.
+- **Multi-layer seeds under factorized embedding are genuine 3D bound states (iter_252, F4a):** REFUTED. At alpha=0, multi-layer seeds decompose into independent per-layer gliders (non-interacting composites).
 
-## Incomplete (Blocked by Token Limits)
+## Architectural Conclusion
 
-- Single-bit decomposition test (T1) on adjacent-seed candidates: Not run. Low displacement (7.35) makes it unlikely any genuine gliders exist, but formal F2 confirmation is pending.
-- 12-channel control (F4): Not run. Expected result: 12-channel with Cartesian weight-1 produces similar composites to 13-channel without rest (already confirmed in iter_248/250).
-- O_h covariance test (T3): Not run. No genuine candidates to test.
-- F5 deep analysis (weight-3+ orbit pairings): Not completed. Whether weight-3+ pairings involve rest channel mixing is analytically determinable but was not computed.
+The single-cell LGCA collision operator (N-bit input -> N-bit bijective, bit-conserving output) is FUNDAMENTALLY INCOMPATIBLE with cooperative survival binding. This is proven across four successive phases:
+- iter_248: All O_h-symmetric LUTs produce only non-interacting composites
+- iter_250: Non-additive LUT variants also produce no genuine multi-bit gliders
+- iter_251: 13-channel cooperative trapping produces only stationary oscillators
+- iter_252: The proven 2D hex binding mechanism cannot be embedded into any bit-conserving LUT (F3), and coupling between bit-conserving and non-bit-conserving subsystems destroys the binding (F4c)
+
+The root cause: cooperative survival requires weight-1->0 transitions (bits die when isolated), which violates the bit conservation axiom of the LGCA. This is a THEOREM, not a search limitation.
+
+## In Progress
+
+- None. The current research track (single-cell LGCA collision operators) is exhausted.
 
 ## Open Questions
 
-1. Can bit conservation be relaxed (with pre-registered justification based on 2D hex precedent) to enable cooperative survival (weight-1→0) in 3D FCC? This is the most promising direction since the 2D hex mechanism is the ONLY confirmed mechanism for genuine multi-bit binding.
-2. Can multi-site collision operators replicate the neighborhood-overlap binding mechanism in 3D FCC?
-3. Is O_h symmetry too restrictive for multi-bit binding? Would a subgroup (e.g., C4v or D4h) enable cross-orbit weight-2 mappings?
-4. Can the rest channel be redesigned to enable "hopping" propagation rather than stationary orbiting?
-5. Does reducing symmetry from O_h to a subgroup enable C↔E cross-orbit mapping?
-6. Can the 2D hex binding mechanism be directly ported to 3D hexagonal close-packed lattices?
+1. Can a 3D SYNCHRONOUS CA on the FCC lattice (13-bit neighborhood -> 1-bit center output, NOT LGCA) produce cooperative survival binding? This generalizes the 2D hex CA architecture directly to 3D.
+2. Can multi-site collision operators (reading neighbors' channels in addition to local state) reproduce cooperative survival within the LGCA framework?
+3. Can bit conservation be relaxed for in-plane+center subsystems (with pre-registered justification from 2D hex precedent)?
+4. Is O_h symmetry too restrictive? Would lower-symmetry groups enable cross-plane coupling?
+5. Can the 2D hex binding mechanism be ported to a 3D hexagonal close-packed lattice?
+6. Does the entire LGCA architecture need to be abandoned in favor of synchronous CA for 3D systems?

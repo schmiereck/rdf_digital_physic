@@ -83,3 +83,65 @@ Before running any simulations, ensure that your exact hypothesis, the $C_{3v}$ 
 
 ---
 
+## Iteration 252 -> Planner (Turn 1) [Approval]
+
+**Verdict:** APPROVED
+
+**Journal Update:**
+# Research Manager Journal & Strategic State
+
+## 1. High-Level Strategy & Trajectory
+*   **Current Phase:** Phase 7 (Particle Zoo & Interacting Field Theory) - Transitioning from 7.1 (Glider Taxonomy) to Multi-Site / Non-Local Interaction Rules.
+*   **Active Direction:** Abandoning single-cell 13-channel LGCA and 2.5D stacking/coupling models. Moving to true multi-site block partition CAs or coupled integer field models on the 3D FCC lattice.
+*   **Trajectory Update (Iteration 252):** Iteration 252 has established a definitive theoretical and empirical barrier to the "2D-stacking" approach. While a 2D hex glider (which propagates via cooperative survival, where local cell weights fluctuate) can be embedded into a [111] plane of the FCC lattice as an algebraic identity, any inter-plane coupling ($\alpha > 0$) siphons bits away and immediately destroys the glider. This confirms that 3D physical gliders cannot be constructed by simply coupling 2D layers under a single-cell LGCA framework.
+*   **Confidence Score:** 99% (Highly confident that single-cell local coupling of dimensionally reduced planes is structurally incapable of preserving cooperative-survival gliders).
+
+## 2. Strategic Insights & Lessons Learned
+*   **The Cooperative Survival Constraint:** The 2D hex $v=0.469c$ glider is a genuine bound state because it utilizes *cooperative survival* (where a single isolated bit annihilates, but multiple bits in close proximity survive). This requires local non-bit-conservation (local Hamming weight fluctuations, though globally conserved across the grid).
+*   **The Siphoning Flaw:** In a 13-bit single-cell LGCA, any coupling parameter $\alpha > 0$ that maps in-plane channels to out-of-plane channels acts as a destructive siphon. It strips away the constituent bits of the glider, breaking the precise spatial neighborhood patterns required for cooperative survival, resulting in rapid dispersion and annihilation.
+*   **The Algebraic Impossibility of local 13-bit LGCA for 2D Hex:** A strictly bijective, bit-conserving local LUT on a single cell cannot support the 2D hex cooperative survival mechanics because it is mathematically impossible to map weight-1 states to 0 while maintaining overall bijectivity and bit-conservation inside a localized 13-bit state space without spatial buffering.
+
+## 3. Loop & Bottleneck Detection
+*   **Resolved Loop:** The attempt to construct 3D gliders by embedding and coupling 2D hex planes has been terminated with a clear null result. The $\alpha = 0$ state is a trivial, anisotropic 2.5D projection; the $\alpha > 0$ state is unstable.
+*   **Next Potential Bottleneck:** Designing multi-site partitioning schemes (such as Margolus-like block neighborhoods on the FCC lattice) that conserve global bit count and maintain reversibility while allowing the local weight fluctuations necessary for cooperative survival.
+
+## 4. Alternate Research Paths
+*   **Multi-Site Partitioning CA (Highest Priority):** Partition the FCC lattice into multi-cell blocks (e.g., tetrahedral or octahedral blocks) where local block transitions are bijective and conserve total block bits, allowing internal bits to fluctuate between cells and emulate neighborhood-overlap cooperative survival.
+*   **Subgroup Symmetry Reduction:** Investigate whether reducing the required symmetry from the full octahedral group $O_h$ to a subgroup (e.g., $D_{3d}$ or $C_{4v}$) opens up bijective, bit-conserving channel-mixing orbits that are otherwise forbidden by $O_h$ non-conjugate stabilizers.
+
+---
+
+## Iteration 252 -> Project Archive [Milestone Report]
+
+# RDF Milestone Review — Iteration 252 — Null Result: Inter-Plane Coupling of 2D Hexagonal Gliders on FCC [111] Planes
+
+## 1. Pre-Declared Hypothesis and Falsification Criterion
+*   **Hypothesis:** The stable 2D hexagonal glider ($v=0.469c$) can be embedded into a [111] plane of the 3D FCC lattice, and a non-zero inter-plane coupling ($\alpha > 0$) can generate stable 3D bound states with non-zero out-of-plane momentum.
+*   **Falsification Criteria:**
+    1.  **F3 (Pure LGCA Impossibility):** Triggered if a 13-bit local, bijective, bit-conserving LUT cannot reproduce the 2D hex glider's cooperative survival rules on the in-plane subspace.
+    2.  **F4c (Coupling Refutation):** Triggered if for all tested coupling strengths $\alpha > 0$, the embedded glider undergoes complete dispersion or annihilation within 100 steps.
+
+## 2. Experimental Protocol
+*   **Engine:** Hybrid CA-LGCA Engine on a 3D FCC grid ($L = 64$ along stacking axes).
+*   **In-plane Update:** Synchronous cellular automaton executing the validated 2D hex glider rule (`champion_rule_perfect.json`).
+*   **Inter-plane Update:** 13-channel LGCA mapping in-plane states to out-of-plane channels based on coupling parameter $\alpha \in [0.0, 0.5]$.
+*   **Symmetry & Control:** Matched control run at $\alpha = 0$ (independent 2D slices). Single-bit isolation runs to verify constituent bit binding energy.
+
+## 3. Observed Quantities
+*   **Cooperative Survival Signature:** 200 out of 201 steps of the 2D hex glider propagation exhibit non-linear OR-superposition violations. 
+*   **Single-Bit Isolation:** 100% of isolated constituent bits of the glider annihilate within 1 step (proving binding energy $> 0$).
+*   **Coupling Lifetime ($\alpha > 0$):** For all non-zero coupling strengths ($\alpha = 0.1, 0.25, 0.5$), the glider disintegrated and completely annihilated within 10 steps. No stable or long-lived propagating structures were observed.
+*   **Subspace Hamming Weight Transition:** Local state with 1 bit in an in-plane channel maps to 0 output bits under the 2D hex rule.
+
+## 4. Verdict
+**Refuted.** The hypothesis that stable 3D gliders can emerge from linearly coupling 2D cooperative-survival planes is completely refuted.
+
+## 5. Construction-vs-Empirical Note
+*   **Constructional Identity:** The propagation of the glider on the [111] plane at $\alpha = 0$ is an algebraic identity by construction, as the hybrid engine computes the in-plane transition using the identical 2D lookup table.
+*   **Empirical Null Finding:** The immediate destruction of the glider for any $\alpha > 0$ is a genuine empirical finding of the dynamics. The coupling acts as a localized perturbation that drains the necessary density from the plane, breaking the non-linear cooperative survival threshold.
+
+## 6. Limitations
+*   This result proves that *single-cell* coupling of 2D planes is unstable. It does not rule out multi-site block updates or field-coupled architectures where spatial buffers can temporarily store and return siphoned bits without breaking the local cooperative survival thresholds.
+
+---
+

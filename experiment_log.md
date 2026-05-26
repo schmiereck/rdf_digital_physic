@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 224
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_224: strategy_error
-
-**Analysis:** 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
-
-**Status:** code_error
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner call failed: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
-
-
----
-```yaml
 cached_tokens: 2035566
 cost_usd: 1.19163
 hypothesis: 'phase-224: develop 3D FCC CA engine, find 3D gliders under O_h symmetry,
@@ -1207,4 +1182,62 @@ CRITICAL MATHEMATICAL FINDING: Cross-orbit weight-2 equivariant bijections betwe
 orb
 
 **Notes:** Cooperative trapping with rest channel produces stationary oscillators, not gliders. Rest channel is counterproductive for directed motion.
+
+
+---
+```yaml
+cached_tokens: 0
+campaign: Phase 7 - Particle Zoo
+cost_usd: 2.56703
+hypothesis: 'phase-252: 2D hex glider embedding into [111] plane is an algebraic identity
+  (F3: pure LGCA impossible); inter-plane coupling refuted (F4c: no stable states
+  for alpha>0)'
+input_tokens: 4351237
+iter: 252
+metrics:
+  coupling_alpha0_survival_rate: 1.0
+  coupling_alpha1_survival_rate: 0.0
+  coupling_alpha2_survival_rate: 0.0
+  coupling_alpha3_survival_rate: 0.0
+  coupling_hypothesis_verdict: REFUTED
+  embedded_decomposition_test_passed: true
+  embedded_glider_bit_counts_stable: 3->4 (matches 2D exactly)
+  embedded_glider_survives_alpha0: true
+  embedded_positive_control_matches: true
+  f3_counterexample_pop_in: 1
+  f3_counterexample_pop_out: 0
+  f3_counterexample_state: 1
+  f3_triggered: true
+  f4a_triggered: true
+  f4b_triggered: false
+  f4c_triggered: true
+  hex_glider_binding_lut_entries: 4
+  hex_or_mismatch_ratio: 200/201
+  hex_single_bit_survival: 0/3 survive alone
+output_tokens: 181138
+status: ok
+```
+
+## iter_252: phase-252: 2D hex glider embedding into [111] plane is an algebraic identity (F3: pure LGCA impossible); inter-plane coupling refuted (F4c: no stable states for alpha>0)
+
+**Analysis:** Phase 252 tested whether the proven 2D hex glider rule could be embedded into a
+[111] plane of the 3D FCC lattice, and whether inter-plane coupling could produce
+3D bound states. The results are definitive on both counts:
+
+1. MECHANISM EXTRACTION (252.1b): The hex glider's binding mechanism is cooperative
+survival — 200/201 steps show non-linear OR-superposition violations. Only 4
+critical neighbo
+
+**Status:** ok
+
+**Metrics:** `{'hex_glider_binding_lut_entries': 4, 'hex_or_mismatch_ratio': '200/201', 'hex_single_bit_survival': '0/3 survive alone', 'f3_triggered': True, 'f3_counterexample_state': 1, 'f3_counterexample_pop_in': 1, 'f3_counterexample_pop_out': 0, 'embedded_glider_survives_alpha0': True, 'embedded_glider_bit_counts_stable': '3->4 (matches 2D exactly)', 'embedded_decomposition_test_passed': True, 'embedded_positive_control_matches': True, 'coupling_alpha0_survival_rate': 1.0, 'coupling_alpha1_survival_rate': 0.0, 'coupling_alpha2_survival_rate': 0.0, 'coupling_alpha3_survival_rate': 0.0, 'f4a_triggered': True, 'f4b_triggered': False, 'f4c_triggered': True, 'coupling_hypothesis_verdict': 'REFUTED'}`
+
+**Experimenter view:** Sub-goal 252.0: Pre-registration updated with SRM mandates (construction-vs-empirical
+classification, C3v anisotropy warning, expanded F4a-c falsification criteria).
+
+Sub-goal 252.1b: Mechanism extraction complete. The 2D hex v=0.469c glider uses
+cooperative survival: all 3 individual seed bits annihilate when run alone, but
+the full L-tromino sustains a 4-bit propagating pattern. 200/201 steps sh
+
+**Notes:** F3 and F4c both triggered. Hex glider embedding verified as algebraic identity. Coupling hypothesis refuted.
 
