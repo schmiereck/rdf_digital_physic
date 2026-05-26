@@ -1,9 +1,8 @@
-# RDF Scientific Pre-Registration
+# Research Manager Log - Iteration 253
 
-*   **Iteration:** 253
-*   **Pre-Registration File:** src/pre_registration.md
+## Iteration 253 -> Manager [Proposed Research Plan]
 
-## 1. Hypothesis
+**Proposed Hypothesis:**
 A 3D synchronous cellular automaton on the Face-Centered Cubic (FCC) lattice
 with O_h-symmetric totalistic (Life-like B/S) rules and cooperative survival
 (S does not contain 0 — bits with zero neighbors die) can produce genuine
@@ -15,7 +14,7 @@ in isolation, dies within ≤50 steps — proving binding energy > 0 via the
 cooperative survival mechanism (the only mechanism proven to produce genuine
 multi-bit binding in any dimension, per iter_250-252).
 
-## 2. Falsification Criterion
+**Proposed Falsification Criterion:**
 The hypothesis is refuted if ALL of the following hold after testing ≥10,000
 totalistic B/S rules (via designed sweep + evolutionary search):
 - F1: No rule produces any propagating pattern surviving ≥300 steps from any
@@ -30,7 +29,7 @@ totalistic B/S rules (via designed sweep + evolutionary search):
 A single genuine bound glider passing F1-F4 refutes the null and supports the
 hypothesis.
 
-## 3. Proposed Method
+**Proposed Method:**
 Step 1 — Build 3D Synchronous CA Engine (src/synchronous_ca_fcc.py):
   - FCC lattice with toroidal boundaries, 13-bit neighborhood (center + 12
     cuboctahedron neighbors at offsets (±1,±1,0), (±1,0,±1), (0,±1,±1))
@@ -65,4 +64,32 @@ conservation. LGCA bit conservation is PROVEN incompatible with cooperative
 survival (F3, iter_252). This is the minimal architectural change needed.
 
 ---
-*Created automatically by the RDF Orchestrator prior to iteration execution.*
+
+## Iteration 253 -> Planner [Strategic Guidance]
+
+# Manager's Note: Strategic Guidance
+
+## 1. The Conservation & Reversibility Ultimatum (Scientific Discipline)
+The proposal to transition to a synchronous, totalistic (Life-like) CA on the FCC lattice represents a significant departure from our core Master Goal constraints: **reversibility** and **bit conservation**. 
+
+While your mathematical proof in Iteration 252 demonstrated that a single-cell LGCA collision operator is fundamentally incompatible with cooperative survival, abandoning conservation laws entirely cannot be our end-state. 
+
+Therefore, you are authorized to proceed with this 3D synchronous totalistic CA search **strictly as a Feasibility Benchmark**. The strategic value of this iteration is to establish whether the 3D FCC lattice geometry can support cooperative-survival gliders *at all* when conservation is relaxed. If successful, any discovered glider will serve as a kinematic template. The ultimate goal must remain compiling these behaviors back into a reversible, bit-conserving framework (such as a multi-site block-partition CA). 
+
+**Your pre-registration and final report must explicitly frame this run as a non-physical topological feasibility study, not a physical model.**
+
+## 2. Pre-Registration Mandate & Rigorous Falsification
+The Orchestrator will automatically write and commit your hypothesis and falsification criteria to `src/pre_registration.md` before execution. Your sub-agents must read and strictly adhere to this file. 
+
+To ensure the utmost rigor, your falsification criteria must address the following totalistic CA exploits:
+*   **The Bloomer Exploit:** Totalistic rules frequently exhibit explosive, infinite growth (e.g., "Seeds"-like rules). A candidate is refuted if its bit-count increases monotonically or exceeds $4\times$ the initial seed weight after step 100.
+*   **The Debris Cloud:** Patterns that shed static or chaotic pixels indefinitely while a small core moves are not clean gliders. The moving pattern must remain localized within a bounding box of at most $10\times10\times10$ cells.
+*   **Single-Bit Isolation:** The single-bit decomposition test must be absolute. If *any* single-bit constituent of the seed survives past 50 steps, the candidate is a non-interacting composite, triggering immediate falsification.
+
+## 3. Exploit-Resistant Search Strategy
+Since the totalistic B/S rule space on a 13-bit neighborhood contains $2^{26}$ ($\approx 6.7 \times 10^7$) rules, a blind evolutionary search can easily get trapped in "blooming" or "freezing" local maxima. 
+*   **Symmetry Advantage:** Because the rule is totalistic, it depends only on the neighbor count, meaning the rule itself is $O_h$-equivariant by construction. This is a massive mathematical advantage!
+*   **Phase Boundary targeting:** Initialize your sweeps targeting the chaotic/complex phase boundary (estimating $\lambda$ parameter or utilizing sparse B/S sets where $S$ does not contain 0, and $B$ is highly constrained). Do not waste compute on rules where $0 \in B$ (which causes vacuum fluctuations) or $0 \in S$ (which prevents isolated bit decay).
+
+---
+

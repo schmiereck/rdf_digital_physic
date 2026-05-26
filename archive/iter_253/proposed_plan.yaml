@@ -1,0 +1,56 @@
+falsification_criterion: "The hypothesis is refuted if ALL of the following hold after\
+  \ testing ≥10,000\ntotalistic B/S rules (via designed sweep + evolutionary search):\n\
+  - F1: No rule produces any propagating pattern surviving ≥300 steps from any\n \
+  \ small (≤6 bit) seed.\n- F2: Any candidate surviving ≥300 steps has at least one\
+  \ constituent single-bit\n  seed that survives ≥100 steps alone (binding energy\
+  \ = 0, non-interacting\n  composite).\n- F3: Any candidate surviving ≥300 steps\
+  \ fails O_h covariance (dies under ≥1\n  of 48 O_h rotations of the initial seed).\n\
+  - F4: All candidates surviving ≥300 steps are stationary (net displacement < 2\n\
+  \  cells) or explosive (bit count > 10× initial).\nA single genuine bound glider\
+  \ passing F1-F4 refutes the null and supports the\nhypothesis.\n"
+hypothesis: 'A 3D synchronous cellular automaton on the Face-Centered Cubic (FCC)
+  lattice
+
+  with O_h-symmetric totalistic (Life-like B/S) rules and cooperative survival
+
+  (S does not contain 0 — bits with zero neighbors die) can produce genuine
+
+  multi-bit bound gliders with positive binding energy. Specifically: (a) at least
+
+  one such rule, when initialized with a multi-bit seed of ≤6 bits, produces a
+
+  propagating pattern that survives ≥300 CA steps with net displacement ≥5 FCC
+
+  lattice units; and (b) each constituent single-bit seed of the same rule, placed
+
+  in isolation, dies within ≤50 steps — proving binding energy > 0 via the
+
+  cooperative survival mechanism (the only mechanism proven to produce genuine
+
+  multi-bit binding in any dimension, per iter_250-252).
+
+  '
+pre_registration_file: src/pre_registration.md
+proposed_method: "Step 1 — Build 3D Synchronous CA Engine (src/synchronous_ca_fcc.py):\n\
+  \  - FCC lattice with toroidal boundaries, 13-bit neighborhood (center + 12\n  \
+  \  cuboctahedron neighbors at offsets (±1,±1,0), (±1,0,±1), (0,±1,±1))\n  - Totalistic\
+  \ B/S update rule: new_center = f(center_bit, neighbor_count)\n  - Diagnostics:\
+  \ center-of-mass, bit count, net displacement, survival time\n  - Validate with\
+  \ trivial rules (all-die, all-live, known 2D hex analog on [111])\n\nStep 2 — Designed\
+  \ Rule Sweep (src/totalistic_rule_search.py):\n  - Generate ~200 B/S rules: S ⊆\
+  \ {1,...,12}, B ⊆ {1,...,11}, λ ∈ [0.20, 0.50]\n  - Standard seeds: single bits\
+  \ (6), bit pairs (12), L-tromino analogs (8),\n    small random clusters (20)\n\
+  \  - Run 500 steps per rule×seed; filter for survival ≥ 300, displacement ≥ 5,\n\
+  \    bit count ≤ 10× initial\n\nStep 3 — Evolutionary GA (if Step 2 yields no candidates):\n\
+  \  - 26-bit genome (B+S sets), population 500, 20 generations\n  - Fitness: survival\
+  \ × displacement / (1 + |bit_ratio - 1|)\n  - Tournament selection, uniform crossover,\
+  \ bit-flip mutation\n  - Multi-seed evaluation (5 seeds per rule)\n\nStep 4 — Coherence\
+  \ Testing (src/glider_coherence_test.py):\n  - Single-Bit Decomposition Test: each\
+  \ constituent bit dies in ≤50 steps alone\n  - O_h Covariance Test: all 48 rotations\
+  \ of seed produce same survival outcome\n  - Bit Count Stability: no explosion (>10×\
+  \ initial) or annihilation\n\nStep 5 — Documentation: positive result (genuine glider)\
+  \ or first-class null\n  result with totalistic phase diagram characterization on\
+  \ FCC lattice.\n\nJustification for relaxing bit conservation: The 2D hex system\
+  \ (the ONLY\nconfirmed system with genuine binding) is a synchronous CA that violates\
+  \ bit\nconservation. LGCA bit conservation is PROVEN incompatible with cooperative\n\
+  survival (F3, iter_252). This is the minimal architectural change needed.\n"
