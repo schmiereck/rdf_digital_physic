@@ -1,5 +1,7 @@
 # RDF Scientific Pre-Registration
 
+**FEASIBILITY BENCHMARK CLASSIFICATION:** This experiment is a non-physical topological feasibility study. It relaxes bit conservation (a core axiom of the LGCA framework) to test whether the 3D FCC lattice geometry can support cooperative-survival gliders AT ALL when conservation is relaxed. Any discovered glider will serve as a kinematic template only; the ultimate goal remains compiling these behaviors back into a reversible, bit-conserving framework (such as a multi-site block-partition CA). This is NOT a physical model.
+
 *   **Iteration:** 253
 *   **Pre-Registration File:** src/pre_registration.md
 
@@ -21,13 +23,18 @@ totalistic B/S rules (via designed sweep + evolutionary search):
 - F1: No rule produces any propagating pattern surviving ≥300 steps from any
   small (≤6 bit) seed.
 - F2: Any candidate surviving ≥300 steps has at least one constituent single-bit
-  seed that survives ≥100 steps alone (binding energy = 0, non-interacting
+  seed that survives ≥50 steps alone (binding energy = 0, non-interacting
   composite).
 - F3: Any candidate surviving ≥300 steps fails O_h covariance (dies under ≥1
   of 48 O_h rotations of the initial seed).
 - F4: All candidates surviving ≥300 steps are stationary (net displacement < 2
   cells) or explosive (bit count > 10× initial).
-A single genuine bound glider passing F1-F4 refutes the null and supports the
+- F5: Bloomer Exploit — A candidate is refuted if its bit-count increases
+  monotonically or exceeds 4× the initial seed weight after step 100.
+- F6: Debris Cloud — The moving pattern must remain localized within a bounding
+  box of at most 10×10×10 cells after step 100. Patterns shedding static/chaotic
+  debris indefinitely are not clean gliders.
+A single genuine bound glider passing F1-F6 refutes the null and supports the
 hypothesis.
 
 ## 3. Proposed Method
