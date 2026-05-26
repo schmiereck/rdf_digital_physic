@@ -3,31 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 0
-cost_usd: 0.0
-hypothesis: strategy_error
-input_tokens: 0
-iter: 223
-metrics: {}
-output_tokens: 0
-status: code_error
-```
-
-## iter_223: strategy_error
-
-**Analysis:** 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
-
-**Status:** code_error
-
-**Metrics:** `{}`
-
-**Experimenter view:** 
-
-**Notes:** Planner call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
-
-
----
-```yaml
 cached_tokens: 3444426
 cost_usd: 1.25981
 hypothesis: 'phase-223: systematically characterize v=0.469c sub-light glider collisions,
@@ -1151,4 +1126,56 @@ search was confirmed as a smoke test — only 100 candidates tested under a
 single LUT, with 0 novel survivors. Pre-registration updated w
 
 **Notes:** Phase 248 establishes that the FCC LGCA particle zoo is monospecific at the fundamental level. LUT-08 is a non-interacting composite.
+
+
+---
+```yaml
+cached_tokens: 1622016
+campaign: Phase 7 - Particle Zoo
+cost_usd: 3.81865
+hypothesis: 'phase-250: 2D hex glider is genuine (binding energy > 0); 3D FCC single-cell
+  non-additive search yields definitive null result — multi-site interaction rules
+  required'
+input_tokens: 7504095
+iter: 250
+metrics:
+  falsification_criteria_triggered: F2_F3
+  hex_binding_energy: greater_than_zero
+  hex_glider_speed_c: 0.4693
+  hex_glider_verdict: GENUINE_GLIDER
+  hex_or_mismatches: 500_of_501
+  hex_single_bit_survival: 0_of_3_survive_alone
+  nonadditive_candidates_found: 0
+  nonadditive_lut_configs_tested: 128
+  nonadditive_max_binding_energy: 0.0
+  nonadditive_total_simulations: 17248
+  nonadditive_verdict: DEFINITIVE_NULL_RESULT
+  nonadditive_w3plus_variants_tested: 40
+output_tokens: 168523
+status: ok
+```
+
+## iter_250: phase-250: 2D hex glider is genuine (binding energy > 0); 3D FCC single-cell non-additive search yields definitive null result — multi-site interaction rules required
+
+**Analysis:** Phase 250 addressed two critical questions in sequence, as mandated by the
+Research Manager:
+
+1. ABSOLUTE PRIORITY: Is the 2D hex v=0.469c glider genuine or a composite?
+   Result: GENUINE. All 3 constituent bits die when isolated; only the full
+   3-bit L-tromino seed survives. The binding mechanism is cooperative
+   survival through neighborhood-overlap bit creation — a mechanism
+   fundamentall
+
+**Status:** ok
+
+**Metrics:** `{'hex_glider_verdict': 'GENUINE_GLIDER', 'hex_binding_energy': 'greater_than_zero', 'hex_single_bit_survival': '0_of_3_survive_alone', 'hex_or_mismatches': '500_of_501', 'hex_glider_speed_c': 0.4693, 'nonadditive_lut_configs_tested': 128, 'nonadditive_w3plus_variants_tested': 40, 'nonadditive_total_simulations': 17248, 'nonadditive_candidates_found': 0, 'nonadditive_max_binding_energy': 0.0, 'nonadditive_verdict': 'DEFINITIVE_NULL_RESULT', 'falsification_criteria_triggered': 'F2_F3'}`
+
+**Experimenter view:** Sub-goal 250.1 (2D Hex Decomposition Check): The 2D hex v=0.469c glider from
+iter_222 is definitively a GENUINE multi-bit bound particle with binding
+energy > 0 (high confidence). All 3 constituent seed bits annihilate within
+~10 steps when run in isolation, yet the full L-tromino evolves into a
+self-sustaining 4-bit propagating structure. The binding mechanism is
+cooperative survival: the rule's 
+
+**Notes:** 2D hex glider genuine; 3D FCC single-cell non-additive search definitively null. Multi-site interaction rules required.
 

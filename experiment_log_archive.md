@@ -10109,3 +10109,28 @@ status: code_error
 
 **Notes:** Planner call failed: [Errno 11001] getaddrinfo failed
 
+
+---
+```yaml
+cached_tokens: 0
+cost_usd: 0.0
+hypothesis: strategy_error
+input_tokens: 0
+iter: 223
+metrics: {}
+output_tokens: 0
+status: code_error
+```
+
+## iter_223: strategy_error
+
+**Analysis:** 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
+
+**Status:** code_error
+
+**Metrics:** `{}`
+
+**Experimenter view:** 
+
+**Notes:** Planner call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
+
