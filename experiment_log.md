@@ -3,43 +3,6 @@
 
 ---
 ```yaml
-cached_tokens: 3444426
-cost_usd: 1.25981
-hypothesis: 'phase-223: systematically characterize v=0.469c sub-light glider collisions,
-  revealing strictly local transmission, chaotic explosions, and perfect mutual annihilation.'
-input_tokens: 3830286
-iter: 223
-metrics:
-  head_on_final_bits: 364
-  interaction_cross_section_width: 3
-  mixed_rules_found: 0
-  off_axis_final_bits: 8
-  offset_1_final_bits: 0
-  offset_2_final_bits: 343
-  unique_rules_scanned: 151
-output_tokens: 4281
-status: ok
-```
-
-## iter_223: phase-223: systematically characterize v=0.469c sub-light glider collisions, revealing strictly local transmission, chaotic explosions, and perfect mutual annihilation.
-
-**Analysis:** In Phase 223, we focused on transitioning the project from single-particle sub-light speed glider discovery (Phase 222) to multi-particle interactions and collisions on the 2D hexagonal grid, validating the physical realism of our digital physics framework before moving to 3D.
-We addressed two main scientific questions:
-1. Do sub-light gliders support elastic (bouncing) collision dynamics under Ru
-
-**Status:** ok
-
-**Metrics:** `{'head_on_final_bits': 364, 'offset_1_final_bits': 0, 'offset_2_final_bits': 343, 'off_axis_final_bits': 8, 'interaction_cross_section_width': 3, 'unique_rules_scanned': 151, 'mixed_rules_found': 0}`
-
-**Experimenter view:** We have successfully completed a comprehensive physical and kinetic characterization of the v=0.469c sub-light speed glider's collision dynamics under Rule A (champion_rule_perfect.json from Phase 222).
-Our systematic collision experiments across transverse offsets from -4 to +4 (iter_223.7, iter_223.8) revealed three distinct physical regimes:
-1. STRICT LOCALITY / NO INTERACTION (Offsets -4, -3, 
-
-**Notes:** Collision dynamics of the v=0.469c sub-light speed glider fully characterized, showing strictly local cross-section, inelastic chaotic explosion, and perfect mutual annihilation.
-
-
----
-```yaml
 cached_tokens: 0
 cost_usd: 0.0
 hypothesis: strategy_error
@@ -1178,4 +1141,70 @@ self-sustaining 4-bit propagating structure. The binding mechanism is
 cooperative survival: the rule's 
 
 **Notes:** 2D hex glider genuine; 3D FCC single-cell non-additive search definitively null. Multi-site interaction rules required.
+
+
+---
+```yaml
+cached_tokens: 1664584
+campaign: Phase 7 - Particle Zoo
+cost_usd: 4.35321
+hypothesis: 'phase-251: 13-channel FCC LGCA with cooperative trapping (bit-conserving)
+  produces stationary oscillators, not propagating gliders — rest channel is counterproductive
+  under bit conservation'
+input_tokens: 8104167
+iter: 251
+metrics:
+  audit_pass_rate: 1.0
+  control_12ch_completed: false
+  cross_orbit_w2_B_D_possible: false
+  cross_orbit_w2_C_E_possible: false
+  decomposition_tests_completed: false
+  f1_likely_triggered: true
+  f2_likely_triggered: true
+  f5_likely_triggered: true
+  hex_glider_genuine: true
+  hex_glider_speed_c: 0.4693
+  max_3adj_all_prop_score: 251.5
+  max_3adj_with_rest_score: 161.0
+  max_adjacent_both_prop_score: 214.35
+  max_adjacent_with_rest_score: 7.35
+  max_nonadjacent_score: 323.6
+  n_lut_variants: 500
+  n_lut_variants_audited: 500
+  positive_control_passed: true
+  total_search_runs: 2500
+  total_w2_configurations: 256
+  w2_self_map_choices_A: 2
+  w2_self_map_choices_B: 4
+  w2_self_map_choices_C: 4
+  w2_self_map_choices_D: 4
+  w2_self_map_choices_E: 2
+output_tokens: 174092
+status: ok
+```
+
+## iter_251: phase-251: 13-channel FCC LGCA with cooperative trapping (bit-conserving) produces stationary oscillators, not propagating gliders — rest channel is counterproductive under bit conservation
+
+**Analysis:** This phase tested the hypothesis that a 13-channel FCC LGCA with cooperative trapping
+(weight-1 → antiparallel partner) and a rest-mass channel would produce genuine
+multi-bit bound gliders with binding energy > 0.
+
+Three major findings emerged:
+
+1. MATHEMATICAL IMPOSSIBILITY (Group Theory): Cross-orbit equivariant bijections
+between weight-2 orbits C↔E and B↔D are impossible under O_h because the
+
+**Status:** ok
+
+**Metrics:** `{'n_lut_variants': 500, 'n_lut_variants_audited': 500, 'audit_pass_rate': 1.0, 'total_search_runs': 2500, 'positive_control_passed': True, 'hex_glider_genuine': True, 'hex_glider_speed_c': 0.4693, 'max_adjacent_with_rest_score': 7.35, 'max_adjacent_both_prop_score': 214.35, 'max_3adj_with_rest_score': 161.0, 'max_3adj_all_prop_score': 251.5, 'max_nonadjacent_score': 323.6, 'cross_orbit_w2_C_E_possible': False, 'cross_orbit_w2_B_D_possible': False, 'w2_self_map_choices_A': 2, 'w2_self_map_choices_B': 4, 'w2_self_map_choices_C': 4, 'w2_self_map_choices_D': 4, 'w2_self_map_choices_E': 2, 'total_w2_configurations': 256, 'f1_likely_triggered': True, 'f2_likely_triggered': True, 'f5_likely_triggered': True, 'decomposition_tests_completed': False, 'control_12ch_completed': False}`
+
+**Experimenter view:** Sub-goal 251.1 (Infrastructure): Successfully built the 13-channel FCC engine
+(src/fcc_engine_13ch.py) and cooperative trapping LUT infrastructure
+(src/cooperative_lut_13ch.py). 500 LUT variants generated, ALL passing the three
+mandatory audits (bijection, bit conservation, O_h symmetry). Audit pass rate = 1.0.
+
+CRITICAL MATHEMATICAL FINDING: Cross-orbit weight-2 equivariant bijections between
+orb
+
+**Notes:** Cooperative trapping with rest channel produces stationary oscillators, not gliders. Rest channel is counterproductive for directed motion.
 

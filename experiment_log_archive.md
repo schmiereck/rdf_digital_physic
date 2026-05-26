@@ -10134,3 +10134,40 @@ status: code_error
 
 **Notes:** Planner call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. ', 'status': 'RESOURCE_EXHAUSTED'}}
 
+
+---
+```yaml
+cached_tokens: 3444426
+cost_usd: 1.25981
+hypothesis: 'phase-223: systematically characterize v=0.469c sub-light glider collisions,
+  revealing strictly local transmission, chaotic explosions, and perfect mutual annihilation.'
+input_tokens: 3830286
+iter: 223
+metrics:
+  head_on_final_bits: 364
+  interaction_cross_section_width: 3
+  mixed_rules_found: 0
+  off_axis_final_bits: 8
+  offset_1_final_bits: 0
+  offset_2_final_bits: 343
+  unique_rules_scanned: 151
+output_tokens: 4281
+status: ok
+```
+
+## iter_223: phase-223: systematically characterize v=0.469c sub-light glider collisions, revealing strictly local transmission, chaotic explosions, and perfect mutual annihilation.
+
+**Analysis:** In Phase 223, we focused on transitioning the project from single-particle sub-light speed glider discovery (Phase 222) to multi-particle interactions and collisions on the 2D hexagonal grid, validating the physical realism of our digital physics framework before moving to 3D.
+We addressed two main scientific questions:
+1. Do sub-light gliders support elastic (bouncing) collision dynamics under Ru
+
+**Status:** ok
+
+**Metrics:** `{'head_on_final_bits': 364, 'offset_1_final_bits': 0, 'offset_2_final_bits': 343, 'off_axis_final_bits': 8, 'interaction_cross_section_width': 3, 'unique_rules_scanned': 151, 'mixed_rules_found': 0}`
+
+**Experimenter view:** We have successfully completed a comprehensive physical and kinetic characterization of the v=0.469c sub-light speed glider's collision dynamics under Rule A (champion_rule_perfect.json from Phase 222).
+Our systematic collision experiments across transverse offsets from -4 to +4 (iter_223.7, iter_223.8) revealed three distinct physical regimes:
+1. STRICT LOCALITY / NO INTERACTION (Offsets -4, -3, 
+
+**Notes:** Collision dynamics of the v=0.469c sub-light speed glider fully characterized, showing strictly local cross-section, inelastic chaotic explosion, and perfect mutual annihilation.
+

@@ -1,20 +1,23 @@
 # Research Manager Journal & Strategic State
 
 ## 1. High-Level Strategy & Trajectory
-*   **Current Phase:** Phase 7 (Particle Zoo & Interacting Field Theory) - Transitioning from 7.1 (Glider Taxonomy) to Multi-Site Interaction Rules.
-*   **Active Direction:** Formulating multi-site collision operators that break the single-cell isolation constraint of standard LGCAs to enable genuine multi-bit bound states in 3D FCC space.
-*   **Trajectory Update (Iteration 250):** Iteration 250 has successfully resolved the critical architectural division between our 2D and 3D systems. We have empirically verified that the 2D Hex v=0.469c glider is a **genuine, dynamically bound cooperative structure** (binding energy $>0.0$, as isolated components immediately decay), whereas the 3D FCC single-cell LGCA architecture is **structurally incapable** of producing such bound states, even when generalized to non-additive O_h-symmetric LUTs. This completes our taxonomy search under the single-cell paradigm and shifts our focus to multi-site interaction rules.
-*   **Confidence Score:** 98% (Absolute clarity on the mathematical limitations of single-cell LGCAs and the mechanism supporting the 2D Hex glider).
+*   **Current Phase:** Phase 7 (Particle Zoo & Interacting Field Theory) - Transitioning from 7.1 (Glider Taxonomy) to Multi-Site / Non-Local Interaction Rules.
+*   **Active Direction:** Investigating mathematical and physical formulations of multi-site interaction rules on the 3D FCC lattice, specifically to bypass the single-cell and weight-2 orbit limitations identified in Iteration 251.
+*   **Trajectory Update (Iteration 251):** Iteration 251 has established a major theoretical and empirical roadblock for the 13-channel (rest-mass) single-cell LGCA architecture. We have demonstrated that:
+    1. Group-theoretic constraints prevent any $O_h$-equivariant bijections between weight-2 orbits ($C \leftrightarrow E$ and $B \leftrightarrow D$) due to non-conjugate stabilizer subgroups. This mathematically rules out simple weight-2 channel mixing.
+    2. The addition of a rest-mass channel to cooperative trapping rules acting on adjacent 2-bit seeds produces stationary oscillators rather than moving gliders, dropping average displacement by 29x (7.35 vs 214.35).
+    These findings strongly indicate that single-cell LGCA models—even with a rest channel—cannot support genuine, moving multi-bit bound states. This solidifies our pivot to true multi-site (neighborhood-overlap) or field-coupled architectures.
+*   **Confidence Score:** 99% (Highly confident in the mathematical impossibility of single-cell $O_h$ weight-2 mixing and the freezing effect of the rest channel).
 
 ## 2. Strategic Insights & Lessons Learned
-*   **The Neighborhood-Overlap Advantage:** The 2D Hex CA operates on a neighborhood-to-center update model. This allows adjacent cells to interact through overlapping neighborhoods, enabling non-additive "bit-creation at a distance" which acts as the cohesive force (the "glue") holding the v=0.469c glider together.
-*   **The 3D FCC Single-Cell Constraint:** In contrast, the 3D FCC LGCA relies on a strictly localized channel-to-channel collision step ($C: \mathbb{B}^{12} \to \mathbb{B}^{12}$). Bits in neighboring cells never occupy the same cell during standard propagation, meaning they cannot interact. Even with non-additive LUT mutations, the lack of spatial neighborhood overlap prevents the formation of cohesive multi-bit gliders in vacuum.
-*   **The Paradigm Shift:** To obtain genuine 3D particles with non-zero binding energy, we must move away from the traditional single-cell collision operator and design rules where adjacent lattice sites exchange momentum or latch state based on mutual proximity.
+*   **The Stabilizer Subgroup Barrier:** On the FCC lattice, different orbits under the $O_h$ symmetry group have non-conjugate stabilizer subgroups. Consequently, we cannot construct a symmetric, bijective rule that maps elements of one weight-2 orbit directly to another (e.g., swapping a pair of parallel channels for a pair of orthogonal channels). This severely restricts the algebraic design space for single-cell collisions.
+*   **The Rest-Mass Trapping Paradox:** A rest-mass channel intended to act as a binding core instead acts as an absolute kinetic brake. Cooperative trapping forces the propagating bits to orbit or cycle around the rest bit, locking the center of mass in place and producing stationary oscillators rather than translating composites.
+*   **The Conservation Duality:** Our positive control (2D Hex $v=0.469c$ glider) succeeds precisely because it does *not* enforce strict per-cell bit conservation (the local bit count fluctuates between 3 and 4 during its period-6 propagation, though the total grid bit count remains conserved). Designing 3D rules with similar behavior requires shifting from per-cell channel permutations ($C: \mathbb{B}^{12} \to \mathbb{B}^{12}$) to multi-site blocks or field-like updates where local bit count fluctuates but global bit count is strictly conserved.
 
 ## 3. Loop & Bottleneck Detection
-*   **Resolved Loop:** We have successfully terminated the single-cell 3D FCC glider sweep loop. We now possess mathematical and empirical proof that further searches in this restricted state space are futile.
-*   **Next Potential Bottleneck:** Ensuring that multi-site rules preserve strict reversibility (bijectivity) and bit conservation on a 12-channel 3D FCC lattice, which is combinatorially much more demanding than single-cell operations.
+*   **Resolved Loop:** The search for stable gliders using the 13-channel single-cell rest-mass model has been terminated with a definitive null result.
+*   **Next Potential Bottleneck:** Ensuring global conservation laws (total bit count and bijectivity/reversibility) in a multi-site or field-coupled framework. Multi-site update schemes often struggle to maintain strict bijectivity without complex, non-local coordination.
 
 ## 4. Alternate Research Paths
-*   **Multi-Site Interaction LGCAs (Highest Priority):** Develop a framework for multi-site collisions where the state transitions at site $x$ depend on the occupancies of adjacent sites $x + e_i$.
-*   **Sub-Lattice Field Coupling:** Explore representing particles as localized wave packets in coupled field variables rather than purely localized discrete channel bits.
+*   **Multi-Site Partitioning CA (Highest Priority):** Partition the 3D FCC lattice into blocks (e.g., 4-cell tetrahedral blocks or 8-cell octahedral blocks) and perform bijective, bit-conserving permutations on these multi-site blocks to mimic the neighborhood-overlap dynamics of 2D Hex.
+*   **Coupled Integer Field Models:** Formulate the CA as coupled integer-valued fields on the FCC lattice nodes where local transitions emulate wave packet propagation and self-focusing, rather than tracking discrete point-like channel bits.
