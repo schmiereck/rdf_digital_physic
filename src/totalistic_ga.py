@@ -8,7 +8,7 @@ Evolutionary GA for totalistic B/S rules on the FCC lattice.
 Triggered because the designed sweep yielded < 5 candidates.
 Population: 200 rules.
 Genome: 26-bit (bits 0-10 = B for counts 1-11, bits 11-23 = S for counts 1-12).
-Generations: 50 (or until total unique rules evaluated >= 10,000).
+Generations: 30 (fixed).
 """
 
 from __future__ import annotations
@@ -41,9 +41,9 @@ from synchronous_ca_fcc import (
 # ---------------------------------------------------------------------------
 L = 40
 CENTER = (L // 2, L // 2, L // 2)
-GA_STEPS = 300
+GA_STEPS = 200
 POP_SIZE = 200
-GENERATIONS = 50
+GENERATIONS = 30
 TOURNAMENT_SIZE = 3
 MUTATION_P = 0.1
 ELITE_SIZE = 5
@@ -177,14 +177,52 @@ def evaluate_rule(B: set, S: set, seeds: list) -> float:
         grid = make_grid()
         set_cells(grid, scoords)
         initial_bits = len(scoords)
+        if initial_bits == 0:
+            fitnesses.append(0.0)
+            continue
 
-        result = simulate(grid, B, S, steps=GA_STEPS)
-        bit_counts = result["bit_counts"]
-        coms = result["coms"]
-        extents = result["extents"]
-        survival_time = result["survival_time"]
+        bit_counts = [int(grid.sum())]
+        raw_com0 = trig_com(grid, L)
+        coms = [raw_com0]
+        extents = [bounding_extent(grid, L)]
+        survival_time = GA_STEPS
+        exploded = False
 
-        survival_score = min(survival_time / 300.0, 1.0)
+        g = grid
+        for step in range(1, GA_STEPS + 1):
+            g = step_ca(g, B, S)
+            bc = int(g.sum())
+            bit_counts.append(bc)
+
+            if bc == 0:
+                # early death
+                coms.append(coms[-1])
+                extents.append(0)
+                survival_time = step
+                for _ in range(step + 1, GA_STEPS + 1):
+                    bit_counts.append(0)
+                    coms.append(coms[-1])
+                    extents.append(0)
+                break
+            elif bc > 4 * initial_bits:
+                # early explosion
+                survival_time = step
+                fitnesses.append(0.0)
+                exploded = True
+                break
+            else:
+                raw_com = trig_com(g, L)
+                unwrapped = unwrap_com(coms[-1], raw_com, L)
+                coms.append(unwrapped)
+                extents.append(bounding_extent(g, L))
+        else:
+            # completed all steps without break
+            survival_time = GA_STEPS
+
+        if exploded:
+            continue
+
+        survival_score = min(survival_time / float(GA_STEPS), 1.0)
 
         eval_step = min(survival_time, GA_STEPS)
         if len(coms) > eval_step:
@@ -237,7 +275,7 @@ def main():
     seeds = generate_ga_seeds()
     print(f"GA seeds: {len(seeds)}")
     print(f"Population: {POP_SIZE}, Generations: {GENERATIONS}")
-    print(f"Target: evaluate >= 10,000 unique rules total")
+    print(f"GA_STEPS: {GA_STEPS}")
     print()
 
     # Load previously evaluated rules from sweep if available
@@ -321,59 +359,13 @@ def main():
             total_unique = previously_evaluated + len(_globally_evaluated_rules)
             print(f"Gen {gen:02d}: best_f={best_f:.4f}, mean_f={mean_f:.4f}, unique_rules={total_unique}")
 
-            # Continue until we hit 10,000 unique rules evaluated
-            if gen >= GENERATIONS and total_unique >= 10000:
-                break
-
-        # If we haven't reached 10,000 unique rules, keep running generations
-        extra_gen = 0
-        while total_unique < 10000:
-            extra_gen += 1
-            sorted_idx = np.argsort(fitnesses)[::-1]
-            new_pop = [population[idx].copy() for idx in sorted_idx[:ELITE_SIZE]]
-            while len(new_pop) < POP_SIZE:
-                p1 = tournament_select(population, fitnesses)
-                p2 = tournament_select(population, fitnesses)
-                child = crossover(p1, p2)
-                child = mutate(child)
-                new_pop.append(child)
-            population = new_pop
-
-            fitnesses = []
-            for genome in population:
-                fit_val = get_fitness(genome)
-                fitnesses.append(fit_val)
-
-            best_idx = int(np.argmax(fitnesses))
-            best_genome = population[best_idx]
-            best_B, best_S = genome_to_rule(best_genome)
-            best_rule_str = format_rule(best_B, best_S)
-            best_f = fitnesses[best_idx]
-            mean_f = float(np.mean(fitnesses))
-
-            if best_f > best_fitness_ever:
-                best_fitness_ever = best_f
-                best_ever = best_genome
-
-            writer.writerow({
-                "gen": GENERATIONS + extra_gen,
-                "rule_str": best_rule_str,
-                "mean_fitness": round(mean_f, 6),
-                "best_fitness": round(best_f, 6),
-            })
-            f.flush()
-
-            total_unique = previously_evaluated + len(_globally_evaluated_rules)
-            print(f"Gen {GENERATIONS + extra_gen:02d}: best_f={best_f:.4f}, mean_f={mean_f:.4f}, unique_rules={total_unique}")
-
     print(f"\nGA finished. Total unique rules evaluated: {total_unique}")
     print(f"Best fitness ever: {best_fitness_ever:.6f}")
     if best_ever is not None:
         best_B, best_S = genome_to_rule(best_ever)
         print(f"Best rule: {format_rule(best_B, best_S)}")
 
-    # Identify candidate rules (fitness > 0 on any seed)
-    # Re-evaluate best rules on full seed suite to find candidates
+    # Identify candidate rules (fitness > 0.01 on any seed)
     print("\nRe-evaluating top rules on full seed suite for candidate identification ...")
     candidate_rules = []
     # Check top 20 unique rules by fitness
@@ -386,15 +378,15 @@ def main():
 
     top_rules = sorted(unique_rules.items(), key=lambda x: x[1], reverse=True)[:20]
     for rstr, fit in top_rules:
-        if fit > 0:
+        if fit > 0.01:
             candidate_rules.append(rstr)
 
-    print(f"Candidate rules with fitness > 0: {len(candidate_rules)}")
+    print(f"Candidate rules with fitness > 0.01: {len(candidate_rules)}")
 
     # Save GA summary
     ga_summary = {
         "total_unique_rules_evaluated": total_unique,
-        "generations_run": GENERATIONS + extra_gen,
+        "generations_run": GENERATIONS,
         "best_fitness": best_fitness_ever,
         "best_rule": format_rule(*genome_to_rule(best_ever)) if best_ever else None,
         "candidate_rules": candidate_rules,
