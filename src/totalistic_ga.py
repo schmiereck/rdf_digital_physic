@@ -250,18 +250,24 @@ def main():
     else:
         previously_evaluated = 0
 
+    fitness_cache = {}
+
+    def get_fitness(genome) -> float:
+        B, S = genome_to_rule(genome)
+        rstr = format_rule(B, S)
+        if rstr not in fitness_cache:
+            fitness_cache[rstr] = evaluate_rule(B, S, seeds)
+            _globally_evaluated_rules.add(rstr)
+        return fitness_cache[rstr]
+
     # Initialize population
     population = [random_genome() for _ in range(POP_SIZE)]
-    for g in population:
-        B, S = genome_to_rule(g)
-        _globally_evaluated_rules.add(format_rule(B, S))
 
     # Evaluate initial population
     fitnesses = []
     for i, genome in enumerate(population):
-        B, S = genome_to_rule(genome)
-        f = evaluate_rule(B, S, seeds)
-        fitnesses.append(f)
+        fit_val = get_fitness(genome)
+        fitnesses.append(fit_val)
         if (i + 1) % 50 == 0:
             print(f"  Initial eval {i + 1}/{POP_SIZE} ...")
 
@@ -287,14 +293,11 @@ def main():
 
             population = new_pop
 
-            # Evaluate new population (skip re-evaluation of known rules? No, evaluate all)
+            # Evaluate new population using the fitness cache
             fitnesses = []
             for i, genome in enumerate(population):
-                B, S = genome_to_rule(genome)
-                rstr = format_rule(B, S)
-                _globally_evaluated_rules.add(rstr)
-                f = evaluate_rule(B, S, seeds)
-                fitnesses.append(f)
+                fit_val = get_fitness(genome)
+                fitnesses.append(fit_val)
 
             best_idx = int(np.argmax(fitnesses))
             best_genome = population[best_idx]
@@ -338,11 +341,8 @@ def main():
 
             fitnesses = []
             for genome in population:
-                B, S = genome_to_rule(genome)
-                rstr = format_rule(B, S)
-                _globally_evaluated_rules.add(rstr)
-                f = evaluate_rule(B, S, seeds)
-                fitnesses.append(f)
+                fit_val = get_fitness(genome)
+                fitnesses.append(fit_val)
 
             best_idx = int(np.argmax(fitnesses))
             best_genome = population[best_idx]
@@ -382,7 +382,7 @@ def main():
         B, S = genome_to_rule(genome)
         rstr = format_rule(B, S)
         if rstr not in unique_rules:
-            unique_rules[rstr] = evaluate_rule(B, S, seeds)
+            unique_rules[rstr] = fitness_cache.get(rstr, 0.0)
 
     top_rules = sorted(unique_rules.items(), key=lambda x: x[1], reverse=True)[:20]
     for rstr, fit in top_rules:
