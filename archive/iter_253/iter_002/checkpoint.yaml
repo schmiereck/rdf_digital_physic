@@ -1,78 +1,73 @@
 complexity: planner
 estimated_runtime_sec: 3600
 iter_id: '253.2'
-started_at: '2026-05-26T18:17:32.682603'
+started_at: '2026-05-27T07:22:08.862219'
 status: running
-task: "You are executing Step 2-5 of the pre-registered experiment for iteration 253.\
-  \ READ src/pre_registration.md FIRST and strictly adhere to all falsification criteria\
-  \ F1-F6.\n\n## Context\nThe 3D synchronous CA engine on FCC lattice has been built\
-  \ and validated at src/synchronous_ca_fcc.py. It provides:\n- `step_ca(grid, B,\
-  \ S)` — one synchronous totalistic B/S update step\n- `simulate(grid, B, S, steps)`\
-  \ — full simulation with COM, bit_count, bounding_box tracking\n- `trig_com(grid,\
-  \ L)` — toroidal center-of-mass\n- `unwrap_com(prev, raw, L)` — unwrapped COM for\
-  \ displacement tracking\n- `bounding_extent(grid, L)` — bounding box size\n- `format_rule(B,\
-  \ S)` — rule string\n- `lambda_param(B, S)` — Langton's lambda for 13-neighbor system\n\
-  - `validate_engine()` — validation (already passed all tests)\n\nThe 12 FCC neighbor\
-  \ offsets are: (0,1,0), (0,-1,0), (0,0,1), (0,0,-1), (0,1,-1), (0,-1,1), (1,1,1),\
-  \ (1,1,0), (1,0,1), (-1,-1,-1), (-1,-1,0), (-1,0,-1)\n\n## Task: Execute Full Search\
-  \ Pipeline\n\n### Step 2 — Designed Rule Sweep\nCreate src/totalistic_rule_search.py.\
-  \ Generate and test B/S rules on the FCC lattice:\n\n**Rule Generation Strategy:**\n\
-  - Target the phase boundary between order and chaos (Langton's lambda ≈ 0.25-0.45\
-  \ for 13-neighbor system)\n- Key constraint from SRM: 0 ∉ B (no vacuum fluctuations)\
-  \ and 0 ∉ S (cooperative survival — isolated bits die)\n- B ⊆ {1,...,11}, S ⊆ {1,...,12}\
-  \ (NOT containing 0)\n- Generate ~200 rules:\n  - 100 sparse rules (|B| ≤ 2, |S|\
-  \ ≤ 3) at various lambda values\n  - 50 medium rules (|B| = 2-3, |S| = 3-5)  \n\
-  \  - 50 rules guided by lambda targeting (pick B,S giving lambda in [0.25, 0.45])\n\
-  \n**Seed Design:**\n- Single bits at center: (20,20,20) — test for cooperative survival\n\
-  - Bit pairs: 2 adjacent bits (6 axis-aligned pairs + 6 diagonal pairs = 12)\n- L-tromino\
-  \ analogs: 3 adjacent bits forming an L-shape (8 variants along different axes)\n\
-  - Small random clusters: 3-6 bits in a compact arrangement (20 variants)\n- Total:\
-  \ ~46 seeds per rule\n\n**Simulation Parameters:**\n- Grid: 40×40×40 (large enough\
-  \ for glider travel without boundary effects)\n- Steps: 500 per rule×seed\n- Track:\
-  \ bit_count, unwrapped_com, bounding_extent at each step\n\n**Filtering (apply ALL\
-  \ falsification criteria):**\n- Survival: bit_count > 0 at step 300\n- Displacement:\
-  \ net_displacement ≥ 5 lattice units over 300+ steps\n- Bounding box: bounding_extent\
-  \ ≤ 10 cells after step 100 (F6: debris cloud)\n- Bloom check: bit_count ≤ 4× initial_seed_weight\
-  \ after step 100 (F5: bloomer)\n- Cooperative survival: single-bit seeds must die\
-  \ within ≤50 steps (F2)\n\n### Step 3 — Evolutionary GA (if Step 2 yields < 5 candidates)\n\
-  Create src/totalistic_ga.py. If the designed sweep doesn't find candidates:\n\n\
-  **GA Parameters:**\n- Genome: 26-bit (bits 0-10 = B set for counts 1-11, bits 11-23\
-  \ = S set for counts 1-12, bits 24-25 unused)\n  - ENFORCE: 0 ∉ B and 0 ∉ S by construction\n\
-  - Population: 200 rules\n- Generations: 30\n- Fitness function (multi-objective,\
-  \ exploit-resistant):\n  - survival_score = min(survival_steps / 300, 1.0)  (survive\
-  \ at least 300 steps)\n  - displacement_score = min(net_displacement / 10, 1.0)\
-  \  (need real motion)\n  - compact_score = 1.0 if max_bounding_box ≤ 10 else 0.0\
-  \  (F6)\n  - no_bloom_score = 1.0 if max_bit_ratio ≤ 4.0 else 0.0  (F5)\n  - fitness\
-  \ = survival_score * displacement_score * compact_score * no_bloom_score\n- Evaluation:\
-  \ 5 seeds per rule (L-tromino analogs, bit pairs, small clusters)\n- Take mean fitness\
-  \ across seeds\n- Selection: tournament (size 3)\n- Crossover: uniform crossover\
-  \ on 26-bit genome, then enforce constraints\n- Mutation: bit-flip with p=0.1 per\
-  \ bit\n- Elitism: top 5 survive unchanged\n- Track total rules evaluated to hit\
-  \ ≥10,000 total (sweep + GA)\n\n### Step 4 — Coherence Testing (for any candidates\
-  \ passing the sweep/GA filters)\nCreate src/glider_coherence_test.py. For each candidate\
-  \ rule+seed passing filters:\n\n1. **Single-Bit Decomposition Test (F2):** Run each\
-  \ constituent bit of the seed in isolation. If ANY single bit survives ≥50 steps,\
-  \ the candidate is a non-interacting composite → FAIL.\n2. **O_h Covariance Test\
-  \ (F3):** Apply all 48 O_h rotations to the seed. The O_h group on the FCC lattice\
-  \ permutes the 12 neighbor channels. Use the transforms from src/rigorous_glider_audit.py\
-  \ (build_oh_transforms()). Rotate each bit's coordinates by the O_h rotation matrix\
-  \ M_g, and verify the rotated seed also produces a surviving, propagating pattern.\
-  \ If ANY rotation kills the pattern → FAIL.\n   - For totalistic rules, the RULE\
-  \ is O_h-equivariant by construction. The test is whether the SEED survives under\
-  \ rotation (i.e., the glider isn't exploiting a specific axis).\n3. **Bloom Re-check\
-  \ (F5):** Verify bit_count never exceeds 4× initial at step 100+.\n4. **Debris Re-check\
-  \ (F6):** Verify bounding_extent ≤ 10 at step 100+.\n5. **Full 300-step run:** Verify\
-  \ survival ≥ 300 steps with displacement ≥ 5.\n\n### Step 5 — Documentation\nWrite\
-  \ results to archive/iter_253/results/:\n- `sweep_results.csv`: columns = rule_str,\
-  \ seed_id, survival, displacement, max_bit_ratio, max_bounding_box, verdict\n- `ga_results.csv`\
-  \ (if GA ran): columns = gen, rule_str, mean_fitness, best_fitness\n- `coherence_results.csv`:\
-  \ columns = rule_str, seed_id, decomposition_pass, oh_covariance_pass, bloom_pass,\
-  \ debris_pass, full_pass\n- `phase_diagram.csv`: aggregate statistics per rule lambda\
-  \ value — fraction of seeds surviving, mean displacement, etc.\n- `summary.json`:\
-  \ overall verdict, total rules tested, candidates found, candidates passing coherence\n\
-  \nIf NO candidates pass all coherence tests, this is a FIRST-CLASS NULL RESULT.\
-  \ Document the totalistic phase diagram on the FCC lattice — what lambda ranges\
-  \ produce survival, what produce explosion, what produce immediate death. This characterization\
-  \ is scientifically valuable regardless of outcome.\n\nCRITICAL: Read src/pre_registration.md\
-  \ and strictly follow F1-F6. Every candidate must pass ALL criteria. Report negative\
-  \ results honestly."
+task: "You are executing Steps 2-5 of the pre-registered experiment for iteration\
+  \ 253. READ src/pre_registration.md FIRST and strictly adhere to all falsification\
+  \ criteria F1-F6.\n\n## Context\nThe 3D synchronous CA engine (src/synchronous_ca_fcc.py)\
+  \ has been built and validated (Step 1 done). A designed sweep (Step 2) already\
+  \ completed and found **0 candidates** out of 9,200 evaluations (200 rules × 46\
+  \ seeds). The GA (Step 3) was interrupted at generation 10 with best fitness ~0.007.\n\
+  \n## Existing Results (DO NOT re-run the sweep)\nThe sweep results are in archive/iter_253/results/:\n\
+  - sweep_summary.json: total_rules=200, total_seeds=46, cooperative_rules=200, candidate_count=0\n\
+  - sweep_results.csv: detailed per-rule per-seed results\n- phase_diagram.csv: lambda\
+  \ vs survival/displacement\n\n## Your Tasks (execute sequentially)\n\n### Task A:\
+  \ Re-run the GA (src/totalistic_ga.py)\nThe GA crashed due to timeout at gen 10.\
+  \ Re-run it. IMPORTANT modifications needed before running:\n1. Read src/totalistic_ga.py\
+  \ carefully\n2. The GA currently tries to reach 10,000 unique rules which is too\
+  \ many generations. Modify it to cap at GENERATIONS=30 (already 50, but the while\
+  \ loop extending to 10,000 rules must be removed or capped to at most 30 extra generations).\
+  \ The goal is to complete 30-50 generations total, not 10,000 unique rules.\n3.\
+  \ Reduce GA_STEPS from 300 to 200 (matches pre-registration)\n4. Add early death\
+  \ termination: if bit_count hits 0 at any step, stop simulation immediately (this\
+  \ is already handled in simulate() but verify)\n5. Add explosion termination: if\
+  \ bit_count exceeds 4× initial_bits at any step, terminate and return minimum fitness.\
+  \ This must be added to the evaluate_rule function.\n6. Run the modified GA: `cd\
+  \ src && python totalistic_ga.py`\n7. Save results to archive/iter_253/results/\n\
+  \n### Task B: Post-filter with Three-Test Coherence Protocol (Step 3)\nIf ANY candidate\
+  \ rule emerges from the GA (fitness > 0.01), apply:\n1. Single-Bit Decomposition\
+  \ Test: for the champion seed, remove each constituent bit and re-run. ALL bits\
+  \ must fail to survive alone.\n2. Collision Coherence Test: check if glider maintains\
+  \ structure under small perturbation.\n3. O_h Covariance Test: rotate the glider\
+  \ seed by 48 O_h elements and verify survival (for totalistic rules, only seed geometry\
+  \ matters).\n\nIf NO candidates emerge (most likely given sweep results), formally\
+  \ document this as F1 evidence.\n\n### Task C: Positive Control (Step 4) — CRITICAL\n\
+  Verify that the 2D hex glider rule (from iter_222) maps correctly into the totalistic\
+  \ B/S framework on a 2D hex lattice. This validates that the experimental pipeline\
+  \ CAN in principle discover cooperative survival binding.\n\nThe 2D hex rule has\
+  \ these properties:\n- Neighborhood: 6 hex neighbors + 1 center = 7 cells\n- Totalistic\
+  \ rule: B/S notation on 6-neighbor counts\n- The champion glider (v=0.469c) uses\
+  \ cooperative survival where isolated bits die\n\nWrite a quick validation script\
+  \ (src/validate_hex_positive_control.py) that:\n1. Implements a 2D hex synchronous\
+  \ CA with the hex glider's B/S rule\n2. Seeds the L-tromino pattern\n3. Runs 200\
+  \ steps\n4. Confirms the glider propagates with v ≈ 0.469c\n5. Confirms single-bit\
+  \ decomposition (each bit alone dies)\n6. Saves results to archive/iter_253/results/positive_control.json\n\
+  \nIf you can't determine the exact B/S parameters from the codebase, use the known\
+  \ mechanism: cooperative survival requires that weight-1 neighborhoods map to 0\
+  \ (bits die when isolated). A B/S rule like B={2,3}/S={2,3} on a hex lattice is\
+  \ a reasonable starting point. Check src/experiment_250_hex_decomposition.py and\
+  \ src/simulate_hex.py for the actual hex rule parameters.\n\n### Task D: Semi-Totalistic\
+  \ Analysis (Step 5) — If F3 is triggered\nGiven the sweep found 0 candidates, F3\
+  \ is likely triggered (totalistic rule space too coarse). Test semi-totalistic rules\
+  \ that distinguish center-bit state:\n1. Modify the rule to be semi-totalistic:\
+  \ R(center, neighbor_count) → {0,1}\n   This doubles the rule space to 2^26 ≈ 67M\
+  \ rules (center=0/1 × 13 counts each)\n2. Search a random sample of 500 semi-totalistic\
+  \ rules on the same seed set\n3. Apply the same fitness function\n4. If semi-totalistic\
+  \ rules produce candidates, this confirms the totalistic constraint is the bottleneck\n\
+  5. Save results to archive/iter_253/results/semi_totalistic_results.json\n\n###\
+  \ Task E: Formal Falsification Evaluation\nEvaluate ALL falsification criteria F1-F6\
+  \ from pre_registration.md:\n- F1: No totalistic rule produces propagating structure\
+  \ surviving ≥200 steps\n- F2: Best surviving structure passes Single-Bit Decomposition\
+  \ Test (composite)\n- F3: Totalistic rule space too coarse for directed glider motion\n\
+  - F5: Bloomer exploit (expanding structure)\n- F6: Debris cloud\n\nWrite a formal\
+  \ falsification report to archive/iter_253/results/falsification_report.json\n\n\
+  ## Key Constraints\n- Bit conservation is NOT enforced (matching 2D hex precedent)\n\
+  - All rules are totalistic B/S (automatically O_h symmetric)\n- Grid size: 40^3\n\
+  - Simulation steps: 200 (matching pre-registration)\n- Early stopping: kill dead\
+  \ (bc=0) and exploded (bc > 4×initial) simulations immediately\n- Use the engine\
+  \ from src/synchronous_ca_fcc.py\n\n## Output\nSave ALL results under archive/iter_253/results/.\
+  \ Key files:\n- ga_results.csv (updated GA run)\n- ga_summary.json (updated GA summary)\n\
+  - positive_control.json (2D hex validation)\n- semi_totalistic_results.json (if\
+  \ run)\n- falsification_report.json (formal F1-F6 evaluation)\n- coherence_test_results.json\
+  \ (if any candidates found)\n"
