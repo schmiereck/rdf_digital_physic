@@ -1,56 +1,71 @@
-falsification_criterion: "The hypothesis is refuted if ALL of the following hold after\
-  \ testing ≥10,000\ntotalistic B/S rules (via designed sweep + evolutionary search):\n\
-  - F1: No rule produces any propagating pattern surviving ≥300 steps from any\n \
-  \ small (≤6 bit) seed.\n- F2: Any candidate surviving ≥300 steps has at least one\
-  \ constituent single-bit\n  seed that survives ≥100 steps alone (binding energy\
-  \ = 0, non-interacting\n  composite).\n- F3: Any candidate surviving ≥300 steps\
-  \ fails O_h covariance (dies under ≥1\n  of 48 O_h rotations of the initial seed).\n\
-  - F4: All candidates surviving ≥300 steps are stationary (net displacement < 2\n\
-  \  cells) or explosive (bit count > 10× initial).\nA single genuine bound glider\
-  \ passing F1-F4 refutes the null and supports the\nhypothesis.\n"
-hypothesis: 'A 3D synchronous cellular automaton on the Face-Centered Cubic (FCC)
-  lattice
+falsification_criterion: "The hypothesis is REFUTED if any one of the following holds:\n\
+  F1: No totalistic rule in the GA search produces a propagating structure surviving\n\
+  \    ≥200 steps from any seed of size 3–6 bits. (If all rules produce only static\n\
+  \    oscillators, chaotic explosions, or rapidly dispersing patterns.)\nF2: The\
+  \ best surviving structure passes the Single-Bit Decomposition Test — i.e.,\n  \
+  \  at least one constituent bit of the seed survives and propagates independently\n\
+  \    when run in isolation — proving it is a non-interacting composite with binding\n\
+  \    energy = 0.\nF3: The totalistic rule space is shown to be too coarse (only\
+  \ 2^14 = 16,384 rules)\n    to encode the anisotropic propagation directions needed\
+  \ for directed glider\n    motion on the FCC lattice, making any surviving structure\
+  \ necessarily isotropic\n    (expanding blob) or stationary (oscillator).\n"
+hypothesis: 'A totalistic synchronous CA on the 3D FCC lattice (13-neighbor input
+  → 1-bit center
 
-  with O_h-symmetric totalistic (Life-like B/S) rules and cooperative survival
+  output, NO bit conservation constraint) can produce at least one genuine multi-bit
 
-  (S does not contain 0 — bits with zero neighbors die) can produce genuine
+  bound glider with binding energy > 0. Specifically: there exists a totalistic rule
 
-  multi-bit bound gliders with positive binding energy. Specifically: (a) at least
+  R: {0,...,13} → {0,1} such that a small multi-bit seed (3–6 bits) on the FCC grid
 
-  one such rule, when initialized with a multi-bit seed of ≤6 bits, produces a
+  evolves into a stable, propagating structure where (a) the structure survives ≥200
 
-  propagating pattern that survives ≥300 CA steps with net displacement ≥5 FCC
+  steps, (b) no individual constituent bit survives alone (Single-Bit Decomposition
 
-  lattice units; and (b) each constituent single-bit seed of the same rule, placed
+  Test fails for each bit, proving cooperative survival / binding energy > 0), and
 
-  in isolation, dies within ≤50 steps — proving binding energy > 0 via the
+  (c) the structure propagates with a well-defined sub-light velocity (net displacement
 
-  cooperative survival mechanism (the only mechanism proven to produce genuine
+  > 0 per period). This is motivated by the 2D hex precedent where cooperative survival
 
-  multi-bit binding in any dimension, per iter_250-252).
+  via weight-1→0 transitions is the proven binding mechanism, and the 13-neighbor
+  FCC
+
+  totalistic CA directly generalizes this architecture to 3D.
 
   '
 pre_registration_file: src/pre_registration.md
-proposed_method: "Step 1 — Build 3D Synchronous CA Engine (src/synchronous_ca_fcc.py):\n\
-  \  - FCC lattice with toroidal boundaries, 13-bit neighborhood (center + 12\n  \
-  \  cuboctahedron neighbors at offsets (±1,±1,0), (±1,0,±1), (0,±1,±1))\n  - Totalistic\
-  \ B/S update rule: new_center = f(center_bit, neighbor_count)\n  - Diagnostics:\
-  \ center-of-mass, bit count, net displacement, survival time\n  - Validate with\
-  \ trivial rules (all-die, all-live, known 2D hex analog on [111])\n\nStep 2 — Designed\
-  \ Rule Sweep (src/totalistic_rule_search.py):\n  - Generate ~200 B/S rules: S ⊆\
-  \ {1,...,12}, B ⊆ {1,...,11}, λ ∈ [0.20, 0.50]\n  - Standard seeds: single bits\
-  \ (6), bit pairs (12), L-tromino analogs (8),\n    small random clusters (20)\n\
-  \  - Run 500 steps per rule×seed; filter for survival ≥ 300, displacement ≥ 5,\n\
-  \    bit count ≤ 10× initial\n\nStep 3 — Evolutionary GA (if Step 2 yields no candidates):\n\
-  \  - 26-bit genome (B+S sets), population 500, 20 generations\n  - Fitness: survival\
-  \ × displacement / (1 + |bit_ratio - 1|)\n  - Tournament selection, uniform crossover,\
-  \ bit-flip mutation\n  - Multi-seed evaluation (5 seeds per rule)\n\nStep 4 — Coherence\
-  \ Testing (src/glider_coherence_test.py):\n  - Single-Bit Decomposition Test: each\
-  \ constituent bit dies in ≤50 steps alone\n  - O_h Covariance Test: all 48 rotations\
-  \ of seed produce same survival outcome\n  - Bit Count Stability: no explosion (>10×\
-  \ initial) or annihilation\n\nStep 5 — Documentation: positive result (genuine glider)\
-  \ or first-class null\n  result with totalistic phase diagram characterization on\
-  \ FCC lattice.\n\nJustification for relaxing bit conservation: The 2D hex system\
-  \ (the ONLY\nconfirmed system with genuine binding) is a synchronous CA that violates\
-  \ bit\nconservation. LGCA bit conservation is PROVEN incompatible with cooperative\n\
-  survival (F3, iter_252). This is the minimal architectural change needed.\n"
+proposed_method: "RE-RUN of iteration 253 with optimized totalistic_ga.py code.\n\n\
+  Step 1: Verify and re-run the existing totalistic_ga.py infrastructure.\n  - Confirm\
+  \ the totalistic CA engine on 3D FCC lattice is functional:\n    13 neighbors per\
+  \ cell, totalistic rule R: {0,...,13} → {0,1}.\n  - Confirm O_h symmetry enforcement:\
+  \ totalistic rules are automatically O_h-symmetric\n    by construction (depend\
+  \ only on Hamming weight, not neighbor identity).\n  - Confirm bit conservation\
+  \ is NOT enforced (matching 2D hex precedent).\n  - File: src/totalistic_ga.py (already\
+  \ exists and optimized)\n\nStep 2: Execute the GA search (sub-task 253.2.3 re-run).\n\
+  \  - Search space: 2^14 = 16,384 totalistic rules (compact enough for exhaustive\n\
+  \    evaluation if needed, but GA preferred for fitness-guided exploration).\n \
+  \ - Seed library: small multi-bit seeds (3–6 bit L-tromino-like patterns on FCC\n\
+  \    [111] plane and other high-symmetry planes).\n  - Fitness function: checkpoint-based,\
+  \ combining:\n    (a) Late-window net displacement (steps 150–200) > 0\n    (b)\
+  \ Bit count bounded (penalize explosions: max_bit_count / initial_bit_count < 3.0)\n\
+  \    (c) Velocity stability (low std dev of displacement across windows)\n    (d)\
+  \ Anti-settler: must have net displacement > 0\n  - GA parameters: population=100,\
+  \ generations=20, tournament selection, point\n    mutation on rule bits, crossover.\n\
+  \  - Timeout safeguards: per-rule simulation capped at 200 steps; per-generation\n\
+  \    evaluation capped with early termination for chaotic rules (bit count > 3×\
+  \ initial).\n\nStep 3: Post-filter champion rules with Three-Test Coherence Protocol.\n\
+  \  - Single-Bit Decomposition Test: remove each constituent bit of the seed and\n\
+  \    re-run. ALL bits must fail to survive alone for the glider to be genuine.\n\
+  \  - Collision Coherence Test: check if glider maintains structure under small\n\
+  \    perturbations (1-bit latency field).\n  - O_h Covariance Test: rotate the glider\
+  \ seed by all 48 O_h elements and verify\n    survival (automatic for totalistic\
+  \ rules — only seed geometry matters).\n\nStep 4: Positive control — verify the\
+  \ 2D hex glider rule maps correctly into the\n  totalistic framework on a 2D hex\
+  \ lattice slice, confirming the GA can in principle\n  discover cooperative survival\
+  \ binding.\n\nStep 5: If F2 is triggered (composite), analyze whether the totalistic\
+  \ constraint\n  (ignoring neighbor identity) is the root cause by testing semi-totalistic\
+  \ rules\n  that distinguish center-bit state.\n\nFiles to create/modify:\n  - src/totalistic_ga.py\
+  \ (already exists, optimized — verify and execute)\n  - src/totalistic_fcc_engine.py\
+  \ (may already exist as part of totalistic_ga.py)\n  - src/pre_registration.md (auto-generated\
+  \ from this plan)\n"

@@ -1,0 +1,51 @@
+complexity: high
+estimated_runtime_sec: 900
+iter_id: 253.2.3
+started_at: '2026-05-27T04:51:02.936086'
+status: running
+task: "Complete steps 3, 4, and 5 of the search pipeline for iteration 253.\n\nWe\
+  \ have already completed Step 2 (sweep) which found 0 candidate rules out of 200\
+  \ rules tested, and we have fixed the variable shadowing bug in `src/totalistic_ga.py`.\n\
+  \nPlease perform the following tasks:\n\n1. RUN THE EVOLUTIONARY GA (Step 3):\n\
+  Run `PYTHONPATH=. python3 src/totalistic_ga.py`.\nVerify that it runs to completion\
+  \ (generates `archive/iter_253/results/ga_results.csv` and `archive/iter_253/results/ga_summary.json`).\n\
+  Verify that the total number of unique rules evaluated across sweep + GA is indeed\
+  \ at least 10,000 (the GA script has built-in logic to continue running generations\
+  \ or evaluate random rules to hit >= 10,000 unique rules).\n\n2. CREATE COHERENCE\
+  \ TESTING SCRIPT (Step 4):\nCreate `src/glider_coherence_test.py`.\nThe script should:\n\
+  - Re-generate the 46 standard sweep seeds exactly as done in `src/totalistic_rule_search.py`\
+  \ (Seeds 0 to 45: single bit, bit pairs, L-trominoes, random compact clusters).\n\
+  - Load candidate rules. A rule is a candidate if:\n  - It was identified as a candidate\
+  \ in the Sweep (0 found), OR\n  - It is listed in the `candidate_rules` list from\
+  \ `archive/iter_253/results/ga_summary.json` (i.e., has fitness > 0 in the GA).\n\
+  - For each candidate rule, check which of the 46 seeds survive, propagate, and are\
+  \ compact (using the sweep filters):\n  - Survival: survives >= 300 steps.\n  -\
+  \ Displacement: net displacement >= 5.0.\n  - Bounding box: bounding extent <= 10\
+  \ after step 100.\n  - Bloom check: bit count <= 4x initial seed weight after step\
+  \ 100.\n  - Cooperative survival: single-bit seed dies in <= 50 steps.\n- For any\
+  \ rule+seed combination passing those sweep filters, perform the full Coherence\
+  \ Tests:\n  1. Single-Bit Decomposition Test (F2): Run a single bit at center (20,20,20)\
+  \ for 50 steps; verify it dies in <= 50 steps.\n  2. O_h Covariance Test (F3):\n\
+  \     - Load 48 O_h transforms from `src.rigorous_glider_audit.build_oh_transforms()`.\n\
+  \     - For each of the 48 transforms, rotate the seed coordinates relative to (20,20,20)\
+  \ using `M_g` matrix (rounding coords to nearest integers).\n     - Filter out duplicate\
+  \ rotated seeds.\n     - Simulate each unique rotated seed for 300 steps.\n    \
+  \ - Verify that EVERY unique rotated seed survives, propagates (displacement >=\
+  \ 5.0), remains compact (bounding box <= 10 after step 100), and does not bloom\
+  \ (bit count <= 4x initial after step 100).\n     - If any rotation fails, the candidate\
+  \ fails F3 (covariance).\n  3. Bloom and Debris re-check (F5, F6) on the original\
+  \ seed.\n  4. Full 300-step run: Verify survival >= 300 steps with net displacement\
+  \ >= 5.0.\n- Save the coherence results to `archive/iter_253/results/coherence_results.csv`\
+  \ with columns: `rule_str, seed_id, decomposition_pass, oh_covariance_pass, bloom_pass,\
+  \ debris_pass, full_pass`.\n\n3. DOCUMENTATION AND SUMMARY (Step 5):\nCreate `archive/iter_253/results/summary.json`\
+  \ containing:\n- `verdict`: \"supported\" (if at least one candidate passed all\
+  \ coherence tests) or \"refuted\" (if all failed).\n- `total_rules_tested`: total\
+  \ number of unique rules evaluated across sweep and GA.\n- `candidates_found`: number\
+  \ of unique rule+seed combinations passing the sweep/GA filters.\n- `candidates_passing_coherence`:\
+  \ number of combinations passing all coherence tests.\n\nIf no candidates pass all\
+  \ coherence tests (verdict \"refuted\"), then write a beautiful, detailed scientific\
+  \ write-up in your final report. Describe the totalistic cellular automata phase\
+  \ space on the FCC lattice (how lambda values relate to rapid death, localization,\
+  \ explosion, stationary still-lives, etc.), using the generated data in `phase_diagram.csv`\
+  \ and `ga_results.csv`.\n\nEnsure all files are correctly created and structured.\
+  \ Let's run this full pipeline systematically!"
